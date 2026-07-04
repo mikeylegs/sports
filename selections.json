@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-07-04T07:09:26.382Z",
+  "updated": "2026-07-04T12:31:48.794Z",
   "events": [
     {
       "league": "soccer/fifa.world",
@@ -23,22 +23,6 @@
       "label": "Golf (PGA)",
       "espnId": "401811954",
       "title": "John Deere Classic",
-      "showFrom": "20260704",
-      "showUntil": "20260704"
-    },
-    {
-      "league": "tennis/atp",
-      "label": "Tennis (ATP)",
-      "espnId": "188-2026",
-      "title": "Wimbledon",
-      "showFrom": "20260704",
-      "showUntil": "20260704"
-    },
-    {
-      "league": "tennis/wta",
-      "label": "Tennis (WTA)",
-      "espnId": "188-2026",
-      "title": "Wimbledon",
       "showFrom": "20260704",
       "showUntil": "20260704"
     }
