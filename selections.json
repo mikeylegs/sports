@@ -1,7 +1,15 @@
 {
   "v": 1,
-  "updated": "2026-07-04T12:31:48.794Z",
+  "updated": "2026-07-04T16:31:29.093Z",
   "events": [
+    {
+      "league": "golf/pga",
+      "label": "Golf (PGA)",
+      "espnId": "401811954",
+      "title": "John Deere Classic",
+      "showFrom": "20260704",
+      "showUntil": "20260704"
+    },
     {
       "league": "soccer/fifa.world",
       "label": "World Cup",
@@ -15,14 +23,6 @@
       "label": "World Cup",
       "espnId": "760503",
       "title": "FRA @ PAR",
-      "showFrom": "20260704",
-      "showUntil": "20260704"
-    },
-    {
-      "league": "golf/pga",
-      "label": "Golf (PGA)",
-      "espnId": "401811954",
-      "title": "John Deere Classic",
       "showFrom": "20260704",
       "showUntil": "20260704"
     }
