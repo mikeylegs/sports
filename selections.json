@@ -1,0 +1,14 @@
+{
+  "v": 1,
+  "updated": "2026-07-04T02:41:57.118Z",
+  "events": [
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760501",
+      "title": "GHA @ COL",
+      "showFrom": "20260703",
+      "showUntil": "20260703"
+    }
+  ]
+}
