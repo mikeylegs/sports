@@ -1,20 +1,12 @@
 {
   "v": 1,
-  "updated": "2026-07-04T16:59:21.577Z",
+  "updated": "2026-07-04T17:02:17.834Z",
   "events": [
     {
       "league": "golf/pga",
       "label": "Golf (PGA)",
       "espnId": "401811954",
       "title": "John Deere Classic",
-      "showFrom": "20260704",
-      "showUntil": "20260704"
-    },
-    {
-      "league": "soccer/fifa.world",
-      "label": "World Cup",
-      "espnId": "760502",
-      "title": "MAR @ CAN",
       "showFrom": "20260704",
       "showUntil": "20260704"
     },
