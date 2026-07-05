@@ -1,12 +1,36 @@
 {
   "v": 1,
-  "updated": "2026-07-05T14:49:41.961Z",
+  "updated": "2026-07-05T14:50:57.493Z",
   "events": [
     {
       "league": "tennis/atp",
       "label": "Tennis (ATP) · Wimbledon",
       "espnId": "188-2026:177465",
       "title": "N. Djokovic v R. Safiullin",
+      "showFrom": "20260705",
+      "showUntil": "20260705"
+    },
+    {
+      "league": "golf/pga",
+      "label": "Golf (PGA)",
+      "espnId": "401811954",
+      "title": "John Deere Classic",
+      "showFrom": "20260705",
+      "showUntil": "20260705"
+    },
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760504",
+      "title": "NOR @ BRA",
+      "showFrom": "20260705",
+      "showUntil": "20260705"
+    },
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760505",
+      "title": "ENG @ MEX",
       "showFrom": "20260705",
       "showUntil": "20260705"
     }
