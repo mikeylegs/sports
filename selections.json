@@ -1,7 +1,15 @@
 {
   "v": 1,
-  "updated": "2026-07-05T14:56:59.072Z",
+  "updated": "2026-07-05T15:58:29.049Z",
   "events": [
+    {
+      "league": "golf/pga",
+      "label": "Golf (PGA)",
+      "espnId": "401811954",
+      "title": "John Deere Classic",
+      "showFrom": "20260705",
+      "showUntil": "20260705"
+    },
     {
       "league": "tennis/atp",
       "label": "Tennis (ATP) · Wimbledon",
