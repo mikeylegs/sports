@@ -382,6 +382,10 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .wws-full .wws-tn-rows{flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0;gap:1cqh;}
 /* R12b: soccer pregame — time vertically centered between flags */
 .wws-soc-row.pre{align-items:center;padding-top:0;}
+.wws-soc-row.pre .wws-tm-mid{transform:translateY(-2.5cqh);display:flex;flex-direction:column;align-items:center;gap:1.2cqh;}
+.wws-soc-row.pre .wws-tm-name{font-size:6cqh;}
+.wws-soc-net .net-logo{height:5cqh;}
+.wws-count{font-size:3.2cqh;font-weight:700;letter-spacing:0.04em;color:rgba(255,255,255,0.55);text-transform:uppercase;}
 .wws-banner{display:flex;align-items:stretch;flex-shrink:0;min-width:0;background:rgba(255,255,255,0.05);border-radius:1.4cqh;overflow:hidden;margin:0.6cqh 1cqh 0;}
 .wws-banner-bar{width:1.1cqh;background:#d4af37;flex-shrink:0;}
 .wws-banner-txt{padding:0.9cqh 1.8cqh;min-width:0;}
@@ -400,18 +404,18 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .wws-tn-set.won{color:#fff;}
 .wws-tn-set.hot{color:#d4af37;}
 .wws-g-row{display:flex;align-items:center;gap:1.4cqh;padding:0.8cqh 2cqh;}
-.wws-g-row.lead{background:rgba(212,175,55,0.12);border-radius:1cqh;margin:1cqh 1cqh 0;}
+.wws-g-row.lead{background:rgba(212,175,55,0.12);border-radius:1cqh;margin:1cqh 0 0;}
 .wws-g-row.lead .wws-g-pos,.wws-g-row.lead .wws-g-tot{color:#d4af37;}
 .wws-g-pos{font-size:4.2cqh;font-weight:900;color:rgba(255,255,255,0.5);min-width:4.6cqh;text-align:center;}
 .wws-g-name{font-size:4.2cqh;font-weight:800;color:#fff;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .wws-g-tot{font-size:5cqh;font-weight:900;color:#e7ecf5;font-variant-numeric:tabular-nums;}
 .wws-g-tot{min-width:9cqh;text-align:right;}
-.wws-g-thru{font-size:3.6cqh;font-weight:700;color:rgba(255,255,255,0.5);min-width:8cqh;text-align:right;font-variant-numeric:tabular-nums;}
-.wws-g-rd{font-size:3.6cqh;font-weight:700;color:rgba(255,255,255,0.65);min-width:8cqh;text-align:right;font-variant-numeric:tabular-nums;}
-.wws-g-head{padding:0.2cqh 2cqh;border-bottom:1px solid rgba(255,255,255,0.12);margin:0 1cqh;}
+.wws-g-thru{font-size:4.2cqh;font-weight:700;color:rgba(255,255,255,0.7);min-width:8cqh;text-align:right;font-variant-numeric:tabular-nums;}
+.wws-g-rd{font-size:4.2cqh;font-weight:700;color:rgba(255,255,255,0.85);min-width:8cqh;text-align:right;font-variant-numeric:tabular-nums;}
+.wws-g-head{padding:0.2cqh 2cqh;border-bottom:1px solid rgba(255,255,255,0.12);}
 .wws-g-head span{font-size:2.8cqh!important;font-weight:800;letter-spacing:0.08em;color:rgba(255,255,255,0.45)!important;}
 .wws-g-scrollwrap{overflow:hidden;flex:1;position:relative;margin-top:0.6cqh;}
-.wws-g-scroll{animation:wwsGolfScroll linear infinite;}
+.wws-g-scroll{animation:wwsGolfScroll linear 1 forwards;}
 @keyframes wwsGolfScroll{0%,8%{transform:translateY(0);}92%,100%{transform:translateY(calc(-100% + 30cqh));}}
 .wws-tm-row{display:flex;align-items:center;justify-content:space-around;padding:2.4cqh 1.5cqh 0;}
 .wws-tm-side{display:flex;flex-direction:column;align-items:center;gap:0.8cqh;min-width:0;flex:1;}
@@ -2613,6 +2617,14 @@ function getIntermissionCountdown(gameId, isPlayoffs) {
 
 let mlbFeatInterval = null; // rotation timer
 
+function pbLastName(n){
+  const t = String(n || '').trim().split(/\s+/);
+  if (t.length < 2) return n || '';
+  const sfx = /^(jr\.?|sr\.?|ii|iii|iv|v)$/i;
+  return sfx.test(t[t.length - 1]) && t.length > 2
+    ? t[t.length - 2] + ' ' + t[t.length - 1]
+    : t[t.length - 1];
+}
 function mlbFeaturedSlotHtml(g, slotClass, slotLabel) {
   const isYank = slotLabel === 'YANKEES';
   const slotTintColor = TEAM_COLORS[`MLB:${isYank?'NYY':'NYM'}`] || '#0C2340';
@@ -2773,6 +2785,7 @@ function mlbFeaturedSlotHtml(g, slotClass, slotLabel) {
 
   // ── Live: who's pitching vs batting ───────────────────────────
   // ESPN's status.type.detail (captured in g.timeLabel, e.g. "Top 8th") already
+  // R12f: "Aaron Judge"→"Judge", "Michael A. Taylor"→"Taylor", "Cal Ripken Jr."→"Ripken Jr."
   // tells us the half-inning, so we derive it from that instead of depending
   // on an extra situation field. Top of the inning = away team bats, home
   // team pitches; bottom = the reverse.
@@ -2780,9 +2793,9 @@ function mlbFeaturedSlotHtml(g, slotClass, slotLabel) {
   if (live && g.situation) {
     const isTop = /^top/i.test(g.timeLabel || '');
     // Round-10 note 4: batter/pitcher = featured info block, stacked two-line.
-    // R12c: names ONLY — pitch-count / batter-stat sublines clip at panel size
-    const pLine = g.situation.pitcher ? `<div class="mlb-feat-pb-name">P: ${g.situation.pitcher}</div>` : '';
-    const bLine = g.situation.batter ? `<div class="mlb-feat-pb-name">AB: ${g.situation.batter}</div>` : '';
+    // R12f: LAST NAME only — full names clipped in the mid column even at min fit
+    const pLine = g.situation.pitcher ? `<div class="mlb-feat-pb-name">P: ${pbLastName(g.situation.pitcher)}</div>` : '';
+    const bLine = g.situation.batter ? `<div class="mlb-feat-pb-name">AB: ${pbLastName(g.situation.batter)}</div>` : '';
     if (isTop) { awaySubLine = bLine; homeSubLine = pLine; }
     else       { homeSubLine = bLine; awaySubLine = pLine; }
   }
@@ -3194,8 +3207,8 @@ function updateFeaturedLiveInPlace(slotEl, g){
   let awaySub = '', homeSub = '';
   if (g.situation) {
     const isTop = /^top/i.test(g.timeLabel || '');
-    const pLine = g.situation.pitcher ? `P: ${g.situation.pitcher}` : '';       // R12c: names only
-    const bLine = g.situation.batter ? `AB: ${g.situation.batter}` : '';
+    const pLine = g.situation.pitcher ? `P: ${pbLastName(g.situation.pitcher)}` : '';   // R12f: last name only
+    const bLine = g.situation.batter ? `AB: ${pbLastName(g.situation.batter)}` : '';
     if (isTop) { awaySub = bLine; homeSub = pLine; } else { homeSub = bLine; awaySub = pLine; }
   }
   const pbLines = [awaySub, homeSub].filter(Boolean);
@@ -3326,9 +3339,19 @@ function recapDirectorTick(slotClass){
     // by data-team; slot-2 is perpetual WWS and never hosts a team recap card.
     const wantTeam = cand === 'hoh-nyy' ? 'NYY' : cand === 'hoh-nym' ? 'NYM' : null;
     if (wantTeam){
-      const lf = document.querySelector(`#yank-stage .lf-slide[data-slide="lf"][data-team="${wantTeam}"]`);
+      if (slotClass !== 'yank') continue;
+      let lf = document.querySelector(`#yank-stage .lf-slide[data-slide="lf"][data-team="${wantTeam}"]`);
+      // R13: a due recap FLIPS the pane / JUMPS the stage instead of waiting for
+      // its ~12s-in-72s natural window (post-R12 alternation starved these).
+      if (!lf && window._anchorMerged && window._anchorTeam !== wantTeam
+          && typeof window._anchorSwap === 'function' && window._anchorSwap()){
+        lf = document.querySelector(`#yank-stage .lf-slide[data-slide="lf"][data-team="${wantTeam}"]`);
+      }
       if (!lf) continue;                                                   // not post-game → skip
-      if (slotClass !== 'yank' || !lf.classList.contains('active')) continue; // waiting → skip THIS tick, don't starve the rest
+      if (!lf.classList.contains('active')){
+        const st = document.getElementById('yank-stage');
+        if (st) st.querySelectorAll('.lf-slide').forEach(x => x.classList.toggle('active', x === lf));
+      }
     }
     D.count = 0;
     D.idx = (pos + 1) % D.cycle.length;
@@ -3955,8 +3978,15 @@ async function wwsPollEvents(){
             const gi = getCurrentRoundInfo(c.linescores);
             const rounds = (c.linescores || []).filter(r => r && r.displayValue !== undefined);
             const curR = rounds[rounds.length - 1];
-            const thru = gi.thru !== '-' ? gi.thru
+            let thru = gi.thru !== '-' ? gi.thru
               : (c.status && (c.status.thru != null ? (c.status.thru >= 18 ? 'F' : String(c.status.thru)) : (c.status.displayThru || ''))) || '';
+            // R13b: pre-round → next tee time in the THRU column (PGA-app style)
+            const tee = c.teeTime || (c.status && c.status.teeTime) || (c.athlete && c.athlete.teeTime)
+              || (typeof findNextTeeTime === 'function' ? findNextTeeTime(c.linescores) : null);
+            if (!gi.started && tee){
+              const t = new Date(tee);
+              if (!isNaN(t)) thru = t.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}).replace(/\s?([AP])M/i, (m,x) => x.toLowerCase());
+            }
             const rdRaw = gi.roundScore != null ? gi.roundScore
               : curR ? (curR.displayValue != null ? curR.displayValue : curR.value) : null;
             return { thru, rd: rdRaw != null ? String(rdRaw).replace(/^\+?0$/, 'E') : '' };
@@ -4001,7 +4031,7 @@ async function wwsPollEvents(){
         const bVenue = kind === 'golf' ? ((ev.courses && ev.courses[0] && ev.courses[0].name) || ven.fullName || '')
           : kind === 'soccer' ? ((ven.address && [ven.address.city, ven.address.state].filter(Boolean).join(', ')) || '')
           : [ven.fullName, ven.address && (ven.address.city || ven.address.state)].filter(Boolean).join(' · ');
-        WWS.events[e.espnId] = { title: e.title, label: bLabel, kind,
+        WWS.events[e.espnId] = { title: e.title, label: bLabel, kind, date: ev.date || '',
           round: (ev.status && ev.status.period) || (comp.status && comp.status.period) || 0,
           pre: st.state === 'pre',
           kickoff: ev.date ? new Date(ev.date).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}) : '',
@@ -4070,7 +4100,9 @@ function wwsSoccerInner(d){
   const pens = (h.shootout || a.shootout) ? `<div class="wws-pens">PENS ${a.shootout||0}–${h.shootout||0}</div>` : '';
   // Pregame: kickoff time is the hero, not a bogus 0–0 (round 11b).
   const mid = d.pre
-    ? `<span class="wws-hero wws-soc-pre">${d.kickoff||''}</span>`
+    ? `<span class="wws-hero wws-soc-pre">${d.kickoff||''}</span>
+       <span class="wws-soc-net">${netBug('FOX','wws-soc-net','feat','FOX')}</span>
+       <div class="wws-count" data-kick="${d.date||''}"></div>`
     : `<span class="wws-hero wws-soc-hero">${a.score||'0'}–${h.score||'0'}</span>${pens}
       <div class="wws-soc-clock${d.live?' live':''}">${(d.status||'').replace(/(\+\s*\d+'?)/, '<span class="wws-soc-added">$1</span>')}</div>`;
   return wwsBanner(d) + `<div class="wws-tm-row wws-soc-row${d.pre?' pre':''}">${side(a)}
@@ -4120,6 +4152,41 @@ function wwsUpcomingInner(e){
   return wwsBanner({label:e.label || 'Upcoming'}) + `<div class="lf-wws-title" data-fit="5" data-fit-min="3.6">${e.title || ''}</div>
     <div class="lf-wws-status">${when ? 'Coming ' + when : ''}</div>`;
 }
+function _wwsAdvance(){
+  const st = document.getElementById('wws-stage'); if (!st) return;
+  const all = [...st.querySelectorAll('.lf-slide')].filter(x => x.dataset.ready !== '0');
+  const i = all.findIndex(x => x.classList.contains('active'));
+  if (all.length < 2){                                  // solo golf card: loop the scroll
+    const sc = all[0] && all[0].querySelector('.wws-g-scroll');
+    if (sc){ sc.style.animationName = 'none'; void sc.offsetHeight; sc.style.animationName = ''; }
+    return;
+  }
+  all.forEach((x, k) => {
+    const on = k === (i + 1) % all.length;
+    x.classList.toggle('active', on);
+    if (on){
+      x.dataset.since = Date.now();
+      const sc2 = x.querySelector('.wws-g-scroll');     // restart so the pass aligns with activation
+      if (sc2){ sc2.style.animationName = 'none'; void sc2.offsetHeight; sc2.style.animationName = ''; }
+    }
+  });
+}
+if (!window._wwsScrollEnd){
+  window._wwsScrollEnd = true;
+  document.addEventListener('animationend', ev => {
+    const t = ev.target;
+    if (!t.classList || !t.classList.contains('wws-g-scroll')) return;
+    const slide = t.closest('.lf-slide');
+    if (slide && slide.classList.contains('active')) _wwsAdvance();
+  });
+}
+function _wwsCountTick(){                               // R13b: live "kicks off in" countdown
+  document.querySelectorAll('.wws-count[data-kick]').forEach(el => {
+    const ms = Date.parse(el.dataset.kick) - Date.now();
+    el.textContent = ms > 60000 ? `Kicks off in ${Math.floor(ms/3600000)}h ${Math.floor(ms%3600000/60000)}m` : '';
+  });
+}
+if (!window._wwsCountT) window._wwsCountT = setInterval(_wwsCountTick, 30000);
 let _wwsRotT = null;
 function renderWwsSlot(bestLive){
   const evs = wwsActive();
@@ -4148,27 +4215,19 @@ function renderWwsSlot(bestLive){
       const st = document.getElementById('wws-stage'); if (!st) return;
       const all = [...st.querySelectorAll('.lf-slide')].filter(x => x.dataset.ready !== '0');
       if (all.length < 2) return;
-      const i = all.findIndex(x => x.classList.contains('active'));
-      const cur = all[i];
-      // R12c: a golf slide holds until its leaderboard scroll runs one full pass
-      // (12s tick granularity — holds round UP to the next tick past the duration).
+      const cur = all[all.findIndex(x => x.classList.contains('active'))];
       if (cur){
         const sc = cur.querySelector('.wws-g-scroll');
         if (sc){
+          // R13b: golf self-advances on its scroll's animationend (exactly one
+          // pass, no mid-scroll flip). This is only a WATCHDOG in case the
+          // event never fires (element replaced mid-flight, etc).
           if (!cur.dataset.since){ cur.dataset.since = Date.now(); return; }
           const durMs = (parseFloat(sc.style.animationDuration) || 0) * 1000;
-          if (Date.now() - +cur.dataset.since < durMs) return;
+          if (Date.now() - +cur.dataset.since < durMs + 15000) return;
         }
       }
-      all.forEach((x, k) => {
-        const on = k === (i + 1) % all.length;
-        x.classList.toggle('active', on);
-        if (on){
-          x.dataset.since = Date.now();
-          const sc2 = x.querySelector('.wws-g-scroll');            // restart scroll so the pass aligns
-          if (sc2){ sc2.style.animationName = 'none'; void sc2.offsetHeight; sc2.style.animationName = ''; }
-        }
-      });
+      _wwsAdvance();
     }, 12000);
   }
   // Round-10 note 10: no rail, no globe — the banner identifies the event and
@@ -4187,6 +4246,7 @@ function wwsFillSlides(){
     el.dataset.sig = sig;
     el.innerHTML = wwsSlideInner(d);
     el.removeAttribute('data-ready');
+    _wwsCountTick();
     if (typeof fitText === 'function') fitText(el);
   });
 }
@@ -4289,7 +4349,14 @@ function startLfRotation(slotClass, divCacheId, teamMlbId, spotlights) {
     recapClockTick(slotClass);
     const slides = readySlides();
     if (slides.length < 2) { recapDirectorTick(slotClass); return; }
-    idx = (idx + 1) % slides.length;
+    const ni = (idx + 1) % slides.length;
+    if (ni === 0 && slotClass === 'yank' && window._anchorMerged
+        && typeof window._anchorSwap === 'function' && window._anchorSwap()){
+      idx = 0;                                  // R13: lap complete → flip team pane
+      recapDirectorTick(slotClass);
+      return;
+    }
+    idx = ni;
     paint(slides, idx);
     recapDirectorTick(slotClass);   // runs every tick now (see fn comment) — the mlb-daily fallback fires even with no fresh final
   }, 12000);
@@ -4696,23 +4763,26 @@ function renderAnchorIdleSlot(yg, mg, yNext, mNext){
   window._anchorMerged = true;
   window._anchorArgs = { yg, mg, yNext, mNext };
   if (!window._anchorTeam) window._anchorTeam = 'NYY';
-  if (!window._anchorSwapT){
-    window._anchorSwapT = setInterval(() => {
-      if (!window._anchorMerged) return;
-      const a = window._anchorArgs; if (!a) return;
-      window._anchorTeam = window._anchorTeam === 'NYY' ? 'NYM' : 'NYY';
-      const row = document.getElementById('row-MLB');
-      const slot = row && row.querySelector('.mlb-feat-slot.yank');
-      if (!slot) return;
-      const html = window._anchorTeam === 'NYY'
-        ? renderLastFinalSlot('NYY', a.yg, a.yNext, 'yank')
-        : renderLastFinalSlot('NYM', a.mg, a.mNext, 'yank');
-      window._lastYankHtml = html;
-      slot.outerHTML = html;
-      const e = row.querySelector('.mlb-feat-slot.yank');
-      if (e){ fitText(e); e.classList.add('slot-enter'); }
-    }, 36000);
-  }
+  // R13: swap is LAP-DRIVEN, not wall-clock — the rotation interval calls
+  // _anchorSwap() exactly when the current pane's slide index wraps, so every
+  // visit shows each slide exactly once (the 36s timer drifted against the 12s
+  // rotation phase and could repeat/starve slides indefinitely).
+  window._anchorSwap = () => {
+    if (!window._anchorMerged) return false;
+    const a = window._anchorArgs; if (!a) return false;
+    const row = document.getElementById('row-MLB');
+    const slot = row && row.querySelector('.mlb-feat-slot.yank');
+    if (!slot) return false;
+    window._anchorTeam = window._anchorTeam === 'NYY' ? 'NYM' : 'NYY';
+    const html = window._anchorTeam === 'NYY'
+      ? renderLastFinalSlot('NYY', a.yg, a.yNext, 'yank')
+      : renderLastFinalSlot('NYM', a.mg, a.mNext, 'yank');
+    window._lastYankHtml = html;
+    slot.outerHTML = html;
+    const e = row.querySelector('.mlb-feat-slot.yank');
+    if (e){ fitText(e); e.classList.add('slot-enter'); }
+    return true;
+  };
   return window._anchorTeam === 'NYY'
     ? renderLastFinalSlot('NYY', yg, yNext, 'yank')
     : renderLastFinalSlot('NYM', mg, mNext, 'yank');
