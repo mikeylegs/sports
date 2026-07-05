@@ -1,12 +1,20 @@
 {
   "v": 1,
-  "updated": "2026-07-05T16:00:50.857Z",
+  "updated": "2026-07-05T16:49:02.611Z",
   "events": [
+    {
+      "league": "golf/pga",
+      "label": "Golf (PGA)",
+      "espnId": "401811954",
+      "title": "John Deere Classic",
+      "showFrom": "20260705",
+      "showUntil": "20260705"
+    },
     {
       "league": "tennis/atp",
       "label": "Tennis (ATP) · Wimbledon",
-      "espnId": "188-2026:177465",
-      "title": "N. Djokovic v R. Safiullin",
+      "espnId": "188-2026:177485",
+      "title": "A. Davidovich Fokina v F. Auger-Aliassime",
       "showFrom": "20260705",
       "showUntil": "20260705"
     },
