@@ -1,20 +1,12 @@
 {
   "v": 1,
-  "updated": "2026-07-05T19:11:05.087Z",
+  "updated": "2026-07-05T22:42:22.217Z",
   "events": [
     {
       "league": "golf/pga",
       "label": "Golf (PGA)",
       "espnId": "401811954",
       "title": "John Deere Classic",
-      "showFrom": "20260705",
-      "showUntil": "20260705"
-    },
-    {
-      "league": "tennis/atp",
-      "label": "Tennis (ATP) · Wimbledon",
-      "espnId": "188-2026:177476",
-      "title": "S. Mochizuki v J. Sinner",
       "showFrom": "20260705",
       "showUntil": "20260705"
     },
