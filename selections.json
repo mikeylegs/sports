@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-07-06T12:46:14.175Z",
+  "updated": "2026-07-06T12:46:30.403Z",
   "events": [
     {
       "league": "tennis/atp",
@@ -63,6 +63,14 @@
       "label": "World Cup",
       "espnId": "760510",
       "title": "MAR @ FRA",
+      "showFrom": "20260709",
+      "showUntil": "20260709"
+    },
+    {
+      "league": "golf/pga",
+      "label": "Golf (PGA)",
+      "espnId": "401811955",
+      "title": "Genesis Scottish Open",
       "showFrom": "20260709",
       "showUntil": "20260709"
     }
