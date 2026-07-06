@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-07-06T12:34:59.835Z",
+  "updated": "2026-07-06T12:46:14.175Z",
   "events": [
     {
       "league": "tennis/atp",
@@ -41,6 +41,30 @@
       "title": "BEL @ USA",
       "showFrom": "20260706",
       "showUntil": "20260706"
+    },
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760509",
+      "title": "EGY @ ARG",
+      "showFrom": "20260707",
+      "showUntil": "20260707"
+    },
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760508",
+      "title": "COL @ SUI",
+      "showFrom": "20260707",
+      "showUntil": "20260707"
+    },
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760510",
+      "title": "MAR @ FRA",
+      "showFrom": "20260709",
+      "showUntil": "20260709"
     }
   ],
   "watch": {
