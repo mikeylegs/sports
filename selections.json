@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-07-06T18:24:27.138Z",
+  "updated": "2026-07-06T18:28:27.851Z",
   "events": [
     {
       "league": "tennis/atp",
@@ -17,6 +17,46 @@
       "title": "A. Bublik v T. Fritz",
       "showFrom": "20260706",
       "showUntil": "20260706"
+    },
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760506",
+      "title": "ESP @ POR",
+      "showFrom": "20260706",
+      "showUntil": "20260706"
+    },
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760507",
+      "title": "BEL @ USA",
+      "showFrom": "20260706",
+      "showUntil": "20260706"
+    },
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760509",
+      "title": "EGY @ ARG",
+      "showFrom": "20260707",
+      "showUntil": "20260707"
+    },
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760508",
+      "title": "COL @ SUI",
+      "showFrom": "20260707",
+      "showUntil": "20260707"
+    },
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760510",
+      "title": "MAR @ FRA",
+      "showFrom": "20260709",
+      "showUntil": "20260709"
     }
   ],
   "watch": {
