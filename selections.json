@@ -1,22 +1,30 @@
 {
   "v": 1,
-  "updated": "2026-07-06T00:06:43.385Z",
+  "updated": "2026-07-06T04:17:04.821Z",
   "events": [
     {
-      "league": "soccer/fifa.world",
-      "label": "World Cup",
-      "espnId": "760504",
-      "title": "NOR @ BRA",
-      "showFrom": "20260705",
-      "showUntil": "20260705"
+      "league": "golf/pga",
+      "label": "Golf (PGA)",
+      "espnId": "401811954",
+      "title": "John Deere Classic",
+      "showFrom": "20260706",
+      "showUntil": "20260706"
     },
     {
       "league": "soccer/fifa.world",
       "label": "World Cup",
-      "espnId": "760505",
-      "title": "ENG @ MEX",
-      "showFrom": "20260705",
-      "showUntil": "20260705"
+      "espnId": "760506",
+      "title": "ESP @ POR",
+      "showFrom": "20260706",
+      "showUntil": "20260706"
+    },
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760507",
+      "title": "BEL @ USA",
+      "showFrom": "20260706",
+      "showUntil": "20260706"
     }
   ],
   "watch": {
