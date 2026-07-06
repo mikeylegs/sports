@@ -1,31 +1,7 @@
 {
   "v": 1,
-  "updated": "2026-07-06T12:46:30.403Z",
+  "updated": "2026-07-06T14:07:35.793Z",
   "events": [
-    {
-      "league": "tennis/atp",
-      "label": "Tennis (ATP) · Wimbledon",
-      "espnId": "188-2026:177483",
-      "title": "J. Struff v J. Sinner",
-      "showFrom": "20260706",
-      "showUntil": "20260706"
-    },
-    {
-      "league": "tennis/atp",
-      "label": "Tennis (ATP) · Wimbledon",
-      "espnId": "188-2026:177493",
-      "title": "N. Djokovic v F. Auger-Aliassime",
-      "showFrom": "20260706",
-      "showUntil": "20260706"
-    },
-    {
-      "league": "tennis/atp",
-      "label": "Tennis (ATP) · Wimbledon",
-      "espnId": "188-2026:177714",
-      "title": "C. Gauff v J. Pegula",
-      "showFrom": "20260706",
-      "showUntil": "20260706"
-    },
     {
       "league": "soccer/fifa.world",
       "label": "World Cup",
@@ -67,12 +43,28 @@
       "showUntil": "20260709"
     },
     {
-      "league": "golf/pga",
-      "label": "Golf (PGA)",
-      "espnId": "401811955",
-      "title": "Genesis Scottish Open",
-      "showFrom": "20260709",
-      "showUntil": "20260709"
+      "league": "tennis/atp",
+      "label": "Tennis (ATP) · Wimbledon",
+      "espnId": "188-2026:177493",
+      "title": "N. Djokovic v F. Auger-Aliassime",
+      "showFrom": "20260706",
+      "showUntil": "20260706"
+    },
+    {
+      "league": "tennis/atp",
+      "label": "Tennis (ATP) · Wimbledon",
+      "espnId": "188-2026:177483",
+      "title": "J. Struff v J. Sinner",
+      "showFrom": "20260706",
+      "showUntil": "20260706"
+    },
+    {
+      "league": "tennis/atp",
+      "label": "Tennis (ATP) · Wimbledon",
+      "espnId": "188-2026:177714",
+      "title": "C. Gauff v J. Pegula",
+      "showFrom": "20260706",
+      "showUntil": "20260706"
     }
   ],
   "watch": {
