@@ -1,64 +1,7 @@
 {
   "v": 1,
-  "updated": "2026-07-06T18:28:27.851Z",
-  "events": [
-    {
-      "league": "tennis/atp",
-      "label": "Tennis (ATP) · Wimbledon",
-      "espnId": "188-2026:177482",
-      "title": "A. Fery v G. Dimitrov",
-      "showFrom": "20260706",
-      "showUntil": "20260706"
-    },
-    {
-      "league": "tennis/atp",
-      "label": "Tennis (ATP) · Wimbledon",
-      "espnId": "188-2026:177481",
-      "title": "A. Bublik v T. Fritz",
-      "showFrom": "20260706",
-      "showUntil": "20260706"
-    },
-    {
-      "league": "soccer/fifa.world",
-      "label": "World Cup",
-      "espnId": "760506",
-      "title": "ESP @ POR",
-      "showFrom": "20260706",
-      "showUntil": "20260706"
-    },
-    {
-      "league": "soccer/fifa.world",
-      "label": "World Cup",
-      "espnId": "760507",
-      "title": "BEL @ USA",
-      "showFrom": "20260706",
-      "showUntil": "20260706"
-    },
-    {
-      "league": "soccer/fifa.world",
-      "label": "World Cup",
-      "espnId": "760509",
-      "title": "EGY @ ARG",
-      "showFrom": "20260707",
-      "showUntil": "20260707"
-    },
-    {
-      "league": "soccer/fifa.world",
-      "label": "World Cup",
-      "espnId": "760508",
-      "title": "COL @ SUI",
-      "showFrom": "20260707",
-      "showUntil": "20260707"
-    },
-    {
-      "league": "soccer/fifa.world",
-      "label": "World Cup",
-      "espnId": "760510",
-      "title": "MAR @ FRA",
-      "showFrom": "20260709",
-      "showUntil": "20260709"
-    }
-  ],
+  "updated": "2026-07-06T18:46:38.930Z",
+  "events": [],
   "watch": {
     "teams": []
   }
