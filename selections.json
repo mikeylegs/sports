@@ -1,16 +1,7 @@
 {
   "v": 1,
-  "updated": "2026-07-07T00:36:44.625Z",
-  "events": [
-    {
-      "league": "soccer/fifa.world",
-      "label": "World Cup",
-      "espnId": "760510",
-      "title": "MAR @ FRA",
-      "showFrom": "20260709",
-      "showUntil": "20260709"
-    }
-  ],
+  "updated": "2026-07-07T00:36:59.759Z",
+  "events": [],
   "watch": {
     "teams": []
   }
