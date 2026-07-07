@@ -1,22 +1,38 @@
 {
   "v": 1,
-  "updated": "2026-07-07T03:52:53.045Z",
+  "updated": "2026-07-07T14:05:22.091Z",
   "events": [
     {
       "league": "soccer/fifa.world",
       "label": "World Cup",
-      "espnId": "760506",
-      "title": "ESP @ POR",
-      "showFrom": "20260706",
-      "showUntil": "20260706"
+      "espnId": "760509",
+      "title": "EGY @ ARG",
+      "showFrom": "20260707",
+      "showUntil": "20260707"
     },
     {
       "league": "soccer/fifa.world",
       "label": "World Cup",
-      "espnId": "760507",
-      "title": "BEL @ USA",
-      "showFrom": "20260706",
-      "showUntil": "20260706"
+      "espnId": "760508",
+      "title": "COL @ SUI",
+      "showFrom": "20260707",
+      "showUntil": "20260707"
+    },
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760510",
+      "title": "MAR @ FRA",
+      "showFrom": "20260709",
+      "showUntil": "20260709"
+    },
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760511",
+      "title": "BEL @ ESP",
+      "showFrom": "20260710",
+      "showUntil": "20260710"
     }
   ],
   "watch": {
