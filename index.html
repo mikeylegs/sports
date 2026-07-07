@@ -386,7 +386,7 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .wws-soc-row.pre .wws-tm-mid{display:flex;align-items:center;justify-content:center;}
 .wws-soc-prestack{display:flex;flex-direction:column;align-items:center;gap:1.6cqh;}
 .wws-soc-row.pre .wws-tm-name{font-size:6cqh;}
-.wws-soc-row.pre .wws-soc-pre{font-size:11cqh;line-height:1;}
+/*R45*/.wws-soc-row.pre .wws-soc-pre{font-size:8cqh;line-height:1;white-space:nowrap;}
 .wws-soc-net .net-logo{height:9cqh;}
 .wws-count{font-size:3.2cqh;font-weight:700;letter-spacing:0.04em;color:rgba(255,255,255,0.55);text-transform:uppercase;}
 .wws-count-btm{order:99;align-self:center;font-size:5cqh;font-weight:800;color:rgba(255,255,255,0.8);padding-bottom:1.4cqh;letter-spacing:0.03em;}
@@ -463,7 +463,7 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .lf-stand3{display:flex;flex-direction:column;gap:0.6cqh;width:100%;flex:1;justify-content:space-between;}
 /*R43*/.lf-stand3-head,.lf-stand3-row{display:grid;grid-template-columns:1fr 15cqw 8cqw;align-items:baseline;white-space:nowrap;}
 .lf-stand3-head{padding:0 0.9cqh 0.35cqh;font-size:3.6cqh;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,0.4);}
-/*R43*/.lf-stand3-head span:nth-child(2){text-align:right;}.lf-stand3-head span:nth-child(3){text-align:right;}
+/*R45*/.lf-stand3-head span:nth-child(2){text-align:center;}.lf-stand3-head span:nth-child(3){text-align:center;}
 /*R43*/.lf-stand3-row{padding:0.9cqh 0.9cqh;border-radius:6px;font-size:3.9cqh;}
 .lf-stand3-row.me{background:linear-gradient(90deg,var(--me-tint,rgba(52,211,153,0.16)),transparent);border-left:3px solid var(--me-accent,#34d399);}
 .lf-stand3-team{font-weight:700;color:rgba(255,255,255,0.55);display:flex;align-items:center;gap:1.4cqh;min-width:0;}
@@ -3959,7 +3959,11 @@ function checkBigMoments(games){
       flag:'https://a.espncdn.com/i/teamlogos/countries/500/eng.png',
       head:'',   // R37: demo shows no face (real goals pull correct headshot from feed; 45843 was Messi)
       scorer:"H. Kane 60'", aAbbr:'ENG', hAbbr:'MEX', aScore:'3', hScore:'1', aWin:true, hWin:false }});
-    else if(p==='hr') showTakeover({side:'left',team:'YANKEES',accent:'#fbbf24',headline:'HOME RUN',sub1:'A. Judge (29) to deep center \u00b7 2 RBI',sub2:'NYY 5, CWS 3',statcast:'<span class="sc-chip">418 FT</span><span class="sc-chip">109 MPH EV</span><span class="sc-chip">28\u00b0 LA</span>'});
+    else if(p==='hr') showTakeover({side:'left', a:{ accent:'#fbbf24', wash:'rgba(11,42,94,0.95)', wm:logoUrl('MLB','NYY'),
+        head:'https://a.espncdn.com/i/headshots/mlb/players/full/33192.png',
+        headline:'HOME RUN', sub:'A. Judge (29)', subIcon:'\u26be',
+        chips:['418 FT','109 MPH','28\u00b0 LA'],
+        band:{aAbbr:'NYY',aScore:5,hAbbr:'CWS',hScore:3,lit:'a'} }});   // R45: demo now uses the real Design-A takeover (was old API → old card)
     else if(p==='win') showTakeover({side:'left',team:'YANKEES',accent:'#fbbf24',headline:'FINAL',sub1:'YANKEES WIN',sub2:'NYY 5, CWS 3'});
     else if(p==='lead') showTakeover({side:'left',team:'YANKEES',accent:'#fbbf24',headline:'LEAD CHANGE',sub1:'Yankees take the lead',sub2:'NYY 5, CWS 3'});
   }
@@ -5262,7 +5266,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r44-wc-split-stand-tko';
+const BUILD_MARKER = 'r45-headcenter-pretime-hrdemo';
 if (GOLF_DEBUG || MLB_DEBUG) golfDebugLog(`[BUILD] running: ${BUILD_MARKER}`);
 
 // On-screen debug panel — for testing on iPad/iPhone where Safari's console
