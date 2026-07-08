@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-07-08T11:49:05.990Z",
+  "updated": "2026-07-08T11:49:18.910Z",
   "events": [
     {
       "league": "soccer/fifa.world",
@@ -33,6 +33,14 @@
       "title": "SUI @ ARG",
       "showFrom": "20260711",
       "showUntil": "20260711"
+    },
+    {
+      "league": "golf/pga",
+      "label": "Golf (PGA)",
+      "espnId": "401811955",
+      "title": "Genesis Scottish Open",
+      "showFrom": "20260709",
+      "showUntil": "20260709"
     }
   ],
   "watch": {
