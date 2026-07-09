@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wide World of Sports — Day Selector</title>
+<style>
+  :root{--bg:#0b0f1a;--panel:#121a2b;--line:#22304c;--ink:#e7ecf5;--mut:#8da0c0;--acc:#34d399;--warn:#fbbf24}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,Inter,system-ui,Arial,sans-serif}
+  .wrap{max-width:860px;margin:0 auto;padding:16px 14px 80px}
+  h1{font-size:19px;margin:0 0 2px}
+  .sub{color:var(--mut);font-size:12.5px;margin:0 0 12px}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  button,select{font:700 13px/1 inherit;color:#fff;border:1px solid var(--line);background:var(--panel);border-radius:9px;padding:10px 13px;cursor:pointer}
+  button.primary{background:#0e3b2b;border-color:var(--acc)}
+  button:disabled{opacity:.4;cursor:default}
+  .day{margin:18px 0 6px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--acc);font-weight:800}
+  .lg{margin:10px 0 4px;font-size:12.5px;font-weight:800;color:var(--mut)}
+  .ev{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px;margin:5px 0}
+  .ev input[type=checkbox]{width:19px;height:19px;accent-color:var(--acc);flex-shrink:0}
+  .ev .m{flex:1;min-width:0}
+  .ev .t{font-weight:700;font-size:14px}
+  .ev .d{font-size:12px;color:var(--mut)}
+  .ev select{padding:6px 8px;font-size:12px}
+  .ev.on{border-color:var(--acc)}
+  .out{position:fixed;left:0;right:0;bottom:0;background:#0d1626;border-top:1px solid var(--line);padding:10px 14px;display:flex;gap:8px;align-items:center}
+  .out .n{font-weight:800;color:var(--acc)}
+  textarea{width:100%;height:140px;background:#05070d;color:#9fd;border:1px solid var(--line);border-radius:8px;font:12px ui-monospace,Menlo,monospace;padding:8px}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;padding:16px}
+  .modal.show{display:flex}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;max-width:640px;width:100%}
+  .err{color:#f87171;font-size:12.5px}
+  .note{color:var(--warn);font-size:12px;margin:8px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Wide World of Sports — Day Selector</h1>
+  <p class="sub">Pick today's / this weekend's events for the panel. Output is <code>selections.json</code> — commit it to the repo root and the dashboard (phase 2) picks it up on its next poll.</p>
+  <div class="bar">
+    <select id="range">
+      <option value="1">Today</option>
+      <option value="2">Today + tomorrow</option>
+      <option value="4" selected>Through the weekend</option>
+    </select>
+    <button class="primary" onclick="scan()">SCAN EVENTS</button>
+    <button onclick="showOut()">REVIEW / EXPORT (<span id="cnt">0</span>)</button>
+    <button onclick="toggleStars()">★ FOLLOW TEAMS</button>
+    <button onclick="toggleSelected()">✓ SELECTED (<span id="cntSel">0</span>)</button>
+  </div>
+  <input id="q" placeholder="Search events (team, player, tournament)…" oninput="filterList()"
+    style="width:100%;margin:0 0 10px;background:#05070d;color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font:14px inherit">
+  <div id="stars" style="display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin:0 0 12px">
+    <div style="font-weight:800;margin-bottom:6px">★ Followed teams <span class="d" style="font-weight:400">— shown in Wide World of Sports whenever they play, no re-scan needed</span></div>
+    <input id="tq" placeholder="Filter teams…" oninput="drawTeams()"
+      style="width:100%;margin:0 0 8px;background:#05070d;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:13px inherit">
+    <div id="teamgrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:5px;max-height:320px;overflow:auto"></div>
+  </div>
+  <div id="selected" style="display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin:0 0 12px">
+    <div style="font-weight:800;margin-bottom:8px">✓ Currently selected <span class="d" style="font-weight:400">— everything picked across all sports; tap ✕ to remove</span></div>
+    <div id="selgrid" style="display:flex;flex-direction:column;gap:4px;max-height:360px;overflow:auto"></div>
+  </div>
+  <div id="lgchips" style="display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px"></div>
+  <div id="list"><p class="sub">Press SCAN.</p></div>
+</div>
+
+<div class="out"><span class="n" id="cnt2">0</span>&nbsp;selected <span style="flex:1"></span><button class="primary" onclick="showOut()">EXPORT selections.json</button></div>
+
+<div class="modal" id="modal">
+  <div class="card">
+    <b>selections.json</b>
+    <p class="sub">Commit this file to the repo root (GitHub app → repo → Add file, or replace existing). Panel sees it within ~1 min of Pages deploy.</p>
+    <textarea id="json" readonly></textarea>
+    <div class="bar" style="margin-top:10px;align-items:center">
+      <input id="tok" type="password" placeholder="GitHub token (saved on this device)" style="flex:1;min-width:180px;background:#05070d;color:#9fd;border:1px solid var(--line);border-radius:8px;padding:9px;font:12px ui-monospace,monospace">
+    </div>
+    <div class="bar" style="margin-top:6px">
+      <button class="primary" onclick="publish()" id="pub">PUBLISH TO PANEL</button>
+      <button onclick="copyJson()">COPY</button>
+      <button onclick="dl()">DOWNLOAD</button>
+      <button onclick="document.getElementById('modal').classList.remove('show')">CLOSE</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// League menu: ESPN scoreboard endpoints. Trim/extend freely.
+const LEAGUES = [
+  ['soccer/fifa.world',      'World Cup',        '⚽'],
+  ['golf/pga',               'Golf (PGA)',       '⛳'],
+  ['tennis/atp',             'Tennis (ATP)',     '🎾'],
+  ['tennis/wta',             'Tennis (WTA)',     '🎾'],
+  ['racing/f1',              'Formula 1',        '🏎'],
+  ['football/nfl',           'NFL',              '🏈'],
+  ['hockey/nhl',             'NHL',              '🏒'],
+  ['basketball/nba',         'NBA',              '🏀'],
+  ['baseball/mlb',           'MLB',              '⚾'],
+];
+// R70: MLB added — lets Mike PIN a specific MLB game to the WWS pane (overrides the
+// board's Game-of-the-Day pick). Off by default via league chips if not wanted.
+
+const sel = new Map();   // eventKey -> selection record
+// ── ★ Followed teams (persist on device + published in selections.json) ──
+const STAR_KEY = 'wws-stars';
+const stars = new Map(JSON.parse(localStorage.getItem(STAR_KEY) || '[]'));  // "lg|ABBR" -> {league,abbr,name}
+function saveStars(){ localStorage.setItem(STAR_KEY, JSON.stringify([...stars])); }
+const TEAM_LEAGUES = [
+  ['baseball/mlb','MLB'], ['basketball/nba','NBA'],
+  ['football/nfl','NFL'], ['hockey/nhl','NHL'],
+];
+let _teamCatalog = null;   // [{league,abbr,name}]
+async function loadTeams(){
+  if (_teamCatalog) return _teamCatalog;
+  const all = [];
+  await Promise.all(TEAM_LEAGUES.map(async ([lg,tag])=>{
+    const d = await j(`https://site.api.espn.com/apis/site/v2/sports/${lg}/teams`);
+    const teams = ((((d||{}).sports||[])[0]||{}).leagues||[])[0];
+    for (const t of (teams && teams.teams) || []){
+      const tm = t.team || t;
+      all.push({ league:lg, tag, abbr:tm.abbreviation, name:tm.displayName || tm.name || tm.abbreviation });
+    }
+  }));
+  all.sort((a,b)=> a.tag.localeCompare(b.tag) || a.name.localeCompare(b.name));
+  _teamCatalog = all; return all;
+}
+async function toggleStars(){
+  const box = document.getElementById('stars');
+  const show = box.style.display === 'none';
+  box.style.display = show ? 'block' : 'none';
+  if (show){ document.getElementById('teamgrid').innerHTML = '<span class="d">Loading teams…</span>'; await loadTeams(); drawTeams(); }
+}
+function drawTeams(){
+  const q = (document.getElementById('tq').value || '').toLowerCase();
+  const rows = (_teamCatalog || []).filter(t =>
+    !q || t.name.toLowerCase().includes(q) || (t.abbr||'').toLowerCase().includes(q) || t.tag.toLowerCase().includes(q));
+  document.getElementById('teamgrid').innerHTML = rows.map(t=>{
+    const key = `${t.league}|${t.abbr}`, on = stars.has(key);
+    return `<label class="ev ${on?'on':''}" style="margin:0;padding:7px 9px;gap:7px">
+      <input type="checkbox" ${on?'checked':''} onchange='starToggle(${JSON.stringify(t)}, this)'>
+      <span class="m"><span class="t" style="font-size:13px">${t.name}</span><br><span class="d">${t.tag} · ${t.abbr}</span></span>
+    </label>`;
+  }).join('') || '<span class="d">No teams match.</span>';
+}
+function starToggle(t, box){
+  const key = `${t.league}|${t.abbr}`;
+  if (box.checked) stars.set(key, {league:t.league, abbr:t.abbr, name:t.name});
+  else stars.delete(key);
+  saveStars(); count();
+}
+
+// League filter — chips persist per device; unchecked leagues are never scanned.
+const LG_KEY='wws-leagues';
+const lgOn = new Set(JSON.parse(localStorage.getItem(LG_KEY) || 'null') || LEAGUES.map(l=>l[0]).filter(p=>p!=='racing/f1' && p!=='baseball/mlb'));   // R70: MLB defaults OFF (pin-only; board owns MLB)
+function drawChips(){
+  document.getElementById('lgchips').innerHTML = LEAGUES.map(([p,label,ico])=>
+    `<button onclick="lgToggle('${p}')" style="padding:7px 10px;font-size:12px;border-radius:16px;font-weight:700;
+      ${lgOn.has(p)?'background:#0e3b2b;border:1px solid var(--acc);color:#fff':'background:transparent;border:1px solid var(--line);color:var(--mut)'}">${ico} ${label}</button>`).join('');
+}
+function lgToggle(p){ lgOn.has(p) ? lgOn.delete(p) : lgOn.add(p); localStorage.setItem(LG_KEY, JSON.stringify([...lgOn])); drawChips(); }
+document.addEventListener('DOMContentLoaded', drawChips);
+
+// Same proxy fallback chain the dashboard uses (proven on the panel).
+const PROXIES = [
+  u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+  u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+  u => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
+];
+const ft = (u,ms)=>Promise.race([fetch(u), new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),ms))]);
+async function j(u){
+  try { const r = await ft(u,8000); if (r.ok) return await r.json(); } catch(_){}
+  for (const p of PROXIES){
+    try {
+      const r = await ft(p(u),10000); if (!r.ok) continue;
+      const text = await r.text();
+      const wrap = JSON.parse(text);
+      return wrap.contents ? JSON.parse(wrap.contents) : wrap;
+    } catch(_){}
+  }
+  return null;
+}
+const pad = n => String(n).padStart(2,'0');
+const ymd = d => `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`;
+const dayLabel = d => d.toLocaleDateString(undefined,{weekday:'long', month:'short', day:'numeric'});
+
+let _fails = 0;
+async function scan(){
+  _fails = 0;
+  const days = +document.getElementById('range').value;
+  const list = document.getElementById('list');
+  list.innerHTML = '<p class="sub">Scanning…</p>';
+  const dates = [...Array(days)].map((_,i)=>{const d=new Date(); d.setDate(d.getDate()+i); return d;});
+  const html = [];
+  for (const d of dates){
+    const dk = ymd(d);
+    const dayEvents = [];
+    await Promise.all(LEAGUES.filter(([p])=>lgOn.has(p)).map(async ([path,label,ico])=>{
+      const data = await j(`https://site.api.espn.com/apis/site/v2/sports/${path}/scoreboard?dates=${dk}`);
+      // Golf/tennis/F1: multi-day "events"; team sports: games
+      if (!data) _fails++;
+      for (const ev of (data && data.events) || []){
+        const comps = ev.competitions || [];
+        // Tennis: matches live in ev.groupings[].competitions[] (nCompetitions=0
+        // at event level). Flatten, prefer live/upcoming over completed, cap the
+        // list — a full draw is ~200+ matches. espnId = "eventId:compId".
+        if (path.startsWith('tennis') && (ev.groupings||[]).length){
+          const tourn = ev.shortName || ev.name || label;
+          // R70: MAJORS ONLY — Mike only wants the 4 Slams (tennis is secondary; the
+          // ATP 250s like Nordea Open are pure noise). Skip any non-Slam tournament.
+          const isMajor = /wimbledon|us open|u\.s\. open|french open|roland[- ]?garros|australian open/i.test(`${ev.name||''} ${ev.shortName||''} ${tourn}`);
+          if (!isMajor) continue;
+          const matches = [];
+          for (const g of ev.groupings){
+            for (const comp of (g.competitions||[])){
+              // R70: capture name + world rank/seed (ESPN exposes these inconsistently —
+              // try curatedRank.current, then seed; omit silently if absent). Mike wants
+              // rankings since he doesn't follow tennis closely — helps gauge who matters.
+              const players = (comp.competitors||[]).map(c=>{
+                const a=c.athlete||{}; const name=(a.shortName||a.displayName)||'';
+                const rk = (c.curatedRank&&c.curatedRank.current) || c.seed || (a.rank) || null;
+                const rkNum = (rk!=null && rk!==0 && rk!==99) ? Number(rk) : null;
+                return { name, rk: (rkNum && rkNum>0 && rkNum<=300) ? rkNum : null };
+              }).filter(p=>p.name);
+              const nm = players.map(p=>p.name);
+              if (nm.length !== 2) continue;
+              // R70: skip TBD bracket slots (not a real matchup yet) + doubles (name has "/").
+              if (nm.some(x => /^\s*tbd\s*$/i.test(x) || x.includes('/'))) continue;
+              const nmR = players.map(p => p.rk ? `${p.name} (#${p.rk})` : p.name);
+              const stt = (comp.status&&comp.status.type) || {};
+              const rank = stt.state==='in' ? 0 : stt.state==='pre' ? 1 : 2;   // live, upcoming, done
+              matches.push({ compId:comp.id, nm, nmR, rank,
+                time: (comp.date||ev.date) ? new Date(comp.date||ev.date).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}) : '',
+                note: stt.shortDetail || stt.description || '' });
+            }
+          }
+          matches.sort((a,b)=> a.rank-b.rank || a.time.localeCompare(b.time));
+          for (const m of matches.slice(0, 40)){
+            dayEvents.push({key:`${path}|${ev.id}:${m.compId}|${dk}`, path, league:label+' · '+tourn, ico,
+              id:`${ev.id}:${m.compId}`, title:`${(m.nmR||m.nm)[0]} v ${(m.nmR||m.nm)[1]}`, time:m.time, note:m.note, date:dk});
+          }
+          continue;
+        }
+        const comp = comps[0] || {};
+        const teams = (comp.competitors||[]).map(c=>c.team? (c.team.abbreviation||c.team.shortDisplayName) : (c.athlete&&c.athlete.shortName)||'').filter(Boolean);
+        const title = teams.length===2 ? `${teams[1]} @ ${teams[0]}` : (ev.shortName || ev.name || label);
+        const time = ev.date ? new Date(ev.date).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}) : '';
+        const note = (ev.status&&ev.status.type&&ev.status.type.shortDetail) || '';
+        dayEvents.push({key:`${path}|${ev.id}|${dk}`, path, league:label, ico, id:ev.id, title, time, note, date:dk});
+      }
+    }));
+    if (!dayEvents.length) continue;
+    html.push(`<div class="day">${dayLabel(d)}</div>`);
+    let lastLg='';
+    dayEvents.sort((a,b)=> a.league.localeCompare(b.league) || a.time.localeCompare(b.time));
+    for (const e of dayEvents){
+      if (e.league!==lastLg){ html.push(`<div class="lg">${e.ico} ${e.league}</div>`); lastLg=e.league; }
+      const on = sel.has(e.key);
+      const cid = cssId(e.key); _evReg.set(cid, e);
+      const esc = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+      html.push(`<label class="ev ${on?'on':''}" id="ev-${cid}">
+        <input type="checkbox" ${on?'checked':''} onchange="toggle('${cid}', this)">
+        <span class="m"><span class="t">${esc(e.title)}</span><br><span class="d">${esc(e.time)}${e.note?' · '+esc(e.note):''}</span></span>
+        <select onchange="setWin('${cid}', this.value)" onclick="event.preventDefault()">
+          <option value="day">show that day</option>
+          <option value="weekend">show thru Sunday</option>
+        </select>
+      </label>`);
+    }
+  }
+  list.innerHTML = html.join('') || `<p class="sub">No events found in range. ${_fails} of ${lgOn.size*days} league-day fetches failed${_fails?' — likely CORS-proxy trouble; retry in a minute':''}.</p>`;
+  count();
+}
+function cssId(s){ return s.replace(/[^a-z0-9]/gi,'_'); }
+const _evReg = new Map();   // R40: cssId -> event; inline JSON in quoted attrs broke on apostrophes (O'Connell, "Men's") — handler never attached, checkbox ticked but sel/count never updated
+// Live search over the rendered rows (title + sub-line + league header context).
+function filterList(){
+  const q = (document.getElementById('q').value || '').toLowerCase();
+  document.querySelectorAll('#list .ev').forEach(row=>{
+    const hit = !q || row.textContent.toLowerCase().includes(q);
+    row.style.display = hit ? '' : 'none';
+  });
+  // hide day/league headers with no visible rows under them
+  document.querySelectorAll('#list .day, #list .lg').forEach(h=>{
+    let n = h.nextElementSibling, any = false;
+    while (n && !n.classList.contains('day') && !n.classList.contains('lg')){
+      if (n.classList.contains('ev') && n.style.display !== 'none'){ any = true; break; }
+      n = n.nextElementSibling;
+    }
+    h.style.display = any ? '' : 'none';
+  });
+}
+function toggle(cid, box){
+  const e = _evReg.get(cid); if(!e) return;
+  if (box.checked) sel.set(e.key, {...e, window:'day'});
+  else sel.delete(e.key);
+  document.getElementById('ev-'+cid).classList.toggle('on', box.checked);
+  count();
+}
+function setWin(cid,v){ const e=_evReg.get(cid); const r=e&&sel.get(e.key); if(r) r.window=v; }
+function count(){ const n = sel.size + stars.size;
+  document.getElementById('cnt').textContent = document.getElementById('cnt2').textContent = n;
+  const cs = document.getElementById('cntSel'); if (cs) cs.textContent = sel.size;
+  if (document.getElementById('selected').style.display !== 'none') drawSelected();
+}
+// R70: "Selected" tab — consolidated cross-sport list of current picks w/ remove buttons.
+function toggleSelected(){
+  const el = document.getElementById('selected');
+  const show = el.style.display === 'none';
+  el.style.display = show ? '' : 'none';
+  if (show) drawSelected();
+}
+function drawSelected(){
+  const grid = document.getElementById('selgrid');
+  if (!sel.size){ grid.innerHTML = '<p class="sub" style="margin:4px 0">Nothing selected yet.</p>'; return; }
+  const esc = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  // group by league for a scannable list
+  const rows = [...sel.values()].sort((a,b)=> (a.league||'').localeCompare(b.league||'') || (a.date||'').localeCompare(b.date||''));
+  let lastLg='', html=[];
+  for (const e of rows){
+    if ((e.league||'') !== lastLg){ html.push(`<div class="d" style="font-weight:700;margin:6px 0 2px">${(e.ico||'')} ${esc(e.league||'')}</div>`); lastLg = e.league||''; }
+    html.push(`<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:#05070d;border:1px solid var(--line);border-radius:7px">
+      <span style="flex:1"><span class="t">${esc(e.title)}</span> <span class="d">${esc(e.date||'')}${e.window==='weekend'?' · thru Sun':''}</span></span>
+      <button onclick="removeSel('${cssId(e.key)}')" style="background:#3a1214;color:#ff8a8a;border:1px solid #612;border-radius:6px;padding:3px 9px;font:700 13px inherit;cursor:pointer">✕</button>
+    </div>`);
+  }
+  grid.innerHTML = html.join('');
+}
+function removeSel(cid){
+  const e = _evReg.get(cid); if(!e) return;
+  sel.delete(e.key);
+  // sync the main-list checkbox if it's rendered
+  const box = document.querySelector(`#ev-${cid} input[type=checkbox]`);
+  if (box){ box.checked = false; document.getElementById('ev-'+cid).classList.remove('on'); }
+  count(); drawSelected();
+}
+
+function endDate(rec){
+  if (rec.window==='weekend'){ const d=new Date(); const add=(7-d.getDay())%7; d.setDate(d.getDate()+add); return ymd(d); }
+  return rec.date;
+}
+function showOut(){
+  const out = {
+    v: 1,
+    updated: new Date().toISOString(),
+    events: [...sel.values()].map(r=>({
+      league: r.path, label: r.league, espnId: r.id, title: r.title,
+      showFrom: r.date, showUntil: endDate(r)
+    })),
+    watch: { teams: [...stars.values()] }   // ★ persistent — shown whenever they play
+  };
+  document.getElementById('json').value = JSON.stringify(out, null, 2);
+  document.getElementById('modal').classList.add('show');
+}
+const REPO='mikeylegs/sports', FILE='selections.json';
+document.addEventListener('DOMContentLoaded',()=>{ const t=localStorage.getItem('gh-token'); if(t) document.getElementById('tok').value=t; });
+async function publish(){
+  const btn=document.getElementById('pub');
+  const tok=document.getElementById('tok').value.trim();
+  if(!tok){ btn.textContent='NEED TOKEN ↓'; setTimeout(()=>btn.textContent='PUBLISH TO PANEL',1800); return; }
+  localStorage.setItem('gh-token',tok);
+  btn.disabled=true; btn.textContent='PUBLISHING…';
+  try{
+    const H={Authorization:'Bearer '+tok, Accept:'application/vnd.github+json'};
+    let sha;
+    try{ const r=await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE}`,{headers:H});
+         if(r.ok) sha=(await r.json()).sha; }catch(_){}
+    const body={message:'selections '+new Date().toISOString().slice(0,16),
+      content:btoa(unescape(encodeURIComponent(document.getElementById('json').value)))};
+    if(sha) body.sha=sha;
+    const r=await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE}`,
+      {method:'PUT',headers:H,body:JSON.stringify(body)});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    btn.textContent='✓ PUBLISHED (live in ~1 min)';
+  }catch(e){ btn.textContent='FAILED: '+e.message; }
+  finally{ btn.disabled=false; setTimeout(()=>btn.textContent='PUBLISH TO PANEL',4000); }
+}
+function copyJson(){ navigator.clipboard.writeText(document.getElementById('json').value); }
+function dl(){
+  const b = new Blob([document.getElementById('json').value], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download='selections.json'; a.click();
+}
+</script>
+</body>
+</html>
