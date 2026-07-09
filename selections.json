@@ -1,28 +1,20 @@
 {
   "v": 1,
-  "updated": "2026-07-09T23:52:23.048Z",
+  "updated": "2026-07-09T23:57:48.568Z",
   "events": [
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816088",
-      "title": "PHI @ CIN",
-      "showFrom": "20260709",
-      "showUntil": "20260709"
-    },
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816089",
-      "title": "SEA @ MIA",
-      "showFrom": "20260709",
-      "showUntil": "20260709"
-    },
     {
       "league": "baseball/mlb",
       "label": "MLB",
       "espnId": "401816093",
       "title": "MIL @ STL",
+      "showFrom": "20260709",
+      "showUntil": "20260709"
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816083",
+      "title": "ATH @ DET",
       "showFrom": "20260709",
       "showUntil": "20260709"
     }
