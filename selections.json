@@ -1,30 +1,38 @@
 {
   "v": 1,
-  "updated": "2026-07-08T19:38:55.800Z",
+  "updated": "2026-07-09T04:27:47.887Z",
   "events": [
     {
-      "league": "tennis/atp",
-      "label": "Tennis (ATP) · Wimbledon",
-      "espnId": "188-2026:177351",
-      "title": "N. Djokovic v W. Yibing",
-      "showFrom": "20260708",
-      "showUntil": "20260708"
+      "league": "golf/pga",
+      "label": "Golf (PGA)",
+      "espnId": "401811955",
+      "title": "Genesis Scottish Open",
+      "showFrom": "20260709",
+      "showUntil": "20260709"
     },
     {
       "league": "tennis/atp",
       "label": "Tennis (ATP) · Wimbledon",
       "espnId": "188-2026:177490",
       "title": "N. Djokovic v J. Sinner",
-      "showFrom": "20260708",
-      "showUntil": "20260708"
+      "showFrom": "20260709",
+      "showUntil": "20260709"
+    },
+    {
+      "league": "tennis/atp",
+      "label": "Tennis (ATP) · Wimbledon",
+      "espnId": "188-2026:177489",
+      "title": "A. Zverev v A. Fery",
+      "showFrom": "20260709",
+      "showUntil": "20260709"
     },
     {
       "league": "tennis/atp",
       "label": "Tennis (ATP) · Wimbledon",
       "espnId": "188-2026:177706",
       "title": "C. Gauff v K. Muchova",
-      "showFrom": "20260708",
-      "showUntil": "20260708"
+      "showFrom": "20260709",
+      "showUntil": "20260709"
     },
     {
       "league": "soccer/fifa.world",
