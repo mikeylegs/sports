@@ -1,12 +1,12 @@
 {
   "v": 1,
-  "updated": "2026-07-10T03:00:33.331Z",
+  "updated": "2026-07-10T03:08:10.159Z",
   "events": [
     {
       "league": "baseball/mlb",
       "label": "MLB",
-      "espnId": "401816086",
-      "title": "KC @ NYM",
+      "espnId": "401816090",
+      "title": "LAA @ TEX",
       "showFrom": "20260709",
       "showUntil": "20260709"
     }
