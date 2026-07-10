@@ -1,14 +1,38 @@
 {
   "v": 1,
-  "updated": "2026-07-10T03:08:10.159Z",
+  "updated": "2026-07-10T03:32:51.290Z",
   "events": [
     {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816090",
-      "title": "LAA @ TEX",
+      "league": "golf/pga",
+      "label": "Golf (PGA)",
+      "espnId": "401811955",
+      "title": "Genesis Scottish Open",
       "showFrom": "20260709",
       "showUntil": "20260709"
+    },
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760510",
+      "title": "MAR @ FRA",
+      "showFrom": "20260709",
+      "showUntil": "20260709"
+    },
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760513",
+      "title": "SUI @ ARG",
+      "showFrom": "20260711",
+      "showUntil": "20260711"
+    },
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760512",
+      "title": "ENG @ NOR",
+      "showFrom": "20260711",
+      "showUntil": "20260711"
     }
   ],
   "watch": {
