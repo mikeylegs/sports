@@ -1,7 +1,32 @@
 {
   "v": 1,
-  "updated": "2026-07-10T00:13:36.918Z",
-  "events": [],
+  "updated": "2026-07-10T00:15:09.385Z",
+  "events": [
+    {
+      "league": "golf/pga",
+      "label": "Golf (PGA)",
+      "espnId": "401811956",
+      "title": "ISCO Championship",
+      "showFrom": "20260709",
+      "showUntil": "20260709"
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816090",
+      "title": "LAA @ TEX",
+      "showFrom": "20260709",
+      "showUntil": "20260709"
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816094",
+      "title": "ARI @ SD",
+      "showFrom": "20260709",
+      "showUntil": "20260709"
+    }
+  ],
   "watch": {
     "teams": []
   }
