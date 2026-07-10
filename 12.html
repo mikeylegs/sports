@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WC Semifinal — Matchup Card</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap');
+
+  :root{
+    --nor-red:#EF2B2D; --nor-blue:#00205B;
+    --eng-red:#CE1124; --eng-navy:#0a1a3f;
+    --pitch:#080b12; --pitch2:#0e1420;
+    --gold:#F5C518; --ink:#ffffff; --mut:rgba(255,255,255,0.55);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{background:#000;height:100%;font-family:'Barlow',sans-serif;-webkit-font-smoothing:antialiased}
+
+  /* stage sized to the UCS pane — landscape, leaves room for the bottom scroll */
+  .stage{
+    position:relative; width:100%; max-width:1280px; aspect-ratio:16/8.2;
+    margin:0 auto; overflow:hidden; background:var(--pitch);
+    container-type:inline-size;
+  }
+
+  /* ── the diagonal nation-color split (the signature) ── */
+  .split{position:absolute; inset:0; z-index:0}
+  .split::before,.split::after{content:''; position:absolute; top:0; bottom:0; width:62%}
+  .split::before{ left:0;
+    background:
+      radial-gradient(120% 140% at 0% 50%, rgba(239,43,45,0.28), transparent 60%),
+      linear-gradient(115deg, rgba(0,32,91,0.55) 0%, rgba(0,32,91,0.12) 55%, transparent 72%);
+    clip-path:polygon(0 0, 100% 0, 72% 100%, 0 100%);
+  }
+  .split::after{ right:0;
+    background:
+      radial-gradient(120% 140% at 100% 50%, rgba(206,17,36,0.30), transparent 60%),
+      linear-gradient(-115deg, rgba(10,26,63,0.7) 0%, rgba(10,26,63,0.15) 55%, transparent 72%);
+    clip-path:polygon(28% 0, 100% 0, 100% 100%, 0 100%);
+  }
+  /* faint pitch texture */
+  .stage::after{content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
+    background:repeating-linear-gradient(90deg, rgba(255,255,255,0.014) 0 2px, transparent 2px 64px);
+    mix-blend-mode:overlay;}
+
+  /* ── top eyebrow: competition + round ── */
+  .eyebrow{position:absolute; top:4.2cqw; left:0; right:0; z-index:3;
+    display:flex; align-items:center; justify-content:center; gap:2.2cqw;}
+  .eyebrow .comp{font-family:'Barlow Condensed',sans-serif; font-weight:700; letter-spacing:.42em;
+    font-size:2.15cqw; color:var(--mut); text-transform:uppercase; padding-left:.42em}
+  .eyebrow .dot{width:.5cqw; height:.5cqw; border-radius:50%; background:var(--gold); box-shadow:0 0 12px var(--gold)}
+
+  /* stakes wordmark — the loudest structural element */
+  .stakes{position:absolute; top:8.3cqw; left:0; right:0; z-index:3; text-align:center}
+  .stakes h1{font-family:'Barlow Condensed',sans-serif; font-weight:900; text-transform:uppercase;
+    font-size:8.4cqw; line-height:.82; letter-spacing:.02em;
+    background:linear-gradient(180deg,#fff 30%, #c9d4e8 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    filter:drop-shadow(0 3px 18px rgba(0,0,0,.6));}
+  .stakes .sub{font-family:'Barlow Condensed',sans-serif; font-weight:600; letter-spacing:.34em;
+    font-size:1.6cqw; color:var(--gold); text-transform:uppercase; margin-top:.7cqw}
+
+  /* ── the faceoff row ── */
+  .faceoff{position:absolute; left:0; right:0; top:41%; z-index:3;
+    display:grid; grid-template-columns:1fr auto 1fr; align-items:center; padding:0 4cqw}
+
+  .side{display:flex; align-items:center; gap:2cqw}
+  .side.home{justify-content:flex-start}
+  .side.away{justify-content:flex-end}
+  .side.away .meta{text-align:right}
+
+  .flag{width:11cqw; height:11cqw; border-radius:18%; flex:none;
+    box-shadow:0 6px 26px rgba(0,0,0,.55), inset 0 0 0 .35cqw rgba(255,255,255,.14);
+    background-size:cover; background-position:center; position:relative}
+  .flag::after{content:''; position:absolute; inset:0; border-radius:18%;
+    box-shadow:inset 0 2px 10px rgba(255,255,255,.25), inset 0 -8px 20px rgba(0,0,0,.35)}
+
+  .nation{font-family:'Barlow Condensed',sans-serif; font-weight:800; text-transform:uppercase;
+    font-size:5.6cqw; line-height:.9; letter-spacing:.01em; color:#fff}
+  .rank{font-family:'Barlow',sans-serif; font-weight:600; font-size:1.5cqw; color:var(--mut);
+    letter-spacing:.06em; margin-top:.5cqw}
+  .rank b{color:var(--gold); font-weight:700}
+
+  /* the VS collision mark */
+  .vs{display:flex; flex-direction:column; align-items:center; gap:.4cqw; padding:0 1.5cqw}
+  .vs .v{font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:4.6cqw;
+    color:#fff; line-height:.8; letter-spacing:-.02em;
+    text-shadow:0 0 26px rgba(245,197,24,.35)}
+  .vs .rule{width:.28cqw; height:5cqw; background:linear-gradient(180deg,transparent,var(--gold),transparent)}
+
+  /* ── form guides: momentum bars ── */
+  .forms{position:absolute; left:0; right:0; top:70.5%; z-index:3;
+    display:grid; grid-template-columns:1fr auto 1fr; align-items:center; padding:0 4.5cqw; gap:2cqw}
+  .form{display:flex; gap:.65cqw}
+  .form.away{justify-content:flex-end}
+  .form .cap{font-family:'Barlow Condensed',sans-serif; font-weight:700; letter-spacing:.3em;
+    font-size:1.25cqw; color:var(--mut); align-self:center; text-transform:uppercase}
+  .form.home .cap{margin-right:.6cqw}
+  .form.away .cap{margin-left:.6cqw; order:2}
+  .pill{width:2.3cqw; height:2.3cqw; border-radius:.5cqw; display:grid; place-items:center;
+    font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:1.35cqw; color:#fff;
+    opacity:0; transform:translateY(.6cqw) scale(.8); animation:pop .5s cubic-bezier(.2,.8,.2,1) forwards}
+  .pill.w{background:linear-gradient(180deg,#1f9d55,#137a3f)}
+  .pill.d{background:linear-gradient(180deg,#8a8f9a,#5c6270)}
+  .pill.l{background:linear-gradient(180deg,#3a4150,#2a303c); color:rgba(255,255,255,.5)}
+  @keyframes pop{to{opacity:1; transform:translateY(0) scale(1)}}
+
+  .forms .mid{font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:1.3cqw;
+    color:var(--mut); letter-spacing:.24em; text-transform:uppercase; text-align:center; white-space:nowrap}
+
+  /* ── bottom bug: kickoff + broadcast ── */
+  .bug{position:absolute; left:0; right:0; bottom:0; z-index:4; height:11cqw;
+    display:flex; align-items:center; justify-content:space-between; padding:0 4cqw;
+    background:linear-gradient(0deg, rgba(0,0,0,.72) 0%, rgba(0,0,0,.35) 55%, transparent 100%)}
+  .kick{display:flex; align-items:baseline; gap:1.3cqw}
+  .kick .day{font-family:'Barlow Condensed',sans-serif; font-weight:700; letter-spacing:.2em;
+    font-size:1.7cqw; color:var(--mut); text-transform:uppercase}
+  .kick .time{font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:4.4cqw;
+    color:#fff; line-height:.8; letter-spacing:.01em}
+  .kick .zone{font-family:'Barlow',sans-serif; font-weight:600; font-size:1.4cqw; color:var(--mut)}
+  .venue{font-family:'Barlow',sans-serif; font-weight:500; font-size:1.35cqw; color:var(--mut);
+    letter-spacing:.04em; text-align:center; line-height:1.3}
+  .venue b{color:#fff; font-weight:700; display:block; font-size:1.5cqw; letter-spacing:.02em}
+  .cast{display:flex; align-items:center; gap:1cqw}
+  .cast .net{font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:1.7cqw;
+    color:#0a0e17; background:#fff; padding:.35cqw .9cqw; border-radius:.5cqw; letter-spacing:.04em}
+  .cast .live{font-family:'Barlow Condensed',sans-serif; font-weight:700; letter-spacing:.24em;
+    font-size:1.3cqw; color:var(--gold); text-transform:uppercase}
+
+  /* ambient breathing glow behind the VS */
+  .pulse{position:absolute; left:50%; top:46%; transform:translate(-50%,-50%); z-index:1;
+    width:26cqw; height:26cqw; border-radius:50%; pointer-events:none;
+    background:radial-gradient(circle, rgba(245,197,24,.16), transparent 65%);
+    animation:breathe 4.5s ease-in-out infinite}
+  @keyframes breathe{0%,100%{opacity:.5; transform:translate(-50%,-50%) scale(.92)}
+    50%{opacity:1; transform:translate(-50%,-50%) scale(1.06)}}
+
+  @media (prefers-reduced-motion: reduce){
+    .pill{animation:none; opacity:1; transform:none}
+    .pulse{animation:none}
+  }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="split"></div>
+    <div class="pulse"></div>
+
+    <div class="eyebrow">
+      <span class="dot"></span>
+      <span class="comp">FIFA World Cup</span>
+      <span class="dot"></span>
+    </div>
+
+    <div class="stakes">
+      <h1>Semifinal</h1>
+      <div class="sub">Winner advances to the final</div>
+    </div>
+
+    <div class="faceoff">
+      <div class="side home">
+        <div class="flag" style="background-image:url('https://flagcdn.com/w320/no.png')"></div>
+        <div class="meta">
+          <div class="nation">Norway</div>
+          <div class="rank">FIFA <b>#12</b></div>
+        </div>
+      </div>
+      <div class="vs">
+        <div class="v">VS</div>
+      </div>
+      <div class="side away">
+        <div class="meta">
+          <div class="nation">England</div>
+          <div class="rank"><b>#4</b> FIFA</div>
+        </div>
+        <div class="flag" style="background-image:url('https://flagcdn.com/w320/gb-eng.png')"></div>
+      </div>
+    </div>
+
+    <div class="forms">
+      <div class="form home">
+        <span class="cap">Form</span>
+        <span class="pill w" style="animation-delay:.05s">W</span>
+        <span class="pill w" style="animation-delay:.12s">W</span>
+        <span class="pill l" style="animation-delay:.19s">L</span>
+        <span class="pill w" style="animation-delay:.26s">W</span>
+        <span class="pill w" style="animation-delay:.33s">W</span>
+      </div>
+      <div class="mid">Last 5</div>
+      <div class="form away">
+        <span class="cap">Form</span>
+        <span class="pill w" style="animation-delay:.05s">W</span>
+        <span class="pill w" style="animation-delay:.12s">W</span>
+        <span class="pill w" style="animation-delay:.19s">W</span>
+        <span class="pill d" style="animation-delay:.26s">D</span>
+        <span class="pill w" style="animation-delay:.33s">W</span>
+      </div>
+    </div>
+
+    <div class="bug">
+      <div class="kick">
+        <span class="day">Sat 7 / 11</span>
+        <span class="time">5:00</span>
+        <span class="zone">PM ET</span>
+      </div>
+      <div class="venue">
+        <b>MetLife Stadium</b>
+        East Rutherford, NJ
+      </div>
+      <div class="cast">
+        <span class="net">FOX</span>
+        <span class="live">Kickoff soon</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
