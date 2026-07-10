@@ -1,7 +1,16 @@
 {
   "v": 1,
-  "updated": "2026-07-10T00:06:25.090Z",
-  "events": [],
+  "updated": "2026-07-10T00:10:34.784Z",
+  "events": [
+    {
+      "league": "golf/pga",
+      "label": "Golf (PGA)",
+      "espnId": "401811955",
+      "title": "Genesis Scottish Open",
+      "showFrom": "20260709",
+      "showUntil": "20260709"
+    }
+  ],
   "watch": {
     "teams": []
   }
