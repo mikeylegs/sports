@@ -1,7 +1,64 @@
 {
   "v": 1,
-  "updated": "2026-07-10T13:06:26.445Z",
-  "events": [],
+  "updated": "2026-07-10T13:32:32.323Z",
+  "events": [
+    {
+      "league": "golf/pga",
+      "label": "Golf (PGA)",
+      "espnId": "401811955",
+      "title": "Genesis Scottish Open",
+      "showFrom": "20260710",
+      "showUntil": "20260710"
+    },
+    {
+      "league": "tennis/atp,tennis/wta",
+      "label": "Tennis · Wimbledon",
+      "espnId": "188-2026:177490",
+      "title": "N. Djokovic (#7) v J. Sinner (#1)",
+      "showFrom": "20260710",
+      "showUntil": "20260710"
+    },
+    {
+      "league": "tennis/atp,tennis/wta",
+      "label": "Tennis · Wimbledon",
+      "espnId": "188-2026:177489",
+      "title": "A. Zverev (#2) v A. Fery",
+      "showFrom": "20260710",
+      "showUntil": "20260710"
+    },
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760511",
+      "title": "Belgium @ Spain",
+      "showFrom": "20260710",
+      "showUntil": "20260710"
+    },
+    {
+      "league": "tennis/atp,tennis/wta",
+      "label": "Tennis · Wimbledon",
+      "espnId": "188-2026:177707",
+      "title": "L. Noskova (#9) v K. Muchova (#10)",
+      "showFrom": "20260711",
+      "showUntil": "20260711"
+    },
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760512",
+      "title": "England @ Norway",
+      "showFrom": "20260711",
+      "showUntil": "20260711"
+    },
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760513",
+      "title": "Switzerland @ Argentina",
+      "showFrom": "20260711",
+      "showUntil": "20260711"
+    }
+  ],
   "watch": {
     "teams": []
   }
