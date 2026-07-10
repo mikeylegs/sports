@@ -1,12 +1,20 @@
 {
   "v": 1,
-  "updated": "2026-07-10T13:32:32.323Z",
+  "updated": "2026-07-10T23:16:25.787Z",
   "events": [
     {
-      "league": "golf/pga",
-      "label": "Golf (PGA)",
-      "espnId": "401811955",
-      "title": "Genesis Scottish Open",
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816097",
+      "title": "Chicago Cubs @ Cincinnati Reds",
+      "showFrom": "20260710",
+      "showUntil": "20260710"
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816098",
+      "title": "Cleveland Guardians @ Miami Marlins",
       "showFrom": "20260710",
       "showUntil": "20260710"
     },
@@ -33,14 +41,6 @@
       "title": "Belgium @ Spain",
       "showFrom": "20260710",
       "showUntil": "20260710"
-    },
-    {
-      "league": "tennis/atp,tennis/wta",
-      "label": "Tennis · Wimbledon",
-      "espnId": "188-2026:177707",
-      "title": "L. Noskova (#9) v K. Muchova (#10)",
-      "showFrom": "20260711",
-      "showUntil": "20260711"
     },
     {
       "league": "soccer/fifa.world",
