@@ -1,7 +1,16 @@
 {
   "v": 1,
-  "updated": "2026-07-10T02:58:19.137Z",
-  "events": [],
+  "updated": "2026-07-10T03:00:33.331Z",
+  "events": [
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816086",
+      "title": "KC @ NYM",
+      "showFrom": "20260709",
+      "showUntil": "20260709"
+    }
+  ],
   "watch": {
     "teams": []
   }
