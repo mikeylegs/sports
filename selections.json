@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-07-11T06:13:35.871Z",
+  "updated": "2026-07-11T22:58:43.643Z",
   "events": [
     {
       "league": "tennis/atp,tennis/wta",
@@ -17,6 +17,30 @@
       "title": "A. Zverev (#2) v J. Sinner (#1)",
       "showFrom": "20260712",
       "showUntil": "20260712"
+    },
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760512",
+      "title": "England @ Norway",
+      "showFrom": "20260711",
+      "showUntil": "20260711"
+    },
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760513",
+      "title": "Switzerland @ Argentina",
+      "showFrom": "20260711",
+      "showUntil": "20260711"
+    },
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760514",
+      "title": "Spain @ France",
+      "showFrom": "20260714",
+      "showUntil": "20260714"
     }
   ],
   "watch": {
