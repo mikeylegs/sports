@@ -1,20 +1,12 @@
 {
   "v": 1,
-  "updated": "2026-07-10T23:16:25.787Z",
+  "updated": "2026-07-11T00:10:51.578Z",
   "events": [
     {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816097",
-      "title": "Chicago Cubs @ Cincinnati Reds",
-      "showFrom": "20260710",
-      "showUntil": "20260710"
-    },
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816098",
-      "title": "Cleveland Guardians @ Miami Marlins",
+      "league": "golf/pga",
+      "label": "Golf (PGA)",
+      "espnId": "401811955",
+      "title": "Genesis Scottish Open",
       "showFrom": "20260710",
       "showUntil": "20260710"
     },
