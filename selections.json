@@ -1,12 +1,12 @@
 {
   "v": 1,
-  "updated": "2026-07-11T01:24:46.244Z",
+  "updated": "2026-07-11T01:25:33.061Z",
   "events": [
     {
-      "league": "tennis/atp,tennis/wta",
-      "label": "Tennis · Wimbledon",
-      "espnId": "188-2026:177490",
-      "title": "N. Djokovic (#7) v J. Sinner (#1)",
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760511",
+      "title": "Belgium @ Spain",
       "showFrom": "20260710",
       "showUntil": "20260710"
     }
