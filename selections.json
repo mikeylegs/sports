@@ -1,15 +1,7 @@
 {
   "v": 1,
-  "updated": "2026-07-11T00:10:51.578Z",
+  "updated": "2026-07-11T01:10:21.839Z",
   "events": [
-    {
-      "league": "golf/pga",
-      "label": "Golf (PGA)",
-      "espnId": "401811955",
-      "title": "Genesis Scottish Open",
-      "showFrom": "20260710",
-      "showUntil": "20260710"
-    },
     {
       "league": "tennis/atp,tennis/wta",
       "label": "Tennis · Wimbledon",
@@ -25,30 +17,6 @@
       "title": "A. Zverev (#2) v A. Fery",
       "showFrom": "20260710",
       "showUntil": "20260710"
-    },
-    {
-      "league": "soccer/fifa.world",
-      "label": "World Cup",
-      "espnId": "760511",
-      "title": "Belgium @ Spain",
-      "showFrom": "20260710",
-      "showUntil": "20260710"
-    },
-    {
-      "league": "soccer/fifa.world",
-      "label": "World Cup",
-      "espnId": "760512",
-      "title": "England @ Norway",
-      "showFrom": "20260711",
-      "showUntil": "20260711"
-    },
-    {
-      "league": "soccer/fifa.world",
-      "label": "World Cup",
-      "espnId": "760513",
-      "title": "Switzerland @ Argentina",
-      "showFrom": "20260711",
-      "showUntil": "20260711"
     }
   ],
   "watch": {
