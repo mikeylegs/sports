@@ -1,15 +1,7 @@
 {
   "v": 1,
-  "updated": "2026-07-11T23:40:30.283Z",
+  "updated": "2026-07-11T23:44:57.446Z",
   "events": [
-    {
-      "league": "tennis/atp,tennis/wta",
-      "label": "Tennis · Wimbledon",
-      "espnId": "188-2026:177707",
-      "title": "L. Noskova (#9) v K. Muchova (#10)",
-      "showFrom": "20260711",
-      "showUntil": "20260711"
-    },
     {
       "league": "soccer/fifa.world",
       "label": "World Cup",
@@ -17,30 +9,6 @@
       "title": "England @ Norway",
       "showFrom": "20260711",
       "showUntil": "20260711"
-    },
-    {
-      "league": "soccer/fifa.world",
-      "label": "World Cup",
-      "espnId": "760513",
-      "title": "Switzerland @ Argentina",
-      "showFrom": "20260711",
-      "showUntil": "20260711"
-    },
-    {
-      "league": "tennis/atp,tennis/wta",
-      "label": "Tennis · Wimbledon",
-      "espnId": "188-2026:177491",
-      "title": "A. Zverev (#2) v J. Sinner (#1)",
-      "showFrom": "20260712",
-      "showUntil": "20260712"
-    },
-    {
-      "league": "soccer/fifa.world",
-      "label": "World Cup",
-      "espnId": "760514",
-      "title": "Spain @ France",
-      "showFrom": "20260714",
-      "showUntil": "20260714"
     }
   ],
   "watch": {
