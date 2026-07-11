@@ -1,28 +1,12 @@
 {
   "v": 1,
-  "updated": "2026-07-11T01:26:50.552Z",
+  "updated": "2026-07-11T02:35:14.864Z",
   "events": [
     {
-      "league": "soccer/fifa.world",
-      "label": "World Cup",
-      "espnId": "760511",
-      "title": "Belgium @ Spain",
-      "showFrom": "20260710",
-      "showUntil": "20260710"
-    },
-    {
-      "league": "tennis/atp,tennis/wta",
-      "label": "Tennis · Wimbledon",
-      "espnId": "188-2026:177489",
-      "title": "A. Zverev (#2) v A. Fery",
-      "showFrom": "20260710",
-      "showUntil": "20260710"
-    },
-    {
-      "league": "tennis/atp,tennis/wta",
-      "label": "Tennis · Wimbledon",
-      "espnId": "188-2026:177490",
-      "title": "N. Djokovic (#7) v J. Sinner (#1)",
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816105",
+      "title": "Athletics @ Chicago White Sox",
       "showFrom": "20260710",
       "showUntil": "20260710"
     }
