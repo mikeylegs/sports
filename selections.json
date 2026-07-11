@@ -1,14 +1,30 @@
 {
   "v": 1,
-  "updated": "2026-07-11T02:35:14.864Z",
+  "updated": "2026-07-11T03:39:07.343Z",
   "events": [
     {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816105",
-      "title": "Athletics @ Chicago White Sox",
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760511",
+      "title": "Belgium @ Spain",
       "showFrom": "20260710",
       "showUntil": "20260710"
+    },
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760512",
+      "title": "England @ Norway",
+      "showFrom": "20260711",
+      "showUntil": "20260711"
+    },
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760513",
+      "title": "Switzerland @ Argentina",
+      "showFrom": "20260711",
+      "showUntil": "20260711"
     }
   ],
   "watch": {
