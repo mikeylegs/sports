@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-07-11T22:58:43.643Z",
+  "updated": "2026-07-11T23:40:30.283Z",
   "events": [
     {
       "league": "tennis/atp,tennis/wta",
@@ -9,14 +9,6 @@
       "title": "L. Noskova (#9) v K. Muchova (#10)",
       "showFrom": "20260711",
       "showUntil": "20260711"
-    },
-    {
-      "league": "tennis/atp,tennis/wta",
-      "label": "Tennis · Wimbledon",
-      "espnId": "188-2026:177491",
-      "title": "A. Zverev (#2) v J. Sinner (#1)",
-      "showFrom": "20260712",
-      "showUntil": "20260712"
     },
     {
       "league": "soccer/fifa.world",
@@ -33,6 +25,14 @@
       "title": "Switzerland @ Argentina",
       "showFrom": "20260711",
       "showUntil": "20260711"
+    },
+    {
+      "league": "tennis/atp,tennis/wta",
+      "label": "Tennis · Wimbledon",
+      "espnId": "188-2026:177491",
+      "title": "A. Zverev (#2) v J. Sinner (#1)",
+      "showFrom": "20260712",
+      "showUntil": "20260712"
     },
     {
       "league": "soccer/fifa.world",
