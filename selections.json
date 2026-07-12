@@ -1,12 +1,12 @@
 {
   "v": 1,
-  "updated": "2026-07-12T22:35:39.535Z",
+  "updated": "2026-07-12T22:53:40.165Z",
   "events": [
     {
       "league": "baseball/mlb",
       "label": "MLB",
-      "espnId": "401816140",
-      "title": "Toronto Blue Jays @ San Diego Padres",
+      "espnId": "401816138",
+      "title": "Arizona Diamondbacks @ Los Angeles Dodgers",
       "showFrom": "20260712",
       "showUntil": "20260712"
     }
