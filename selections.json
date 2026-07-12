@@ -1,15 +1,7 @@
 {
   "v": 1,
-  "updated": "2026-07-12T20:21:04.975Z",
+  "updated": "2026-07-12T20:24:54.364Z",
   "events": [
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816131",
-      "title": "New York Yankees @ Washington Nationals",
-      "showFrom": "20260712",
-      "showUntil": "20260712"
-    },
     {
       "league": "baseball/mlb",
       "label": "MLB",
