@@ -1,28 +1,12 @@
 {
   "v": 1,
-  "updated": "2026-07-12T20:24:54.364Z",
+  "updated": "2026-07-12T22:35:39.535Z",
   "events": [
     {
       "league": "baseball/mlb",
       "label": "MLB",
-      "espnId": "401816128",
-      "title": "Cleveland Guardians @ Miami Marlins",
-      "showFrom": "20260712",
-      "showUntil": "20260712"
-    },
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816132",
-      "title": "Philadelphia Phillies @ Detroit Tigers",
-      "showFrom": "20260712",
-      "showUntil": "20260712"
-    },
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816133",
-      "title": "Seattle Mariners @ Tampa Bay Rays",
+      "espnId": "401816140",
+      "title": "Toronto Blue Jays @ San Diego Padres",
       "showFrom": "20260712",
       "showUntil": "20260712"
     }
