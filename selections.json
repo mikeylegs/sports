@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-07-12T11:57:11.374Z",
+  "updated": "2026-07-12T11:57:46.265Z",
   "events": [
     {
       "league": "tennis/atp,tennis/wta",
@@ -25,6 +25,14 @@
       "title": "Argentina @ England",
       "showFrom": "20260715",
       "showUntil": "20260715"
+    },
+    {
+      "league": "golf/pga",
+      "label": "Golf (PGA)",
+      "espnId": "401811955",
+      "title": "Genesis Scottish Open",
+      "showFrom": "20260712",
+      "showUntil": "20260712"
     }
   ],
   "watch": {
