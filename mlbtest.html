@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>MLB VIDEO TEST — standalone</title>
+<style>
+  html,body{margin:0;background:#000;color:#0f0;font:14px/1.6 monospace;}
+  #log{padding:12px;white-space:pre-wrap;}
+  video{width:100%;max-height:70vh;background:#000;display:block;}
+  .big{font-size:20px;font-weight:bold;}
+</style>
+</head>
+<body>
+<div id="log">MLB VIDEO TEST (standalone — no dashboard, nothing else running)
+</div>
+<video id="v" autoplay controls playsinline></video>
+<script>
+const TEAM = 147;                        // NYY
+const box = document.getElementById('log');
+const log = m => { box.textContent += '\n' + m; };
+
+const WORKER = u => 'https://sports.michael-legra.workers.dev/?url=' + encodeURIComponent(u);
+
+async function getText(url) {
+  try { const r = await fetch(url); if (r.ok) return await r.text(); } catch(e){ log('  (direct failed: ' + e.message + ' — trying worker)'); }
+  try { const r = await fetch(WORKER(url)); if (r.ok) return await r.text(); } catch(e){ log('  (worker failed: ' + e.message + ')'); }
+  return null;
+}
+
+const kwOf = it => (it.keywordsAll || it.keywords || [])
+  .map(k => String(k.value || k.displayName || '').toLowerCase()).filter(Boolean);
+const isRecap     = it => kwOf(it).some(k => k === 'mlb_recap' || k === 'game-recap');
+const isCondensed = it => kwOf(it).some(k => k.startsWith('condensed'));
+
+function pickMp4(it) {
+  const mp4s = (it.playbacks || []).filter(p => /\.mp4(\?|$)/i.test(p.url || ''));
+  if (!mp4s.length) return null;
+  const score = p => {
+    const u = (p.url || '') + ' ' + (p.name || '');
+    if (/mp4avc|_4000k/i.test(u)) return 3;
+    if (/1280x720/i.test(u) && !/16000k/i.test(u)) return 2;
+    if (/16000k|highbit/i.test(u)) return 0;
+    return 1;
+  };
+  return mp4s.slice().sort((a,b) => score(b) - score(a))[0].url;
+}
+
+(async () => {
+  const d = n => new Date(Date.now() - n*864e5).toISOString().slice(0,10);
+  log('1. finding last final game for teamId ' + TEAM + '...');
+  const sched = await getText(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${TEAM}&startDate=${d(3)}&endDate=${d(0)}`);
+  if (!sched) return log('   FAILED to reach statsapi.');
+  const games = (JSON.parse(sched).dates || []).flatMap(x => x.games || [])
+    .filter(g => g.status?.abstractGameState === 'Final')
+    .sort((a,b) => new Date(b.gameDate) - new Date(a.gameDate));
+  if (!games.length) return log('   no final games found.');
+  const pk = games[0].gamePk;
+  log('   gamePk: ' + pk);
+
+  log('2. fetching content...');
+  const raw = await getText(`https://statsapi.mlb.com/api/v1/game/${pk}/content`);
+  if (!raw) return log('   FAILED to reach content endpoint.');
+  const items = JSON.parse(raw)?.highlights?.highlights?.items || [];
+  log('   clips: ' + items.length);
+
+  const recap = items.find(it => isRecap(it) && !isCondensed(it));
+  if (!recap) return log('   no recap found.');
+  const url = pickMp4(recap);
+  log('3. RECAP: ' + (recap.headline || recap.title));
+  log('   duration: ' + recap.duration);
+  log('   mp4: ' + url);
+
+  const v = document.getElementById('v');
+  v.onerror   = () => log('\n⚠⚠ VIDEO ERROR — code ' + (v.error && v.error.code) + ' — mp4 will NOT play in this browser');
+  v.onplaying = () => log('\n★★ VIDEO PLAYING — end-to-end confirmed (video + audio path)');
+  v.onwaiting = () => log('   ...buffering');
+  v.onended   = () => log('\n(clip ended)');
+  log('4. loading video (NOT muted — listen for audio)...');
+  v.src = url;
+  v.play().catch(e => log('   play() rejected: ' + e.message + '  → autoplay policy?'));
+})();
+</script>
+</body>
+</html>
