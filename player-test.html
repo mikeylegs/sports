@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>playMedia() — sandbox</title>
+<style>
+  html,body{margin:0;background:#05070d;color:#cbd5e1;font:13px/1.6 monospace;}
+  #wrap{display:flex;height:100vh;}
+  #log{width:38%;padding:14px;overflow:auto;white-space:pre-wrap;border-right:1px solid #1e293b;}
+  #stage{flex:1;position:relative;background:#000;display:flex;align-items:center;justify-content:center;}
+  #stage video,#stage iframe{width:100%;height:100%;border:0;background:#000;}
+  .ok{color:#4ade80}.bad{color:#f87171}.warn{color:#fbbf24}.hi{color:#a5b4fc;font-weight:bold}
+  #tko{position:absolute;inset:0;background:rgba(127,29,29,.94);display:none;
+       align-items:center;justify-content:center;flex-direction:column;color:#fecaca;
+       font:bold 30px/1.4 monospace;text-align:center;z-index:5;}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="log"></div>
+  <div id="stage">
+    <div id="tko">⚡ TAKEOVER<div style="font-size:15px;margin-top:12px;font-weight:normal">
+      (interrupting the media — resume test in progress)</div></div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════════════════
+   playMedia(el, media)  —  THE SOURCE-AGNOSTIC PLAYER.
+
+   ★ THE CONTRACT (this is the thing UCS must inherit UNCHANGED):
+       media = { kind:'mp4'|'iframe', url, title, exact, source }
+     The CARD declares what it wants. A RESOLVER answers with a typed descriptor.
+     playMedia supplies the matching element. It NEVER learns what MLB is —
+     no `if (isMLB)` anywhere. That special-case is exactly the hack UCS would
+     have to undo, so it does not get written.
+
+   Returns a HANDLE: { pause, resume, stop, at, kind }.
+     - pause()/resume() are the TAKEOVER path. For an mp4 this is real: currentTime
+       survives, we resume where we left off. For an iframe it is NOT — YouTube in a
+       plain embed is a black box, so pause() tears it down and resume() reloads from
+       the start. That asymmetry is REAL and the system must know it, not paper over it.
+   ══════════════════════════════════════════════════════════════════════════════ */
+function playMedia(el, media, hooks) {
+  hooks = hooks || {};
+  el.querySelectorAll('video,iframe').forEach(n => n.remove());
+  if (!media || !media.url) return null;
+
+  if (media.kind === 'mp4') {
+    const v = document.createElement('video');
+    v.src = media.url;
+    v.autoplay = true;
+    v.playsInline = true;
+    v.controls = false;
+    v.preload = 'auto';
+    v.onplaying = () => hooks.onPlay && hooks.onPlay();
+    v.onended   = () => hooks.onEnd && hooks.onEnd();
+    v.onerror   = () => hooks.onError && hooks.onError('video error code ' + (v.error && v.error.code));
+    el.appendChild(v);
+    // Autoplay policy: Chrome blocks UNMUTED autoplay without a user gesture, but
+    // ALWAYS allows it muted. Try with sound; on rejection, fall back to muted so
+    // playback still happens. The caller is TOLD which it got — it does not guess.
+    v.play().then(() => hooks.onSound && hooks.onSound(true)).catch(() => {
+      v.muted = true;
+      v.play()
+        .then(() => hooks.onSound && hooks.onSound(false))
+        .catch(e => hooks.onBlocked && hooks.onBlocked(e.message));
+    });
+    return {
+      kind: 'mp4',
+      resumable: true,
+      at: () => v.currentTime,
+      pause:  () => { v.pause(); },
+      resume: () => { v.play().catch(() => {}); },
+      stop:   () => { v.pause(); v.remove(); }
+    };
+  }
+
+  if (media.kind === 'iframe') {
+    const f = document.createElement('iframe');
+    f.src = media.url;
+    f.allow = 'autoplay; encrypted-media';
+    f.setAttribute('frameborder', '0');
+    el.appendChild(f);
+    hooks.onPlay && setTimeout(() => hooks.onPlay(), 1200);   // no real event available
+    let src = media.url;
+    return {
+      kind: 'iframe',
+      resumable: false,                       // ← the honest bit
+      at: () => null,
+      pause:  () => { f.src = 'about:blank'; },
+      resume: () => { f.src = src; },         // restarts from 0 — cannot seek
+      stop:   () => { f.remove(); }
+    };
+  }
+  hooks.onError && hooks.onError('unknown media kind: ' + media.kind);
+  return null;
+}
+
+/* ── test rig ──────────────────────────────────────────────────────────────── */
+const L = document.getElementById('log');
+const stage = document.getElementById('stage');
+const tko = document.getElementById('tko');
+const log = (m, c) => {
+  const d = document.createElement('div');
+  if (c) d.className = c;
+  d.textContent = m;
+  L.appendChild(d); L.scrollTop = L.scrollHeight;
+};
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+const WORKER = u => 'https://sports.michael-legra.workers.dev/?url=' + encodeURIComponent(u);
+async function getText(url) {
+  try { const r = await fetch(url); if (r.ok) return await r.text(); } catch (e) {}
+  try { const r = await fetch(WORKER(url)); if (r.ok) return await r.text(); } catch (e) {}
+  return null;
+}
+const kwOf = it => (it.keywordsAll || it.keywords || [])
+  .map(k => String(k.value || k.displayName || '').toLowerCase()).filter(Boolean);
+const isRecap = it => kwOf(it).some(k => k === 'mlb_recap' || k === 'game-recap');
+const isCond  = it => kwOf(it).some(k => k.startsWith('condensed'));
+function pickMp4(it) {
+  const m = (it.playbacks || []).filter(p => /\.mp4(\?|$)/i.test(p.url || ''));
+  if (!m.length) return null;
+  const sc = p => { const u = (p.url || '') + ' ' + (p.name || '');
+    if (/mp4avc|_4000k/i.test(u)) return 3;
+    if (/1280x720/i.test(u) && !/16000k/i.test(u)) return 2;
+    if (/16000k|highbit/i.test(u)) return 0; return 1; };
+  return m.slice().sort((a, b) => sc(b) - sc(a))[0].url;
+}
+
+// the MLB resolver, same shape as R111 — returns the TYPED descriptor
+async function resolveMlb(teamId) {
+  const d = n => new Date(Date.now() - n * 864e5).toISOString().slice(0, 10);
+  const s = await getText(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${teamId}&startDate=${d(4)}&endDate=${d(0)}`);
+  if (!s) return null;
+  const gs = (JSON.parse(s).dates || []).flatMap(x => x.games || [])
+    .filter(g => g.status?.abstractGameState === 'Final')
+    .sort((a, b) => new Date(b.gameDate) - new Date(a.gameDate));
+  if (!gs.length) return null;
+  const raw = await getText(`https://statsapi.mlb.com/api/v1/game/${gs[0].gamePk}/content`);
+  if (!raw) return null;
+  const items = JSON.parse(raw)?.highlights?.highlights?.items || [];
+  const r = items.find(i => isRecap(i) && !isCond(i));
+  if (!r) return null;
+  const url = pickMp4(r);
+  if (!url) return null;
+  return { kind: 'mp4', url, title: r.headline || r.title, duration: r.duration,
+           exact: true, source: 'mlb', gamePk: gs[0].gamePk };
+}
+
+(async () => {
+  log('playMedia() SANDBOX', 'hi');
+  log('proving the abstraction BEFORE it touches dashboard.src\n');
+
+  // ── TEST 1: MLB mp4 through playMedia ────────────────────────────────────
+  log('── TEST 1 · mp4 (MLB, exact) ──', 'hi');
+  const media = await resolveMlb(147);
+  if (!media) { log('resolver returned null — cannot continue', 'bad'); return; }
+  log('  ' + media.title);
+  log('  kind=' + media.kind + '  exact=' + media.exact + '  source=' + media.source);
+
+  let played = false, blocked = false;
+  const h = playMedia(stage, media, {
+    onPlay:    () => { played = true; log('  ✓ PLAYING', 'ok'); },
+    onSound:   (withSound) => withSound
+      ? log('  ✓ AUTOPLAY WITH SOUND — kiosk autoplay flag is active.', 'ok')
+      : log('  ⚠ autoplay allowed only MUTED (normal Chrome window). Playback proceeds;\n'
+          + '    audio needs the kiosk\'s --autoplay-policy flag. Not a blocker for TEST 2.', 'warn'),
+    onBlocked: (m) => { blocked = true; log('  ✗ BLOCKED EVEN MUTED: ' + m, 'bad'); },
+    onError:   (m) => log('  ✗ ' + m, 'bad')
+  });
+  if (!h) { log('playMedia returned no handle', 'bad'); return; }
+  log('  handle: kind=' + h.kind + '  resumable=' + h.resumable);
+
+  await wait(9000);
+
+  // ── TEST 2: interrupt → takeover → resume ────────────────────────────────
+  log('\n── TEST 2 · takeover interrupt + resume ──', 'hi');
+  const before = h.at();
+  log('  position before interrupt: ' + (before || 0).toFixed(1) + 's');
+
+  // ★ GUARD. The first cut of this test PASSED VACUOUSLY: autoplay was blocked, so
+  //   currentTime was 0 before AND after, and `after >= before - 0.5` was 0 >= -0.5.
+  //   A test that cannot fail proves nothing. If the video never advanced, SAY SO.
+  if (!(before > 1)) {
+    log('  ✗ TEST INVALID — playback never advanced past 1s.', 'bad');
+    log('    Nothing to resume, so a "pass" here would be meaningless. Aborting TEST 2.', 'bad');
+  } else {
+    h.pause(); tko.style.display = 'flex';
+    log('  ⚡ TAKEOVER fired — media paused');
+    await wait(5000);
+    const during = h.at();
+    log('  position during takeover:  ' + during.toFixed(1) + 's  (must NOT advance)');
+    tko.style.display = 'none';
+    h.resume();
+    await wait(2000);
+    const after = h.at();
+    log('  position after resume:     ' + after.toFixed(1) + 's');
+
+    const heldPosition = Math.abs(during - before) < 1.0;      // paused = frozen
+    const resumedThere = after > during + 0.5;                 // and then MOVED ON
+    if (heldPosition && resumedThere) {
+      log('  ★★ RESUMED IN PLACE — held ' + during.toFixed(1) + 's through the takeover,', 'ok');
+      log('     then continued from there. currentTime SURVIVED.', 'ok');
+      log('     An iframe cannot do this. This is what the bare mp4 buys us,', 'ok');
+      log('     and it is the load-bearing claim under the companion-clip design.', 'ok');
+    } else {
+      log('  ✗ FAILED: heldPosition=' + heldPosition + ' resumedThere=' + resumedThere, 'bad');
+    }
+  }
+
+  await wait(6000);
+
+  // ── TEST 3: same function, different element ─────────────────────────────
+  log('\n── TEST 3 · iframe (YouTube, best-effort) ──', 'hi');
+  log('  SAME playMedia() call. Only the descriptor changed.');
+  h.stop();
+  const yt = { kind: 'iframe', exact: false, source: 'youtube',
+               title: 'YouTube embed (fallback path)',
+               url: 'https://www.youtube.com/embed/aqz-KE-bpKQ?autoplay=1&mute=1' };
+  const h2 = playMedia(stage, yt, { onPlay: () => log('  ✓ iframe mounted', 'ok') });
+  log('  handle: kind=' + h2.kind + '  resumable=' + h2.resumable);
+  log('  ⚠ resumable=false — a plain YouTube embed is a black box.', 'warn');
+  log('    A takeover over an iframe RESTARTS it; it cannot seek back.', 'warn');
+  log('    The system must KNOW that, not pretend both are equal.', 'warn');
+
+  await wait(6000);
+  log('\n── VERDICT ──', 'hi');
+  log('  one function, two element types, zero MLB special-casing.', 'ok');
+  log('  the descriptor carries kind (what to build) AND exact (what to believe).', 'ok');
+  log('\n  This is the contract UCS must inherit unchanged.');
+})();
+</script>
+</body>
+</html>
