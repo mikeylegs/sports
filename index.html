@@ -4501,21 +4501,42 @@ const SPORTS_CAL = {
     ],
   },
   // 2026 FIFA World Cup: semis Jul 14–15, bronze final Jul 18, FINAL Jul 19 (verified).
-  // It's the climax this week, then FULLY dormant (next tournament 2030). No EVENT_IMMINENT
-  // needed — we're already past it. LIVE through the final; then a hard, fast DECAY.
-  WORLD_CUP: {
-    label: 'FIFA World Cup 2026',
+  // R138: SOCCER = MAJOR INTERNATIONAL TOURNAMENTS ONLY (Mike's list: men's World Cup,
+  // Euros, Copa América, Women's World Cup). Soccer is a secondary sport — care only when
+  // one is on. Paired with dormantUnlessPhase:true on fifa-fill/foxsoccer-fill, the soccer
+  // sources DON'T FETCH outside these windows. LIVE for the whole tournament, then a 4-day
+  // decay tail (Mike: "3-4 days"), then dormant. Only the two currently-datable tournaments
+  // are populated; Euro 2028 & Copa América 2028 are off-cycle (next in 2028) — add their
+  // real dates when the year approaches rather than guessing 2+ years out.
+  SOCCER_MAJORS: {
+    label: 'Soccer Major',
     phases: [
-      { phase:'LIVE',      from:'2026-07-14', to:'2026-07-19' },
-      { phase:'DECAYING',  from:'2026-07-20', to:'2026-07-27' },
+      // Men's FIFA World Cup 2026 — Jun 11–Jul 19 (verified). LIVE for the full run.
+      { phase:'LIVE',      from:'2026-06-11', to:'2026-07-19' },
+      { phase:'DECAYING',  from:'2026-07-20', to:'2026-07-23' },   // 4-day tail
+      // FIFA Women's World Cup 2027 — Brazil, Jun 24–Jul 25 (verified).
+      { phase:'LIVE',      from:'2027-06-24', to:'2027-07-25' },
+      { phase:'DECAYING',  from:'2027-07-26', to:'2027-07-29' },
+      // ── PLACEHOLDERS (off-cycle, next editions in 2028 — fill real dates nearer the time) ──
+      // UEFA Euro 2028 (UK & Ireland, ~Jun–Jul 2028):
+      // { phase:'LIVE', from:'2028-06-XX', to:'2028-07-XX' }, { phase:'DECAYING', from:'2028-07-XX', to:'2028-07-XX' },
+      // Copa América 2028 (~Jun–Jul 2028):
+      // { phase:'LIVE', from:'2028-06-XX', to:'2028-07-XX' }, { phase:'DECAYING', from:'2028-07-XX', to:'2028-07-XX' },
     ],
   },
-  // 2026 Wimbledon ENDED Jul 12 (Sinner def. Zverev; Nosková won women's). So it is in
-  // DECAYING right now — champion content is great filler for a few days, then it's stale.
-  WIMBLEDON: {
-    label: 'Wimbledon 2026',
+  // R137: TENNIS = MAJORS ONLY (Mike: "literally only care during a major tournament,
+  // maybe 1 day after"). All four 2026 Grand Slams (web-verified dates), each LIVE during
+  // the fortnight + a 1-DAY tail past the final (protects the finals recap past midnight),
+  // then DORMANT. Paired with dormantUnlessPhase:true on tennis-fill → the source doesn't
+  // even fetch outside these windows. Wimbledon ended Jul 12 → tail through Jul 13 → tennis
+  // is DEAD today (Jul 15), exactly as intended.
+  TENNIS_MAJORS: {
+    label: 'Tennis Grand Slam',
     phases: [
-      { phase:'DECAYING',  from:'2026-07-13', to:'2026-07-19' },
+      { phase:'LIVE', from:'2026-01-19', to:'2026-02-01' }, { phase:'DECAYING', from:'2026-02-02', to:'2026-02-02' },  // Australian Open
+      { phase:'LIVE', from:'2026-05-24', to:'2026-06-07' }, { phase:'DECAYING', from:'2026-06-08', to:'2026-06-08' },  // French Open
+      { phase:'LIVE', from:'2026-06-29', to:'2026-07-12' }, { phase:'DECAYING', from:'2026-07-13', to:'2026-07-13' },  // Wimbledon
+      { phase:'LIVE', from:'2026-08-31', to:'2026-09-13' }, { phase:'DECAYING', from:'2026-09-14', to:'2026-09-14' },  // US Open
     ],
   },
 };
@@ -4756,9 +4777,10 @@ const RECAP = {
     // Highlights/Recap/Preview marker, or a round name. That alone kills the banter shorts,
     // which are conversational sentences with no match structure.
     'fifa-fill':  { label:'World Cup', handle:'fifa', query:'world cup', priority:2, timeless:true, maxAgeDays:30, windowH: 60,
-                    // R130 LIFECYCLE: react to WORLD_CUP. Dates in SPORTS_CAL.
-                    lifecycle:{ event:'WORLD_CUP', phases:{
-                      LIVE:{ scoreBoost:4, windowH:72 },   // climax week — fresh match clips win
+                    // R138 LIFECYCLE: react to SOCCER_MAJORS. Dates in SPORTS_CAL.
+                    dormantUnlessPhase:true,   // R138: OFF outside soccer majors (Mike: majors only)
+                    lifecycle:{ event:'SOCCER_MAJORS', phases:{
+                      LIVE:{ scoreBoost:4, windowH:72 },   // tournament on — fresh match clips win
                       DECAYING:{ scoreBoost:-3, windowH:18 },   // tournament over — fade fast
                     } },
                     // ★★ R122 — THIS OBJECT DECLARED `require` AND `reject` TWICE. In JS the
@@ -4783,8 +4805,9 @@ const RECAP = {
     // watching becomes your teammate". Conversational sentences, no match structure.
     // Same gate as fifa-fill: require real match/round content, reject talk-show fluff.
     'foxsoccer-fill':{ label:'Soccer', handle:'foxsoccer', query:'soccer highlights', priority:2, timeless:true, maxAgeDays:30,
-                    // R130 LIFECYCLE: react to WORLD_CUP (fox is banter-heavy; DECAY harder).
-                    lifecycle:{ event:'WORLD_CUP', phases:{
+                    // R138 LIFECYCLE: react to SOCCER_MAJORS (fox is banter-heavy; DECAY harder).
+                    dormantUnlessPhase:true,   // R138: OFF outside soccer majors
+                    lifecycle:{ event:'SOCCER_MAJORS', phases:{
                       LIVE:{ scoreBoost:3, windowH:60 },
                       DECAYING:{ scoreBoost:-4, windowH:12 },
                     } },
@@ -4827,9 +4850,13 @@ const RECAP = {
                     glow:'rgba(90,180,90,0.9)' },
     'tennis-fill':{ label:'Tennis',    handle:'Wimbledon', query:'tennis highlights', priority:2, timeless:true, maxAgeDays:45,
                     windowH: 48,
-                    // R130 LIFECYCLE: react to WIMBLEDON. Tournament ended Jul 12 → DECAYING now.
-                    lifecycle:{ event:'WIMBLEDON', phases:{
-                      DECAYING:{ scoreBoost:-3, windowH:36 },   // champion clips ok briefly, then fade
+                    // R137 LIFECYCLE: MAJORS ONLY. dormantUnlessPhase → the source is OFF
+                    // outside the four Grand Slams (doesn't even fetch). LIVE during a major,
+                    // 1-day tail after the final, then dead. Mike: secondary sport, majors only.
+                    dormantUnlessPhase:true,
+                    lifecycle:{ event:'TENNIS_MAJORS', phases:{
+                      LIVE:{ scoreBoost:2, windowH:48 },       // during a slam: normal-ish
+                      DECAYING:{ scoreBoost:-2, windowH:30 },  // finals-recap day only
                     } },
                     // R103: DOUBLES were dominating (Heliovaara/Patten, Kamiji/Zhu, Guo/Mladenovic…).
                     // The "/" between paired names is the tell. Reject doubles so singles surface;
@@ -5122,6 +5149,13 @@ async function findRecap(sourceId){
   // ── R123 POOL AUDITOR probe (inert unless ?pools=1) ────────────────────────
   // ── R128 LIFECYCLE: resolve phase and patch the source config (declarative) ──
   const _life = resolvePhase(src);
+  // R137: an event-gated source (dormantUnlessPhase) is OFF whenever no phase is active —
+  // it doesn't fetch, exactly like a null query. This is how tennis/soccer become "majors
+  // only": DORMANT by default, waking only inside a SPORTS_CAL window. Firewall: only fires
+  // for sources that explicitly opt in; every other source is unaffected.
+  if (src.dormantUnlessPhase && !_life){
+    src = Object.assign({}, src, { query: () => null });   // force NOT-ELIGIBLE (dormant)
+  }
   let _phaseBoost = 0;
   if (_life){
     const { scoreBoost, ..._fieldPatch } = _life.patch;   // scoreBoost handled in scorer, not a config field
@@ -5173,7 +5207,9 @@ async function findRecap(sourceId){
     return _pin;
   }
   const q = typeof src.query === 'function' ? src.query() : src.query;   // R14
-  if (!q) { _audEnd('NOT-ELIGIBLE — query() returned null (source dormant today). NOT a gate verdict.'); return null; }   // not currently eligible — don't cache
+  if (!q) { _audEnd(src.dormantUnlessPhase
+      ? 'DORMANT — event-gated source, no active tournament today (majors-only). NOT a gate verdict.'
+      : 'NOT-ELIGIBLE — query() returned null (source dormant today). NOT a gate verdict.'); return null; }
   const handle = typeof src.handle === 'function' ? src.handle() : src.handle;   // R22
   const channelId = handle ? await resolveChannelId(handle) : null;
   // R60: RSS-PRIMARY — try the channel's free RSS feed first (official/latest/no-quota).
@@ -8214,7 +8250,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r136-team-singular-mvp';
+const BUILD_MARKER = 'r138-soccer-majors';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
