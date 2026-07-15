@@ -5328,7 +5328,10 @@ async function findRecap(sourceId){
   //     no business doing that regardless of score. Hard requirement, not a boost.
   if (src.teamName){
     const _preTeam = pool;
-    const _tn = new RegExp(String(src.teamName).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'i');
+    // R136: singular-tolerant + word-bounded. "Yankees"→\bYankees?\b matches "Yankee
+    // All-Stars" too; word boundary keeps "Mets"→\bMets?\b from hitting "metal"/"method".
+    const _tnBase = String(src.teamName).replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/s$/i,'');
+    const _tn = new RegExp('\\b' + _tnBase + 's?\\b', 'i');
     // R135: _namesFavPlayer is now defined above the require gate (hoisted). The team gate
     // reuses it — admit clips naming the team OR a roster player.
     let _onTeam = pool.filter(x => _tn.test(x.title) || _namesFavPlayer(x.title));
@@ -5443,7 +5446,9 @@ async function findRecap(sourceId){
     if (/every shot from/i.test(t) && x.mins > 20) return -999;
     const _th = typeof src.titleHint === 'function' ? src.titleHint() : src.titleHint;   // R91: fn-aware (golf day-of-week)
     if (_th && _th.test(x.title)) s += 3;
-    if (team && t.includes(team)) s += 4;
+    // R136: team-affinity bonus fires for team-name OR roster-player (parity with the gate).
+    // Without this, roster-admitted ASG clips scored below team-name clips and lost.
+    if (team && (t.includes(team) || (typeof _namesFavPlayer === 'function' && _namesFavPlayer(x.title)))) s += 4;
     if (/full game/.test(t)) s += 3;
     if (/highlights/.test(t)) s += 1;
     // R86: MLB curated daily-recap tiering, LONGEST-FIRST ("and much more" ⊃ "and
@@ -5454,7 +5459,7 @@ async function findRecap(sourceId){
     else if (/and more/i.test(t))             s += 2;   // ALL GAMES (long daily)
     // R58: editorial moment clips (MLB posts these — franchise records, milestones,
     // career highs, star performances) are premium reel content. Reward them.
-    const isMoment = /franchise record|career high|first .*to|milestone|walk-?off|grand slam|cycle|no-?hitter|perfect game|\d+ (?:straight|consecutive|home runs?|strikeouts?|rbi)|makes history|ties |sets /i.test(x.title);
+    const isMoment = /franchise record|career high|first .*to|milestone|walk-?off|grand slam|cycle|no-?hitter|perfect game|\d+ (?:straight|consecutive|home runs?|strikeouts?|rbi)|makes history|ties |sets |\bMVP\b|all-?star game/i.test(x.title);
     if (isMoment) s += 3;
     // star name in title (shared MLB_STARS list) — star content is worth more.
     const titleHasStar = (typeof MLB_STARS!=='undefined') && [...MLB_STARS].some(nm => new RegExp('\\b'+nm+'\\b','i').test(brainFold(x.title)));
@@ -8209,7 +8214,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r135-require-roster-aware';
+const BUILD_MARKER = 'r136-team-singular-mvp';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
