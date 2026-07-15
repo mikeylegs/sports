@@ -1,24 +1,7 @@
 {
   "v": 1,
-  "updated": "2026-07-15T20:36:14.389Z",
-  "events": [
-    {
-      "league": "soccer/fifa.world",
-      "label": "World Cup",
-      "espnId": "760514",
-      "title": "Spain @ France",
-      "showFrom": "20260714",
-      "showUntil": "20260714"
-    },
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401817370",
-      "title": "American All-Stars @ National All-Stars",
-      "showFrom": "20260714",
-      "showUntil": "20260714"
-    }
-  ],
+  "updated": "2026-07-15T20:41:25.221Z",
+  "events": [],
   "watch": {
     "teams": []
   }
