@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wide World of Sports — Day Selector</title>
+<style>
+  :root{--bg:#0b0f1a;--panel:#121a2b;--line:#22304c;--ink:#e7ecf5;--mut:#8da0c0;--acc:#34d399;--warn:#fbbf24}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,Inter,system-ui,Arial,sans-serif}
+  .wrap{max-width:860px;margin:0 auto;padding:16px 14px 80px}
+  h1{font-size:19px;margin:0 0 2px}
+  .sub{color:var(--mut);font-size:12.5px;margin:0 0 12px}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  button,select{font:700 13px/1 inherit;color:#fff;border:1px solid var(--line);background:var(--panel);border-radius:9px;padding:10px 13px;cursor:pointer}
+  button.primary{background:#0e3b2b;border-color:var(--acc)}
+  button:disabled{opacity:.4;cursor:default}
+  .day{margin:18px 0 6px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--acc);font-weight:800}
+  .lg{margin:10px 0 4px;font-size:12.5px;font-weight:800;color:var(--mut)}
+  .ev{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px;margin:5px 0}
+  .ev input[type=checkbox]{width:19px;height:19px;accent-color:var(--acc);flex-shrink:0}
+  .ev .m{flex:1;min-width:0}
+  .ev .t{font-weight:700;font-size:14px}
+  .ev .d{font-size:12px;color:var(--mut)}
+  .ev select{padding:6px 8px;font-size:12px}
+  .ev.on{border-color:var(--acc)}
+  .out{position:fixed;left:0;right:0;bottom:0;background:#0d1626;border-top:1px solid var(--line);padding:10px 14px;display:flex;gap:8px;align-items:center}
+  .out .n{font-weight:800;color:var(--acc)}
+  textarea{width:100%;height:140px;background:#05070d;color:#9fd;border:1px solid var(--line);border-radius:8px;font:12px ui-monospace,Menlo,monospace;padding:8px}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;padding:16px}
+  .modal.show{display:flex}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;max-width:640px;width:100%}
+  .err{color:#f87171;font-size:12.5px}
+  .note{color:var(--warn);font-size:12px;margin:8px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Wide World of Sports — Day Selector <span style="font-size:12px;font-weight:400;opacity:.5;font-family:monospace">selector-r145</span></h1>
+  <p class="sub">Pick today's / this weekend's events for the panel. Output is <code>selections.json</code> — commit it to the repo root and the dashboard (phase 2) picks it up on its next poll.</p>
+  <div class="bar">
+    <select id="range">
+      <option value="1">Today</option>
+      <option value="2">Today + tomorrow</option>
+      <option value="4" selected>Through the weekend</option>
+    </select>
+    <button class="primary" onclick="scan()">SCAN EVENTS</button>
+    <button onclick="showOut()">REVIEW / EXPORT (<span id="cnt">0</span>)</button>
+    <button onclick="toggleStars()">★ FOLLOW TEAMS</button>
+    <button onclick="toggleSelected()">✓ SELECTED (<span id="cntSel">0</span>)</button>
+  </div>
+  <input id="q" placeholder="Search events (team, player, tournament)…" oninput="filterList()"
+    style="width:100%;margin:0 0 10px;background:#05070d;color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font:14px inherit">
+  <div id="stars" style="display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin:0 0 12px">
+    <div style="font-weight:800;margin-bottom:6px">★ Followed teams <span class="d" style="font-weight:400">— shown in Wide World of Sports whenever they play, no re-scan needed</span></div>
+    <input id="tq" placeholder="Filter teams…" oninput="drawTeams()"
+      style="width:100%;margin:0 0 8px;background:#05070d;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:13px inherit">
+    <div id="teamgrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:5px;max-height:320px;overflow:auto"></div>
+  </div>
+  <div id="selected" style="display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin:0 0 12px">
+    <div style="font-weight:800;margin-bottom:8px">✓ Currently selected <span class="d" style="font-weight:400">— everything picked across all sports; tap ✕ to remove</span></div>
+    <div id="selgrid" style="display:flex;flex-direction:column;gap:4px;max-height:360px;overflow:auto"></div>
+  </div>
+  <div id="lgchips" style="display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px"></div>
+  <div id="list"><p class="sub">Press SCAN.</p></div>
+</div>
+
+<div class="out"><span class="n" id="cnt2">0</span>&nbsp;selected <span style="flex:1"></span><button class="primary" onclick="showOut()">EXPORT selections.json</button></div>
+
+<div class="modal" id="modal">
+  <div class="card">
+    <b>selections.json</b>
+    <p class="sub">Commit this file to the repo root (GitHub app → repo → Add file, or replace existing). Panel sees it within ~1 min of Pages deploy.</p>
+    <textarea id="json" readonly></textarea>
+    <div class="bar" style="margin-top:10px;align-items:center">
+      <input id="tok" type="password" placeholder="GitHub token (saved on this device)" style="flex:1;min-width:180px;background:#05070d;color:#9fd;border:1px solid var(--line);border-radius:8px;padding:9px;font:12px ui-monospace,monospace">
+    </div>
+    <div class="bar" style="margin-top:6px">
+      <button class="primary" onclick="publish()" id="pub">PUBLISH TO PANEL</button>
+      <button onclick="copyJson()">COPY</button>
+      <button onclick="dl()">DOWNLOAD</button>
+      <button onclick="document.getElementById('modal').classList.remove('show')">CLOSE</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// League menu: ESPN scoreboard endpoints. Trim/extend freely.
+const LEAGUES = [
+  ['soccer/fifa.world',      'World Cup',        '⚽'],
+  ['soccer/eng.1',           'Premier League',   '⚽'],
+  ['golf/pga',               'Golf (PGA)',       '⛳'],
+  // R71: unified TENNIS — fetches BOTH ATP+WTA under one chip (dual endpoint, split at
+  // fetch). Majors-only filter keeps just the Slams. Replaces separate ATP/WTA tabs
+  // (which cross-contaminated — WTA leaked into ATP).
+  ['tennis/atp,tennis/wta',  'Tennis',           '🎾'],
+  ['football/nfl',           'NFL',              '🏈'],
+  ['football/college-football','NCAA Football',  '🏈'],
+  ['hockey/nhl',             'NHL',              '🏒'],
+  ['basketball/nba',         'NBA',              '🏀'],
+  ['basketball/mens-college-basketball','NCAA Basketball','🏀'],
+  ['baseball/mlb',           'MLB',              '⚾'],
+  ['mma/ufc',                'MMA',              '🥊'],
+  ['boxing',                 'Boxing',           '🥊'],
+];
+// R70: MLB added — lets Mike PIN a specific MLB game to the WWS pane (overrides the
+// board's Game-of-the-Day pick). Off by default via league chips if not wanted.
+
+// R97 SELECTOR MEMORY (Mike: "choose 5, refresh, they disappear — need a memory state that
+// shows what's actually published and physically on the panel").
+// Two distinct states, both now tracked:
+//   sel      = what's picked right now in this selector (persisted so a refresh doesn't wipe it)
+//   published = what's actually live in selections.json (fetched on load = ground truth)
+// Divergence between them = "unpublished changes" (shown in the UI so Mike knows to hit PUBLISH).
+const SEL_KEY = 'wws-sel-v1';
+const sel = new Map(JSON.parse(localStorage.getItem(SEL_KEY) || '[]'));   // eventKey -> selection record (PERSISTED)
+function saveSel(){ try{ localStorage.setItem(SEL_KEY, JSON.stringify([...sel])); }catch(_){} }
+let publishedKeys = new Set();   // eventIds currently live in selections.json (ground truth)
+let publishedMeta = new Map();   // R99: espnId -> {espnId,title,label} so we can SHOW what's live but not picked
+// Fetch what's ACTUALLY published so the selector reflects the panel, not just local clicks.
+async function loadPublished(){
+  try {
+    const r = await fetch(`https://raw.githubusercontent.com/mikeylegs/sports/main/selections.json?t=${Date.now()}`);
+    if (!r.ok) return;
+    const j = await r.json();
+    publishedKeys = new Set((j.events||[]).map(e => e.espnId).filter(Boolean));
+    publishedMeta = new Map((j.events||[]).filter(e=>e.espnId).map(e => [e.espnId, e]));   // R99
+    drawSelected();
+  } catch(_){ /* offline / not yet published — leave empty */ }
+}
+// Is the current selection different from what's live on the panel?
+// R99 FIX: sel records are raw scan objects carrying `.id`; only the PUBLISHED json renames
+// it to `espnId` (see publish(): `espnId: r.id`). The old code read v.espnId → always undefined
+// → `cur` was always EMPTY → banner said UNPUBLISHED even when counts matched (Mike's bug).
+function _selIds(){ return new Set([...sel.values()].map(v => v.espnId || v.id).filter(Boolean)); }
+function hasUnpublishedChanges(){
+  const cur = _selIds();
+  if (cur.size !== publishedKeys.size) return true;
+  for (const k of cur) if (!publishedKeys.has(k)) return true;
+  return false;
+}
+// R99: which events are live on the PANEL but NOT in the current picks (i.e. about to be dropped)?
+function _liveNotPicked(){
+  const cur = _selIds();
+  return [...publishedMeta.values()].filter(m => !cur.has(m.espnId));
+}
+// ── ★ Followed teams (persist on device + published in selections.json) ──
+const STAR_KEY = 'wws-stars';
+const stars = new Map(JSON.parse(localStorage.getItem(STAR_KEY) || '[]'));  // "lg|ABBR" -> {league,abbr,name}
+function saveStars(){ localStorage.setItem(STAR_KEY, JSON.stringify([...stars])); }
+const TEAM_LEAGUES = [
+  ['baseball/mlb','MLB'], ['basketball/nba','NBA'],
+  ['football/nfl','NFL'], ['hockey/nhl','NHL'],
+];
+let _teamCatalog = null;   // [{league,abbr,name}]
+async function loadTeams(){
+  if (_teamCatalog) return _teamCatalog;
+  const all = [];
+  await Promise.all(TEAM_LEAGUES.map(async ([lg,tag])=>{
+    const d = await j(`https://site.api.espn.com/apis/site/v2/sports/${lg}/teams`);
+    const teams = ((((d||{}).sports||[])[0]||{}).leagues||[])[0];
+    for (const t of (teams && teams.teams) || []){
+      const tm = t.team || t;
+      all.push({ league:lg, tag, abbr:tm.abbreviation, name:tm.displayName || tm.name || tm.abbreviation });
+    }
+  }));
+  all.sort((a,b)=> a.tag.localeCompare(b.tag) || a.name.localeCompare(b.name));
+  _teamCatalog = all; return all;
+}
+async function toggleStars(){
+  const box = document.getElementById('stars');
+  const show = box.style.display === 'none';
+  box.style.display = show ? 'block' : 'none';
+  if (show){ document.getElementById('teamgrid').innerHTML = '<span class="d">Loading teams…</span>'; await loadTeams(); drawTeams(); }
+}
+function drawTeams(){
+  const q = (document.getElementById('tq').value || '').toLowerCase();
+  const rows = (_teamCatalog || []).filter(t =>
+    !q || t.name.toLowerCase().includes(q) || (t.abbr||'').toLowerCase().includes(q) || t.tag.toLowerCase().includes(q));
+  document.getElementById('teamgrid').innerHTML = rows.map(t=>{
+    const key = `${t.league}|${t.abbr}`, on = stars.has(key);
+    return `<label class="ev ${on?'on':''}" style="margin:0;padding:7px 9px;gap:7px">
+      <input type="checkbox" ${on?'checked':''} onchange='starToggle(${JSON.stringify(t)}, this)'>
+      <span class="m"><span class="t" style="font-size:13px">${t.name}</span><br><span class="d">${t.tag} · ${t.abbr}</span></span>
+    </label>`;
+  }).join('') || '<span class="d">No teams match.</span>';
+}
+function starToggle(t, box){
+  const key = `${t.league}|${t.abbr}`;
+  if (box.checked) stars.set(key, {league:t.league, abbr:t.abbr, name:t.name});
+  else stars.delete(key);
+  saveStars(); count();
+}
+
+// League filter — chips persist per device; unchecked leagues are never scanned.
+const LG_KEY='wws-leagues';
+const lgOn = new Set(JSON.parse(localStorage.getItem(LG_KEY) || 'null') || LEAGUES.map(l=>l[0]).filter(p=>p!=='baseball/mlb'));   // R70/71: MLB defaults OFF (pin-only; board owns MLB). F1 removed.
+function drawChips(){
+  document.getElementById('lgchips').innerHTML = LEAGUES.map(([p,label,ico])=>
+    `<button onclick="lgToggle('${p}')" style="padding:7px 10px;font-size:12px;border-radius:16px;font-weight:700;
+      ${lgOn.has(p)?'background:#0e3b2b;border:1px solid var(--acc);color:#fff':'background:transparent;border:1px solid var(--line);color:var(--mut)'}">${ico} ${label}</button>`).join('');
+}
+function lgToggle(p){ lgOn.has(p) ? lgOn.delete(p) : lgOn.add(p); localStorage.setItem(LG_KEY, JSON.stringify([...lgOn])); drawChips(); }
+document.addEventListener('DOMContentLoaded', () => { drawChips(); loadPublished(); drawSelected(); updCounts(); });   // R97: restore persisted picks + fetch what's ACTUALLY live
+
+// Same proxy fallback chain the dashboard uses (proven on the panel).
+const PROXIES = [
+  u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+  u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+  u => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
+];
+const ft = (u,ms)=>Promise.race([fetch(u), new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),ms))]);
+async function j(u){
+  try { const r = await ft(u,8000); if (r.ok) return await r.json(); } catch(_){}
+  for (const p of PROXIES){
+    try {
+      const r = await ft(p(u),10000); if (!r.ok) continue;
+      const text = await r.text();
+      const wrap = JSON.parse(text);
+      return wrap.contents ? JSON.parse(wrap.contents) : wrap;
+    } catch(_){}
+  }
+  return null;
+}
+const pad = n => String(n).padStart(2,'0');
+const ymd = d => `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`;
+const dayLabel = d => d.toLocaleDateString(undefined,{weekday:'long', month:'short', day:'numeric'});
+
+let _fails = 0;
+async function scan(){
+  _fails = 0;
+  const days = +document.getElementById('range').value;
+  const list = document.getElementById('list');
+  list.innerHTML = '<p class="sub">Scanning…</p>';
+  const dates = [...Array(days)].map((_,i)=>{const d=new Date(); d.setDate(d.getDate()+i); return d;});
+  const html = [];
+  const _seenMatch = new Set();   // R72: global dedup for tennis matches (id appears across day-fetches + ATP/WTA merge)
+  const _seenTourney = new Set();  // R100: golf dedup — a tournament is ONE multi-day event, but ESPN
+                                   // returns it on EVERY day it's running, so the per-day scan was
+                                   // listing "Genesis Scottish Open" under Sun AND Mon (Mike's bug).
+                                   // List it once, on the earliest scanned day it appears.
+  for (const d of dates){
+    const dk = ymd(d);
+    const dayEvents = [];
+    await Promise.all(LEAGUES.filter(([p])=>lgOn.has(p)).map(async ([path,label,ico])=>{
+      // R71: a path can be comma-joined (e.g. tennis/atp,tennis/wta) → fetch each, merge events.
+      const subPaths = path.split(',');
+      let data;
+      if (subPaths.length > 1){
+        const parts = await Promise.all(subPaths.map(sp => j(`https://site.api.espn.com/apis/site/v2/sports/${sp}/scoreboard?dates=${dk}`)));
+        // R72: tag each event with which sub-endpoint it came from (debug) + log counts.
+        const evs = [];
+        parts.forEach((pp,i)=>{ const es=(pp&&pp.events)||[]; if(window._tdebug) console.log(`[tennis] ${subPaths[i]} @ ${dk}: ${es.length} events`, es.map(e=>e.name||e.shortName)); evs.push(...es); });
+        data = evs.length ? { events: evs } : null;
+      } else {
+        data = await j(`https://site.api.espn.com/apis/site/v2/sports/${path}/scoreboard?dates=${dk}`);
+      }
+      // Golf/tennis/F1: multi-day "events"; team sports: games
+      if (!data) _fails++;
+      for (const ev of (data && data.events) || []){
+        const comps = ev.competitions || [];
+        // Tennis: matches live in ev.groupings[].competitions[] (nCompetitions=0
+        // at event level). Flatten, prefer live/upcoming over completed, cap the
+        // list — a full draw is ~200+ matches. espnId = "eventId:compId".
+        if (path.startsWith('tennis') && (ev.groupings||[]).length){
+          const tourn = ev.shortName || ev.name || label;
+          // R70: MAJORS ONLY — Mike only wants the 4 Slams (tennis is secondary; the
+          // ATP 250s like Nordea Open are pure noise). Skip any non-Slam tournament.
+          // R71: majors-only — broadened to catch ESPN's naming variants. Also logs the
+          // tournament name when it's FILTERED so we can see mismatches in console.
+          const tName = `${ev.name||''} ${ev.shortName||''} ${tourn}`;
+          const isMajor = /wimbledon|championships|us open|u\.s\. open|french open|roland[- ]?garros|australian open/i.test(tName);
+          if (!isMajor){ if (window._tdebug) console.log('[tennis] skipped non-major:', tName.trim()); continue; }
+          const matches = [];
+          for (const g of ev.groupings){
+            for (const comp of (g.competitions||[])){
+              // R70: capture name + world rank/seed (ESPN exposes these inconsistently —
+              // try curatedRank.current, then seed; omit silently if absent). Mike wants
+              // rankings since he doesn't follow tennis closely — helps gauge who matters.
+              const players = (comp.competitors||[]).map(c=>{
+                const a=c.athlete||{}; const name=(a.shortName||a.displayName)||'';
+                const rk = (c.curatedRank&&c.curatedRank.current) || c.seed || (a.rank) || null;
+                const rkNum = (rk!=null && rk!==0 && rk!==99) ? Number(rk) : null;
+                return { name, rk: (rkNum && rkNum>0 && rkNum<=300) ? rkNum : null };
+              }).filter(p=>p.name);
+              const nm = players.map(p=>p.name);
+              if (nm.length !== 2) continue;
+              // R70: skip TBD bracket slots (not a real matchup yet) + doubles (name has "/").
+              if (nm.some(x => /^\s*tbd\s*$/i.test(x) || x.includes('/'))) continue;
+              const nmR = players.map(p => p.rk ? `${p.name} (#${p.rk})` : p.name);
+              const stt = (comp.status&&comp.status.type) || {};
+              const rank = stt.state==='in' ? 0 : stt.state==='pre' ? 1 : 2;   // live, upcoming, done
+              // R72: DATE-MATCH — only list this match under the day-header matching its
+              // actual date (ESPN returns the whole draw per fetch → was bleeding across days).
+              const mDate = comp.date || ev.date;
+              if (mDate){ const mk = ymd(new Date(mDate)); if (mk !== dk) continue; }
+              // R72: DEDUP — same match id can arrive via multiple day-fetches + ATP/WTA merge.
+              if (_seenMatch.has(comp.id)) continue;
+              _seenMatch.add(comp.id);
+              matches.push({ compId:comp.id, nm, nmR, rank,
+                time: (comp.date||ev.date) ? new Date(comp.date||ev.date).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}) : '',
+                note: stt.shortDetail || stt.description || '' });
+            }
+          }
+          matches.sort((a,b)=> a.rank-b.rank || a.time.localeCompare(b.time));
+          for (const m of matches.slice(0, 40)){
+            dayEvents.push({key:`${path}|${ev.id}:${m.compId}|${dk}`, path, league:label+' · '+tourn, ico,
+              id:`${ev.id}:${m.compId}`, title:`${(m.nmR||m.nm)[0]} v ${(m.nmR||m.nm)[1]}`, time:m.time, note:m.note, date:dk});
+          }
+          continue;
+        }
+        const comp = comps[0] || {};
+        // R100: GOLF — a tournament spans Thu-Sun and ESPN returns it on each day of the range,
+        // so the per-day loop created a duplicate row per day (key includes dk). Golf events also
+        // carry a meaningless 12:00 AM time, so nothing distinguished them. List each tournament
+        // ONCE (earliest scanned day). Other sports are genuinely per-day, so they're untouched.
+        if (path === 'golf/pga'){
+          if (_seenTourney.has(ev.id)) continue;
+          _seenTourney.add(ev.id);
+        }
+        // R80: prefer FULL team name (Mike: "New York Yankees" > "NYY"). ESPN team obj:
+        // displayName = "New York Yankees", shortDisplayName = "Yankees", abbreviation = "NYY".
+        // Fall back gracefully abbreviation-ward if displayName absent.
+        const teams = (comp.competitors||[]).map(c=>c.team? (c.team.displayName||c.team.shortDisplayName||c.team.abbreviation) : (c.athlete&&c.athlete.shortName)||'').filter(Boolean);
+        const title = teams.length===2 ? `${teams[1]} @ ${teams[0]}` : (ev.shortName || ev.name || label);
+        const time = ev.date ? new Date(ev.date).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}) : '';
+        const note = (ev.status&&ev.status.type&&ev.status.type.shortDetail) || '';
+        dayEvents.push({key:`${path}|${ev.id}|${dk}`, path, league:label, ico, id:ev.id, title, time, note, date:dk});
+      }
+    }));
+    if (!dayEvents.length) continue;
+    html.push(`<div class="day">${dayLabel(d)}</div>`);
+    let lastLg='';
+    dayEvents.sort((a,b)=> a.league.localeCompare(b.league) || a.time.localeCompare(b.time));
+    for (const e of dayEvents){
+      if (e.league!==lastLg){ html.push(`<div class="lg">${e.ico} ${e.league}</div>`); lastLg=e.league; }
+      const on = sel.has(e.key);
+      const cid = cssId(e.key); _evReg.set(cid, e);
+      const esc = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+      const _srch = `${e.league} ${e.title} ${e.time} ${e.note||''}`.toLowerCase();
+      html.push(`<label class="ev ${on?'on':''}" id="ev-${cid}" data-search="${_srch.replace(/"/g,'')}">
+        <input type="checkbox" ${on?'checked':''} onchange="toggle('${cid}', this)">
+        <span class="m"><span class="t">${esc(e.title)}</span><br><span class="d">${esc(e.time)}${e.note?' · '+esc(e.note):''}</span></span>
+        <select onchange="setWin('${cid}', this.value)" onclick="event.preventDefault()">
+          <option value="day">show that day</option>
+          <option value="weekend">show thru Sunday</option>
+        </select>
+      </label>`);
+    }
+  }
+  list.innerHTML = html.join('') || `<p class="sub">No events found in range. ${_fails} of ${lgOn.size*days} league-day fetches failed${_fails?' — likely CORS-proxy trouble; retry in a minute':''}.</p>`;
+  count();
+}
+function cssId(s){ return s.replace(/[^a-z0-9]/gi,'_'); }
+const _selCid = new Map();  // R140: cssId -> eventKey for currently-SELECTED rows (incl. expired,
+                            // which _evReg lacks) so removeSel can always resolve & remove them.
+const _evReg = new Map();   // R40: cssId -> event; inline JSON in quoted attrs broke on apostrophes (O'Connell, "Men's") — handler never attached, checkbox ticked but sel/count never updated
+// Live search over the rendered rows (title + sub-line + league header context).
+function filterList(){
+  const q = (document.getElementById('q').value || '').toLowerCase();
+  document.querySelectorAll('#list .ev').forEach(row=>{
+    // R80: match the row's data-search (league + title + time) so "Wimb" finds Wimbledon
+    // matches even though the visible row text is just player names.
+    const hay = row.getAttribute('data-search') || row.textContent.toLowerCase();
+    const hit = !q || hay.includes(q);
+    row.style.display = hit ? '' : 'none';
+  });
+  // hide day/league headers with no visible rows under them
+  document.querySelectorAll('#list .day, #list .lg').forEach(h=>{
+    let n = h.nextElementSibling, any = false;
+    while (n && !n.classList.contains('day') && !n.classList.contains('lg')){
+      if (n.classList.contains('ev') && n.style.display !== 'none'){ any = true; break; }
+      n = n.nextElementSibling;
+    }
+    h.style.display = any ? '' : 'none';
+  });
+}
+function toggle(cid, box){
+  const e = _evReg.get(cid); if(!e) return;
+  if (box.checked) sel.set(e.key, {...e, window:'day'});
+  else sel.delete(e.key);
+  saveSel();   // R97: persist so a refresh doesn't wipe the picks
+  document.getElementById('ev-'+cid).classList.toggle('on', box.checked);
+  count();
+}
+function setWin(cid,v){ const e=_evReg.get(cid); const r=e&&sel.get(e.key); if(r) r.window=v; }
+function count(){ const n = sel.size + stars.size;
+  document.getElementById('cnt').textContent = document.getElementById('cnt2').textContent = n;
+  const cs = document.getElementById('cntSel'); if (cs) cs.textContent = sel.size;
+  if (document.getElementById('selected').style.display !== 'none') drawSelected();
+}
+// R70: "Selected" tab — consolidated cross-sport list of current picks w/ remove buttons.
+function toggleSelected(){
+  const el = document.getElementById('selected');
+  const show = el.style.display === 'none';
+  el.style.display = show ? '' : 'none';
+  if (show) drawSelected();
+}
+// R97: keep the counters in sync (callable from startup, not just after a scan)
+function updCounts(){
+  const c1=document.getElementById('cnt'), c2=document.getElementById('cnt2'), cs=document.getElementById('cntSel');
+  if (c1) c1.textContent = sel.size;
+  if (c2) c2.textContent = sel.size;
+  if (cs) cs.textContent = sel.size;
+}
+function drawSelected(){
+  const grid = document.getElementById('selgrid');
+  updCounts();
+  // R97: PUBLISHED-STATE BANNER — the whole point of Mike's ask: show what's ACTUALLY
+  // live on the panel vs. what's merely picked here. Divergence = "unpublished changes".
+  const box = document.getElementById('selected');
+  if (box && sel.size){
+    let st = document.getElementById('pubstate');
+    if (!st){ st = document.createElement('div'); st.id='pubstate';
+      st.style.cssText='margin:0 0 8px;padding:6px 10px;border-radius:8px;font-size:12px;font-weight:700';
+      box.insertBefore(st, box.firstChild.nextSibling); }
+    if (hasUnpublishedChanges()){
+      const drop = _liveNotPicked();
+      const esc2 = t => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+      st.style.background='rgba(210,153,34,0.15)'; st.style.color='#d29922'; st.style.border='1px solid #d29922';
+      // R99: clearer wording (the old copy read like the SELECTOR held 5) + SHOW what's
+      // live-but-unpicked, so Mike can see exactly which events publishing will drop.
+      st.innerHTML = `⚠ NOT YET PUBLISHED — the panel is currently running <b>${publishedKeys.size}</b> event(s). `
+        + `Publish to replace with your <b>${sel.size}</b>.`
+        + (drop.length ? `<div style="font-weight:400;margin-top:5px;opacity:.9">Will be REMOVED from the panel: `
+            + drop.map(d => esc2(d.title || d.label || d.espnId)).join(' · ') + `</div>` : '');
+    } else {
+      st.style.background='rgba(52,211,153,0.12)'; st.style.color='#34d399'; st.style.border='1px solid #34d399';
+      st.innerHTML = `✓ IN SYNC — all <b>${sel.size}</b> selection(s) are live on the panel.`;
+    }
+  }
+  if (!sel.size){ grid.innerHTML = '<p class="sub" style="margin:4px 0">Nothing selected yet.</p>'; const st=document.getElementById('pubstate'); if(st) st.remove(); return; }
+  const esc = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  // R143: FLAT, RANK-ORDERED list (no league grouping — order IS the priority). Each row
+  // carries its sport emoji (e.ico) so the sport stays legible without header grouping.
+  // ≡ handle (left) drags to reorder · ✕ (right) removes. Top = rank 1 = highest priority.
+  const rows = [...sel.values()];   // sel order = priority order (NOT re-sorted)
+  const html = [`<div class="d" style="margin:2px 0 6px;opacity:.75">≡ drag to reorder — <b>top = highest priority</b></div>`];
+  rows.forEach((e, i) => {
+    _selCid.set(cssId(e.key), e.key);   // R140: cssId→key so removeSel works for expired rows too
+    html.push(`<div class="selrow" draggable="false" data-cid="${cssId(e.key)}" data-idx="${i}"
+        style="display:flex;align-items:center;gap:6px;padding:7px 8px;margin:4px 0;background:#05070d;border:1px solid var(--line);border-radius:7px;touch-action:pan-y">
+      <span class="draghandle" style="cursor:grab;touch-action:none;user-select:none;font-size:18px;color:#5b6472;padding:2px 6px;line-height:1;flex:none">&#9776;</span>
+      <span class="rankno" style="flex:none;min-width:18px;text-align:center;font-weight:800;color:#8a93a3;font-size:12px">${i+1}</span>
+      <span style="flex:1;min-width:0"><span style="font-size:15px">${e.ico||''}</span> <span class="t">${esc(e.title)}</span> <span class="d">${esc(e.date||'')}${e.window==='weekend'?' · thru Sun':''}</span></span>
+      <button onclick="removeSel('${cssId(e.key)}')" style="flex:none;background:#3a1214;color:#ff8a8a;border:1px solid #612;border-radius:6px;padding:4px 10px;font:700 14px inherit;cursor:pointer">✕</button>
+    </div>`);
+  });
+  grid.innerHTML = html.join('');
+  wireDrag(grid);   // R143: attach pointer-events drag after render
+}
+
+// ── R143 DRAG-TO-REORDER (Pointer Events → works on iPhone Safari AND desktop Chrome) ──
+// Grab the ≡ handle, drag the row, drop → reorderSel rewrites `sel`, saveSel persists,
+// drawSelected re-renders. touch-action:none on the handle only, so the list still scrolls
+// when you touch anywhere else. Logic proven in scratch-reorder.js (11/11).
+function reorderSel(from, to){
+  const entries = [...sel];
+  if (from < 0 || from >= entries.length || to < 0 || to >= entries.length || from === to) return;
+  const [moved] = entries.splice(from, 1);
+  entries.splice(to, 0, moved);
+  sel.clear(); for (const [k,v] of entries) sel.set(k,v);
+  saveSel();          // persist new order (Map order = priority)
+  drawSelected();     // re-render with updated ranks + IN-SYNC banner recompute
+}
+
+let _drag = null;
+// R145: APPLE-MUSIC-STYLE LIFT-AND-FOLLOW drag. The dragged row detaches and follows the
+// finger (translateY); the OTHER rows slide to open a gap at the target slot. Commit on drop.
+// Keeps the R144 midpoint drop-index math (tested 9/9) — only the VISUAL layer changed from
+// a static green line to a live lift. Pointer capture + listeners both on the handle (R144 fix).
+function wireDrag(grid){
+  grid.querySelectorAll('.selrow').forEach(row => {
+    const handle = row.querySelector('.draghandle');
+    if (!handle) return;
+
+    handle.addEventListener('pointerdown', (ev) => {
+      ev.preventDefault();
+      const rows = [...grid.querySelectorAll('.selrow')];
+      const rects = rows.map(r => r.getBoundingClientRect());
+      const mids  = rects.map(b => (b.top + b.bottom) / 2);
+      const fromIdx = rows.indexOf(row);
+      // row height incl. margin, for how far siblings must slide to open the gap
+      const gap = rects[0] ? (rects[Math.min(1,rects.length-1)].top - rects[0].top) || (rects[0].height + 8) : 0;
+      _drag = { handle, row, rows, rects, mids, gap, fromIdx, toIdx: fromIdx, startY: ev.clientY };
+      try { handle.setPointerCapture(ev.pointerId); } catch(_){}
+      // LIFT the dragged row out of the visual flow
+      row.style.zIndex = '50';
+      row.style.position = 'relative';
+      row.style.boxShadow = '0 8px 24px rgba(0,0,0,0.55)';
+      row.style.background = '#12203a';
+      row.style.transition = 'none';
+      row.style.willChange = 'transform';
+      handle.style.cursor = 'grabbing';
+      // let siblings animate as the gap opens
+      rows.forEach(r => { if (r !== row) r.style.transition = 'transform 140ms ease'; });
+    });
+
+    handle.addEventListener('pointermove', (ev) => {
+      if (!_drag) return;
+      ev.preventDefault();
+      const { rows, mids, gap, fromIdx, startY, row } = _drag;
+      const y = ev.clientY;
+      // 1. dragged row follows the finger
+      row.style.transform = `translateY(${y - startY}px)`;
+      // 2. compute target slot (same math as R144)
+      let toIdx = 0;
+      for (let i = 0; i < mids.length; i++){ if (y > mids[i]) toIdx = i + 1; }
+      if (toIdx > fromIdx) toIdx -= 1;
+      toIdx = Math.max(0, Math.min(rows.length - 1, toIdx));
+      _drag.toIdx = toIdx;
+      // 3. slide the OTHER rows to open a gap where the dragged row will land
+      rows.forEach((r, i) => {
+        if (r === row) return;
+        let shift = 0;
+        if (fromIdx < toIdx && i > fromIdx && i <= toIdx) shift = -gap;   // dragging DOWN: rows above target rise
+        else if (fromIdx > toIdx && i >= toIdx && i < fromIdx) shift = gap; // dragging UP: rows below target drop
+        r.style.transform = shift ? `translateY(${shift}px)` : '';
+      });
+    });
+
+    const finish = (ev) => {
+      if (!_drag) return;
+      const { row, handle, rows, fromIdx, toIdx } = _drag;
+      try { handle.releasePointerCapture(ev.pointerId); } catch(_){}
+      // clear all inline drag styling
+      rows.forEach(r => { r.style.transform=''; r.style.transition=''; r.style.zIndex=''; r.style.position=''; r.style.boxShadow=''; r.style.willChange=''; });
+      row.style.background = '#05070d';
+      handle.style.cursor = 'grab';
+      _drag = null;
+      if (fromIdx !== toIdx) reorderSel(fromIdx, toIdx);   // re-render happens inside
+    };
+    handle.addEventListener('pointerup', finish);
+    handle.addEventListener('pointercancel', finish);
+  });
+}
+function removeSel(cid){
+  // R140: an expired event is no longer in _evReg (the current-scan registry), so the old
+  // `_evReg.get(cid); if(!e) return;` bailed silently — the ✕ did nothing and stale/expired
+  // games were un-removable, jamming the panel with unhydratable slides. Resolve the key from
+  // _evReg if present, else from the _selCid map built by drawSelected, so ANY selected row
+  // (live, future, OR expired) can always be removed.
+  const e = _evReg.get(cid);
+  const key = e ? e.key : _selCid.get(cid);
+  console.log('[selector] removeSel cid=', cid, '→ key=', key, '| had?', key ? sel.has(key) : 'n/a');
+  if (!key){
+    // R141: last-resort — cid couldn't resolve to a key via either map. Brute-force match:
+    // find the sel entry whose cssId(key) equals this cid and delete it directly. This makes
+    // the ✕ work even if the row-registration path was somehow missed.
+    let hit=null;
+    for (const k of sel.keys()){ if (cssId(k) === cid){ hit=k; break; } }
+    if (hit){ sel.delete(hit); saveSel(); console.log('[selector] removeSel brute-forced', hit); count(); drawSelected(); return; }
+    console.warn('[selector] removeSel: NO key AND no brute-force match for', cid, '— keys:', [...sel.keys()]);
+    return;
+  }
+  sel.delete(key); saveSel();   // R97: persist
+  // sync the main-list checkbox if it's rendered
+  const box = document.querySelector(`#ev-${cid} input[type=checkbox]`);
+  if (box){ box.checked = false; const row = document.getElementById('ev-'+cid); if (row) row.classList.remove('on'); }
+  count(); drawSelected();
+}
+
+function endDate(rec){
+  if (rec.window==='weekend'){ const d=new Date(); const add=(7-d.getDay())%7; d.setDate(d.getDate()+add); return ymd(d); }
+  return rec.date;
+}
+// R141: single source of truth for the published JSON, built LIVE from `sel` every time.
+function buildSelJson(){
+  const out = {
+    v: 1,
+    updated: new Date().toISOString(),
+    events: [...sel.values()].map((r,i)=>({
+      league: r.path, label: r.league, espnId: r.id, title: r.title,
+      showFrom: r.date, showUntil: endDate(r), rank: i+1   // R143: priority rank (1 = highest)
+    })),
+    watch: { teams: [...stars.values()] }   // ★ persistent — shown whenever they play
+  };
+  return JSON.stringify(out, null, 2);
+}
+function showOut(){
+  document.getElementById('json').value = buildSelJson();
+  document.getElementById('modal').classList.add('show');
+}
+const REPO='mikeylegs/sports', FILE='selections.json';
+document.addEventListener('DOMContentLoaded',()=>{ const t=localStorage.getItem('gh-token'); if(t) document.getElementById('tok').value=t; });
+async function publish(){
+  const btn=document.getElementById('pub');
+  const tok=document.getElementById('tok').value.trim();
+  if(!tok){ btn.textContent='NEED TOKEN ↓'; setTimeout(()=>btn.textContent='PUBLISH TO PANEL',1800); return; }
+  localStorage.setItem('gh-token',tok);
+  btn.disabled=true; btn.textContent='PUBLISHING…';
+  try{
+    const H={Authorization:'Bearer '+tok, Accept:'application/vnd.github+json'};
+    let sha;
+    try{ const r=await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE}`,{headers:H});
+         if(r.ok) sha=(await r.json()).sha; }catch(_){}
+    // R141: regenerate from `sel` NOW — do not trust the textarea (a stale REVIEW/EXPORT
+    // snapshot was publishing removed games back onto the panel).
+    const _json = buildSelJson();
+    document.getElementById('json').value = _json;   // keep the textarea honest too
+    const body={message:'selections '+new Date().toISOString().slice(0,16),
+      content:btoa(unescape(encodeURIComponent(_json)))};
+    if(sha) body.sha=sha;
+    const r=await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE}`,
+      {method:'PUT',headers:H,body:JSON.stringify(body)});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    btn.textContent='✓ PUBLISHED (live in ~1 min)';
+    setTimeout(loadPublished, 1500);   // R97: re-fetch ground truth so the banner flips to IN SYNC
+  }catch(e){ btn.textContent='FAILED: '+e.message; }
+  finally{ btn.disabled=false; setTimeout(()=>btn.textContent='PUBLISH TO PANEL',4000); }
+}
+function copyJson(){ navigator.clipboard.writeText(document.getElementById('json').value); }
+function dl(){
+  const b = new Blob([document.getElementById('json').value], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download='selections.json'; a.click();
+}
+</script>
+</body>
+</html>
