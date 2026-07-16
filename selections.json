@@ -1,22 +1,51 @@
 {
   "v": 1,
-  "updated": "2026-07-15T20:58:56.499Z",
+  "updated": "2026-07-16T02:06:03.464Z",
   "events": [
-    {
-      "league": "soccer/fifa.world",
-      "label": "World Cup",
-      "espnId": "760515",
-      "title": "Argentina @ England",
-      "showFrom": "20260715",
-      "showUntil": "20260715"
-    },
     {
       "league": "golf/pga",
       "label": "Golf (PGA)",
       "espnId": "401811957",
       "title": "The Open",
       "showFrom": "20260716",
-      "showUntil": "20260716"
+      "showUntil": "20260716",
+      "rank": 1
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816144",
+      "title": "Pittsburgh Pirates @ Cleveland Guardians",
+      "showFrom": "20260717",
+      "showUntil": "20260717",
+      "rank": 2
+    },
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760515",
+      "title": "Argentina @ England",
+      "showFrom": "20260715",
+      "showUntil": "20260715",
+      "rank": 3
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816153",
+      "title": "San Francisco Giants @ Seattle Mariners",
+      "showFrom": "20260717",
+      "showUntil": "20260717",
+      "rank": 4
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401872178",
+      "title": "Tampa Bay Rays @ Boston Red Sox",
+      "showFrom": "20260717",
+      "showUntil": "20260717",
+      "rank": 5
     }
   ],
   "watch": {
