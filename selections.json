@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-07-16T02:06:03.464Z",
+  "updated": "2026-07-16T09:07:50.389Z",
   "events": [
     {
       "league": "golf/pga",
@@ -14,19 +14,19 @@
     {
       "league": "baseball/mlb",
       "label": "MLB",
-      "espnId": "401816144",
-      "title": "Pittsburgh Pirates @ Cleveland Guardians",
+      "espnId": "401872178",
+      "title": "Tampa Bay Rays @ Boston Red Sox",
       "showFrom": "20260717",
       "showUntil": "20260717",
       "rank": 2
     },
     {
-      "league": "soccer/fifa.world",
-      "label": "World Cup",
-      "espnId": "760515",
-      "title": "Argentina @ England",
-      "showFrom": "20260715",
-      "showUntil": "20260715",
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816144",
+      "title": "Pittsburgh Pirates @ Cleveland Guardians",
+      "showFrom": "20260717",
+      "showUntil": "20260717",
       "rank": 3
     },
     {
@@ -39,12 +39,12 @@
       "rank": 4
     },
     {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401872178",
-      "title": "Tampa Bay Rays @ Boston Red Sox",
-      "showFrom": "20260717",
-      "showUntil": "20260717",
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760515",
+      "title": "Argentina @ England",
+      "showFrom": "20260715",
+      "showUntil": "20260715",
       "rank": 5
     }
   ],
