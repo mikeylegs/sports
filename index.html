@@ -4752,8 +4752,8 @@ const RECAP = {
     // and a bigger multi-day pool means fewer repeats). maxAgeDays caps how far back.
     'mlb-daily':   { ttlMs:2*3600e3,   // R125: quota — 2h TTL, not 1h
                      label:'MLB Top Plays', handle:'MLB', query:'top plays',
-                     titleHint:/best mlb highlights|top plays|plays of the (night|day)/i,
-                     require:/best mlb highlights|top plays|plays of the (night|day)/i,
+                     titleHint:/best mlb highlights|top \d+ (?:mlb )?plays|top plays|plays ranked|plays of the (night|day)/i,
+                     require:/best mlb highlights|top \d+ (?:mlb )?plays|top plays|plays ranked|plays of the (night|day)/i,
                      rss:false,   // R124: API-primary — RSS ignores `query`, so all 3 MLB sources shared one pool.
                      timeless:true, maxAgeDays:4, glow:'rgba(255,255,255,0.85)' },
     // all-games daily recap ("Highlights from ALL GAMES on 7/7 (...)") — league-wide filler.
@@ -4766,8 +4766,8 @@ const RECAP = {
     // season-so-far / best-of compilations — deep timeless filler for late-night gaps.
     'mlb-season':  { ttlMs:2*3600e3,   // R125: quota — 2h TTL, not 1h
                      label:'MLB Top Plays', handle:'MLB', query:'top plays of the season',
-                     titleHint:/season so far|best (?:plays|moments)|top plays of (?:the )?(?:2026|season)/i,
-                     require:/season so far|best (?:plays|moments)|top plays of (?:the )?(?:2026|season)/i,
+                     titleHint:/season so far|best (?:plays|moments)|top \d+ plays|top plays of (?:the )?(?:2026|season)/i,
+                     require:/season so far|best (?:plays|moments)|top \d+ plays|top plays of (?:the )?(?:2026|season)/i,
                      rss:false,   // R124: API-primary — RSS ignores `query`, so all 3 MLB sources shared one pool.
                      timeless:true, maxAgeDays:60, glow:'rgba(255,255,255,0.85)' },
     // R126: PINNED. The Yankees win song is ONE clip — FrankSinatra-official, ~79M views.
@@ -6319,8 +6319,13 @@ async function resolveVideo(sourceId){
   const team = RECAP_MLB_TEAM[sourceId];
   if (team){
     try {
-      const pk = (typeof ucsMlbGame === 'function')
-        ? (await ucsMlbGame(team) || {}).gamePk : null;      // matchup already carries it
+      // A recap only exists for a FINAL game. ucsMlbGame prioritizes live/imminent, so
+      // on a game day it returns TODAY's un-played game — handing that pk to mlbRecap
+      // finds no recap → falls through to YouTube → generic "Top Plays" substitutes for
+      // the team recap (Mike's recurring hoh-nym miss). Pass the pk ONLY when the matchup
+      // is final; otherwise pass null so mlbRecap resolves the last final itself.
+      const _um = (typeof ucsMlbGame === 'function') ? await ucsMlbGame(team) : null;
+      const pk = (_um && _um.gameStatus === 'final') ? _um.gamePk : null;
       const r = await mlbRecap(team, pk);
       if (r){
         // A4 (r141): mp4 recaps bypass the pool's SEEN gate (no videoId), so the
