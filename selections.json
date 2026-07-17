@@ -1,16 +1,7 @@
 {
   "v": 1,
-  "updated": "2026-07-17T13:31:53.926Z",
+  "updated": "2026-07-17T13:34:24.437Z",
   "events": [
-    {
-      "league": "golf/pga",
-      "label": "Golf (PGA)",
-      "espnId": "401811957",
-      "title": "The Open",
-      "showFrom": "20260716",
-      "showUntil": "20260716",
-      "rank": 1
-    },
     {
       "league": "soccer/fifa.world",
       "label": "World Cup",
@@ -18,7 +9,7 @@
       "title": "England @ France",
       "showFrom": "20260718",
       "showUntil": "20260718",
-      "rank": 2
+      "rank": 1
     },
     {
       "league": "soccer/fifa.world",
@@ -27,6 +18,15 @@
       "title": "Argentina @ Spain",
       "showFrom": "20260719",
       "showUntil": "20260719",
+      "rank": 2
+    },
+    {
+      "league": "golf/pga",
+      "label": "Golf (PGA)",
+      "espnId": "401811957",
+      "title": "The Open",
+      "showFrom": "20260716",
+      "showUntil": "20260716",
       "rank": 3
     }
   ],
