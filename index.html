@@ -2011,6 +2011,32 @@ async function mlbLastFinalGamePk(teamId, days = 2) {
   return games.length ? games[0].gamePk : null;
 }
 
+/* ★ B1 (r141) — LIVE PER-PLAY HITS from MLB's own feed. The no-hitter detector's
+   situation.awayHits/homeHits come from ESPN's competitor.hits, which is undefined
+   live (every other competitor stat is nested), so no-hit bids never fire. MLB's
+   feed carries real per-play hits at liveData.linescore.teams.{away,home}.hits —
+   shape CONFIRMED live (paste probe: {away:4, home:2}). Same endpoint the companion
+   already uses. Returns {away,home} numbers or null; FAIL-SAFE (fetch/parse fail →
+   null → detector stays silent, exactly today's behavior — never a phantom no-no).
+   ⚠ NOT YET WIRED into the poll: needs a league-wide ESPN→gamePk join + a fetch
+   cadence, landed alongside B2's live smoke test. This is the proven building block. */
+const _mlbHitsCache = new Map();   // gamePk -> {t, hits}
+async function mlbLinescoreHits(gamePk){
+  if (!gamePk) return null;
+  const hit = _mlbHitsCache.get(gamePk);
+  if (hit && Date.now() - hit.t < 30000) return hit.hits;   // 30s TTL (hits change ~per-batter)
+  try {
+    const raw = await proxyFetchText('https://statsapi.mlb.com/api/v1.1/game/' + gamePk + '/feed/live');
+    if (!raw) return null;
+    const teams = JSON.parse(raw)?.liveData?.linescore?.teams;
+    if (!teams) return null;
+    const num = v => (typeof v === 'number' ? v : (v != null && !isNaN(+v)) ? +v : null);
+    const hits = { away: num(teams.away?.hits), home: num(teams.home?.hits) };
+    _mlbHitsCache.set(gamePk, { t: Date.now(), hits });
+    return hits;
+  } catch (_) { return null; }
+}
+
 /* ★ THE RESOLVER. Director asks "give me a Yankees recap" → this.
    Returns {url,title,duration,gamePk,source:'mlb'} or null.
    null is not a failure — it means "fall through to the existing YouTube path". */
@@ -4694,6 +4720,12 @@ const RECAP = {
     'NHL':'UCKLFMlGQ3aEzteuHBRgBFSg', 'NBA':'UCWJ2lWNubArHWmf3FIHbfcQ',
     'NFL':'UCDVYQ4Zhbm3S2dlz7P1GBDg', 'pgatour':'UCQl18L5vfX9hCSclV_F6XpQ',
     'cbsgolf':'UCyeer4UbTK9pzZL9_hhCimA',
+    // A5 (r141, Mike-supplied): The Open coverage. NBC Sports = US network-exclusive
+    // broadcaster (primary during THE_OPEN LIVE); The R&A = tournament's own channel
+    // (filler fallback). Wired via golf-fill's THE_OPEN LIVE phase — scoped to the event
+    // only, so normal PGA weeks are byte-identical.
+    'nbcgolf':'UCqZQlzSHbVJrwrn5XvzrzcA',
+    'randa':'UCZ5fOnOmQunH18xZGhu9f_Q',
     // R81: CORRECTED Wimbledon ID (old UCnbXd_8...=404/wrong). All Slam IDs Mike-verified
     // via feed <title>. Wimbledon LIVE (active tourney); others PARKED (activate their
     // filler source in-season by adding to LEAGUES/cycle + a tennis-fill variant).
@@ -4845,6 +4877,7 @@ const RECAP = {
                     lifecycle:{ event:'THE_OPEN', phases:{
                       EVENT_IMMINENT:{ scoreBoost:5, windowH:96 },   // previews are the story; widen
                       LIVE:{ scoreBoost:8, windowH:48,
+                             handle:'nbcgolf', fallback:'randa-open',   // A5: NBC primary, R&A fallback — Open-scoped only
                              require(){ return /open championship|round|highlights|leader/i; },
                              reject:/preview|picks to win|predictions|power rankings|contenders|pretenders/i },
                       DECAYING:{ windowH:12 },
@@ -4864,6 +4897,14 @@ const RECAP = {
                     titleHint(){ const d=nowET().getDay();
                                  return (d>=1&&d<=3) ? /preview|picks|breakdown|course/i : /shot|hole|putt|eagle|birdie|best|highlight/i; },
                     glow:'rgba(90,180,90,0.9)' },
+    // A5 (r141): The R&A fallback for The Open — reached ONLY as golf-fill's Open-LIVE
+    // fallback (never in the cycle itself). Same gates as golf-fill's LIVE phase.
+    'randa-open': { label:'The Open', handle:'randa', priority:2, timeless:true, maxAgeDays:10,
+                    query:'The Open Championship highlights', windowH:48,
+                    require:/open championship|round|highlights|leader|the open/i,
+                    reject:/preview|picks to win|predictions|power rankings|contenders|pretenders/i,
+                    titleHint:/highlight|round|leader|best|shot/i,
+                    glow:'rgba(212,175,55,0.95)' },
     'tennis-fill':{ label:'Tennis',    handle:'Wimbledon', query:'tennis highlights', priority:2, timeless:true, maxAgeDays:45,
                     windowH: 48,
                     // R137 LIFECYCLE: MAJORS ONLY. dormantUnlessPhase → the source is OFF
@@ -5450,6 +5491,20 @@ async function findRecap(sourceId){
     pool = pool.filter(x => !_recapDeadIds.has(x.videoId));
     _aud('DEAD 150/101', _preDead, pool, 'YouTube "embedding disabled by owner" — unplayable, skip not retry');
   }
+  // ── A1 (r141): PORTRAIT GATE (probe-proven 6/6, portrait-filter-sandbox.html) ──
+  // Zero-fetch pre-filter (#shorts in title), then the oardefault.jpg probe on
+  // survivors: portraits serve oardefault at ratio<1; landscape 404s it. Parallel,
+  // cached per id, FAIL-OPEN (timeout/err = pass — a slow thumb must never empty a
+  // pool). Reject-more only — cannot admit anything an earlier gate rejected. NOT
+  // never-empty: an all-portrait pool correctly yields to filler. Do NOT gate by
+  // duration — MLB's best HR clips run <60s (handoff: length is not the signal).
+  {
+    const _prePort = pool;
+    pool = pool.filter(x => !/#shorts/i.test(x.title || ''));
+    const _pFlags = await Promise.all(pool.map(x => isPortrait(x.videoId)));
+    pool = pool.filter((x, i) => !_pFlags[i]);
+    _aud('PORTRAIT', _prePort, pool, 'oardefault ratio<1 or #shorts title — vertical video rejected');
+  }
   {
     const _preSeen = pool;
     const cd = src.timeless ? RECAP_COOLDOWN_MS : 12*60000;
@@ -5823,6 +5878,27 @@ function recapOverlay(){
 }
 
 const _recapDeadIds = new Set();   // R129: videoIds that threw player-error 150/101
+// A1 (r141): portrait discriminator. i.ytimg.com/vi/{id}/oardefault.jpg ("original
+// aspect ratio default") EXISTS only for portrait uploads (ratio ~0.56); landscape
+// videos 404 it. No API key, no CORS issue for dimension reads via Image. Cached as
+// a Promise per id so each video costs at most ONE probe per session, and concurrent
+// gate runs share the same in-flight probe. Fail-open on timeout/error.
+const _portraitCache = new Map();   // videoId -> Promise<boolean>
+function isPortrait(videoId){
+  if (!videoId) return Promise.resolve(false);
+  if (!_portraitCache.has(videoId)){
+    _portraitCache.set(videoId, new Promise(res => {
+      let settled = false;
+      const done = v => { if (!settled){ settled = true; res(v); } };
+      const img = new Image();
+      const t = setTimeout(() => done(false), 2500);        // slow/blocked → pass
+      img.onload  = () => { clearTimeout(t); done(img.naturalHeight > 0 && (img.naturalWidth / img.naturalHeight) < 1); };
+      img.onerror = () => { clearTimeout(t); done(false); }; // 404 = landscape → pass
+      img.src = 'https://i.ytimg.com/vi/' + videoId + '/oardefault.jpg';
+    }));
+  }
+  return _portraitCache.get(videoId);
+}
                                    // ("embedding disabled by owner"). Session-scoped, dropped
                                    // from every pool so a dead clip is skipped, not retried.
 const _recapShownAt = {};   // R57 videoId → last-shown ms (anti-monotony throttle)
@@ -6247,9 +6323,20 @@ async function resolveVideo(sourceId){
         ? (await ucsMlbGame(team) || {}).gamePk : null;      // matchup already carries it
       const r = await mlbRecap(team, pk);
       if (r){
-        window._recapVia = 'mlb';
-        return { kind:'mp4', url:r.url, title:r.title, lengthSec:_hmsToSec(r.duration),
-                 exact:true, source:'mlb', gamePk:r.gamePk };
+        // A4 (r141): mp4 recaps bypass the pool's SEEN gate (no videoId), so the
+        // same gamePk recap was re-served every hoh-nym turn (Mike's looping bug).
+        // Throttle by gamePk on the same 12-min window YouTube team recaps use: if
+        // shown recently, DON'T return the mp4 — fall through to YouTube, and if that
+        // also yields, resolveVideo returns null → filler (Mike's yield rule holds).
+        const _mk = 'mlb:' + r.gamePk;
+        const _shown = _recapShownAt[_mk];
+        if (_shown && (Date.now() - _shown) < 12*60000){
+          window._recapFailReason = 'MP4-COOLDOWN (recap shown <12m ago — advancing past re-serve)';
+        } else {
+          window._recapVia = 'mlb';
+          return { kind:'mp4', url:r.url, title:r.title, lengthSec:_hmsToSec(r.duration),
+                   exact:true, source:'mlb', gamePk:r.gamePk };
+        }
       }
     } catch(_){}
     // no recap cut yet → fall through. NOT an error.
@@ -6287,6 +6374,7 @@ async function playRecap(sourceId, opts){
     if (!video && src.fallback){ try { video = await resolveVideo(src.fallback); } catch(_){} }
     if (!video){ ytltRecord({ source:sourceId, note: window._recapFailReason || 'NO VIDEO (unknown)' }); window._recapFailReason = null; _recapActive = false; if (opts.onNoVideo) opts.onNoVideo(); return false; }
     if (video.videoId) _recapShownAt[video.videoId] = Date.now();   // R57: stamp for anti-monotony scoring
+    else if (video.kind === 'mp4' && video.gamePk) _recapShownAt['mlb:' + video.gamePk] = Date.now();   // A4: mp4 recaps have no videoId — key the cooldown by gamePk
     ytltRecord({ source:sourceId, title:video.title, videoId:video.videoId,
                  bottom:recapBadgeLabel(sourceId), lengthSec:video.lengthSec||null,
                  published:video.published||null });   // R85 YTLT: log the chosen video
@@ -6316,7 +6404,25 @@ async function playRecap(sourceId, opts){
           v.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;background:#000;';
           v.onplaying = () => revealRecap();
           v.onended   = () => endRecap();
-          v.onerror   = () => { window._recapEvt = 'mp4 ERROR'; endRecap(); };
+          v.onerror   = () => {
+            const c = v.error && v.error.code;   // 1 abort · 2 network · 3 decode · 4 src-unsupported
+            window._recapEvt = 'mp4 ERROR ' + (c || '?');
+            ytltRecord({ source: sourceId, title: video.title, note: 'MP4-ERROR ' + (c || '?') });
+            endRecap();
+          };
+          // A2 (r141): DIAGNOSE-ONLY instrumentation for the Alvarez won't-autoplay bug.
+          // The id:— len:390s entries ARE this mp4 branch (mlbRecap has no videoId).
+          // Record the element lifecycle so the ?ytlog=1 HUD shows exactly where a
+          // failing recap dies (network stall vs decode vs autoplay-reject). Listeners
+          // + a record-only stall probe — NO playback behavior changed.
+          ['loadstart','waiting','stalled','suspend','canplay'].forEach(ev =>
+            v.addEventListener(ev, () => { window._recapEvt = 'mp4 ' + ev; }));
+          const _mp4StallT = setTimeout(() => {
+            if (!_recapRevealed && window._recapMp4 === v)
+              ytltRecord({ source: sourceId, title: video.title,
+                           note: 'MP4-STALL — no playing after 12s (last evt: ' + (window._recapEvt||'none') + ')' });
+          }, 12000);
+          v.addEventListener('playing', () => clearTimeout(_mp4StallT), { once: true });
           host.appendChild(v);
           window._recapMp4 = v;
           // autoplay policy: try with sound; on rejection retry muted so playback is
@@ -6500,9 +6606,14 @@ function mlbMoments(g){
     const awayBatting = half.startsWith('top') || half.startsWith('mid');
     const battingHits = awayBatting ? s.awayHits : s.homeHits;
     const battingErr  = awayBatting ? s.awayErrors : s.homeErrors;
-    // hits of BOTH teams — a no-no is about the team being no-hit (either)
-    const noHitAway = (s.awayHits === 0);
-    const noHitHome = (s.homeHits === 0);
+    // hits of BOTH teams — a no-no is about the team being no-hit (either).
+    // B1 (r141) NULL-GUARD: only a REAL numeric 0 is a no-hitter. ESPN's competitor.hits
+    // is undefined live (→ situation.awayHits=null); === 0 already excludes null, but make
+    // it explicit so no future refactor (loose ==, ?? 0, || 0) can turn missing data into a
+    // phantom no-hit bid. When the hits-source plumbing lands, this stays correct.
+    const _isNoHit = v => (typeof v === 'number' && v === 0);
+    const noHitAway = _isNoHit(s.awayHits);
+    const noHitHome = _isNoHit(s.homeHits);
     [ [noHitAway, s.awayErrors, g.awayAbbr, g.homeAbbr],
       [noHitHome, s.homeErrors, g.homeAbbr, g.awayAbbr] ].forEach(([noHit,errs,heldAbbr,pitchAbbr])=>{
       if (noHit === true && inn >= 6) {
@@ -6609,33 +6720,58 @@ const BRAIN = {
   // (checkBigMoments still owns those — no double-fire); (4) whole path behind _brainFire.
   _lastFireAt: 0,
   _firedKeys: {},
+  QUEUE_TTL_MS: 300000,   // B4: a queued moment older than 5 min is no longer "now" — expire it
   fireKey(c){ return `${c.meta.game}|${c.type}|${c.meta.inning||''}|${(c.meta.who||'').slice(0,20)}`; },
+  // ── B4 (r141): CROSS-POLL TAKEOVER QUEUE (Mike's principle #4 — "let the first
+  // play out, then straight to the next"). The old loop fired ONE takeover then
+  // `break`, so a second coincident tier-3 survived only by feed-lingering luck.
+  // Now un-fired tier-3s are enqueued WITH a self-contained {cand, game} snapshot
+  // (so the moment fires next poll even after its feed entry rolls off), ranked by
+  // pinRank (NYY/historic jump the line), deduped by fireKey, expired after TTL.
+  // Whole path still behind _brainFire (default OFF) — inert until B2's smoke test.
   fire(decision, games){
     const now = Date.now();
-    if (now - this._lastFireAt < this.COOLDOWN_MS) return;        // rail 1: cooldown
-    const gameById = {}; (games||[]).forEach(g => { gameById[g.id||(g.awayAbbr+g.homeAbbr)] = g; });
+
+    // 1. Drop queued entries that already fired or have gone stale.
+    this._takeoverQueue = this._takeoverQueue.filter(e =>
+      !this._firedKeys[e.key] && (now - e.at) < this.QUEUE_TTL_MS);
+
+    // 2. Enqueue this poll's fresh, un-fired, non-favorite tier-3s (dedup by key).
+    //    Snapshot the backing game NOW so a later poll can still build the payload.
     for (const c of decision.takeovers){
-      if (c.mine) continue;                                       // rail 3: teams handled by checkBigMoments
+      if (c.mine) continue;                                       // rail 3: favorites → checkBigMoments
       const key = this.fireKey(c);
       if (this._firedKeys[key]) continue;                         // rail 2: fire-once per moment
-      // find the backing game to build the payload
+      if (this._takeoverQueue.some(e => e.key === key)) continue; // already waiting
       const g = (games||[]).find(x => `${x.awayAbbr}@${x.homeAbbr}` === c.meta.game);
       if (!g) continue;
+      this._takeoverQueue.push({ key, cand: c, game: g, at: now });
+    }
+
+    // 3. Cooldown gate — DON'T drain the queue; the waiters stay for next poll.
+    if (now - this._lastFireAt < this.COOLDOWN_MS) return;        // rail 1: cooldown
+
+    // 4. Fire the single highest-ranked eligible waiter; the rest remain queued.
+    const ranked = this._takeoverQueue
+      .filter(e => !this._firedKeys[e.key])
+      .sort((a,b) => this.pinRank(b.cand) - this.pinRank(a.cand) || a.at - b.at);
+    for (const e of ranked){
       let payload = null;
-      try { payload = (typeof brainTakeoverPayload==='function') ? brainTakeoverPayload(c, g) : null; } catch(e){}
+      try { payload = (typeof brainTakeoverPayload==='function') ? brainTakeoverPayload(e.cand, e.game) : null; } catch(err){}
       if (!payload) continue;
-      // R140: tag the resolvable team so showTakeover's tkolog hook logs Brain-path
-      // fires (checkBigMoments sets opts.mlbTeam; Brain sets opts.brainTeam). firedVia
-      // then distinguishes them in the log — the "which path fires" answer for the slate.
-      payload.brainTeam = c.meta.team || (BRAIN_MY_TEAMS.has(g.awayAbbr)?g.awayAbbr:BRAIN_MY_TEAMS.has(g.homeAbbr)?g.homeAbbr:g.homeAbbr);
+      const g = e.game;
+      // R140: tag the resolvable team so showTakeover's tkolog hook logs Brain-path fires.
+      payload.brainTeam = e.cand.meta.team || (BRAIN_MY_TEAMS.has(g.awayAbbr)?g.awayAbbr:BRAIN_MY_TEAMS.has(g.homeAbbr)?g.homeAbbr:g.homeAbbr);
       try {
         showTakeover(payload);
         this._lastFireAt = now;
-        this._firedKeys[key] = now;
-        if (window._brainDebug){ (window._brainLog=window._brainLog||[]).push(`🔥 FIRED: ${c.meta.label} (${c.type}) ${c.meta.game}`); }
-      } catch(e){ if (window._brainDebug) console.warn('[brain] fire failed:', e.message); }
+        this._firedKeys[e.key] = now;
+        this._takeoverQueue = this._takeoverQueue.filter(x => x.key !== e.key);   // dequeue the one that fired
+        if (window._brainDebug){ (window._brainLog=window._brainLog||[]).push(`🔥 FIRED: ${e.cand.meta.label} (${e.cand.type}) ${e.cand.meta.game}${this._takeoverQueue.length?` · ${this._takeoverQueue.length} queued`:''}`); }
+      } catch(err){ if (window._brainDebug) console.warn('[brain] fire failed:', err.message); }
       break;   // one takeover per evaluate — the queue advances next poll after cooldown
     }
+
     // prune old fired-keys hourly so a re-occurring key (new game day) can fire again
     if (Object.keys(this._firedKeys).length > 200){
       for (const k in this._firedKeys){ if (now - this._firedKeys[k] > 3600000) delete this._firedKeys[k]; }
@@ -8283,7 +8419,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r140-r105-midinning-final-fix';
+const BUILD_MARKER = 'r141-portrait-gate';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
