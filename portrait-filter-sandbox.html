@@ -1,0 +1,178 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Portrait Filter — sandbox</title>
+<style>
+:root{
+  --bg:#070b12; --panel:#0c121d; --line:#1c2838; --ink:#e6edf7; --dim:#8695ab;
+  --pass:#3ddc84; --reject:#f87171; --probe:#7dd3fc; --amber:#fbbf24;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);
+  font-family:ui-monospace,"SF Mono",Menlo,monospace;-webkit-font-smoothing:antialiased;
+  padding:22px;max-width:960px;margin:0 auto}
+h1{font-size:16px;letter-spacing:.14em;text-transform:uppercase;color:var(--probe);margin-bottom:2px}
+.sub{color:var(--dim);font-size:12px;margin-bottom:16px;line-height:1.5}
+.sub b{color:var(--ink)}
+.controls{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+input{flex:1;min-width:200px;background:#0a0f18;border:1px solid var(--line);border-radius:8px;
+  color:var(--ink);padding:9px 12px;font:inherit;font-size:12px}
+button{background:#13203a;border:1px solid var(--line);color:var(--ink);border-radius:8px;
+  padding:9px 16px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:.03em}
+button:hover{background:#1a2b4d;border-color:#2c4066}
+.grid{display:grid;gap:12px}
+.row{display:grid;grid-template-columns:120px 1fr auto;gap:14px;align-items:center;
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;
+  border-left-width:4px}
+.row.pass{border-left-color:var(--pass)}
+.row.reject{border-left-color:var(--reject)}
+.row.pending{border-left-color:var(--line)}
+.thumb{width:120px;height:90px;border-radius:6px;background:#000 center/cover no-repeat;
+  border:1px solid var(--line);position:relative;overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:contain;background:#000}
+.meta .id{font-size:13px;font-weight:700;color:var(--ink)}
+.meta .detail{font-size:11px;color:var(--dim);margin-top:5px;line-height:1.5}
+.meta .detail b{color:var(--amber)}
+.verdict{font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;text-align:right;white-space:nowrap}
+.verdict.pass{color:var(--pass)}
+.verdict.reject{color:var(--reject)}
+.verdict.pending{color:var(--dim)}
+.summary{margin-top:18px;padding:14px 16px;background:#0a1a0f;border:1px solid #1f5b3a;border-radius:10px;
+  font-size:13px;line-height:1.6;color:var(--ink)}
+.summary.fail{background:#1a0e0e;border-color:#5a2a2a}
+.summary b{color:var(--pass)}
+.summary.fail b{color:var(--reject)}
+.fn{margin-top:16px;background:#0a0f18;border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.fn h2{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--probe);margin-bottom:8px}
+.fn pre{font-size:11.5px;line-height:1.6;color:#cbd5e1;white-space:pre-wrap;word-break:break-word}
+.tag{display:inline-block;font-size:9px;font-weight:800;padding:1px 6px;border-radius:4px;letter-spacing:.5px;margin-left:6px;vertical-align:1px}
+.tag.p{background:#2a1810;color:var(--amber)} .tag.l{background:#0b2018;color:var(--pass)}
+</style></head>
+<body>
+
+<h1>Portrait Filter · Sandbox</h1>
+<p class="sub">Proves the <b>oardefault</b> aspect-detection against known portraits + landscape controls. Isolated — touches nothing live. Green left-edge = passes (keep), red = rejected (portrait/Short). Add any videoId to test.</p>
+
+<div class="controls">
+  <input id="idInput" placeholder="paste a videoId to test…" spellcheck="false">
+  <button id="addBtn">Test ID</button>
+  <button id="resetBtn">Reset defaults</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="summary" id="summary" style="display:none"></div>
+
+<div class="fn">
+  <h2>The drop-in filter (this is what goes in the panel)</h2>
+  <pre id="fnCode"></pre>
+</div>
+
+<script>
+// ── known test set (from Mike's director log) ──
+const SEED = [
+  {id:'IwzESXtiOnY', kind:'p'},   // foxsoccer-fill "Soccer"
+  {id:'oB2mK8eJli4', kind:'p'},   // fifa-fill "World Cup"
+  {id:'WyN5h9ZtFOQ', kind:'p'},   // fifa-fill "Hyundai Goal"
+  {id:'diVgi35b-j4', kind:'p'},   // mlb-daily "CPL Wilbur" (source-agnostic proof)
+  {id:'ZzRqNteX8YQ', kind:'l'},   // mlb-daily "Top Plays" (landscape)
+  {id:'VfUaZcme8Kw', kind:'l'},   // mlb-allgames "Highlights" (landscape)
+];
+
+// ── THE FILTER (identical to what ships) ──────────────────────────────────
+// Loads oardefault.jpg; portraits have it with ratio<1, landscape 404s.
+// Returns {portrait:bool, reason, oarW, oarH, ratio}.
+function probeAspect(id){
+  return new Promise(res=>{
+    const im = new Image();
+    im.onload = ()=>{
+      // YT's grey "missing" placeholder is 120x90; treat as no-oardefault
+      if (im.naturalWidth===120 && im.naturalHeight===90)
+        return res({portrait:false, reason:'oardefault=placeholder → landscape', ratio:null});
+      const ratio = im.naturalWidth/im.naturalHeight;
+      res({ portrait: ratio<1, ratio:+ratio.toFixed(2),
+            oarW:im.naturalWidth, oarH:im.naturalHeight,
+            reason: ratio<1 ? `oardefault ${im.naturalWidth}x${im.naturalHeight} ratio ${ratio.toFixed(2)}<1 → PORTRAIT`
+                            : `oardefault ratio ${ratio.toFixed(2)}≥1 → landscape` });
+    };
+    im.onerror = ()=> res({portrait:false, reason:'oardefault 404 → landscape', ratio:null});
+    im.src = `https://i.ytimg.com/vi/${id}/oardefault.jpg`;
+  });
+}
+// belt & suspenders: cheap marker pre-filter (no fetch)
+function shortsMarker(id, title='', url=''){
+  return /#shorts/i.test(title) || /\/shorts\//i.test(url);
+}
+// ──────────────────────────────────────────────────────────────────────────
+
+const grid = document.getElementById('grid');
+const summaryEl = document.getElementById('summary');
+let items = [];
+
+function rowHtml(it){
+  const cls = it.status;
+  const v = it.status==='pending' ? 'testing…' : (it.portrait?'REJECT':'PASS');
+  return `<div class="row ${cls}" data-id="${it.id}">
+    <div class="thumb"><img src="https://i.ytimg.com/vi/${it.id}/hqdefault.jpg" alt=""></div>
+    <div class="meta">
+      <div class="id">${it.id}${it.kind==='p'?'<span class="tag p">expect portrait</span>':it.kind==='l'?'<span class="tag l">expect landscape</span>':''}</div>
+      <div class="detail">${it.reason||'probing oardefault…'}</div>
+    </div>
+    <div class="verdict ${cls}">${v}</div>
+  </div>`;
+}
+function render(){ grid.innerHTML = items.map(rowHtml).join(''); }
+
+async function test(it){
+  it.status='pending'; it.reason=''; render();
+  const r = await probeAspect(it.id);
+  it.portrait = r.portrait; it.reason = r.reason;
+  it.status = r.portrait ? 'reject' : 'pass';
+  render(); scoreboard();
+}
+function scoreboard(){
+  const done = items.filter(i=>i.status!=='pending');
+  const knownP = done.filter(i=>i.kind==='p'), knownL = done.filter(i=>i.kind==='l');
+  if(!knownP.length && !knownL.length){ summaryEl.style.display='none'; return; }
+  const pOk = knownP.filter(i=>i.portrait).length, lOk = knownL.filter(i=>!i.portrait).length;
+  const perfect = pOk===knownP.length && lOk===knownL.length;
+  summaryEl.style.display='block';
+  summaryEl.className = 'summary'+(perfect?'':' fail');
+  summaryEl.innerHTML = perfect
+    ? `<b>✓ FILTER WORKS.</b> ${pOk}/${knownP.length} known portraits rejected · ${lOk}/${knownL.length} known landscape passed. Clean separation — ship it.`
+    : `<b>⚠ MISMATCH.</b> portraits caught ${pOk}/${knownP.length} · landscape passed ${lOk}/${knownL.length}. Something slipped — inspect the detail lines.`;
+}
+
+function load(seed){
+  items = seed.map(s=>({id:s.id, kind:s.kind||'?', status:'pending', portrait:false, reason:''}));
+  render();
+  items.forEach(test);
+}
+
+document.getElementById('addBtn').onclick = ()=>{
+  const id = document.getElementById('idInput').value.trim();
+  if(!id) return;
+  const it = {id, kind:'?', status:'pending', portrait:false, reason:''};
+  items.unshift(it); render(); test(it);
+  document.getElementById('idInput').value='';
+};
+document.getElementById('idInput').addEventListener('keydown',e=>{ if(e.key==='Enter') document.getElementById('addBtn').click(); });
+document.getElementById('resetBtn').onclick = ()=> load(SEED);
+
+// show the shippable function text
+document.getElementById('fnCode').textContent =
+`// gate a candidate video BEFORE it enters rotation:
+async function isPortrait(videoId){
+  return new Promise(res=>{
+    const im = new Image();
+    im.onload  = ()=> res(!(im.naturalWidth===120 && im.naturalHeight===90)
+                          && im.naturalWidth < im.naturalHeight);
+    im.onerror = ()=> res(false);            // no oardefault → landscape
+    im.src = \`https://i.ytimg.com/vi/\${videoId}/oardefault.jpg\`;
+  });
+}
+// usage in the director: if (await isPortrait(id)) skip();
+// pair with cheap pre-filter: if (/#shorts/i.test(title) || /\\/shorts\\//.test(url)) skip();`;
+
+load(SEED);
+</script>
+</body></html>
