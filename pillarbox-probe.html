@@ -1,0 +1,79 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A1b pillarbox probe</title><style>
+body{background:#070b12;color:#e6edf7;font:13px/1.5 ui-monospace,Menlo,monospace;padding:14px;margin:0}
+h1{font-size:15px;color:#7dd3fc;margin:0 0 2px}
+.sub{color:#8695ab;font-size:11.5px;margin-bottom:12px}
+.vid{border:1px solid #1c2838;border-radius:8px;padding:10px 12px;margin:10px 0;background:#0c121d}
+.vt{font-weight:700;margin-bottom:6px}.vt span{color:#8695ab;font-weight:400;font-size:11px}
+.row{display:flex;gap:8px;margin:3px 0;font-size:12px}
+.row .n{width:130px;color:#8695ab}.row .r{flex:1}
+.ok{color:#4ade80}.bad{color:#f87171}.warn{color:#fbbf24}.dim{color:#556274}
+canvas{width:100%;border:1px solid #1c2838;border-radius:6px;margin-top:6px}
+#verdict{border:1px solid #234;border-left:4px solid #7dd3fc;border-radius:8px;padding:12px;margin-top:14px;background:#0a1420;font-size:12.5px}
+#verdict b{color:#7dd3fc}
+</style></head><body>
+<h1>A1b PILLARBOX PROBE</h1>
+<p class="sub">Q1: can we canvas-read i.ytimg pixels (CORS)? Q2: do edge-luminance rails separate portrait from landscape on maxresdefault?</p>
+<div id="out"></div>
+<div id="verdict">probing…</div>
+<script>
+const VIDS=[
+ ['IwzESXtiOnY','the false-negative — EXPECT pillarboxed'],
+ ['diVgi35b-j4','genuine Short — EXPECT pillarboxed'],
+ ['dQw4w9WgXcQ','known landscape — EXPECT full-bleed']
+];
+const out=document.getElementById('out'),V=document.getElementById('verdict');
+function load(id){return new Promise(res=>{
+ const img=new Image();img.crossOrigin='anonymous';
+ const to=setTimeout(()=>res({err:'TIMEOUT 5s'}),5000);
+ img.onload=()=>{clearTimeout(to);res({img})};
+ img.onerror=()=>{clearTimeout(to);
+   // retry without CORS to distinguish "CORS refused" from "missing"
+   const p=new Image();
+   p.onload=()=>res({err:'CORS LOAD REFUSED (image exists plain)'});
+   p.onerror=()=>res({err:'IMAGE MISSING'});
+   p.src=`https://i.ytimg.com/vi/${id}/maxresdefault.jpg&nocache=1`.replace('&','?');
+ };
+ img.src=`https://i.ytimg.com/vi/${id}/maxresdefault.jpg`;
+})}
+function stats(d){let s=0,s2=0,n=d.data.length/4;
+ for(let i=0;i<d.data.length;i+=4){const l=.2126*d.data[i]+.7152*d.data[i+1]+.0722*d.data[i+2];s+=l;s2+=l*l}
+ const m=s/n;return{m,sd:Math.sqrt(Math.max(0,s2/n-m*m))}}
+(async()=>{
+ let taint=false,rows=[];
+ for(const[id,label]of VIDS){
+  const d=document.createElement('div');d.className='vid';
+  d.innerHTML=`<div class="vt">${id} <span>${label}</span></div>`;out.appendChild(d);
+  const add=(n,r)=>{const e=document.createElement('div');e.className='row';
+   e.innerHTML=`<div class="n">${n}</div><div class="r">${r}</div>`;d.appendChild(e)};
+  const L=await load(id);
+  if(L.err){add('load',`<span class="bad">${L.err}</span>`);if(/CORS/.test(L.err))taint=true;continue}
+  const img=L.img,W=img.naturalWidth,H=img.naturalHeight;
+  add('maxres',`${W}×${H}`);
+  const c=document.createElement('canvas');c.width=W;c.height=H;
+  const x=c.getContext('2d');x.drawImage(img,0,0);
+  let lft,rgt,ctr;
+  try{
+   const rw=Math.round(W*.12);
+   lft=stats(x.getImageData(0,0,rw,H));
+   rgt=stats(x.getImageData(W-rw,0,rw,H));
+   ctr=stats(x.getImageData(Math.round(W*.40),0,Math.round(W*.20),H));
+  }catch(e){add('readback',`<span class="bad">CANVAS TAINTED — ${e.name}</span>`);taint=true;d.appendChild(c);continue}
+  add('left rail 12%',`lum ${lft.m.toFixed(1)} sd ${lft.sd.toFixed(1)}`);
+  add('right rail 12%',`lum ${rgt.m.toFixed(1)} sd ${rgt.sd.toFixed(1)}`);
+  add('center 20%',`lum ${ctr.m.toFixed(1)} sd ${ctr.sd.toFixed(1)}`);
+  const railMax=Math.max(lft.m,rgt.m);
+  const pillar=railMax<24&&ctr.m>railMax+30&&Math.abs(lft.m-rgt.m)<12;
+  add('verdict',pillar?`<span class="ok">PILLARBOXED → portrait</span>`:`<span class="warn">FULL-BLEED → landscape</span>`);
+  rows.push({id,pillar,railMax:railMax.toFixed(1),ctr:ctr.m.toFixed(1)});
+  d.appendChild(c);
+ }
+ if(taint){V.innerHTML=`<b>CANDIDATE B DEAD:</b> ytimg blocks CORS canvas readback. Skip pillarbox; go straight to player-dimension readback + blacklist (candidate a).`;return}
+ const byId=Object.fromEntries(rows.map(r=>[r.id,r]));
+ const good=byId['IwzESXtiOnY']?.pillar&&byId['diVgi35b-j4']?.pillar&&byId['dQw4w9WgXcQ']&&!byId['dQw4w9WgXcQ'].pillar;
+ V.innerHTML=(good
+  ?`<b>CANDIDATE B WORKS:</b> both portraits pillarboxed, landscape full-bleed, at threshold rail&lt;24 / center−rail&gt;30 / symmetry&lt;12. Ship as the UNVERIFIED-path secondary check.`
+  :`<b>MIXED:</b> thresholds need tuning or a case defeats the model (blurred-fill rails?). Raw numbers above decide. `+rows.map(r=>`${r.id}: rail ${r.railMax} ctr ${r.ctr} → ${r.pillar?'pillar':'full'}`).join(' · '))
+  +`<div class="dim" style="margin-top:8px">Screenshot the verdict + the three per-video number blocks (canvases optional).</div>`;
+})();
+</script></body></html>
