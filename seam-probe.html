@@ -1,0 +1,89 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A1b seam probe</title><style>
+body{background:#070b12;color:#e6edf7;font:13px/1.5 ui-monospace,Menlo,monospace;padding:14px;margin:0}
+h1{font-size:15px;color:#7dd3fc;margin:0 0 2px}
+.sub{color:#8695ab;font-size:11.5px;margin-bottom:12px}
+.vid{border:1px solid #1c2838;border-radius:8px;padding:10px 12px;margin:10px 0;background:#0c121d}
+.vt{font-weight:700;margin-bottom:6px}.vt span{color:#8695ab;font-weight:400;font-size:11px}
+.row{display:flex;gap:8px;margin:3px 0;font-size:12px}
+.row .n{width:150px;color:#8695ab;flex-shrink:0}.row .r{flex:1;word-break:break-all}
+.ok{color:#4ade80}.bad{color:#f87171}.warn{color:#fbbf24}.dim{color:#556274}
+canvas{width:100%;border:1px solid #1c2838;border-radius:6px;margin-top:6px;display:block}
+#verdict{border:1px solid #234;border-left:4px solid #7dd3fc;border-radius:8px;padding:12px;margin-top:14px;background:#0a1420;font-size:12.5px}
+#verdict b{color:#7dd3fc}
+</style></head><body>
+<h1>A1b SEAM PROBE</h1>
+<p class="sub">Detector: a blur-fill portrait thumb has TWO near-full-height vertical seams, symmetric about center. Profile = fraction of rows per column with a strong horizontal gradient.</p>
+<div id="out"></div>
+<div id="verdict">probing…</div>
+<script>
+const VIDS=[
+ ['IwzESXtiOnY','false-negative — EXPECT seam pair'],
+ ['diVgi35b-j4','genuine Short — EXPECT seam pair'],
+ ['dQw4w9WgXcQ','known landscape — EXPECT no pair']
+];
+const GRAD=24, COV=0.5, SYM=20;
+const out=document.getElementById('out'),V=document.getElementById('verdict');
+function load(id){return new Promise(res=>{
+ const img=new Image();img.crossOrigin='anonymous';
+ const to=setTimeout(()=>res({err:'TIMEOUT'}),6000);
+ img.onload=()=>{clearTimeout(to);res({img})};
+ img.onerror=()=>{clearTimeout(to);res({err:'LOAD FAIL'})};
+ img.src=`https://i.ytimg.com/vi/${id}/maxresdefault.jpg`;
+})}
+(async()=>{
+ const R={};
+ for(const[id,label]of VIDS){
+  const d=document.createElement('div');d.className='vid';
+  d.innerHTML=`<div class="vt">${id} <span>${label}</span></div>`;out.appendChild(d);
+  const add=(n,r)=>{const e=document.createElement('div');e.className='row';
+   e.innerHTML=`<div class="n">${n}</div><div class="r">${r}</div>`;d.appendChild(e)};
+  const L=await load(id);
+  if(L.err){add('load',`<span class="bad">${L.err}</span>`);continue}
+  const img=L.img,W=img.naturalWidth,H=img.naturalHeight;
+  const c=document.createElement('canvas');c.width=W;c.height=H;
+  const x=c.getContext('2d');x.drawImage(img,0,0);
+  let px;try{px=x.getImageData(0,0,W,H).data}catch(e){add('readback',`<span class="bad">TAINTED</span>`);continue}
+  const lum=new Float32Array(W*H);
+  for(let i=0,p=0;i<lum.length;i++,p+=4)lum[i]=.2126*px[p]+.7152*px[p+1]+.0722*px[p+2];
+  // per-column coverage: fraction of rows with |central horizontal gradient| > GRAD
+  const cov=new Float32Array(W);
+  for(let cx=1;cx<W-1;cx++){let n=0;
+   for(let cy=0;cy<H;cy++){if(Math.abs(lum[cy*W+cx+1]-lum[cy*W+cx-1])>GRAD)n++}
+   cov[cx]=n/H}
+  // predicted 9:16 seam band
+  const cw=H*9/16, pl=Math.round((W-cw)/2), pr=W-pl;
+  const band=(p)=>{let m=0;for(let i=Math.max(1,p-6);i<=Math.min(W-2,p+6);i++)m=Math.max(m,cov[i]);return m};
+  const bl=band(pl),br=band(pr);
+  // symmetric pair search (any content aspect): peaks in left 8..45% with mirror
+  let best=null;
+  for(let cx=Math.round(W*.08);cx<Math.round(W*.45);cx++){
+   if(cov[cx]<COV)continue;
+   const mir=W-cx;let mc=0;
+   for(let i=mir-SYM/2;i<=mir+SYM/2;i++)if(i>0&&i<W-1)mc=Math.max(mc,cov[i]);
+   if(mc>=COV){const s=cov[cx]+mc;if(!best||s>best.s)best={xL:cx,cL:cov[cx],cR:mc,s}}
+  }
+  // top loose columns for context
+  const idx=[...cov.keys()].sort((a,b)=>cov[b]-cov[a]).slice(0,6)
+   .map(i=>`x${i}:${(cov[i]*100).toFixed(0)}%`).join(' ');
+  add('maxres',`${W}×${H} · predicted 9:16 seams x${pl}/x${pr}`);
+  add('cov @ predicted',`L ${(bl*100).toFixed(0)}% · R ${(br*100).toFixed(0)}% ${bl>COV&&br>COV?'<span class="ok">both &gt; 50%</span>':'<span class="warn">below</span>'}`);
+  add('best symmetric pair',best?`x${best.xL}/x${W-best.xL} → <span class="ok">${(best.cL*100).toFixed(0)}% / ${(best.cR*100).toFixed(0)}%</span>`:'<span class="warn">none ≥ 50%/50%</span>');
+  add('top columns',`<span class="dim">${idx}</span>`);
+  const portrait=!!best||(bl>COV&&br>COV);
+  add('verdict',portrait?'<span class="ok">SEAM PAIR → portrait</span>':'<span class="warn">no pair → landscape</span>');
+  R[id]=portrait;
+  // profile chart under thumb
+  x.globalAlpha=.55;x.fillStyle='#000';x.fillRect(0,H-90,W,90);x.globalAlpha=1;
+  x.fillStyle='#7dd3fc';
+  for(let i=0;i<W;i++)x.fillRect(i,H-cov[i]*85,1,cov[i]*85);
+  x.fillStyle='rgba(74,222,128,.5)';x.fillRect(pl-6,H-90,13,90);x.fillRect(pr-6,H-90,13,90);
+  d.appendChild(c);
+ }
+ const good=R['IwzESXtiOnY']&&R['diVgi35b-j4']&&R['dQw4w9WgXcQ']===false;
+ V.innerHTML=(good
+  ?`<b>SEPARATION CONFIRMED:</b> both portraits show a symmetric full-height seam pair; landscape doesn't. This is the shippable secondary check for the UNVERIFIED path. Screenshot back and I'll write the src patch.`
+  :`<b>MIXED — read the numbers.</b> Coverage %s and profile charts above show where the margin fails; thresholds (grad ${GRAD}, cov ${COV*100}%) may need tuning.`)
+  +`<div class="dim" style="margin-top:8px">Charts: blue bars = per-column edge coverage; green bands = predicted 9:16 seam positions.</div>`;
+})();
+</script></body></html>
