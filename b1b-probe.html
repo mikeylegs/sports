@@ -1,0 +1,68 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>B1b join probe</title><style>
+body{background:#070b12;color:#e6edf7;font:13px/1.5 ui-monospace,Menlo,monospace;padding:14px;margin:0}
+h1{font-size:15px;color:#7dd3fc;margin:0 0 2px}.sub{color:#8695ab;font-size:11.5px;margin-bottom:12px}
+.box{border:1px solid #1c2838;border-radius:8px;padding:10px 12px;margin:10px 0;background:#0c121d}
+.t{font-weight:700;margin-bottom:6px;color:#a78bfa}
+.ok{color:#4ade80}.bad{color:#f87171}.warn{color:#fbbf24}.dim{color:#556274}
+pre{white-space:pre-wrap;word-break:break-all;font-size:11.5px;margin:4px 0}
+table{border-collapse:collapse;width:100%;font-size:11.5px}td,th{border:1px solid #1c2838;padding:3px 5px;text-align:left}
+th{color:#7dd3fc;font-size:10px;text-transform:uppercase}
+#v{border:1px solid #234;border-left:4px solid #7dd3fc;border-radius:8px;padding:12px;margin-top:14px;background:#0a1420;font-size:12.5px}
+#v b{color:#7dd3fc}
+</style></head><body>
+<h1>B1b JOIN + COST PROBE</h1>
+<p class="sub">Q1: does ONE schedule call with hydrate=linescore carry per-game HITS? Q2: what keys can join ESPN games → gamePk league-wide?</p>
+<div id="out"></div><div id="v">probing…</div>
+<script>
+const out=document.getElementById('out'),V=document.getElementById('v');
+function box(t){const d=document.createElement('div');d.className='box';d.innerHTML=`<div class="t">${t}</div>`;out.appendChild(d);return d}
+const add=(d,h)=>{const e=document.createElement('div');e.innerHTML=h;d.appendChild(e)};
+// ET-anchored 2-day window (handoff TIMEZONE gotcha: container/UTC clocks ask for tomorrow at night)
+function etDate(off){const n=new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));
+ n.setDate(n.getDate()+(off||0));return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`}
+async function get(u){const r=await fetch(u);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
+(async()=>{
+ let sched=null,verdict='';
+ const d1=box('Q1 · schedule + hydrate=linescore &nbsp;<span class="dim">(one call, all games)</span>');
+ const url=`https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=${etDate(0)}&endDate=${etDate(1)}&hydrate=linescore,team`;
+ add(d1,`<pre class="dim">${url}</pre>`);
+ try{
+  sched=await get(url);
+  const games=(sched.dates||[]).flatMap(x=>x.games||[]);
+  add(d1,`<div>dates ${(sched.dates||[]).length} · games <b>${games.length}</b></div>`);
+  if(!games.length){add(d1,'<div class="bad">NO GAMES RETURNED — dump above is the evidence, not an inference.</div>')}
+  else{
+   const withHits=games.filter(g=>g.linescore&&g.linescore.teams&&(typeof g.linescore.teams.away?.hits==='number'||typeof g.linescore.teams.home?.hits==='number'));
+   add(d1,`<div>games carrying linescore.teams.*.hits: <b class="${withHits.length?'ok':'bad'}">${withHits.length}/${games.length}</b></div>`);
+   let t='<table><tr><th>gamePk</th><th>status</th><th>away</th><th>home</th><th>inn</th><th>H a/h</th></tr>';
+   games.slice(0,20).forEach(g=>{const ls=g.linescore||{},lt=ls.teams||{};
+    t+=`<tr><td>${g.gamePk}</td><td>${(g.status||{}).abstractGameState||'?'}</td>`
+     +`<td>${g.teams?.away?.team?.abbreviation||g.teams?.away?.team?.name||'?'}</td>`
+     +`<td>${g.teams?.home?.team?.abbreviation||g.teams?.home?.team?.name||'?'}</td>`
+     +`<td>${ls.currentInning??'—'}</td>`
+     +`<td class="${typeof lt.away?.hits==='number'?'ok':'warn'}">${lt.away?.hits??'—'}/${lt.home?.hits??'—'}</td></tr>`});
+   add(d1,t+'</table>');
+   // Q2 join keys
+   const d2=box('Q2 · join keys available on each game');
+   const g0=games[0];
+   add(d2,`<pre>away.team keys: ${Object.keys(g0.teams?.away?.team||{}).join(', ')}</pre>`);
+   add(d2,`<pre>sample away.team: id=${g0.teams?.away?.team?.id} abbreviation=${g0.teams?.away?.team?.abbreviation} name=${g0.teams?.away?.team?.name}</pre>`);
+   const abbrCount=games.filter(g=>g.teams?.away?.team?.abbreviation&&g.teams?.home?.team?.abbreviation).length;
+   add(d2,`<div>games with BOTH abbreviations present: <b class="${abbrCount===games.length?'ok':'warn'}">${abbrCount}/${games.length}</b></div>`);
+   const pairs=games.map(g=>`${g.teams?.away?.team?.abbreviation||'?'}@${g.teams?.home?.team?.abbreviation||'?'}`).join('  ');
+   add(d2,`<pre class="dim">${pairs}</pre>`);
+   const live=games.filter(g=>(g.status||{}).abstractGameState==='Live');
+   verdict=(withHits.length?
+     `<b>Q1 YES — one call carries hits.</b> No per-game feed/live fetches needed; the whole cost-scoping problem is moot (1 request per poll-window, cached). `:
+     `<b>Q1 NO — hydrate=linescore did not carry hits</b> on these games (see table). Fall back to scoped mlbLinescoreHits() on live games only. `)
+    +(abbrCount===games.length?
+     `<b>Q2 abbreviation present on all games</b> → join ESPN awayAbbr@homeAbbr → gamePk directly, no hardcoded 30-team id map.`:
+     `<b>Q2 abbreviation incomplete</b> → join on team.id or name; see the dump.`)
+    +`<div class="dim" style="margin-top:8px">Live games right now: ${live.length}. Screenshot the table + this box.</div>`;
+  }
+ }catch(e){add(d1,`<div class="bad">FETCH FAILED: ${e.message}</div>`);
+  verdict='<b>FETCH FAILED</b> — statsapi refused a direct browser call (CORS) or is down. That itself is the finding: the wiring must go through proxyFetchText, not a direct fetch.'}
+ V.innerHTML=verdict||'no verdict — read the dumps above';
+})();
+</script></body></html>
