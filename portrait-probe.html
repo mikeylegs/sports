@@ -1,0 +1,61 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A1b portrait probe</title><style>
+body{background:#070b12;color:#e6edf7;font:13px/1.5 ui-monospace,Menlo,monospace;padding:14px;margin:0}
+h1{font-size:15px;color:#7dd3fc;margin:0 0 2px}
+.sub{color:#8695ab;font-size:11.5px;margin-bottom:12px}
+.vid{border:1px solid #1c2838;border-radius:8px;padding:10px 12px;margin:10px 0;background:#0c121d}
+.vt{font-weight:700;margin-bottom:6px}.vt span{color:#8695ab;font-weight:400;font-size:11px}
+.row{display:flex;gap:8px;margin:3px 0;font-size:12px}
+.row .n{width:110px;color:#8695ab}.row .r{flex:1}
+.ok{color:#4ade80}.bad{color:#f87171}.warn{color:#fbbf24}.dim{color:#556274}
+#verdict{border:1px solid #234;border-left:4px solid #7dd3fc;border-radius:8px;padding:12px;margin-top:14px;background:#0a1420;font-size:12.5px}
+#verdict b{color:#7dd3fc}
+</style></head><body>
+<h1>A1b PORTRAIT PROBE</h1>
+<p class="sub">Answers: does oardefault for the false-negative 404 (→ fail-open let it through) or serve a landscape ratio?</p>
+<div id="out"></div>
+<div id="verdict">probing…</div>
+<script>
+const VIDS=[
+ ['IwzESXtiOnY','FALSE-NEGATIVE (foxsoccer) — passed gate, rendered portrait on wall'],
+ ['diVgi35b-j4','CONTROL: genuine Short — correctly rejected at 1080×1920'],
+ ['dQw4w9WgXcQ','CONTROL: known landscape']
+];
+const THUMBS=['oardefault','maxresdefault','sddefault','hqdefault','mqdefault'];
+const out=document.getElementById('out'),V=document.getElementById('verdict');
+const results={};
+function probe(id,t){return new Promise(res=>{
+ const img=new Image(),to=setTimeout(()=>res({t,err:'TIMEOUT 5s'}),5000);
+ img.onload=()=>{clearTimeout(to);res({t,w:img.naturalWidth,h:img.naturalHeight})};
+ img.onerror=()=>{clearTimeout(to);res({t,err:'LOAD FAIL (404?)'});};
+ img.src=`https://i.ytimg.com/vi/${id}/${t}.jpg`;
+})}
+function fmt(r){
+ if(r.err)return `<span class="bad">${r.err}</span>`;
+ const ratio=(r.w/r.h).toFixed(3);
+ let tag;
+ if(r.w===120&&r.h===90)tag='<span class="warn">PLACEHOLDER (ytimg 120×90 = thumb missing)</span>';
+ else if(r.w/r.h<1)tag='<span class="ok">PORTRAIT ratio '+ratio+'</span>';
+ else tag='<span class="warn">LANDSCAPE ratio '+ratio+'</span>';
+ return `${r.w}×${r.h} ${tag}`;
+}
+(async()=>{
+ for(const[id,label]of VIDS){
+  const d=document.createElement('div');d.className='vid';
+  d.innerHTML=`<div class="vt">${id} <span>${label}</span></div>`;out.appendChild(d);
+  results[id]={};
+  for(const t of THUMBS){
+   const r=await probe(id,t);results[id][t]=r;
+   const row=document.createElement('div');row.className='row';
+   row.innerHTML=`<div class="n">${t}</div><div class="r">${fmt(r)}</div>`;d.appendChild(row);
+  }
+ }
+ const fn=results['IwzESXtiOnY']['oardefault'];
+ let v;
+ if(fn.err)v=`<b>ANSWER: 404/FAIL path.</b> oardefault doesn't exist for the false-negative → the gate's fail-open treated it as landscape. Fix direction: fail-open is the hole; player-readback + blacklist (candidate a) or treat oardefault-missing as suspect.`;
+ else if(fn.w===120&&fn.h===90)v=`<b>ANSWER: PLACEHOLDER path.</b> ytimg served its 120×90 stand-in (landscape ratio) for a missing oardefault → gate read it as landscape. Fix: reject/flag the 120×90 placeholder as "no data", don't trust its ratio — plus player-readback as ground truth.`;
+ else if(fn.w/fn.h>=1)v=`<b>ANSWER: LANDSCAPE-RATIO path.</b> oardefault exists but is served landscape (${fn.w}×${fn.h}) for a portrait video → the discriminator itself is unreliable for this upload class. Pre-filtering by oardefault can't cover it; player-readback + blacklist (candidate a) is the foundation. Check maxresdefault rows above for pillarbox signal (candidate b).`;
+ else v=`<b>UNEXPECTED: oardefault reports PORTRAIT (${fn.w}×${fn.h}).</b> The gate should have caught this — the bug is in the gate's code path (probe timing/caching/fail-open race), not the discriminator. Re-check isPortrait() wiring.`;
+ V.innerHTML=v+`<div class="dim" style="margin-top:8px">Screenshot this whole page back.</div>`;
+})();
+</script></body></html>
