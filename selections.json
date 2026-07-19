@@ -1,15 +1,24 @@
 {
   "v": 1,
-  "updated": "2026-07-18T16:57:34.811Z",
+  "updated": "2026-07-19T14:23:19.152Z",
   "events": [
     {
       "league": "golf/pga",
       "label": "Golf (PGA)",
       "espnId": "401811957",
       "title": "The Open",
-      "showFrom": "20260718",
-      "showUntil": "20260718",
+      "showFrom": "20260719",
+      "showUntil": "20260719",
       "rank": 1
+    },
+    {
+      "league": "soccer/fifa.world",
+      "label": "World Cup",
+      "espnId": "760517",
+      "title": "Argentina @ Spain",
+      "showFrom": "20260719",
+      "showUntil": "20260719",
+      "rank": 2
     }
   ],
   "watch": {
