@@ -1,0 +1,85 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>portrait gate probe · GlEV4kwupWE</title><style>
+body{background:#070b12;color:#e6edf7;font:13px/1.5 ui-monospace,Menlo,monospace;padding:14px;margin:0}
+h1{font-size:15px;color:#7dd3fc;margin:0 0 2px}.sub{color:#8695ab;font-size:11.5px;margin-bottom:12px}
+.b{border:1px solid #1c2838;border-radius:8px;padding:10px 12px;margin:10px 0;background:#0c121d}
+.t{font-weight:700;color:#a78bfa;margin-bottom:5px}
+.r{display:flex;gap:8px;font-size:12px;margin:3px 0}.r .n{width:150px;color:#8695ab;flex-shrink:0}
+.ok{color:#4ade80}.bad{color:#f87171}.warn{color:#fbbf24}.dim{color:#556274}
+canvas{width:100%;border:1px solid #1c2838;border-radius:6px;margin-top:6px;display:block}
+#v{border:1px solid #234;border-left:4px solid #7dd3fc;border-radius:8px;padding:12px;margin-top:14px;background:#0a1420;font-size:12.5px}
+#v b{color:#7dd3fc}
+</style></head><body>
+<h1>PORTRAIT GATE PROBE</h1>
+<p class="sub">Infiltrator GlEV4kwupWE (foxsoccer-fill, 19:55). Runs r143's exact chain — oardefault ratio → placeholder detection → maxresdefault seam pair — and reports which step passed it.</p>
+<div id="out"></div><div id="v">probing…</div>
+<script>
+const VID='GlEV4kwupWE';
+const CTRL=[['diVgi35b-j4','known Short (r143 caught this one)'],['dQw4w9WgXcQ','known landscape']];
+const out=document.getElementById('out'),V=document.getElementById('v');
+function load(id,name,cors){return new Promise(res=>{
+  const img=new Image(); if(cors) img.crossOrigin='anonymous';
+  const to=setTimeout(()=>res({err:'TIMEOUT 5s'}),5000);
+  img.onload=()=>{clearTimeout(to);res({img,w:img.naturalWidth,h:img.naturalHeight})};
+  img.onerror=()=>{clearTimeout(to);res({err:'404 / load fail'})};
+  img.src=`https://i.ytimg.com/vi/${id}/${name}.jpg`;
+})}
+// r143 shipped seam logic, thresholds verbatim
+function seam(img){
+  const W=img.naturalWidth,H=img.naturalHeight;
+  if(!W||!H||(W===120&&H===90)) return {verdict:false,why:'maxres is the 120×90 placeholder → r143 FAILS OPEN here'};
+  const c=document.createElement('canvas');c.width=W;c.height=H;
+  const g=c.getContext('2d');g.drawImage(img,0,0);
+  let px; try{px=g.getImageData(0,0,W,H).data}catch(e){return{verdict:false,why:'canvas tainted → fail-open',canvas:c}}
+  const lum=new Float32Array(W*H);
+  for(let i=0,p=0;i<lum.length;i++,p+=4)lum[i]=.2126*px[p]+.7152*px[p+1]+.0722*px[p+2];
+  const cov=new Float32Array(W);
+  for(let x=1;x<W-1;x++){let n=0;for(let y=0;y<H;y++)if(Math.abs(lum[y*W+x+1]-lum[y*W+x-1])>24)n++;cov[x]=n/H}
+  let best=null;
+  for(let x=(W*.08)|0,xe=(W*.45)|0;x<xe;x++){
+    if(cov[x]<.5)continue;
+    const m=W-x;let mc=0;
+    for(let i=m-10;i<=m+10;i++)if(i>0&&i<W-1&&cov[i]>mc)mc=cov[i];
+    if(mc>=.5&&(!best||cov[x]+mc>best.s))best={x,l:cov[x],r:mc,s:cov[x]+mc};
+  }
+  g.globalAlpha=.55;g.fillStyle='#000';g.fillRect(0,H-80,W,80);g.globalAlpha=1;g.fillStyle='#7dd3fc';
+  for(let i=0;i<W;i++)g.fillRect(i,H-cov[i]*76,1,cov[i]*76);
+  const top=[...cov.keys()].sort((a,b)=>cov[b]-cov[a]).slice(0,5).map(i=>`x${i}:${(cov[i]*100)|0}%`).join(' ');
+  return {verdict:!!best,why:best?`seam pair x${best.x}/${W-best.x} at ${(best.l*100)|0}%/${(best.r*100)|0}%`
+    :`no symmetric pair ≥50%/50% · top cols ${top}`,canvas:c};
+}
+(async()=>{
+  const R={};
+  for(const [id,label] of [[VID,'THE INFILTRATOR'],...CTRL]){
+    const d=document.createElement('div');d.className='b';
+    d.innerHTML=`<div class="t">${id} <span class="dim">${label}</span></div>`;out.appendChild(d);
+    const add=(n,h)=>{const e=document.createElement('div');e.className='r';
+      e.innerHTML=`<div class="n">${n}</div><div>${h}</div>`;d.appendChild(e)};
+    const oar=await load(id,'oardefault');
+    let step1;
+    if(oar.err){ step1='missing'; add('1 · oardefault',`<span class="warn">${oar.err} → UNVERIFIED, go to seam</span>`); }
+    else if(oar.w===120&&oar.h===90){ step1='placeholder'; add('1 · oardefault',`<span class="warn">120×90 placeholder → UNVERIFIED, go to seam</span>`); }
+    else if(oar.w/oar.h<1){ step1='caught'; add('1 · oardefault',`<span class="ok">${oar.w}×${oar.h} portrait → REJECTED at step 1</span>`); }
+    else { step1='landscape'; add('1 · oardefault',`<span class="bad">${oar.w}×${oar.h} landscape ratio → PASSES, seam never runs</span>`); }
+    let step2='n/a';
+    if(step1==='missing'||step1==='placeholder'){
+      const mx=await load(id,'maxresdefault',true);
+      if(mx.err){ step2='no-maxres'; add('2 · maxresdefault',`<span class="bad">${mx.err} → r143 fails open, video PASSES</span>`); }
+      else {
+        add('2 · maxresdefault',`${mx.w}×${mx.h}`);
+        const s=seam(mx.img); step2=s.verdict?'caught':'missed';
+        add('3 · seam test', s.verdict?`<span class="ok">${s.why} → REJECTED</span>`:`<span class="bad">${s.why} → PASSES</span>`);
+        if(s.canvas) d.appendChild(s.canvas);
+      }
+    }
+    R[id]={step1,step2};
+  }
+  const r=R[VID]; let msg;
+  if(r.step1==='landscape') msg=`<b>STEP 1 let it through.</b> oardefault exists and reports a LANDSCAPE ratio for a portrait upload, so the seam check never ran. The oardefault fast-path needs to stop being trusted as a pass — only as a reject.`;
+  else if(r.step2==='no-maxres') msg=`<b>STEP 2 gap — no maxresdefault.</b> The seam test has nothing to read and r143 fails open by design. Fix: fall back through sddefault → hqdefault, which always exist; the blur-fill seams survive downscaling, only the column positions scale.`;
+  else if(r.step2==='missed') msg=`<b>STEP 3 missed it.</b> maxresdefault exists but shows no symmetric seam pair — so this Short is not blur-filled (solid bars, full-bleed crop, or an off-centre layout). Read the chart: if the rails are flat and dark, a luminance test catches what the gradient test cannot.`;
+  else if(r.step1==='caught') msg=`<b>r143 REJECTS this id when tested directly.</b> So the gate works and something upstream skipped it — most likely the probe never ran (timeout / cache) or the source path bypasses isPortrait. Next step is the ?pools=1 chain for foxsoccer-fill, not the detector.`;
+  else msg=`<b>Unexpected combination</b> (step1=${r.step1}, step2=${r.step2}). Read the rows above.`;
+  V.innerHTML=msg+`<div class="dim" style="margin-top:8px">Controls below confirm the chain still behaves on a known Short and a known landscape.</div>`;
+})();
+</script></body></html>
