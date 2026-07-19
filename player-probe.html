@@ -1,0 +1,67 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>YT playback probe</title><style>
+body{background:#070b12;color:#e6edf7;font:13px/1.5 ui-monospace,Menlo,monospace;padding:14px;margin:0}
+h1{font-size:15px;color:#7dd3fc;margin:0 0 2px}.sub{color:#8695ab;font-size:11.5px;margin-bottom:12px}
+.t{border:1px solid #1c2838;border-radius:8px;padding:10px 12px;margin:10px 0;background:#0c121d}
+.tt{font-weight:700;color:#a78bfa;margin-bottom:4px}
+.r{font-size:12px;margin:3px 0}
+.ok{color:#4ade80}.bad{color:#f87171}.warn{color:#fbbf24}.dim{color:#556274}
+.box{width:100%;height:150px;background:#000;border-radius:6px;margin-top:6px;overflow:hidden}
+.box iframe{width:100%;height:100%;border:0}
+#v{border:1px solid #234;border-left:4px solid #7dd3fc;border-radius:8px;padding:12px;margin-top:14px;background:#0a1420;font-size:12.5px}
+#v b{color:#7dd3fc}
+</style></head><body>
+<h1>YT PLAYBACK PROBE</h1>
+<p class="sub">Every embed on the wall stalls at state 5 (CUED) while mp4s play. Four variants, same video, same page — whichever reaches PLAYING is the fix.</p>
+<div id="out"></div><div id="v">probing… (allow 20s)</div>
+<script>
+const VID = '_k03dkZJ3pQ';   // golf clip that stalled on the wall at 15:18
+const NAMES = {'-1':'unstarted','0':'ended','1':'PLAYING','2':'paused','3':'buffering','5':'cued'};
+const out=document.getElementById('out'), V=document.getElementById('v');
+const R={};
+function card(id,title,note){
+  const d=document.createElement('div'); d.className='t';
+  d.innerHTML=`<div class="tt">${title}</div><div class="dim" style="font-size:11px">${note}</div>`;
+  const st=document.createElement('div'); st.className='r'; st.textContent='state: —'; d.appendChild(st);
+  const box=document.createElement('div'); box.className='box'; box.id=id; d.appendChild(box);
+  out.appendChild(d); return {st,box};
+}
+const A=card('pA','A · YT.Player API (exactly what the panel does)','new YT.Player(div) with autoplay:1, mute:1 — API builds the iframe itself');
+const B=card('pB','B · YT.Player attached to OUR iframe with allow="autoplay"','iframe pre-created with allow attr + enablejsapi, then wrapped');
+const C=card('pC','C · raw iframe, allow="autoplay"','no JS API at all');
+const D=card('pD','D · raw iframe, NO allow attribute','control — expected to fail if Permissions Policy is the cause');
+function set(k,card,state){
+  R[k]=state; const n=NAMES[String(state)]||state;
+  card.st.innerHTML='state: '+(state===1?`<span class="ok">${n} ✓</span>`:`<span class="warn">${n}</span>`);
+}
+// C and D: raw iframes, no API — judged visually
+C.box.innerHTML = '<iframe allow="autoplay; encrypted-media" src="https://www.youtube.com/embed/'+VID+'?autoplay=1&mute=1&controls=0&playsinline=1"></iframe>';
+D.box.innerHTML = '<iframe src="https://www.youtube.com/embed/'+VID+'?autoplay=1&mute=1&controls=0&playsinline=1"></iframe>';
+// B: our own iframe with allow, wrapped by the API
+B.box.innerHTML = '<iframe id="bIframe" allow="autoplay; encrypted-media" src="https://www.youtube.com/embed/'+VID+'?autoplay=1&mute=1&controls=0&playsinline=1&enablejsapi=1"></iframe>';
+window.onYouTubeIframeAPIReady = () => {
+  try {
+    new YT.Player('pA', { videoId: VID,
+      playerVars:{ autoplay:1, mute:1, controls:0, rel:0, playsinline:1 },
+      events:{ onReady:e=>{ try{e.target.mute();e.target.playVideo();}catch(_){}; set('A',A,e.target.getPlayerState()); },
+               onStateChange:e=>set('A',A,e.data),
+               onError:e=>{ A.st.innerHTML='<span class="bad">ERROR '+e.data+'</span>'; R.A='err'+e.data; } } });
+  } catch(e){ A.st.innerHTML='<span class="bad">threw: '+e.message+'</span>'; }
+  try {
+    new YT.Player('bIframe', {
+      events:{ onReady:e=>{ try{e.target.mute();e.target.playVideo();}catch(_){}; set('B',B,e.target.getPlayerState()); },
+               onStateChange:e=>set('B',B,e.data),
+               onError:e=>{ B.st.innerHTML='<span class="bad">ERROR '+e.data+'</span>'; R.B='err'+e.data; } } });
+  } catch(e){ B.st.innerHTML='<span class="bad">threw: '+e.message+'</span>'; }
+};
+const tag=document.createElement('script'); tag.src='https://www.youtube.com/iframe_api'; document.head.appendChild(tag);
+setTimeout(()=>{
+  const a=R.A, b=R.B;
+  let msg;
+  if (a===1) msg = `<b>A PLAYS.</b> The panel's exact construction works here but not on the wall — so the cause is context, not the API: the display:none→show mount race, or the overlay's state at mount. Next step is the double-rAF mount.`;
+  else if (b===1) msg = `<b>A stalls, B plays.</b> Confirms the diagnosis: the API-built iframe lacks allow="autoplay" and Chrome's Permissions Policy refuses to start it. Fix = build the iframe ourselves with the allow attribute and wrap it with YT.Player.`;
+  else if (typeof a === 'string' && a.startsWith('err')) msg = `<b>A errored (${a}).</b> Not an autoplay problem at all — that video is restricted here. Re-run with a different ID before concluding.`;
+  else msg = `<b>Neither A nor B reached PLAYING (A=${NAMES[String(a)]||a}, B=${NAMES[String(b)]||b}).</b> Look at C and D below: if C's picture is moving, raw embeds work and the JS API is the problem. If NOTHING on this page plays, it's browser/machine-level (extension, policy, or profile), not the panel's code.`;
+  V.innerHTML = msg + `<div class="dim" style="margin-top:8px">Also say whether C and D are visibly playing — that's the part no script can report.</div>`;
+}, 20000);
+</script></body></html>
