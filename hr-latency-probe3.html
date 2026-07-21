@@ -1,0 +1,85 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HR clip latency · probe v3</title><style>
+body{background:#070b12;color:#e6edf7;font:13px/1.6 ui-monospace,Menlo,monospace;padding:14px;margin:0}
+h1{font-size:15px;color:#7dd3fc;margin:0 0 2px}.sub{color:#8695ab;font-size:11.5px;margin-bottom:12px}
+.b{border:1px solid #1c2838;border-radius:8px;padding:11px 13px;margin:10px 0;background:#0c121d}
+.t{font-weight:700;color:#a78bfa;margin-bottom:5px}
+.ok{color:#4ade80}.bad{color:#f87171}.warn{color:#fbbf24}.dim{color:#556274}
+table{border-collapse:collapse;width:100%;font-size:11.5px;margin:6px 0}
+td,th{border:1px solid #1c2838;padding:3px 6px;text-align:left}
+th{color:#7dd3fc;font-size:10px;text-transform:uppercase}
+#v{border:1px solid #234;border-left:4px solid #7dd3fc;border-radius:8px;padding:12px;margin-top:14px;background:#0a1420;font-size:12.5px}
+#v b{color:#7dd3fc}
+input{background:#0a1420;border:1px solid #1c2838;color:#e6edf7;border-radius:5px;padding:5px 7px;font:inherit;width:230px}
+button{background:#12324a;border:1px solid #1c2838;color:#7dd3fc;border-radius:5px;padding:5px 12px;font:inherit;cursor:pointer}
+</style></head><body>
+<h1>HR CLIP LATENCY — PROBE v3</h1>
+<p class="sub">v2 joined 6/6 but two rows were wrong: both Chisholm homers grabbed the same later clip. v3 excludes recaps/compilations, assigns the NEAREST clip after each play, and never reuses one clip for two home runs.</p>
+<div class="b">
+  <div class="t">games to scan <span class="dim">— comma-separated gamePks</span></div>
+  <input id="pks" value="823522,823762"> <button onclick="go()">run</button>
+  <div class="dim" style="margin-top:6px;font-size:11px">Add more from any recent date to grow the sample — every completed game works.</div>
+</div>
+<div id="out"></div><div id="v" class="dim">idle</div>
+<script>
+const out=document.getElementById('out'),V=document.getElementById('v');
+const fmt=s=>s==null?'—':(Math.abs(s)<90?s.toFixed(0)+'s':(s/60).toFixed(1)+'m');
+const isRecapish=it=>{
+  const kw=(it.keywordsAll||[]).map(k=>String(k.value||'').toLowerCase());
+  const txt=String(it.blurb||it.headline||'').toLowerCase();
+  return kw.some(v=>/recap|condensed|highlights-of|game-recap|mlb_recap/.test(v))
+      || /lead .* to |power .* to |wins?, \d|condensed game|game recap/.test(txt);
+};
+async function go(){
+  out.innerHTML='';V.className='';V.textContent='running…';
+  const pks=document.getElementById('pks').value.split(',').map(x=>x.trim()).filter(Boolean);
+  const ALL=[];let unmatched=0,total=0;
+  for(const pk of pks){
+    const d=document.createElement('div');d.className='b';
+    d.innerHTML=`<div class="t">gamePk ${pk}</div>`;out.appendChild(d);
+    let pbp,content;
+    try{
+      pbp=await (await fetch(`https://statsapi.mlb.com/api/v1/game/${pk}/playByPlay`)).json();
+      content=await (await fetch(`https://statsapi.mlb.com/api/v1/game/${pk}/content`)).json();
+    }catch(e){ d.innerHTML+=`<div class="bad">fetch failed: ${e.message}</div>`; continue; }
+    const hrs=(pbp.allPlays||[]).filter(p=>{const r=p.result||{};
+        return r.eventType==='home_run'||r.event==='Home Run';})
+      .map(p=>({desc:String((p.result||{}).description||'').slice(0,38),
+                end:(p.about||{}).endTime||(p.about||{}).startTime,
+                bid:(((p.matchup||{}).batter)||{}).id,
+                bname:(((p.matchup||{}).batter)||{}).fullName}))
+      .filter(h=>h.end&&h.bid)
+      .sort((a,b)=>new Date(a.end)-new Date(b.end));
+    const items=((((content.highlights||{}).highlights)||{}).items||[])
+      .filter(it=>it.date&&!isRecapish(it));
+    const used=new Set();
+    let t='<table><tr><th>home run</th><th>play</th><th>clip published</th><th>latency</th><th>clip</th></tr>';
+    hrs.forEach(h=>{
+      total++;
+      // candidates: same player, published AFTER the play, not already claimed
+      const cands=items.filter(it=>!used.has(it.id)
+        && (it.keywordsAll||[]).some(k=>/player|person/i.test(k.type||'')&&String(k.value)===String(h.bid))
+        && new Date(it.date)>new Date(h.end));
+      cands.sort((a,b)=>new Date(a.date)-new Date(b.date));   // NEAREST after the play
+      const hit=cands[0];
+      if(hit)used.add(hit.id); else unmatched++;
+      const lat=hit?(new Date(hit.date)-new Date(h.end))/1000:null;
+      if(lat!=null)ALL.push(lat);
+      t+=`<tr><td>${h.desc}</td><td>${h.end.slice(11,19)}</td>`
+        +`<td>${hit?hit.date.slice(11,19):'<span class="warn">no match</span>'}</td>`
+        +`<td class="${lat!=null&&lat<300?'ok':'warn'}">${fmt(lat)}</td>`
+        +`<td class="dim">${hit?String(hit.blurb||hit.headline||'').slice(0,40):''}</td></tr>`;
+    });
+    d.innerHTML+=t+'</table>';
+  }
+  const L=ALL.slice().sort((a,b)=>a-b);
+  if(!L.length){V.innerHTML='<b>no matches</b> — widen the game list or loosen the recap filter.';return;}
+  const q=p=>L[Math.min(L.length-1,Math.floor(L.length*p))];
+  const over=(n)=>L.filter(x=>x>n).length;
+  V.innerHTML=`<b class="ok">n=${L.length} home runs matched</b> <span class="dim">(${unmatched} unmatched of ${total})</span><br>
+    median <b>${fmt(q(.5))}</b> · p90 <b>${fmt(q(.9))}</b> · p99 <b>${fmt(q(.99))}</b> · max <b>${fmt(L[L.length-1])}</b><br>
+    over 60s: <b>${over(60)}</b> · over 300s (current timeout): <b class="${over(300)?'warn':'ok'}">${over(300)}</b>
+    <div class="dim" style="margin-top:8px">If almost nothing exceeds 300s, MLB is not the bottleneck and the panel's discovery path is what costs the 65–126s we measured live.</div>`;
+}
+go();
+</script></body></html>
