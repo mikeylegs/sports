@@ -1,0 +1,74 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>r174 shape probe · playByPlay</title><style>
+body{background:#070b12;color:#e6edf7;font:13px/1.6 ui-monospace,Menlo,monospace;padding:14px;margin:0}
+h1{font-size:15px;color:#7dd3fc;margin:0 0 2px}.sub{color:#8695ab;font-size:11.5px;margin-bottom:12px}
+.b{border:1px solid #1c2838;border-radius:8px;padding:11px 13px;margin:10px 0;background:#0c121d}
+.t{font-weight:700;color:#a78bfa;margin-bottom:5px}
+.r{display:flex;gap:8px;font-size:12px;margin:3px 0}.r .n{width:172px;color:#8695ab;flex-shrink:0}
+.ok{color:#4ade80}.bad{color:#f87171}.warn{color:#fbbf24}.dim{color:#556274}
+pre{white-space:pre-wrap;word-break:break-all;font-size:11px;color:#8695ab;margin:5px 0;
+    background:#0a1420;border:1px solid #1c2838;border-radius:5px;padding:7px}
+#v{border:1px solid #234;border-left:4px solid #7dd3fc;border-radius:8px;padding:12px;margin-top:14px;background:#0a1420;font-size:12.5px}
+#v b{color:#7dd3fc}
+</style></head><body>
+<h1>r174 SHAPE PROBE — playByPlay</h1>
+<p class="sub">Validates every assumption r174 makes about MLB StatsAPI, against games that are already final. No live game needed.</p>
+<div id="out"></div><div id="v">probing…</div>
+<script>
+// gamePks taken from this week's tkolog RECAP-DELAY rows — both had home runs
+const GAMES=[[823522,'NYY vs LAD · Jul 20 · Chisholm homered'],[823762,'NYM @ MIL · Jul 20 · Vaughn + Ortiz homered']];
+// verbatim from the shipped build
+const FIELDS='allPlays,result,eventType,event,description,about,atBatIndex,halfInning,matchup,batter,id,fullName';
+const isHR = p => { const r = p && p.result || {}; return r.eventType === 'home_run' || r.event === 'Home Run'; };
+const out=document.getElementById('out'),V=document.getElementById('v');
+const R={};
+(async()=>{
+ for(const [pk,label] of GAMES){
+  const d=document.createElement('div');d.className='b';
+  d.innerHTML=`<div class="t">gamePk ${pk} <span class="dim">${label}</span></div>`;out.appendChild(d);
+  const add=(n,h)=>{const e=document.createElement('div');e.className='r';
+    e.innerHTML=`<div class="n">${n}</div><div>${h}</div>`;d.appendChild(e)};
+  const url=`https://statsapi.mlb.com/api/v1/game/${pk}/playByPlay?fields=${FIELDS}`;
+  let j=null;
+  try{ const r=await fetch(url); add('HTTP',r.ok?`<span class="ok">${r.status}</span>`:`<span class="bad">${r.status}</span>`);
+       j=await r.json(); }
+  catch(e){ add('fetch',`<span class="bad">${e.message}</span>`); R[pk]={fatal:true}; continue; }
+  const plays=(j&&j.allPlays)||[];
+  add('allPlays',plays.length?`<span class="ok">${plays.length}</span> <span class="dim">— fields= kept the array</span>`
+                             :`<span class="bad">0 — fields= stripped it or the key is named differently</span>`);
+  const hrs=plays.filter(isHR);
+  add('shipped predicate',hrs.length?`<span class="ok">matched ${hrs.length} home run(s)</span>`
+                                    :`<span class="bad">matched 0 — eventType/event names are wrong</span>`);
+  // what values actually appear, so a wrong guess is self-correcting
+  const evTypes={},halves={};
+  plays.forEach(p=>{const r=p.result||{};if(r.eventType)evTypes[r.eventType]=(evTypes[r.eventType]||0)+1;
+    const h=(p.about||{}).halfInning;if(h)halves[h]=(halves[h]||0)+1});
+  add('halfInning values',Object.keys(halves).length?`<span class="ok">${JSON.stringify(halves)}</span>`
+                                                    :`<span class="bad">absent — r174 cannot tell who was batting</span>`);
+  const hrLike=Object.keys(evTypes).filter(k=>/home/i.test(k));
+  add('eventTypes ~ "home"',hrLike.length?`<span class="ok">${hrLike.join(', ')}</span>`:`<span class="warn">none seen</span>`);
+  if(hrs.length){
+    const p0=hrs[0],ab=(p0.about||{}),bt=((p0.matchup||{}).batter)||{};
+    add('atBatIndex',ab.atBatIndex!=null?`<span class="ok">${ab.atBatIndex}</span> <span class="dim">— dedupe key present</span>`
+                                        :`<span class="bad">MISSING — dedupe would refire every poll</span>`);
+    add('batter.id / fullName',(bt.id&&bt.fullName)?`<span class="ok">${bt.id} · ${bt.fullName}</span>`
+                                                   :`<span class="warn">${JSON.stringify(bt)} — headshot/sub fall back</span>`);
+    add('result.description',`<span class="dim">${String((p0.result||{}).description||'(empty)').slice(0,90)}</span>`);
+    add('halfInning on that HR',`<span class="ok">${ab.halfInning||'(absent)'}</span>`);
+    d.appendChild(Object.assign(document.createElement('pre'),
+      {textContent:'first HR record:\n'+JSON.stringify(p0,null,1).slice(0,700)}));
+  }
+  R[pk]={plays:plays.length,hrs:hrs.length,halves:Object.keys(halves),
+         idx:hrs.length?((hrs[0].about||{}).atBatIndex!=null):null,
+         batter:hrs.length?!!(((hrs[0].matchup||{}).batter)||{}).id:null};
+ }
+ const vals=Object.values(R);
+ const anyFatal=vals.some(v=>v.fatal);
+ const good=!anyFatal&&vals.every(v=>v.plays>0&&v.hrs>0&&v.halves.length>0&&v.idx&&v.batter);
+ V.innerHTML= anyFatal
+  ? `<b>FETCH FAILED.</b> If this is CORS, the panel is unaffected — it goes through proxyFetchText. Re-run from the wall machine, or judge r174 by its PBP-INIT row instead.`
+  : good
+   ? `<b class="ok">SHAPE CONFIRMED — r174 is sound as shipped.</b> allPlays populated, the shipped predicate matches real home runs, halfInning present for the batting-team test, atBatIndex present for dedupe, batter id + name present for the card. Nothing to change.`
+   : `<b>MISMATCH — read the rows above.</b> Each failing row names the exact assumption to fix: 0 plays → the <code>fields=</code> list strips something needed; 0 predicate matches → eventType/event values differ (see "eventTypes ~ home"); missing halfInning → the batting-team test needs another source; missing atBatIndex → dedupe needs a different key.`;
+})();
+</script></body></html>
