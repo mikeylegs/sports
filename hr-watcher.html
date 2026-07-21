@@ -1,0 +1,127 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HR enrichment watcher · league-wide</title><style>
+body{background:#070b12;color:#e6edf7;font:13px/1.6 ui-monospace,Menlo,monospace;padding:14px;margin:0}
+h1{font-size:15px;color:#7dd3fc;margin:0 0 2px}.sub{color:#8695ab;font-size:11.5px;margin-bottom:10px}
+.bar{border:1px solid #1c2838;border-radius:8px;background:#0c121d;padding:9px 12px;margin:8px 0;font-size:12px}
+.ok{color:#4ade80}.bad{color:#f87171}.warn{color:#fbbf24}.dim{color:#556274}.vi{color:#a78bfa}
+table{border-collapse:collapse;width:100%;font-size:11.5px;margin:8px 0}
+td,th{border:1px solid #1c2838;padding:4px 6px;text-align:left;vertical-align:top}
+th{color:#7dd3fc;font-size:10px;text-transform:uppercase}
+button{background:#12324a;border:1px solid #1c2838;color:#7dd3fc;border-radius:5px;padding:5px 12px;font:inherit;cursor:pointer}
+#sum{border:1px solid #234;border-left:4px solid #7dd3fc;border-radius:8px;padding:11px 13px;margin-top:12px;background:#0a1420;font-size:12.5px}
+#sum b{color:#7dd3fc}
+</style></head><body>
+<h1>HR ENRICHMENT WATCHER <span class="dim" style="font-size:11px">— league-wide</span></h1>
+<p class="sub">r175 asks which enrichment step costs the panel 65–126s. This answers it from ANY home run in ANY live game — no need to wait on the Yankees or Mets. Leave it open in a tab during games.</p>
+<div class="bar" id="status">idle</div>
+<div class="bar dim">
+  <b class="vi">published</b> = MLB's own <code>item.date</code> minus play time (probe v3 said ~12s median) ·
+  <b class="vi">visible</b> = when OUR poll first sees a matching item ·
+  <b class="vi">playable</b> = when an <code>.mp4</code> rendition first exists — <b>this is what the panel actually needs</b>
+</div>
+<table id="tbl"><tr><th>home run</th><th>game</th><th>published</th><th>visible</th><th>playable</th><th>tagged</th><th>state</th></tr></table>
+<div id="sum" class="dim">waiting for a home run…</div>
+<script>
+const SCHED_MS=120000, GAME_MS=12000, CONTENT_MS=5000, GIVEUP_MS=900000;   // watch up to 15 min
+const games={};      // pk -> {seeded:bool, t:ms, label}
+const tracked={};    // key -> row
+const tbl=document.getElementById('tbl'), statusEl=document.getElementById('status'), sum=document.getElementById('sum');
+const nowET=()=>new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));
+const ymd=o=>{const n=nowET();n.setDate(n.getDate()+(o||0));
+  return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')};
+const fmt=s=>s==null?'<span class="dim">—</span>':(s<90?s.toFixed(0)+'s':(s/60).toFixed(1)+'m');
+const j=async u=>{const r=await fetch(u); if(!r.ok) throw new Error(r.status); return r.json()};
+
+async function pollSchedule(){
+  try{
+    const d=await j(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=${ymd(0)}&endDate=${ymd(1)}&hydrate=team`);
+    let live=0;
+    (d.dates||[]).forEach(dt=>(dt.games||[]).forEach(g=>{
+      if((g.status||{}).abstractGameState!=='Live') return;
+      live++;
+      const a=g.teams?.away?.team?.abbreviation||'?', h=g.teams?.home?.team?.abbreviation||'?';
+      if(!games[g.gamePk]) games[g.gamePk]={seeded:false,t:0,label:a+'@'+h};
+    }));
+    statusEl.innerHTML=`live games: <b class="${live?'ok':'warn'}">${live}</b> · tracking ${Object.keys(tracked).length} home run(s) · ${new Date().toLocaleTimeString()}`;
+  }catch(e){ statusEl.innerHTML=`<span class="bad">schedule failed: ${e.message}</span>`; }
+}
+
+async function pollGames(){
+  for(const pk of Object.keys(games)){
+    const g=games[pk];
+    if(Date.now()-g.t<GAME_MS) continue;
+    g.t=Date.now();
+    try{
+      const d=await j(`https://statsapi.mlb.com/api/v1/game/${pk}/playByPlay`);
+      const hrs=(d.allPlays||[]).filter(p=>{const r=p.result||{};
+        return r.eventType==='home_run'||r.event==='Home Run';});
+      if(!g.seeded){ g.seeded=true; hrs.forEach(p=>{ g['s'+(p.about||{}).atBatIndex]=1; }); continue; }
+      hrs.forEach(p=>{
+        const idx=(p.about||{}).atBatIndex; if(idx==null||g['s'+idx]) return;
+        g['s'+idx]=1;
+        const bt=((p.matchup||{}).batter)||{};
+        const key=pk+':'+idx;
+        tracked[key]={ pk, key, game:g.label, name:bt.fullName||'?', bid:bt.id,
+          playEnd:new Date((p.about||{}).endTime||(p.about||{}).startTime).getTime(),
+          t0:Date.now(), pubS:null, seenS:null, mp4S:null, tagS:null, state:'watching' };
+        render();
+      });
+    }catch(_){}
+  }
+}
+
+async function pollContent(){
+  for(const key of Object.keys(tracked)){
+    const r=tracked[key];
+    if(r.state!=='watching') continue;
+    if(Date.now()-r.t0>GIVEUP_MS){ r.state='gave up (15m)'; render(); continue; }
+    try{
+      const c=await j(`https://statsapi.mlb.com/api/v1/game/${r.pk}/content`);
+      const items=((((c.highlights||{}).highlights)||{}).items||[]);
+      // the clip for THIS home run: published after the play, names the batter, not a recap
+      const ln=String(r.name).split(/\s+/).filter(w=>!/^(jr\.?|sr\.?|ii|iii|iv)$/i.test(w)).pop()||'';
+      const cand=items.filter(it=>{
+        if(!it.date||new Date(it.date).getTime()<r.playEnd-90000) return false;
+        const txt=(it.blurb||'')+' '+(it.headline||'');
+        if(/recap|condensed/i.test(txt)) return false;
+        const tagged=(it.keywordsAll||[]).some(k=>/player|person/i.test(k.type||'')&&String(k.value)===String(r.bid));
+        const named=ln&&new RegExp('\\\\b'+ln+'\\\\b','i').test(txt);
+        return tagged||named;
+      }).sort((a,b)=>new Date(a.date)-new Date(b.date))[0];
+      if(!cand) continue;
+      const el=(Date.now()-r.playEnd)/1000;
+      if(r.pubS==null)  r.pubS=(new Date(cand.date).getTime()-r.playEnd)/1000;   // MLB's claim
+      if(r.seenS==null) r.seenS=el;                                             // when WE first saw it
+      if(r.tagS==null && (cand.keywordsAll||[]).some(k=>/player|person/i.test(k.type||'')&&String(k.value)===String(r.bid))) r.tagS=el;
+      const mp4=(cand.playbacks||[]).some(p=>/\.mp4(\?|$)/i.test(p.url||''));
+      if(mp4&&r.mp4S==null){ r.mp4S=el; r.state='playable'; }
+      r.title=String(cand.headline||cand.blurb||'').slice(0,40);
+      r.pb=((cand.playbacks||[]).map(p=>p.name||'?').slice(0,3).join('/'))||'none';
+      render();
+    }catch(_){}
+  }
+}
+
+function render(){
+  const rows=Object.values(tracked).sort((a,b)=>b.playEnd-a.playEnd);
+  tbl.innerHTML='<tr><th>home run</th><th>game</th><th>published</th><th>visible</th><th>playable</th><th>tagged</th><th>state</th></tr>'
+    + rows.map(r=>`<tr><td>${r.name}<div class="dim" style="font-size:10px">${r.title||''}</div></td>
+      <td class="dim">${r.game}</td><td>${fmt(r.pubS)}</td><td>${fmt(r.seenS)}</td>
+      <td class="${r.mp4S!=null?'ok':'warn'}">${fmt(r.mp4S)}</td><td>${fmt(r.tagS)}</td>
+      <td class="${r.state==='playable'?'ok':r.state.startsWith('gave')?'bad':'dim'}">${r.state}
+      <div class="dim" style="font-size:10px">${r.pb||''}</div></td></tr>`).join('');
+  const done=rows.filter(r=>r.mp4S!=null);
+  if(done.length){
+    const med=a=>{const s=a.slice().sort((x,y)=>x-y);return s[Math.floor(s.length/2)]};
+    const gap=done.map(r=>r.mp4S-(r.pubS||0));
+    sum.className='';
+    sum.innerHTML=`<b class="ok">n=${done.length} playable</b> · median published <b>${fmt(med(done.map(r=>r.pubS)))}</b>
+      → median playable <b>${fmt(med(done.map(r=>r.mp4S)))}</b>
+      · <b>enrichment gap ${fmt(med(gap))}</b>
+      <div class="dim" style="margin-top:7px">If the gap is large, transcoding is what costs the panel its minute and the fix is to accept a clip the moment it is tagged, retrying the mp4. If the gap is ~0, the panel's delay is its own polling/caching and the fix is there instead.</div>`;
+  }
+}
+pollSchedule(); setInterval(pollSchedule, SCHED_MS);
+setInterval(pollGames, 4000);
+setInterval(pollContent, CONTENT_MS);
+</script></body></html>
