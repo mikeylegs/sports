@@ -1,0 +1,101 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HR clip latency · probe v2</title><style>
+body{background:#070b12;color:#e6edf7;font:13px/1.6 ui-monospace,Menlo,monospace;padding:14px;margin:0}
+h1{font-size:15px;color:#7dd3fc;margin:0 0 2px}.sub{color:#8695ab;font-size:11.5px;margin-bottom:12px}
+.b{border:1px solid #1c2838;border-radius:8px;padding:11px 13px;margin:10px 0;background:#0c121d}
+.t{font-weight:700;color:#a78bfa;margin-bottom:5px}
+.r{display:flex;gap:8px;font-size:12px;margin:3px 0}.r .n{width:190px;color:#8695ab;flex-shrink:0}
+.ok{color:#4ade80}.bad{color:#f87171}.warn{color:#fbbf24}.dim{color:#556274}
+table{border-collapse:collapse;width:100%;font-size:11.5px;margin:6px 0}
+td,th{border:1px solid #1c2838;padding:3px 6px;text-align:left}
+th{color:#7dd3fc;font-size:10px;text-transform:uppercase}
+pre{white-space:pre-wrap;word-break:break-all;font-size:10.5px;color:#8695ab;background:#0a1420;
+    border:1px solid #1c2838;border-radius:5px;padding:7px;margin:5px 0}
+#v{border:1px solid #234;border-left:4px solid #7dd3fc;border-radius:8px;padding:12px;margin-top:14px;background:#0a1420;font-size:12.5px}
+#v b{color:#7dd3fc}
+</style></head><body>
+<h1>HR CLIP LATENCY — PROBE v2</h1>
+<p class="sub">v1 proved <code>item.date</code> is the real publish time (recap latency matched tkolog's 91 min independently) but found no <code>playId</code> keyword. v2 inspects the ACTUAL home run clips among the 40 items and tries three join strategies.</p>
+<div id="out"></div><div id="v">probing…</div>
+<script>
+const GAMES=[[823522,'NYY vs LAD · Jul 20'],[823762,'NYM @ MIL · Jul 20']];
+const out=document.getElementById('out'),V=document.getElementById('v');
+const S={byPlayer:0,byName:0,total:0,lat:[],fatal:false,keysSeen:new Set(),kwSeen:new Set()};
+const fmt=s=>s==null?'—':(Math.abs(s)<60?s.toFixed(0)+'s':(s/60).toFixed(1)+'m');
+const lastName=n=>String(n||'').trim().split(/\s+/).filter(w=>!/^(jr\.?|sr\.?|ii|iii|iv)$/i.test(w)).pop()||'';
+(async()=>{
+ for(const [pk,label] of GAMES){
+  const d=document.createElement('div');d.className='b';
+  d.innerHTML=`<div class="t">gamePk ${pk} <span class="dim">${label}</span></div>`;out.appendChild(d);
+  const add=(n,h)=>{const e=document.createElement('div');e.className='r';
+    e.innerHTML=`<div class="n">${n}</div><div>${h}</div>`;d.appendChild(e)};
+  let pbp,content;
+  try{
+    pbp=await (await fetch(`https://statsapi.mlb.com/api/v1/game/${pk}/playByPlay`)).json();
+    content=await (await fetch(`https://statsapi.mlb.com/api/v1/game/${pk}/content`)).json();
+  }catch(e){ add('fetch',`<span class="bad">${e.message}</span>`); S.fatal=true; continue; }
+
+  const hrs=(pbp.allPlays||[]).filter(p=>{const r=p.result||{};
+      return r.eventType==='home_run'||r.event==='Home Run';})
+    .map(p=>({ desc:String((p.result||{}).description||'').slice(0,40),
+               end:(p.about||{}).endTime||(p.about||{}).startTime,
+               batterId:(((p.matchup||{}).batter)||{}).id,
+               batter:(((p.matchup||{}).batter)||{}).fullName }));
+  const items=(((content.highlights||{}).highlights)||{}).items||[];
+  add('home runs / items',`${hrs.length} / ${items.length}`);
+
+  // which items are actually home run clips?
+  const hrItems=items.filter(it=>/homer|home run/i.test((it.blurb||'')+' '+(it.headline||'')+' '+(it.description||'')));
+  add('items reading as HR clips',hrItems.length?`<span class="ok">${hrItems.length}</span>`
+                                                :`<span class="bad">0 — HR clips may not be in this collection</span>`);
+  items.forEach(it=>{ Object.keys(it).forEach(k=>S.keysSeen.add(k));
+                      (it.keywordsAll||[]).forEach(k=>S.kwSeen.add(k.type)); });
+
+  if(hrItems.length){
+    const it=hrItems[0];
+    add('sample HR clip','<span class="dim">'+String(it.blurb||it.headline||'').slice(0,70)+'</span>');
+    add('its date',it.date?`<span class="ok">${it.date}</span>`:`<span class="bad">absent</span>`);
+    const players=(it.keywordsAll||[]).filter(k=>/player|person/i.test(k.type||''));
+    add('player-ish keywords',players.length?`<span class="ok">${players.map(k=>k.type+':'+k.value).join(', ').slice(0,80)}</span>`
+                                            :`<span class="warn">none — name-matching required</span>`);
+    d.appendChild(Object.assign(document.createElement('pre'),
+      {textContent:'FULL HR clip item:\n'+JSON.stringify(it,null,1).slice(0,1500)}));
+  }
+
+  // three join strategies
+  let t='<table><tr><th>home run</th><th>play</th><th>clip</th><th>latency</th><th>via</th></tr>';
+  hrs.forEach(h=>{
+    S.total++;
+    let hit=null,via='';
+    // A: player id in keywords + published after the play
+    hit=hrItems.find(it=>(it.keywordsAll||[]).some(k=>/player|person/i.test(k.type||'')&&String(k.value)===String(h.batterId))
+                       && it.date && new Date(it.date)>new Date(h.end));
+    if(hit){via='player id';S.byPlayer++;}
+    // B: batter surname in the blurb, published after the play, nearest in time
+    if(!hit&&h.batter){
+      const ln=lastName(h.batter);
+      const cands=hrItems.filter(it=>new RegExp('\\\\b'+ln+'\\\\b','i').test((it.blurb||'')+' '+(it.headline||''))
+                                   && it.date && new Date(it.date)>new Date(h.end));
+      cands.sort((a,b)=>new Date(a.date)-new Date(b.date));
+      if(cands.length){hit=cands[0];via='surname';S.byName++;}
+    }
+    let lat=null;
+    if(hit&&hit.date&&h.end){ lat=(new Date(hit.date)-new Date(h.end))/1000; S.lat.push(lat); }
+    t+=`<tr><td>${h.desc}</td><td>${h.end?h.end.slice(11,19):'—'}</td>`
+      +`<td>${hit&&hit.date?hit.date.slice(11,19):'<span class="warn">no match</span>'}</td>`
+      +`<td class="${lat!=null?'ok':'warn'}">${fmt(lat)}</td><td class="dim">${via||'—'}</td></tr>`;
+  });
+  d.innerHTML+=t+'</table>';
+ }
+ const L=S.lat.slice().sort((a,b)=>a-b);
+ const med=L.length?L[Math.floor(L.length/2)]:null;
+ V.innerHTML = S.fatal ? `<b>FETCH FAILED</b> — re-run on the wall machine.`
+  : L.length
+   ? `<b class="ok">RETROACTIVE MEASUREMENT WORKS.</b> Matched ${L.length}/${S.total} home runs (${S.byPlayer} by player id, ${S.byName} by surname).
+      Median <b>${fmt(med)}</b> · range ${fmt(L[0])}–${fmt(L[L.length-1])}.
+      <div class="dim" style="margin-top:8px">Enough to compute the league-wide distribution from past games and set the timeout properly.</div>`
+   : `<b>STILL NO MATCH across ${S.total} home runs.</b> Item keys seen: <code>${[...S.keysSeen].join(', ')}</code>.
+      Keyword types seen: <code>${[...S.kwSeen].join(', ')}</code>.
+      <div class="dim" style="margin-top:8px">If no item read as a home run clip, individual HR videos likely live outside <code>content.highlights.highlights</code> — the next place to look is <code>content.media</code> or the <code>?fields=</code>-free full content payload.</div>`;
+})();
+</script></body></html>
