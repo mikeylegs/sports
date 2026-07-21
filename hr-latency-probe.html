@@ -1,0 +1,93 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HR clip latency · retroactive probe</title><style>
+body{background:#070b12;color:#e6edf7;font:13px/1.6 ui-monospace,Menlo,monospace;padding:14px;margin:0}
+h1{font-size:15px;color:#7dd3fc;margin:0 0 2px}.sub{color:#8695ab;font-size:11.5px;margin-bottom:12px}
+.b{border:1px solid #1c2838;border-radius:8px;padding:11px 13px;margin:10px 0;background:#0c121d}
+.t{font-weight:700;color:#a78bfa;margin-bottom:5px}
+.r{display:flex;gap:8px;font-size:12px;margin:3px 0}.r .n{width:180px;color:#8695ab;flex-shrink:0}
+.ok{color:#4ade80}.bad{color:#f87171}.warn{color:#fbbf24}.dim{color:#556274}
+table{border-collapse:collapse;width:100%;font-size:11.5px;margin:6px 0}
+td,th{border:1px solid #1c2838;padding:3px 6px;text-align:left}
+th{color:#7dd3fc;font-size:10px;text-transform:uppercase}
+pre{white-space:pre-wrap;word-break:break-all;font-size:10.5px;color:#8695ab;background:#0a1420;
+    border:1px solid #1c2838;border-radius:5px;padding:7px;margin:5px 0}
+#v{border:1px solid #234;border-left:4px solid #7dd3fc;border-radius:8px;padding:12px;margin-top:14px;background:#0a1420;font-size:12.5px}
+#v b{color:#7dd3fc}
+</style></head><body>
+<h1>HR CLIP LATENCY — RETROACTIVE PROBE</h1>
+<p class="sub">Can we compute (clip published − play happened) for past games? Tests the playId join between <code>playByPlay</code> and <code>game/{pk}/content</code>. If this works, the whole league's distribution is available without waiting.</p>
+<div id="out"></div><div id="v">probing…</div>
+<script>
+const GAMES=[[823522,'NYY vs LAD · Jul 20'],[823762,'NYM @ MIL · Jul 20']];
+const out=document.getElementById('out'),V=document.getElementById('v');
+const SUM={joined:0,hrs:0,lat:[],fatal:false};
+const fmt=s=>s==null?'—':(s<60?s.toFixed(0)+'s':(s/60).toFixed(1)+'m');
+(async()=>{
+ for(const [pk,label] of GAMES){
+  const d=document.createElement('div');d.className='b';
+  d.innerHTML=`<div class="t">gamePk ${pk} <span class="dim">${label}</span></div>`;out.appendChild(d);
+  const add=(n,h)=>{const e=document.createElement('div');e.className='r';
+    e.innerHTML=`<div class="n">${n}</div><div>${h}</div>`;d.appendChild(e)};
+  let pbp,content;
+  try{
+    pbp=await (await fetch(`https://statsapi.mlb.com/api/v1/game/${pk}/playByPlay`)).json();
+    content=await (await fetch(`https://statsapi.mlb.com/api/v1/game/${pk}/content`)).json();
+  }catch(e){ add('fetch',`<span class="bad">${e.message}</span>`); SUM.fatal=true; continue; }
+
+  // ── home runs, with their play time and playId(s)
+  const plays=(pbp.allPlays||[]).filter(p=>{const r=p.result||{};
+    return r.eventType==='home_run'||r.event==='Home Run';});
+  add('home runs in game',plays.length?`<span class="ok">${plays.length}</span>`:`<span class="warn">0</span>`);
+  const hrRows=plays.map(p=>{
+    const ab=p.about||{}, ev=(p.playEvents||[]);
+    const withId=ev.filter(e=>e&&e.playId);
+    return { desc:String((p.result||{}).description||'').slice(0,44),
+             endTime: ab.endTime||ab.startTime||null,
+             playIds: withId.map(e=>e.playId) };
+  });
+  const anyEnd=hrRows.some(h=>h.endTime), anyId=hrRows.some(h=>h.playIds.length);
+  add('about.endTime',anyEnd?`<span class="ok">present</span> <span class="dim">${hrRows[0]&&hrRows[0].endTime||''}</span>`
+                            :`<span class="bad">ABSENT — no play timestamp, latency impossible</span>`);
+  add('playEvents[].playId',anyId?`<span class="ok">present</span> <span class="dim">${(hrRows[0]&&hrRows[0].playIds[0]||'').slice(0,20)}…</span>`
+                                 :`<span class="bad">ABSENT — cannot join to a clip</span>`);
+
+  // ── highlight items, with publish date and keywords
+  const items=(((content.highlights||{}).highlights)||{}).items||[];
+  add('highlight items',items.length?`<span class="ok">${items.length}</span>`
+                                    :`<span class="bad">0 — content shape differs</span>`);
+  if(items.length){
+    const it=items[0];
+    add('item.date',it.date?`<span class="ok">${it.date}</span>`:`<span class="bad">absent</span>`);
+    const kw=(it.keywordsAll||[]).map(k=>k.type).filter((v,i,a)=>a.indexOf(v)===i);
+    add('keywordsAll types',kw.length?`<span class="ok">${kw.join(', ')}</span>`:`<span class="warn">none</span>`);
+    d.appendChild(Object.assign(document.createElement('pre'),
+      {textContent:'first highlight item (trimmed):\n'+JSON.stringify(
+        {date:it.date,blurb:it.blurb,headline:it.headline,keywordsAll:it.keywordsAll},null,1).slice(0,620)}));
+  }
+
+  // ── the join
+  const byPlayId={};
+  items.forEach(it=>{ (it.keywordsAll||[]).forEach(k=>{
+    if(k && /playid/i.test(k.type||'') && k.value) byPlayId[k.value]=it; }); });
+  let t='<table><tr><th>home run</th><th>play time</th><th>clip published</th><th>latency</th></tr>';
+  hrRows.forEach(h=>{
+    SUM.hrs++;
+    const hit=h.playIds.map(id=>byPlayId[id]).find(Boolean);
+    let lat=null;
+    if(hit&&hit.date&&h.endTime){ lat=(new Date(hit.date)-new Date(h.endTime))/1000; SUM.joined++; SUM.lat.push(lat); }
+    t+=`<tr><td>${h.desc}</td><td>${h.endTime?h.endTime.slice(11,19):'—'}</td>`
+      +`<td>${hit&&hit.date?hit.date.slice(11,19):'<span class="warn">no match</span>'}</td>`
+      +`<td class="${lat!=null?'ok':'warn'}">${fmt(lat)}</td></tr>`;
+  });
+  d.innerHTML+= t+'</table>';
+ }
+ const L=SUM.lat.slice().sort((a,b)=>a-b);
+ const med=L.length?L[Math.floor(L.length/2)]:null;
+ V.innerHTML = SUM.fatal
+  ? `<b>FETCH FAILED</b> — likely CORS from this page. Re-run on the wall machine; the panel itself goes through proxyFetchText and is unaffected.`
+  : SUM.joined
+   ? `<b class="ok">RETROACTIVE MEASUREMENT WORKS.</b> Joined ${SUM.joined}/${SUM.hrs} home runs to their clips. Median latency <b>${fmt(med)}</b> · range ${fmt(L[0])}–${fmt(L[L.length-1])}.
+      <div class="dim" style="margin-top:8px">This means the full league-wide distribution is computable from past games — no live collection needed, and the right tail (the 300s timeouts) becomes visible for the first time.</div>`
+   : `<b>JOIN FAILED (${SUM.hrs} home runs, 0 matched).</b> Read the rows above: a missing <code>playId</code> or <code>endTime</code> kills it outright; if both are present but nothing matched, the highlight keyword type is named differently — the dumped item shows the real key names.`;
+})();
+</script></body></html>
