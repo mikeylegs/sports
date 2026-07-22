@@ -1,0 +1,118 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GUMBO probe · can it beat the 2-min floor?</title><style>
+body{background:#070b12;color:#e6edf7;font:13px/1.6 ui-monospace,Menlo,monospace;padding:14px;margin:0}
+h1{font-size:15px;color:#7dd3fc;margin:0 0 2px}.sub{color:#8695ab;font-size:11.5px;margin-bottom:10px}
+.b{border:1px solid #1c2838;border-radius:8px;padding:11px 13px;margin:9px 0;background:#0c121d}
+.t{font-weight:700;color:#a78bfa;margin-bottom:5px}
+.r{display:flex;gap:8px;font-size:12px;margin:3px 0}.r .n{width:210px;color:#8695ab;flex-shrink:0}
+.ok{color:#4ade80}.bad{color:#f87171}.warn{color:#fbbf24}.dim{color:#556274}
+table{border-collapse:collapse;width:100%;font-size:11px;margin:6px 0}
+td,th{border:1px solid #1c2838;padding:3px 5px;text-align:left;vertical-align:top}
+th{color:#7dd3fc;font-size:10px;text-transform:uppercase}
+pre{white-space:pre-wrap;word-break:break-all;font-size:10px;color:#8695ab;background:#0a1420;border:1px solid #1c2838;border-radius:5px;padding:7px;margin:5px 0}
+input{background:#0a1420;border:1px solid #1c2838;color:#e6edf7;border-radius:5px;padding:5px 7px;font:inherit;width:260px}
+button{background:#12324a;border:1px solid #1c2838;color:#7dd3fc;border-radius:5px;padding:5px 12px;font:inherit;cursor:pointer}
+#v{border:1px solid #234;border-left:4px solid #7dd3fc;border-radius:8px;padding:12px;margin-top:12px;background:#0a1420;font-size:12.5px}
+#v b{color:#7dd3fc}
+</style></head><body>
+<h1>GUMBO PROBE <span class="dim" style="font-size:11px">— game/{pk}/feed/live vs content</span></h1>
+<p class="sub">The content endpoint serves HR clips ~2 min after the play (CDN propagation). Question: does GUMBO — MLB's live game object — carry a playable media reference for a home run SOONER? Runs on completed games; the timestamps that matter are baked into the records.</p>
+<div class="b">
+  <div class="t">games <span class="dim">— comma-separated gamePks, HR games</span></div>
+  <input id="pks" value="823522,823762"> <button onclick="go()">run</button>
+</div>
+<div id="out"></div><div id="v" class="dim">idle</div>
+<script>
+const out=document.getElementById('out'),V=document.getElementById('v');
+const fmt=s=>s==null?'<span class="dim">—</span>':(Math.abs(s)<90?s.toFixed(0)+'s':(s/60).toFixed(1)+'m');
+const j=async u=>{const r=await fetch(u); if(!r.ok) throw new Error(u.split('/game/')[1].split('?')[0]+' → '+r.status); return r.json()};
+// deep-scan any object for the first URL that looks like a playable video asset
+function findMp4(o,depth){
+  if(!o||depth>6) return null;
+  if(typeof o==='string') return /\.mp4(\?|$)/i.test(o)?o:null;
+  if(Array.isArray(o)){ for(const x of o){const h=findMp4(x,depth+1); if(h) return h;} return null; }
+  if(typeof o==='object'){ for(const k in o){const h=findMp4(o[k],depth+1); if(h) return h;} }
+  return null;
+}
+function scanKeys(o,depth,acc){
+  if(!o||depth>5||typeof o!=='object') return acc;
+  for(const k in o){
+    if(/playback|media|highlight|content|video|asset|slug|playId/i.test(k)) acc.add(k);
+    const v=o[k];
+    if(v&&typeof v==='object') scanKeys(v,depth+1,acc);
+  }
+  return acc;
+}
+async function go(){
+  out.innerHTML='';V.className='dim';V.textContent='running…';
+  const pks=document.getElementById('pks').value.split(',').map(x=>x.trim()).filter(Boolean);
+  const verdicts=[];
+  for(const pk of pks){
+    const d=document.createElement('div');d.className='b';
+    d.innerHTML=`<div class="t">gamePk ${pk}</div>`;out.appendChild(d);
+    const add=(n,h)=>{const e=document.createElement('div');e.className='r';e.innerHTML=`<div class="n">${n}</div><div>${h}</div>`;d.appendChild(e)};
+    let gumbo,content,pbp;
+    try{
+      gumbo=await j(`https://statsapi.mlb.com/api/v1.1/game/${pk}/feed/live`);
+      content=await j(`https://statsapi.mlb.com/api/v1/game/${pk}/content`);
+      pbp=await j(`https://statsapi.mlb.com/api/v1/game/${pk}/playByPlay`);
+    }catch(e){ add('fetch',`<span class="bad">${e.message}</span>`); verdicts.push({fatal:true}); continue; }
+
+    // ---- home runs from GUMBO's own allPlays (has playId on the scoring pitch) ----
+    const allPlays=(((gumbo.liveData||{}).plays||{}).allPlays)||[];
+    const hrs=allPlays.filter(p=>{const r=p.result||{};return r.eventType==='home_run'||r.event==='Home Run';});
+    add('GUMBO version',`<span class="dim">${gumbo.metaData?.gameEvents?'events present':''} apiVer 1.1 · ${allPlays.length} plays</span>`);
+    add('home runs in GUMBO',hrs.length?`<span class="ok">${hrs.length}</span>`:`<span class="bad">0</span>`);
+
+    // does a HR play carry a media/playback reference INLINE?
+    const hrMediaKeys=[...scanKeys({hr:hrs[0]||{}},0,new Set())];
+    add('media-ish keys on a HR play',hrMediaKeys.length?`<span class="warn">${hrMediaKeys.join(', ')}</span>`:`<span class="dim">none — GUMBO plays hold no media ref</span>`);
+    const hrInlineMp4=findMp4(hrs[0]||{},0);
+    add('inline .mp4 on the HR play',hrInlineMp4?`<span class="ok">yes</span>`:`<span class="bad">no</span>`);
+
+    // ---- highlights carried INSIDE gumbo (liveData.media / highlights) ----
+    const gHi = (((gumbo.liveData||{}).media||{}).highlights)||{}
+    const gItems = (gHi.highlights||{}).items || gHi.items || [];
+    add('gumbo highlight items',gItems.length?`<span class="ok">${gItems.length}</span>`:`<span class="dim">0 — none embedded in the live feed</span>`);
+
+    // ---- the comparison: same clip, gumbo timestamp vs content endpoint's item.date ----
+    const cItems=((((content.highlights||{}).highlights)||{}).items)||[];
+    let earlier=0,same=0,cmp=[];
+    hrs.forEach(p=>{
+      const bid=(((p.matchup||{}).batter)||{}).id, name=(((p.matchup||{}).batter)||{}).fullName||'?';
+      const play=new Date((p.about||{}).endTime||(p.about||{}).startTime).getTime();
+      const pick=arr=>arr.filter(it=>it&&it.date&&new Date(it.date).getTime()>play-90000
+          && (it.keywordsAll||[]).some(k=>/player|person/i.test(k.type||'')&&String(k.value)===String(bid))
+          && !/recap|condensed/i.test((it.blurb||'')+(it.headline||'')))
+        .sort((a,b)=>new Date(a.date)-new Date(b.date))[0];
+      const g=pick(gItems), c=pick(cItems);
+      if(!g&&!c) return;
+      const gs=g?(new Date(g.date)-play)/1000:null, cs=c?(new Date(c.date)-play)/1000:null;
+      if(gs!=null&&cs!=null){ if(gs<cs-1)earlier++; else same++; }
+      cmp.push({name,gs,cs, gUrl:g?findMp4(g,0):null, cUrl:c?findMp4(c,0):null});
+    });
+    if(cmp.length){
+      let t='<table><tr><th>home run</th><th>gumbo date</th><th>content date</th><th>gumbo mp4?</th></tr>';
+      cmp.forEach(c=>{ t+=`<tr><td>${c.name}</td><td>${fmt(c.gs)}</td><td>${fmt(c.cs)}</td>`
+        +`<td class="${c.gUrl?'ok':'dim'}">${c.gUrl?'yes':'—'}</td></tr>`; });
+      d.innerHTML+=t+'</table>';
+    }
+    // dump the shape of a gumbo highlight item if any exist, else the HR play's media area
+    if(gItems.length) d.appendChild(Object.assign(document.createElement('pre'),
+      {textContent:'gumbo highlight item[0] (trimmed):\n'+JSON.stringify(gItems[0],null,1).slice(0,900)}));
+    verdicts.push({hrs:hrs.length,gInline:!!hrInlineMp4,gItems:gItems.length,earlier,same});
+  }
+  const v=verdicts.filter(x=>!x.fatal);
+  if(!v.length){ V.innerHTML='<b>FETCH FAILED.</b> Likely CORS — run on the wall machine. The panel uses proxyFetchText and is unaffected.'; return; }
+  const anyEmbedded=v.some(x=>x.gItems>0), anyEarlier=v.reduce((n,x)=>n+(x.earlier||0),0), anySame=v.reduce((n,x)=>n+(x.same||0),0), anyInline=v.some(x=>x.gInline);
+  V.className='';
+  V.innerHTML = anyInline
+   ? `<b class="ok">GUMBO CARRIES INLINE MEDIA on the HR play.</b> This is the best possible outcome — a clip reference the instant the play is logged, bypassing the content catalog entirely. Verify the URL actually plays, then this becomes the primary companion source and the 2-min floor is gone.`
+   : anyEmbedded && anyEarlier
+   ? `<b class="ok">GUMBO's embedded highlights are EARLIER (${anyEarlier} of ${anyEarlier+anySame}).</b> The live feed surfaces the same clips ahead of the content endpoint. Worth switching the companion fetch to GUMBO's <code>liveData.media.highlights</code>. Confirm the cadence/size cost is acceptable (GUMBO is large).`
+   : anyEmbedded
+   ? `<b class="warn">GUMBO embeds highlights but NOT earlier than content.</b> Same timestamps → same CDN-backed assets surfaced through a different door. No latency gain. <b>Accept the ~2-min floor and build the standalone card + crossfade.</b>`
+   : `<b class="warn">GUMBO carries NO media for home run plays</b> — only the play data (which r174 already has via playByPlay). There is nothing here to beat the content endpoint. <b>Definitive: ~2-min floor stands. Build the standalone card + crossfade.</b> Media-ish keys seen across plays: <code>${[...new Set(v.flatMap(()=>[]))].join(', ')||'none'}</code>.`;
+}
+go();
+</script></body></html>
