@@ -1,12 +1,12 @@
 {
   "v": 1,
-  "updated": "2026-07-22T23:45:18.425Z",
+  "updated": "2026-07-22T23:46:19.804Z",
   "events": [
     {
       "league": "baseball/mlb",
       "label": "MLB",
-      "espnId": "401816223",
-      "title": "Detroit Tigers @ Chicago Cubs",
+      "espnId": "401816221",
+      "title": "Tampa Bay Rays @ Toronto Blue Jays",
       "showFrom": "20260722",
       "showUntil": "20260722",
       "rank": 1
@@ -14,8 +14,8 @@
     {
       "league": "baseball/mlb",
       "label": "MLB",
-      "espnId": "401816220",
-      "title": "San Diego Padres @ Atlanta Braves",
+      "espnId": "401816218",
+      "title": "Minnesota Twins @ Cleveland Guardians",
       "showFrom": "20260722",
       "showUntil": "20260722",
       "rank": 2
