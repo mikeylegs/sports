@@ -1,0 +1,134 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Player image probe · action shots + HR stills</title><style>
+body{background:#070b12;color:#e6edf7;font:13px/1.6 ui-monospace,Menlo,monospace;padding:14px;margin:0}
+h1{font-size:15px;color:#7dd3fc;margin:0 0 2px}.sub{color:#8695ab;font-size:11.5px;margin-bottom:12px}
+h2{font-size:13px;color:#a78bfa;margin:18px 0 6px;border-bottom:1px solid #1c2838;padding-bottom:4px}
+.b{border:1px solid #1c2838;border-radius:8px;padding:11px 13px;margin:9px 0;background:#0c121d}
+.dim{color:#556274}.ok{color:#4ade80}.bad{color:#f87171}.warn{color:#fbbf24}
+.grid{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}
+.card{border:1px solid #1c2838;border-radius:8px;overflow:hidden;background:#0a1420;width:230px}
+.card .cap{padding:6px 8px;font-size:10.5px;color:#8695ab;word-break:break-all;border-bottom:1px solid #1c2838}
+.card .cap b{color:#7dd3fc}
+.card .frame{width:100%;height:150px;background:#060a12 center/contain no-repeat;position:relative}
+.card .frame .x{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#f87171;font-size:11px}
+.card .meta{padding:5px 8px;font-size:10px;color:#556274}
+input{background:#0a1420;border:1px solid #1c2838;color:#e6edf7;border-radius:5px;padding:5px 7px;font:inherit}
+button{background:#12324a;border:1px solid #1c2838;color:#7dd3fc;border-radius:5px;padding:5px 12px;font:inherit;cursor:pointer}
+#v{border:1px solid #234;border-left:4px solid #7dd3fc;border-radius:8px;padding:12px;margin-top:14px;background:#0a1420;font-size:12.5px}
+#v b{color:#7dd3fc}
+</style></head><body>
+<h1>PLAYER IMAGE PROBE</h1>
+<p class="sub">Two questions before we design the card: (1) does MLB serve large ACTION shots by player id, and (2) does the <code>content</code> HR clip carry a usable STILL of the actual swing? Both render live below — a broken frame means that path doesn't exist.</p>
+
+<div class="b">
+  <div style="margin-bottom:7px"><b style="color:#a78bfa">inputs</b></div>
+  player id <input id="pid" value="665862" size="8"> <span class="dim">(665862 = Chisholm; try any batter id)</span><br><br>
+  HR gamePk <input id="pk" value="823522" size="8"> <span class="dim">(a completed game with home runs)</span>
+  <button onclick="go()" style="margin-left:8px">run both</button>
+</div>
+
+<h2>#1 · MLB action cuts by player id <span class="dim" style="font-size:10px">— img.mlbstatic.com, various undocumented cut paths</span></h2>
+<div class="grid" id="g1"></div>
+
+<h2>#2 · HR clip still frames <span class="dim" style="font-size:10px">— content endpoint, image.cuts[] on the actual home run item</span></h2>
+<div id="g2wrap"><div class="grid" id="g2"></div></div>
+
+<div id="v" class="dim">run to probe…</div>
+
+<script>
+const g1=document.getElementById('g1'), g2=document.getElementById('g2'), V=document.getElementById('v');
+const R={action:[], stills:[], best:null};
+
+// candidate MLB action-cut URL shapes. Some will 404 — that IS the test.
+function actionCandidates(pid){
+  const base='https://img.mlbstatic.com/mlb-photos/image/upload';
+  return [
+    ['headshot (current baseline)', `${base}/w_640,q_auto/v1/people/${pid}/headshot/67/current`],
+    ['action / hero',               `${base}/w_1200,q_auto/v1/people/${pid}/action/hero/current`],
+    ['action / vertical',           `${base}/w_1200,q_auto/v1/people/${pid}/action/vertical/current`],
+    ['spots / one',                 `${base}/w_1200,q_auto/v1/people/${pid}/spots/one/current`],
+    ['generic / hero',              `${base}/w_1200,q_auto/v1/people/${pid}/generic/hero/current`],
+    ['d_people:generic:action',     `${base}/d_people:generic:action:hero:current.png/w_1200,q_auto/v1/people/${pid}/action/hero/current`],
+  ];
+}
+function tile(parent, label, url, onOk){
+  const c=document.createElement('div');c.className='card';
+  c.innerHTML=`<div class="cap"><b>${label}</b><br>${url.replace('https://','').slice(0,64)}…</div>
+    <div class="frame"></div><div class="meta">loading…</div>`;
+  parent.appendChild(c);
+  const fr=c.querySelector('.frame'), meta=c.querySelector('.meta');
+  const img=new Image();
+  const to=setTimeout(()=>{meta.innerHTML='<span class="bad">timeout</span>';},6000);
+  img.onload=()=>{clearTimeout(to);
+    if(img.naturalWidth<=1){ fr.innerHTML='<div class="x">1px / placeholder</div>'; meta.innerHTML='<span class="bad">empty</span>'; return; }
+    fr.style.backgroundImage=`url("${url}")`;
+    const ratio=(img.naturalWidth/img.naturalHeight).toFixed(2);
+    meta.innerHTML=`<span class="ok">${img.naturalWidth}×${img.naturalHeight}</span> · ratio ${ratio}`;
+    onOk&&onOk(img.naturalWidth,img.naturalHeight,url);
+  };
+  img.onerror=()=>{clearTimeout(to);fr.innerHTML='<div class="x">404</div>';meta.innerHTML='<span class="bad">not found</span>';};
+  img.src=url;
+}
+
+async function go(){
+  g1.innerHTML='';g2.innerHTML='';V.className='dim';V.textContent='probing…';
+  R.action=[];R.stills=[];R.best=null;
+  const pid=document.getElementById('pid').value.trim();
+  const pk=document.getElementById('pk').value.trim();
+
+  // ---- #1: action cuts ----
+  actionCandidates(pid).forEach(([label,url])=>{
+    tile(g1,label,url,(w,h,u)=>{ R.action.push({label,w,h,url:u,ratio:w/h}); verdict(); });
+  });
+
+  // ---- #2: HR stills from content ----
+  try{
+    const c=await (await fetch(`https://statsapi.mlb.com/api/v1/game/${pk}/content`)).json();
+    const items=((((c.highlights||{}).highlights)||{}).items)||[];
+    const hrItems=items.filter(it=>/homer|home run/i.test((it.blurb||'')+(it.headline||''))
+                                 && !/recap|condensed/i.test((it.blurb||'')+(it.headline||'')));
+    if(!hrItems.length){ g2.innerHTML='<div class="b bad">No HR clip items found in this game\'s content.</div>'; }
+    else {
+      // inspect the first HR item's image cuts
+      const it=hrItems[0];
+      const cuts=((it.image||{}).cuts)||[];
+      g2.insertAdjacentHTML('beforebegin',`<div class="dim" style="font-size:11px;margin:4px 0">HR clip: <b style="color:#7dd3fc">${(it.headline||it.blurb||'').slice(0,60)}</b> · ${cuts.length} image cuts · ${hrItems.length} HR clips total in game</div>`);
+      cuts.sort((a,b)=>(b.width||0)-(a.width||0)).forEach(cut=>{
+        tile(g2, `${cut.width}w${cut.aspectRatio?' · '+cut.aspectRatio:''}`, cut.src||cut.url,
+          (w,h,u)=>{ R.stills.push({w,h,url:u,ratio:w/h}); verdict(); });
+      });
+      if(!cuts.length){
+        // some payloads nest stills under playbacks/thumbnails instead
+        const alt=(it.playbacks||[]).find(p=>/image|thumb/i.test(p.name||''));
+        g2.innerHTML=`<div class="b warn">HR item has no <code>image.cuts[]</code>. Raw keys on the item: <br><span class="dim">${Object.keys(it).join(', ')}</span></div>`;
+      }
+    }
+  }catch(e){ g2.innerHTML=`<div class="b bad">content fetch failed: ${e.message}<br><span class="dim">If CORS, run on the wall machine.</span></div>`; }
+  setTimeout(verdict,4000);
+}
+
+function verdict(){
+  const bigAction=R.action.filter(a=>a.w>=600 && !/headshot/.test(a.label));
+  const wideStills=R.stills.filter(s=>s.w>=1000);
+  V.className='';
+  let msg='';
+  if(wideStills.length){
+    const best=wideStills.sort((a,b)=>b.w-a.w)[0];
+    msg+=`<b class="ok">#2 WINS: real HR still available.</b> Largest cut ${best.w}×${best.h} (ratio ${best.ratio.toFixed(2)}). This is a frame of the ACTUAL home run, already in the companion data you fetch — card shows the swing, then crossfades to video of the same swing. Use this as the hero.`;
+  } else if(R.stills.length){
+    msg+=`<b class="warn">#2 partial:</b> HR stills exist but max width ${Math.max(...R.stills.map(s=>s.w))}px — may be too small for a full-bleed 1920 hero. Usable as an inset, not a background.`;
+  } else {
+    msg+=`<b class="warn">#2:</b> no usable HR still found (see the raw keys dumped above to look elsewhere in the item).`;
+  }
+  msg+='<br><br>';
+  if(bigAction.length){
+    const best=bigAction.sort((a,b)=>b.w-a.w)[0];
+    msg+=`<b class="ok">#1 also available:</b> "${best.label}" resolves at ${best.w}×${best.h}. Generic file photo (same for every HR by that player), but higher-res than the headshot and a good fallback when #2's still isn't ready.`;
+  } else {
+    msg+=`<b class="dim">#1: no action cut resolved</b> — only the headshot baseline. MLB may not expose action shots by id on this CDN path; stick with #2 stills + headshot fallback.`;
+  }
+  msg+=`<div class="dim" style="margin-top:8px">Recommendation writes itself from whichever tiles rendered above vs 404'd.</div>`;
+  V.innerHTML=msg;
+}
+</script>
+</body></html>
