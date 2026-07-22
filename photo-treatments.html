@@ -1,0 +1,150 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Player photo treatments</title>
+<style>
+  :root{
+    --accent:#1c78ff;
+    --wash-r:11; --wash-g:42; --wash-b:94;
+    --feather:34%;      /* how far the fade eats in */
+    --photo-scale:1;
+    --photo-x:50%; --photo-y:26%;
+    --duo:0.55;         /* duotone strength */
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#05070c;color:#fff;font-family:ui-monospace,Menlo,monospace;min-height:100vh;padding:20px;display:flex;gap:20px}
+  #panel{flex:0 0 300px}
+  #panel h1{font-size:15px;color:#7dd3fc;margin-bottom:3px}
+  #panel .s{font-size:11px;color:#5b6b80;margin-bottom:14px;line-height:1.5}
+  .grp{border:1px solid #1b2432;border-radius:9px;padding:11px 12px;margin-bottom:10px;background:#0d131d}
+  .grp h2{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:#a78bfa;margin-bottom:8px}
+  .row{display:flex;align-items:center;gap:9px;margin:6px 0;font-size:11.5px;color:#8695ab}
+  .row input[type=range]{flex:1;accent-color:#7dd3fc}
+  .row input[type=text]{flex:1;background:#070c14;border:1px solid #1b2432;color:#e6edf7;border-radius:5px;padding:5px;font:inherit;min-width:0}
+  .row input[type=color]{width:34px;height:24px;border:1px solid #1b2432;border-radius:5px;background:none;padding:0}
+  .row .v{flex:0 0 40px;text-align:right;color:#7dd3fc}
+  #stageArea{flex:1;display:flex;flex-direction:column;gap:14px;min-width:0}
+  .lane{display:flex;flex-direction:column;gap:6px}
+  .lane .lbl{font-size:11px;color:#8695ab;display:flex;justify-content:space-between}
+  .lane .lbl b{color:#7dd3fc}
+  .lane .lbl .use{color:#4ade80;cursor:pointer}
+  /* each stage is a 16:9 card at ~half wall scale */
+  .stage{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:6px;overflow:hidden;border:1px solid #1b2432}
+  .bg{position:absolute;inset:0;background:
+     radial-gradient(120% 100% at 78% 30%, rgba(var(--wash-r),var(--wash-g),var(--wash-b),.7), #070c16 65%);}
+
+  .ph{position:absolute;inset:0;background-repeat:no-repeat;background-position:var(--photo-x) var(--photo-y);
+     background-size:cover;transform:scale(var(--photo-scale));transform-origin:78% 30%;}
+
+  /* ── treatment A: feathered right-anchored, mask fade on left + bottom ── */
+  .A .ph{
+    -webkit-mask:linear-gradient(to left, #000 var(--feather), transparent 92%),
+                 linear-gradient(to top, transparent 4%, #000 var(--feather));
+    -webkit-mask-composite:source-in; mask-composite:intersect;
+    background-position:right var(--photo-y);}
+
+  /* ── treatment B: soft vignette oval, edges dissolve all around ── */
+  .B .ph{-webkit-mask:radial-gradient(75% 90% at 72% 42%, #000 40%, transparent 78%);
+          mask:radial-gradient(75% 90% at 72% 42%, #000 40%, transparent 78%);}
+
+  /* ── treatment C: duotone wash — photo tinted into the team color, bottom fade ── */
+  .C .ph{-webkit-mask:linear-gradient(to top, transparent 3%, #000 var(--feather));
+         mask:linear-gradient(to top, transparent 3%, #000 var(--feather));
+         background-position:right var(--photo-y);}
+  .C .duo{position:absolute;inset:0;mix-blend-mode:color;
+         background:rgb(var(--wash-r),var(--wash-g),var(--wash-b));opacity:var(--duo);
+         -webkit-mask:linear-gradient(to top, transparent 3%, #000 var(--feather));
+         mask:linear-gradient(to top, transparent 3%, #000 var(--feather));}
+  .C .glow{position:absolute;inset:0;mix-blend-mode:screen;
+         background:radial-gradient(60% 70% at 70% 34%, rgba(var(--wash-r),var(--wash-g),var(--wash-b),.5), transparent 70%);}
+
+  /* ── treatment D: hard-edge box (the "before" — what you don't want) ── */
+  .D .ph{inset:8% 6% 8% auto;left:auto;width:44%;border-radius:8px;background-size:cover;background-position:var(--photo-x) var(--photo-y);}
+
+  /* shared: accent stripe + sample text so you judge it in context */
+  .stripe{position:absolute;left:0;top:0;bottom:0;width:8px;background:var(--accent);box-shadow:0 0 30px rgba(var(--wash-r),var(--wash-g),var(--wash-b),.9)}
+  .txt{position:absolute;left:5%;bottom:9%;z-index:3}
+  .txt .k{font-size:1.3vw;letter-spacing:.4em;font-weight:800;text-transform:uppercase;color:#fff;opacity:.9;margin-bottom:.3vw}
+  .txt .h{font-size:6vw;line-height:.85;font-weight:900;text-transform:uppercase;font-family:'Archivo Black',Arial,sans-serif;letter-spacing:-.01em;text-shadow:0 3px 30px rgba(0,0,0,.6)}
+  .txt .sub{font-size:1.8vw;font-weight:800;text-transform:uppercase;margin-top:.4vw}
+  .scr{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.8),transparent 45%);z-index:2}
+</style></head>
+<body>
+<div id="panel">
+  <h1>PHOTO TREATMENTS</h1>
+  <div class="s">Four ways to seat the action shot in the card. Adjust, then "use this" copies the CSS for that treatment.</div>
+  <div class="grp"><h2>Image</h2>
+    <div class="row"><span>URL</span><input type="text" id="url" placeholder="paste action-shot URL"></div>
+    <div class="row"><span>Focus X</span><input type="range" id="px" min="0" max="100" value="72"><span class="v" id="vpx">72</span></div>
+    <div class="row"><span>Focus Y</span><input type="range" id="py" min="0" max="100" value="26"><span class="v" id="vpy">26</span></div>
+    <div class="row"><span>Scale</span><input type="range" id="ps" min="1" max="1.8" step="0.02" value="1"><span class="v" id="vps">1.0</span></div>
+  </div>
+  <div class="grp"><h2>Feather / fade</h2>
+    <div class="row"><span>Depth</span><input type="range" id="fe" min="15" max="70" value="34"><span class="v" id="vfe">34</span></div>
+  </div>
+  <div class="grp"><h2>Color</h2>
+    <div class="row"><span>Accent</span><input type="color" id="ac" value="#1c78ff"></div>
+    <div class="row"><span>Team wash</span><input type="color" id="wa" value="#0b2a5e"></div>
+    <div class="row"><span>Duotone</span><input type="range" id="du" min="0" max="1" step="0.05" value="0.55"><span class="v" id="vdu">.55</span></div>
+  </div>
+  <div class="grp"><h2>Sample text</h2>
+    <div class="row"><span>Head</span><input type="text" id="th" value="HOME RUN"></div>
+    <div class="row"><span>Name</span><input type="text" id="tn" value="Jazz Chisholm Jr."></div>
+  </div>
+</div>
+
+<div id="stageArea">
+  <div class="lane"><div class="lbl"><span><b>A</b> · Feathered edge <span style="color:#556274">— photo dissolves left+bottom into the wash</span></span><span class="use" data-t="A">use this ↗</span></div>
+    <div class="stage A"><div class="bg"></div><div class="ph"></div><div class="scr"></div><div class="stripe"></div>
+      <div class="txt"><div class="k">Yankees · Home Run</div><div class="h" id="hA">HOME RUN</div><div class="sub" id="sA">Jazz Chisholm Jr.</div></div></div></div>
+
+  <div class="lane"><div class="lbl"><span><b>B</b> · Soft vignette <span style="color:#556274">— oval mask, all edges dissolve, most elegant</span></span><span class="use" data-t="B">use this ↗</span></div>
+    <div class="stage B"><div class="bg"></div><div class="ph"></div><div class="scr"></div><div class="stripe"></div>
+      <div class="txt"><div class="k">Yankees · Home Run</div><div class="h" id="hB">HOME RUN</div><div class="sub" id="sB">Jazz Chisholm Jr.</div></div></div></div>
+
+  <div class="lane"><div class="lbl"><span><b>C</b> · Duotone wash <span style="color:#556274">— photo tinted into team color, feels most "designed"</span></span><span class="use" data-t="C">use this ↗</span></div>
+    <div class="stage C"><div class="bg"></div><div class="ph"></div><div class="duo"></div><div class="glow"></div><div class="scr"></div><div class="stripe"></div>
+      <div class="txt"><div class="k">Yankees · Home Run</div><div class="h" id="hC">HOME RUN</div><div class="sub" id="sC">Jazz Chisholm Jr.</div></div></div></div>
+
+  <div class="lane"><div class="lbl"><span><b>D</b> · Hard box <span style="color:#556274">— the "before", so you can see the difference</span></span></div>
+    <div class="stage D"><div class="bg"></div><div class="ph"></div><div class="scr"></div><div class="stripe"></div>
+      <div class="txt"><div class="k">Yankees · Home Run</div><div class="h" id="hD">HOME RUN</div><div class="sub" id="sD">Jazz Chisholm Jr.</div></div></div></div>
+</div>
+
+<script>
+const root=document.documentElement, S=id=>document.getElementById(id);
+const setPhoto=u=>document.querySelectorAll('.ph').forEach(p=>p.style.backgroundImage=u?`url("${u}")`:'');
+function bind(id,fn){S(id).addEventListener('input',()=>fn(S(id).value))}
+bind('url',v=>setPhoto(v.trim()));
+bind('px',v=>{root.style.setProperty('--photo-x',v+'%');S('vpx').textContent=v});
+bind('py',v=>{root.style.setProperty('--photo-y',v+'%');S('vpy').textContent=v});
+bind('ps',v=>{root.style.setProperty('--photo-scale',v);S('vps').textContent=(+v).toFixed(1)});
+bind('fe',v=>{root.style.setProperty('--feather',v+'%');S('vfe').textContent=v});
+bind('ac',v=>root.style.setProperty('--accent',v));
+bind('wa',v=>{const n=parseInt(v.slice(1),16);root.style.setProperty('--wash-r',n>>16&255);root.style.setProperty('--wash-g',n>>8&255);root.style.setProperty('--wash-b',n&255)});
+bind('du',v=>{root.style.setProperty('--duo',v);S('vdu').textContent=(+v).toFixed(2).replace(/^0/,'')});
+bind('th',v=>['A','B','C','D'].forEach(x=>S('h'+x).textContent=v));
+bind('tn',v=>['A','B','C','D'].forEach(x=>S('s'+x).textContent=v));
+
+const CSS={
+ A:`/* Feathered edge */
+.hero{background:cover no-repeat right center;
+  -webkit-mask:linear-gradient(to left,#000 FE,transparent 92%),linear-gradient(to top,transparent 4%,#000 FE);
+  -webkit-mask-composite:source-in;mask-composite:intersect;}`,
+ B:`/* Soft vignette */
+.hero{background:cover no-repeat 72% 42%;
+  -webkit-mask:radial-gradient(75% 90% at 72% 42%,#000 40%,transparent 78%);
+  mask:radial-gradient(75% 90% at 72% 42%,#000 40%,transparent 78%);}`,
+ C:`/* Duotone wash — 3 stacked layers */
+.hero{background:cover no-repeat right center;-webkit-mask:linear-gradient(to top,transparent 3%,#000 FE);mask:linear-gradient(to top,transparent 3%,#000 FE);}
+.hero-duo{position:absolute;inset:0;mix-blend-mode:color;background:rgb(R,G,B);opacity:DUO;/* same mask as .hero */}
+.hero-glow{position:absolute;inset:0;mix-blend-mode:screen;background:radial-gradient(60% 70% at 70% 34%,rgba(R,G,B,.5),transparent 70%);}`
+};
+document.querySelectorAll('.use').forEach(b=>b.addEventListener('click',()=>{
+  const t=b.dataset.t;
+  const fe=S('fe').value+'%';
+  const wash=[getComputedStyle(root).getPropertyValue('--wash-r').trim(),getComputedStyle(root).getPropertyValue('--wash-g').trim(),getComputedStyle(root).getPropertyValue('--wash-b').trim()];
+  let css=CSS[t].replaceAll('FE',fe).replace('R,G,B',wash.join(',')).replaceAll('R,G,B',wash.join(',')).replace('DUO',S('du').value);
+  navigator.clipboard.writeText(css);
+  b.textContent='copied ✓';setTimeout(()=>b.textContent='use this ↗',1200);
+}));
+</script>
+</body></html>
