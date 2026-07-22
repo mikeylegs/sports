@@ -1,62 +1,7 @@
 {
   "v": 1,
-  "updated": "2026-07-22T23:28:27.437Z",
-  "events": [
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816224",
-      "title": "Miami Marlins @ Houston Astros",
-      "showFrom": "20260722",
-      "showUntil": "20260722",
-      "rank": 1
-    },
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816223",
-      "title": "Detroit Tigers @ Chicago Cubs",
-      "showFrom": "20260722",
-      "showUntil": "20260722",
-      "rank": 2
-    },
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816220",
-      "title": "San Diego Padres @ Atlanta Braves",
-      "showFrom": "20260722",
-      "showUntil": "20260722",
-      "rank": 3
-    },
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816222",
-      "title": "Chicago White Sox @ Texas Rangers",
-      "showFrom": "20260722",
-      "showUntil": "20260722",
-      "rank": 4
-    },
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816216",
-      "title": "Baltimore Orioles @ Boston Red Sox",
-      "showFrom": "20260722",
-      "showUntil": "20260722",
-      "rank": 5
-    },
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816221",
-      "title": "Tampa Bay Rays @ Toronto Blue Jays",
-      "showFrom": "20260722",
-      "showUntil": "20260722",
-      "rank": 6
-    }
-  ],
+  "updated": "2026-07-22T23:34:34.308Z",
+  "events": [],
   "watch": {
     "teams": []
   }
