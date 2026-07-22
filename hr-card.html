@@ -1,0 +1,162 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HR card · treatment studio</title>
+<style>
+  :root{
+    --accent:#1c78ff;
+    --wash-r:11; --wash-g:42; --wash-b:94;
+    --feather:34%;
+    --photo-scale:1; --photo-x:72%; --photo-y:26%;
+    --duo:0.55;
+    --head-size:5.2vw;     /* HOME RUN */
+    --name-size:2.6vw;     /* player name — now independently sizable */
+    --hr-size:2.2vw;       /* the (HR #) tag */
+    --txt-x:5%; --txt-y:8%;
+    --logo-x:8%; --logo-y:10%; --logo-size:16%;
+    --logo-glow:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#05070c;color:#fff;font-family:ui-monospace,Menlo,monospace;min-height:100vh;padding:20px;display:flex;gap:20px}
+  #panel{flex:0 0 310px;max-height:calc(100vh - 40px);overflow-y:auto}
+  #panel h1{font-size:15px;color:#7dd3fc;margin-bottom:3px}
+  #panel .s{font-size:11px;color:#5b6b80;margin-bottom:14px;line-height:1.5}
+  .grp{border:1px solid #1b2432;border-radius:9px;padding:11px 12px;margin-bottom:10px;background:#0d131d}
+  .grp h2{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:#a78bfa;margin-bottom:8px;display:flex;justify-content:space-between}
+  .row{display:flex;align-items:center;gap:9px;margin:6px 0;font-size:11.5px;color:#8695ab}
+  .row>span:first-child{flex:0 0 62px}
+  .row input[type=range]{flex:1;accent-color:#7dd3fc;min-width:0}
+  .row input[type=text]{flex:1;background:#070c14;border:1px solid #1b2432;color:#e6edf7;border-radius:5px;padding:5px;font:inherit;min-width:0}
+  .row input[type=color]{width:34px;height:24px;border:1px solid #1b2432;border-radius:5px;background:none;padding:0}
+  .row .v{flex:0 0 42px;text-align:right;color:#7dd3fc}
+  .tog{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:11.5px;color:#cdd8e6}
+  .tog input{accent-color:#4ade80;width:15px;height:15px}
+  #stageArea{flex:1;display:flex;flex-direction:column;gap:12px;min-width:0}
+  .stage{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:6px;overflow:hidden;border:1px solid #1b2432}
+  .bg{position:absolute;inset:0;background:radial-gradient(120% 100% at 78% 30%, rgba(var(--wash-r),var(--wash-g),var(--wash-b),.7), #070c16 65%);}
+  .ph{position:absolute;inset:0;background-repeat:no-repeat;background-position:var(--photo-x) var(--photo-y);
+      background-size:cover;transform:scale(var(--photo-scale));transform-origin:78% 30%;}
+  /* soft vignette — the chosen treatment */
+  .vig .ph{-webkit-mask:radial-gradient(78% 92% at var(--photo-x) 44%, #000 42%, transparent 80%);
+           mask:radial-gradient(78% 92% at var(--photo-x) 44%, #000 42%, transparent 80%);}
+  .duo{position:absolute;inset:0;mix-blend-mode:color;background:rgb(var(--wash-r),var(--wash-g),var(--wash-b));opacity:var(--duo);
+       -webkit-mask:radial-gradient(78% 92% at var(--photo-x) 44%, #000 42%, transparent 80%);
+       mask:radial-gradient(78% 92% at var(--photo-x) 44%, #000 42%, transparent 80%);}
+  .scr{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.82),transparent 48%);z-index:2}
+  .stripe{position:absolute;left:0;top:0;bottom:0;width:8px;background:var(--accent);box-shadow:0 0 30px rgba(var(--wash-r),var(--wash-g),var(--wash-b),.9);z-index:4}
+
+  .logo{position:absolute;left:var(--logo-x);top:var(--logo-y);width:var(--logo-size);z-index:3;
+        filter:drop-shadow(0 0 var(--logo-glow) rgba(var(--wash-r),var(--wash-g),var(--wash-b),.9))
+               drop-shadow(0 0 calc(var(--logo-glow)*1.6) rgba(255,255,255,.25));}
+  .logo img{width:100%;display:block}
+  .logo.empty{aspect-ratio:1;border:1px dashed #2a3a52;border-radius:6px;display:flex;align-items:center;justify-content:center;
+        color:#3a4c66;font-size:10px;text-align:center;background:rgba(20,30,48,.4)}
+
+  .txt{position:absolute;left:var(--txt-x);bottom:var(--txt-y);z-index:3;line-height:1}
+  .txt .h{font-size:var(--head-size);line-height:.82;font-weight:900;text-transform:uppercase;
+     font-family:'Archivo Black',Arial,sans-serif;letter-spacing:-.01em;text-shadow:0 3px 34px rgba(0,0,0,.7);
+     display:flex;align-items:baseline;gap:.5vw;flex-wrap:wrap}
+  .txt .h .hr{font-size:var(--hr-size);font-weight:800;color:var(--accent);-webkit-text-stroke:0;
+     font-family:'Archivo Black',Arial,sans-serif;text-shadow:0 2px 18px rgba(0,0,0,.6)}
+  .txt .name{font-size:var(--name-size);font-weight:900;text-transform:uppercase;margin-top:.5vw;letter-spacing:.01em;
+     text-shadow:0 2px 20px rgba(0,0,0,.7)}
+</style></head>
+<body>
+<div id="panel">
+  <h1>HR CARD · TREATMENT STUDIO</h1>
+  <div class="s">Soft-vignette hero. Dial it in, then tell me the values and I'll fold them into <code>showTakeover</code>.</div>
+
+  <div class="grp"><h2>Image</h2>
+    <div class="row"><span>Photo URL</span><input type="text" id="url" value="https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:action:hero:current.jpg/q_auto:good,w_1500/v1/people/519317/action/hero/current"></div>
+    <div class="row"><span>Focus X</span><input type="range" id="px" min="0" max="100" value="72"><span class="v" id="vpx">72</span></div>
+    <div class="row"><span>Focus Y</span><input type="range" id="py" min="0" max="100" value="26"><span class="v" id="vpy">26</span></div>
+    <div class="row"><span>Scale</span><input type="range" id="ps" min="1" max="1.8" step="0.02" value="1"><span class="v" id="vps">1.0</span></div>
+    <div class="row"><span>Feather</span><input type="range" id="fe" min="15" max="70" value="34"><span class="v" id="vfe">34</span></div>
+  </div>
+
+  <div class="grp"><h2>Headline</h2>
+    <div class="row"><span>Text</span><input type="text" id="th" value="HOME RUN"></div>
+    <div class="row"><span>Size</span><input type="range" id="hs" min="3" max="11" step="0.1" value="5.2"><span class="v" id="vhs">5.2</span></div>
+    <label class="tog" style="margin:8px 0 4px"><input type="checkbox" id="hrOn" checked> show HR # after headline</label>
+    <div class="row"><span>HR text</span><input type="text" id="hrt" value="#15"></div>
+    <div class="row"><span>HR size</span><input type="range" id="hrs" min="1" max="6" step="0.1" value="2.2"><span class="v" id="vhrs">2.2</span></div>
+  </div>
+
+  <div class="grp"><h2>Player name</h2>
+    <div class="row"><span>Text</span><input type="text" id="tn" value="GIANCARLO STANTON"></div>
+    <div class="row"><span>Size</span><input type="range" id="ns" min="1.5" max="8" step="0.1" value="2.6"><span class="v" id="vns">2.6</span></div>
+  </div>
+
+  <div class="grp"><h2>Text block position</h2>
+    <div class="row"><span>X</span><input type="range" id="tx" min="0" max="60" value="5"><span class="v" id="vtx">5</span></div>
+    <div class="row"><span>Y</span><input type="range" id="ty" min="0" max="40" value="8"><span class="v" id="vty">8</span></div>
+  </div>
+
+  <div class="grp"><h2>Team logo</h2>
+    <label class="tog" style="margin-bottom:8px"><input type="checkbox" id="lgOn" checked> show logo</label>
+    <div class="row"><span>Logo URL</span><input type="text" id="lgUrl" placeholder="paste transparent NYY logo URL"></div>
+    <div class="row"><span>X</span><input type="range" id="lx" min="0" max="90" value="8"><span class="v" id="vlx">8</span></div>
+    <div class="row"><span>Y</span><input type="range" id="ly" min="0" max="85" value="10"><span class="v" id="vly">10</span></div>
+    <div class="row"><span>Size</span><input type="range" id="lsz" min="5" max="45" value="16"><span class="v" id="vlsz">16</span></div>
+    <div class="row"><span>Glow</span><input type="range" id="lgl" min="0" max="40" value="14"><span class="v" id="vlgl">14</span></div>
+  </div>
+
+  <div class="grp"><h2>Color</h2>
+    <div class="row"><span>Accent</span><input type="color" id="ac" value="#1c78ff"></div>
+    <div class="row"><span>Team wash</span><input type="color" id="wa" value="#0b2a5e"></div>
+    <div class="row"><span>Duotone</span><input type="range" id="du" min="0" max="1" step="0.05" value="0.4"><span class="v" id="vdu">.40</span></div>
+  </div>
+</div>
+
+<div id="stageArea">
+  <div class="stage vig" id="stage">
+    <div class="bg"></div>
+    <div class="ph" id="ph"></div>
+    <div class="duo" id="duo"></div>
+    <div class="scr"></div>
+    <div class="logo empty" id="logo">LOGO<br>URL</div>
+    <div class="stripe"></div>
+    <div class="txt">
+      <div class="h"><span id="hTxt">HOME RUN</span><span class="hr" id="hrTag">#15</span></div>
+      <div class="name" id="nTxt">GIANCARLO STANTON</div>
+    </div>
+  </div>
+  <div style="font-size:11px;color:#556274;padding:0 4px">Renders at 16:9 — same proportions as the 1920×1080 wall. When it looks right, read me the panel values (or screenshot) and I'll port them.</div>
+</div>
+
+<script>
+const root=document.documentElement, S=id=>document.getElementById(id);
+function bind(id,fn){const el=S(id);const ev=el.type==='checkbox'?'change':'input';el.addEventListener(ev,()=>fn(el.type==='checkbox'?el.checked:el.value));}
+const setVar=(k,v)=>root.style.setProperty(k,v);
+
+bind('url',v=>S('ph').style.backgroundImage=v.trim()?`url("${v.trim()}")`:'');
+S('ph').style.backgroundImage=`url("${S('url').value}")`;
+bind('px',v=>{setVar('--photo-x',v+'%');S('vpx').textContent=v});
+bind('py',v=>{setVar('--photo-y',v+'%');S('vpy').textContent=v});
+bind('ps',v=>{setVar('--photo-scale',v);S('vps').textContent=(+v).toFixed(1)});
+bind('fe',v=>{setVar('--feather',v+'%');S('vfe').textContent=v});
+
+bind('th',v=>S('hTxt').textContent=v);
+bind('hs',v=>{setVar('--head-size',v+'vw');S('vhs').textContent=v});
+bind('hrOn',v=>S('hrTag').style.display=v?'inline':'none');
+bind('hrt',v=>S('hrTag').textContent=v);
+bind('hrs',v=>{setVar('--hr-size',v+'vw');S('vhrs').textContent=v});
+
+bind('tn',v=>S('nTxt').textContent=v);
+bind('ns',v=>{setVar('--name-size',v+'vw');S('vns').textContent=v});
+bind('tx',v=>{setVar('--txt-x',v+'%');S('vtx').textContent=v});
+bind('ty',v=>{setVar('--txt-y',v+'%');S('vty').textContent=v});
+
+bind('lgOn',v=>S('logo').style.display=v?'':'none');
+bind('lgUrl',v=>{const u=v.trim();const l=S('logo');
+  if(u){l.classList.remove('empty');l.innerHTML=`<img src="${u}" alt="">`;}
+  else{l.classList.add('empty');l.innerHTML='LOGO<br>URL';}});
+bind('lx',v=>{setVar('--logo-x',v+'%');S('vlx').textContent=v});
+bind('ly',v=>{setVar('--logo-y',v+'%');S('vly').textContent=v});
+bind('lsz',v=>{setVar('--logo-size',v+'%');S('vlsz').textContent=v});
+bind('lgl',v=>{setVar('--logo-glow',v+'px');S('vlgl').textContent=v});
+
+bind('ac',v=>setVar('--accent',v));
+bind('wa',v=>{const n=parseInt(v.slice(1),16);setVar('--wash-r',n>>16&255);setVar('--wash-g',n>>8&255);setVar('--wash-b',n&255)});
+bind('du',v=>{setVar('--duo',v);S('vdu').textContent=(+v).toFixed(2).replace(/^0/,'')});
+setVar('--duo',0.4);
+</script>
+</body></html>
