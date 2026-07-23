@@ -1,0 +1,140 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HR card · 30-team contact sheet</title>
+<style>
+  :root{--target:0.30;--feather:15;--logoGlow:14;--duo:0.05}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#05070c;color:#e6edf7;font:13px/1.6 ui-monospace,Menlo,monospace;padding:16px}
+  h1{font-size:16px;color:#7dd3fc;margin-bottom:2px}
+  .sub{color:#5b6b80;font-size:11.5px;margin-bottom:14px;max-width:900px;line-height:1.55}
+  .bar{border:1px solid #1b2432;border-radius:10px;background:#0c121d;padding:12px 14px;margin-bottom:14px;
+       display:flex;flex-wrap:wrap;gap:18px;align-items:center}
+  .grp{display:flex;align-items:center;gap:8px;font-size:11.5px;color:#8695ab}
+  .grp input[type=range]{accent-color:#7dd3fc;width:130px}
+  .grp input[type=text]{background:#070c14;border:1px solid #1b2432;color:#e6edf7;border-radius:5px;padding:5px 7px;font:inherit;width:300px}
+  .v{color:#7dd3fc;min-width:38px;text-align:right}
+  .modes{display:flex;gap:5px}
+  .modes button{background:#12324a;border:1px solid #1b2432;color:#7dd3fc;border-radius:6px;padding:6px 11px;font:inherit;font-size:11.5px;cursor:pointer}
+  .modes button.on{background:#1c78ff;color:#fff;border-color:#1c78ff}
+  #stats{font-size:11.5px;color:#8695ab;margin-bottom:10px}
+  #stats b{color:#4ade80}#stats .bad{color:#f87171}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px}
+  .cell{position:relative}
+  .lbl{display:flex;justify-content:space-between;font-size:10.5px;color:#8695ab;margin-bottom:3px;padding:0 2px}
+  .lbl b{color:#e6edf7}
+  .lbl .cr{font-variant-numeric:tabular-nums}
+  .lbl .cr.fail{color:#f87171;font-weight:700}
+  .lbl .cr.warn{color:#fbbf24}
+  .lbl .cr.ok{color:#4ade80}
+  .card{position:relative;width:100%;aspect-ratio:16/9;border-radius:6px;overflow:hidden;background:#000;
+        border:1px solid #1b2432;container-type:size}
+  .card.flag{border-color:#f87171;box-shadow:0 0 0 1px #f87171}
+  .bg{position:absolute;inset:0}
+  .ph{position:absolute;inset:0;background-size:cover;background-position:41% 13%;transform:scale(1.1);transform-origin:78% 30%;
+      -webkit-mask:radial-gradient(78% 92% at 41% 44%,#000 42%,transparent 80%);
+      mask:radial-gradient(78% 92% at 41% 44%,#000 42%,transparent 80%);}
+  .duo{position:absolute;inset:0;mix-blend-mode:color;
+       -webkit-mask:radial-gradient(78% 92% at 41% 44%,#000 42%,transparent 80%);
+       mask:radial-gradient(78% 92% at 41% 44%,#000 42%,transparent 80%);}
+  .scrim{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.82),transparent 48%)}
+  .stripe{position:absolute;left:0;top:0;bottom:0;width:2.2cqh;z-index:4}
+  .logo{position:absolute;left:1%;top:1%;width:14%;z-index:3}
+  .logo img{width:100%;display:block}
+  .txt{position:absolute;left:5%;bottom:1%;z-index:4;line-height:1}
+  .head{font-size:17cqh;line-height:.82;font-weight:900;text-transform:uppercase;letter-spacing:-.01em;
+        font-family:'Archivo Black','Arial Narrow',Arial,sans-serif;color:#fff;
+        text-shadow:0 .4cqh 3.4cqh rgba(0,0,0,.7);display:flex;align-items:baseline;gap:1.4cqh;white-space:nowrap}
+  .head .hr{font-size:14cqh;font-weight:800;color:#fff}
+  .name{font-size:13cqh;font-weight:900;text-transform:uppercase;margin-top:1.4cqh;color:#fff;
+        text-shadow:0 .2cqh 2cqh rgba(0,0,0,.7);white-space:nowrap}
+  .note{font-size:11px;color:#5b6b80;margin-top:14px;line-height:1.6;max-width:900px}
+</style></head>
+<body>
+<h1>HR CARD — 30-TEAM CONTACT SHEET</h1>
+<p class="sub">Same card, every club, real team colours from <code>TEAM_COLORS</code> and real logos from <code>logoUrl()</code>'s CDN pattern. Contrast of white text against each wash is measured, not eyeballed — cards that fail get a red border. Change the mode and the target and watch which teams recover.</p>
+
+<div class="bar">
+  <div class="modes">
+    <button id="m1" onclick="setMode(1)">① Accent only</button>
+    <button id="m2" class="on" onclick="setMode(2)">② Darkened wash</button>
+    <button id="m3" onclick="setMode(3)">③ Full team wash</button>
+  </div>
+  <div class="grp">luminance target <input type="range" id="tgt" min="0.06" max="0.60" step="0.01" value="0.30"><span class="v" id="vtgt">.30</span></div>
+  <div class="grp">duotone <input type="range" id="duo" min="0" max="0.6" step="0.05" value="0.05"><span class="v" id="vduo">.05</span></div>
+  <div class="grp">logo glow <input type="range" id="glow" min="0" max="30" step="1" value="14"><span class="v" id="vglow">14</span></div>
+  <div class="grp">photo <input type="text" id="url" value="https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:action:hero:current.jpg/q_auto:good,w_1500/v1/people/519317/action/hero/current"></div>
+</div>
+<div id="stats"></div>
+<div class="grid" id="grid"></div>
+<p class="note"><b>Contrast</b> is WCAG relative-luminance ratio of white against the wash colour at the text area. <b>4.5:1</b> is the readability floor for body text; large display type like this survives around <b>3:1</b>. Cards below 3:1 are flagged. Mode ② darkens each team colour toward black until it meets the luminance target, which is what most broadcast graphics actually do — it keeps the team identity while guaranteeing the headline reads.</p>
+
+<script>
+const TEAMS={ARI:"#A71930",ATL:"#CE1141",BAL:"#DF4601",BOS:"#BD3039",CHC:"#0E3386",CHW:"#27251F",
+CIN:"#C6011F",CLE:"#E31937",COL:"#333366",DET:"#0C2340",HOU:"#EB6E1F",KC:"#004687",LAA:"#BA0021",
+LAD:"#005A9C",MIA:"#00A3E0",MIL:"#0A2351",MIN:"#002B5C",NYM:"#002D72",NYY:"#003087",ATH:"#003831",
+PHI:"#E81828",PIT:"#FDB827",SD:"#2F241D",SEA:"#005C5C",SF:"#FD5A1E",STL:"#C41E3A",TB:"#092C5C",
+TEX:"#003278",TOR:"#134A8E",WSH:"#AB0003"};
+// ESPN logo slugs where they differ from our abbr
+const SLUG={ATH:'oak',CHW:'chw',KC:'kc',SD:'sd',SF:'sf',TB:'tb',WSH:'wsh'};
+const logoUrl=a=>`https://images.weserv.nl/?url=a.espncdn.com/combiner/i?img=/i/teamlogos/mlb/500/scoreboard/${(SLUG[a]||a).toLowerCase()}.png&w=200&h=200&output=png`;
+
+const hex2rgb=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+const srgb=c=>{c/=255;return c<=.03928?c/12.92:Math.pow((c+.055)/1.055,2.4)};
+const lum=([r,g,b])=>.2126*srgb(r)+.7152*srgb(g)+.0722*srgb(b);
+const contrastWhite=rgb=>1.05/(lum(rgb)+.05);
+// scale a colour toward black until its luminance meets the target
+function darkenTo(rgb,target){
+  if(lum(rgb)<=target) return rgb;
+  let lo=0,hi=1,out=rgb;
+  for(let i=0;i<24;i++){const m=(lo+hi)/2;const t=rgb.map(c=>c*m);
+    if(lum(t)>target) hi=m; else lo=m; out=t;}
+  return rgb.map(c=>Math.round(c*lo));
+}
+let MODE=2;
+const S=id=>document.getElementById(id);
+function setMode(m){MODE=m;[1,2,3].forEach(i=>S('m'+i).classList.toggle('on',i===m));render();}
+['tgt','duo','glow','url'].forEach(id=>S(id).addEventListener('input',()=>{
+  if(id==='tgt')S('vtgt').textContent=(+S('tgt').value).toFixed(2).replace(/^0/,'');
+  if(id==='duo')S('vduo').textContent=(+S('duo').value).toFixed(2).replace(/^0/,'');
+  if(id==='glow')S('vglow').textContent=S('glow').value;
+  render();}));
+
+function washFor(abbr){
+  const base=hex2rgb(TEAMS[abbr]);
+  if(MODE===1) return [11,20,32];                       // neutral dark, team colour only on stripe+glow
+  if(MODE===3) return base;                             // raw team colour
+  return darkenTo(base,parseFloat(S('tgt').value));     // mode 2
+}
+function render(){
+  const photo=S('url').value.trim(), glow=S('glow').value, duo=S('duo').value;
+  const rows=Object.keys(TEAMS).sort();
+  let fails=0, worst={a:null,c:99};
+  S('grid').innerHTML=rows.map(a=>{
+    const accent=TEAMS[a], wash=washFor(a), cr=contrastWhite(wash);
+    const cls=cr>=4.5?'ok':cr>=3?'warn':'fail';
+    if(cr<3){fails++;}
+    if(cr<worst.c){worst={a,c:cr};}
+    const w=wash.join(',');
+    return `<div class="cell">
+      <div class="lbl"><b>${a}</b><span class="cr ${cls}">${cr.toFixed(2)}:1</span></div>
+      <div class="card ${cr<3?'flag':''}">
+        <div class="bg" style="background:radial-gradient(120% 100% at 78% 30%,rgba(${w},.72),#070c16 66%)"></div>
+        <div class="ph" style="background-image:url('${photo}')"></div>
+        <div class="duo" style="background:rgb(${w});opacity:${duo}"></div>
+        <div class="scrim"></div>
+        <div class="logo" style="filter:drop-shadow(0 0 ${glow}px rgba(${w},.9)) drop-shadow(0 0 ${glow*1.6}px rgba(255,255,255,.25))">
+          <img src="${logoUrl(a)}" alt="" onerror="this.style.opacity=0">
+        </div>
+        <div class="stripe" style="background:${accent};box-shadow:0 0 4cqh .3cqh rgba(${w},.8)"></div>
+        <div class="txt">
+          <div class="head">HOME RUN<span class="hr">(15)</span></div>
+          <div class="name">GIANCARLO STANTON</div>
+        </div>
+      </div></div>`;
+  }).join('');
+  S('stats').innerHTML=`mode ${MODE} · <b>${30-fails}/30 pass</b> the 3:1 display-type floor`
+    + (fails?` · <span class="bad">${fails} flagged</span>`:'')
+    + ` · worst: <b>${worst.a}</b> at ${worst.c.toFixed(2)}:1`;
+}
+render();
+</script>
+</body></html>
