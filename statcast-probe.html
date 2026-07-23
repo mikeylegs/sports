@@ -1,0 +1,163 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Statcast probe · hitData</title><style>
+body{background:#070b12;color:#e6edf7;font:13px/1.6 ui-monospace,Menlo,monospace;padding:14px;margin:0}
+h1{font-size:16px;color:#7dd3fc;margin:0 0 2px}
+.sub{color:#8695ab;font-size:11.5px;margin-bottom:12px;max-width:880px;line-height:1.6}
+h2{font-size:13px;color:#a78bfa;margin:20px 0 6px;border-bottom:1px solid #1c2838;padding-bottom:4px}
+.b{border:1px solid #1c2838;border-radius:8px;padding:11px 13px;margin:9px 0;background:#0c121d}
+.r{display:flex;gap:9px;font-size:12.5px;margin:4px 0}
+.r .n{width:200px;color:#8695ab;flex-shrink:0}
+.ok{color:#4ade80}.bad{color:#f87171}.warn{color:#fbbf24}.dim{color:#5b6b80}.hit{color:#4ade80;font-weight:700}
+table{border-collapse:collapse;width:100%;font-size:11.5px;margin:7px 0}
+td,th{border:1px solid #1c2838;padding:4px 7px;text-align:left;vertical-align:top}
+th{color:#7dd3fc;font-size:10px;text-transform:uppercase;letter-spacing:.07em}
+pre{background:#0a1420;border:1px solid #1c2838;border-radius:6px;padding:9px;font-size:10.5px;
+    color:#a9bacd;white-space:pre-wrap;max-height:300px;overflow:auto;line-height:1.5}
+input{background:#0a1420;border:1px solid #1c2838;color:#e6edf7;border-radius:5px;padding:6px 9px;font:inherit;width:290px}
+button{background:#12324a;border:1px solid #1c2838;color:#7dd3fc;border-radius:6px;padding:6px 13px;font:inherit;cursor:pointer}
+button.on{background:#1c78ff;color:#fff;border-color:#1c78ff}
+.chip{display:inline-block;background:#12324a;border:1px solid #2a3a4d;border-radius:12px;
+      padding:3px 11px;margin:3px 5px 3px 0;font-size:11.5px;color:#9fd4ff}
+#v{border:1px solid #234;border-left:4px solid #7dd3fc;border-radius:8px;padding:12px;margin-top:14px;background:#0a1420;font-size:12.5px}
+#v b{color:#7dd3fc}
+</style></head><body>
+<h1>STATCAST PROBE <span style="color:#4ade80;font-size:12px">v1 · hitData</span></h1>
+<p class="sub">Gameday shows exit velocity, distance and launch angle on every homer. <b>(1)</b> Is that in <code>playByPlay</code>, and under what path? <b>(2)</b> <b>How soon after the play</b> — because the HR card fires within seconds, and data that lands a minute later is useless to it. The panel already has <code>statcastChipsArr()</code>, but it reads ESPN <code>lastPlay</code>, the pitch-level field r172 proved gets overwritten in seconds.</p>
+
+<div class="b">
+  gamePks <input id="pks" value="824893,824406">
+  <button onclick="scan()">scan completed games</button>
+  <button id="liveBtn" onclick="toggleLive()">start live timing</button>
+  <div class="dim" style="margin-top:6px;font-size:11px">Scan answers "is it there". Live timing answers "how soon" — leave it running during games; it polls every 5 s and times <code>hitData</code> arrival against the play clock.</div>
+</div>
+<div id="out"></div>
+<h2 id="lh" style="display:none">Live timing</h2>
+<table id="lt" style="display:none"><tr><th>home run</th><th>game</th><th>play → first seen</th><th>hitData at first sight?</th><th>EV / dist / angle</th></tr></table>
+<div id="v" class="dim">idle</div>
+
+<script>
+var out=document.getElementById('out'), V=document.getElementById('v');
+var LIVE=false, seen={}, rows=[], timer=null;
+function esc(s){ return String(s==null?'':s).replace(/</g,'&lt;'); }
+function add(el,l,h){ var d=document.createElement('div'); d.className='r';
+  d.innerHTML='<div class="n">'+l+'</div><div>'+h+'</div>'; el.appendChild(d); }
+
+/* hitData rides the playEvent that produced the hit — the last pitch of the at-bat.
+   Walk playEvents backwards so the scoring pitch wins over any earlier foul. */
+function hitDataOf(play){
+  var ev=(play&&play.playEvents)||[];
+  for(var i=ev.length-1;i>=0;i--){ if(ev[i]&&ev[i].hitData) return ev[i].hitData; }
+  return null;
+}
+function chips(hd){
+  if(!hd) return '<span class="dim">none</span>';
+  var c=[];
+  if(hd.totalDistance!=null) c.push(Math.round(hd.totalDistance)+' FT');
+  if(hd.launchSpeed!=null)   c.push(Number(hd.launchSpeed).toFixed(1)+' MPH');
+  if(hd.launchAngle!=null)   c.push(Math.round(hd.launchAngle)+'\u00b0');
+  return c.length ? c.map(function(x){return '<span class="chip">'+x+'</span>'}).join('') : '<span class="warn">present but empty</span>';
+}
+var isHR=function(p){ var r=(p&&p.result)||{}; return r.eventType==='home_run'||r.event==='Home Run'; };
+
+async function scan(){
+  out.innerHTML=''; V.className='dim'; V.textContent='scanning...';
+  var pks=document.getElementById('pks').value.split(',').map(function(x){return x.trim()}).filter(Boolean);
+  var tot=0, withData=0, sample=null, fields={};
+  for(var i=0;i<pks.length;i++){
+    var pk=pks[i], d=document.createElement('div'); d.className='b';
+    d.innerHTML='<div style="color:#a78bfa;font-weight:700;margin-bottom:5px">gamePk '+pk+'</div>';
+    out.appendChild(d);
+    var j=null;
+    try{
+      var res=await fetch('https://statsapi.mlb.com/api/v1/game/'+pk+'/playByPlay');
+      add(d,'HTTP',res.ok?'<span class="ok">'+res.status+'</span>':'<span class="bad">'+res.status+'</span>');
+      j=await res.json();
+    }catch(e){ add(d,'fetch','<span class="bad">'+esc(e.message)+'</span>'); continue; }
+    var hrs=((j&&j.allPlays)||[]).filter(isHR);
+    add(d,'home runs',hrs.length?'<span class="ok">'+hrs.length+'</span>':'<span class="dim">0</span>');
+    if(!hrs.length) continue;
+    var t='<table><tr><th>batter</th><th>statcast</th></tr>';
+    hrs.forEach(function(p){
+      tot++;
+      var hd=hitDataOf(p);
+      if(hd){ withData++; if(!sample) sample=hd; Object.keys(hd).forEach(function(k){ fields[k]=(fields[k]||0)+1; }); }
+      var b=((p.matchup||{}).batter)||{};
+      t+='<tr><td>'+esc(b.fullName||'?')+'</td><td>'+chips(hd)+'</td></tr>';
+    });
+    d.innerHTML+=t+'</table>';
+  }
+  if(sample){
+    var sd=document.createElement('div');
+    sd.innerHTML='<h2>hitData shape</h2><div class="b"><pre>'+esc(JSON.stringify(sample,null,1))+'</pre>'
+      +'<div class="dim" style="margin-top:7px;font-size:11px">fields seen across all HRs: '
+      + Object.keys(fields).sort().map(function(k){return '<code>'+esc(k)+'</code> ('+fields[k]+')'}).join(', ')+'</div></div>';
+    out.appendChild(sd);
+  }
+  V.className='';
+  V.innerHTML = !tot ? '<b class="warn">No home runs in these games</b> — try others.'
+    : withData===tot
+      ? '<b class="ok">FETCHABLE — '+withData+'/'+tot+' home runs carry hitData.</b> Path: <code>allPlays[].playEvents[].hitData</code> with <code>launchSpeed</code>, <code>totalDistance</code>, <code>launchAngle</code>. That is everything Gameday shows.'
+        + '<div class="dim" style="margin-top:8px">Completed games prove availability, NOT timeliness. Run <b>live timing</b> during a game to learn whether it is there the instant the card fires.</div>'
+      : '<b class="warn">'+withData+'/'+tot+' carry hitData.</b> Some homers lack it — the card must degrade gracefully rather than render blanks.';
+}
+
+/* ── live: how soon after the play is hitData available? ── */
+function toggleLive(){
+  LIVE=!LIVE;
+  document.getElementById('liveBtn').textContent = LIVE?'stop live timing':'start live timing';
+  document.getElementById('liveBtn').className = LIVE?'on':'';
+  document.getElementById('lh').style.display = LIVE?'':'none';
+  document.getElementById('lt').style.display = LIVE?'':'none';
+  if(LIVE){ tick(); timer=setInterval(tick,5000); } else { clearInterval(timer); }
+}
+async function tick(){
+  try{
+    var ymd=new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));
+    var ds=ymd.getFullYear()+'-'+String(ymd.getMonth()+1).padStart(2,'0')+'-'+String(ymd.getDate()).padStart(2,'0');
+    var sch=await (await fetch('https://statsapi.mlb.com/api/v1/schedule?sportId=1&date='+ds)).json();
+    var live=[];
+    (sch.dates||[]).forEach(function(dt){ (dt.games||[]).forEach(function(g){
+      if((g.status||{}).abstractGameState==='Live') live.push(g.gamePk); }); });
+    for(var i=0;i<live.length;i++){
+      var pk=live[i];
+      var j=await (await fetch('https://statsapi.mlb.com/api/v1/game/'+pk+'/playByPlay')).json();
+      var plays=(j&&j.allPlays)||[];
+      plays.filter(isHR).forEach(function(p){
+        var idx=(p.about||{}).atBatIndex, key=pk+':'+idx;
+        if(idx==null) return;
+        var hd=hitDataOf(p);
+        if(!seen[key]){
+          var end=new Date((p.about||{}).endTime||0).getTime();
+          var b=((p.matchup||{}).batter)||{};
+          seen[key]={firstSeen:Date.now(), hadAtFirst:!!hd, playEnd:end,
+                     name:b.fullName||'?', game:pk, hd:hd, hdAt:hd?Date.now():null};
+          rows.push(seen[key]); render();
+        } else if(hd && !seen[key].hd){
+          seen[key].hd=hd; seen[key].hdAt=Date.now(); render();   // arrived late — the number we want
+        }
+      });
+    }
+  }catch(_){}
+}
+function render(){
+  var t='<tr><th>home run</th><th>game</th><th>play → first seen</th><th>hitData at first sight?</th><th>EV / dist / angle</th></tr>';
+  rows.slice().reverse().forEach(function(r){
+    var lag=r.playEnd?((r.firstSeen-r.playEnd)/1000):null;
+    var late=(!r.hadAtFirst && r.hdAt) ? ((r.hdAt-r.firstSeen)/1000) : null;
+    t+='<tr><td>'+esc(r.name)+'</td><td class="dim">'+r.game+'</td>'
+      +'<td>'+(lag!=null?lag.toFixed(0)+'s':'<span class="dim">?</span>')+'</td>'
+      +'<td>'+(r.hadAtFirst?'<span class="hit">YES</span>'
+              :(late!=null?'<span class="warn">no — arrived '+late.toFixed(0)+'s later</span>'
+                          :'<span class="bad">still missing</span>'))+'</td>'
+      +'<td>'+chips(r.hd)+'</td></tr>';
+  });
+  document.getElementById('lt').innerHTML=t;
+  var done=rows.filter(function(r){return r.hd});
+  var instant=rows.filter(function(r){return r.hadAtFirst}).length;
+  V.className='';
+  V.innerHTML='<b>live: '+rows.length+' HR seen · '+instant+' had hitData immediately</b>'
+    + (rows.length?'<div class="dim" style="margin-top:7px">If every row says YES, Statcast is ready before the card fires and can be baked straight into the hero card. If rows arrive late, the card needs to render without them and fill in after — the same shape as the companion clip.</div>':'');
+}
+scan();
+</script>
+</body></html>
