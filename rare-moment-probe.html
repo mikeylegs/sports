@@ -24,6 +24,8 @@ button{background:#12324a;border:1px solid #1c2838;color:#7dd3fc;border-radius:6
 <div class="b">
   gamePks <input id="pks" value="824406,824893,822785">
   <button onclick="go()">run</button>
+  <div style="margin-top:9px">deep search <input id="term" value="steal" style="width:150px">
+  <span class="dim" style="font-size:11px">— brute-force: finds this text ANYWHERE in the payload and prints its JSON path</span></div>
   <div class="dim" style="margin-top:6px;font-size:11px">Runs on FINAL or in-progress games. No <code>fields=</code> filter — we need <code>playEvents</code> for pitch counts.</div>
 </div>
 <div id="out"></div><div id="v" class="dim">idle</div>
@@ -36,6 +38,32 @@ function esc(s){ return String(s==null?'':s).replace(/</g,'&lt;'); }
 function add(el,label,html){
   var d=document.createElement('div'); d.className='r';
   d.innerHTML='<div class="n">'+label+'</div><div>'+html+'</div>'; el.appendChild(d);
+}
+
+/* ★ v3 — STOP THEORISING, WALK THE OBJECT. Two structural guesses failed for steal of
+   home: result.* (v1) and playEvents actions (v2). Rather than a third guess, search the
+   ENTIRE parsed payload for the term and report the exact JSON path of every hit. If the
+   word appears anywhere, this finds it and names the field to match on. If it appears
+   nowhere, the event is not in playByPlay under that name — which is itself the answer,
+   and would mean those plays were scored as something else (double steal, wild pitch,
+   balk, error) rather than a steal of home. */
+function deepFind(obj, rx, path, out, depth){
+  if(obj==null || depth>9 || out.length>60) return;
+  if(typeof obj==='string'){ if(rx.test(obj)) out.push({p:path, v:obj.slice(0,170)}); return; }
+  if(typeof obj!=='object') return;
+  if(Object.prototype.toString.call(obj)==='[object Array]'){
+    for(var i=0;i<obj.length;i++) deepFind(obj[i],rx,path+'['+i+']',out,depth+1);
+    return;
+  }
+  var keys=Object.keys(obj);
+  for(var j=0;j<keys.length;j++){
+    var k=keys[j];
+    if(rx.test(k)){
+      var raw; try{ raw=JSON.stringify(obj[k]); }catch(_){ raw='?'; }
+      out.push({p:path+'.'+k, v:'(KEY match) '+String(raw).slice(0,150)});
+    }
+    deepFind(obj[k],rx,path+'.'+k,out,depth+1);
+  }
 }
 
 /* ── immaculate inning: 3 strikeouts on exactly 9 pitches in one half-inning ── */
@@ -128,6 +156,27 @@ async function go(){
                                     :'<span class="bad">0 — no isPitch, immaculate NOT computable</span>');
     var imm=scanImmaculate(plays,pk);
     scanCheap(plays,pk);
+    // deep search this game's payload
+    var term=(document.getElementById('term').value||'').trim();
+    if(term){
+      var hits=[]; try{ deepFind(j, new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i'), 'root', hits, 0); }catch(_){}
+      if(hits.length){
+        var seen={}, uniq=[];
+        hits.forEach(function(h){
+          var gen=h.p.replace(/\[\d+\]/g,'[]');
+          if(!seen[gen]){ seen[gen]=1; uniq.push({p:gen, v:h.v}); }
+        });
+        var ht='<div style="margin-top:7px"><b class="hit">deep search "'+esc(term)+'" — '+hits.length
+             +' hit(s), '+uniq.length+' distinct path(s)</b></div>'
+             +'<table><tr><th>JSON path</th><th>value</th></tr>';
+        uniq.slice(0,14).forEach(function(h){
+          ht+='<tr><td><code>'+esc(h.p)+'</code></td><td class="dim">'+esc(h.v)+'</td></tr>';
+        });
+        d.innerHTML+=ht+'</table>';
+      } else {
+        add(d,'deep search "'+esc(term)+'"','<span class="warn">NOT PRESENT anywhere in this payload</span>');
+      }
+    }
     if(imm.length){
       var t='<table><tr><th>half-inning</th><th>K</th><th>pitches</th><th>pitcher</th><th></th></tr>';
       imm.forEach(function(r){
