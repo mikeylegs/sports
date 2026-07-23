@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-07-23T23:07:59.555Z",
+  "updated": "2026-07-23T23:08:07.455Z",
   "events": [
     {
       "league": "baseball/mlb",
@@ -10,6 +10,15 @@
       "showFrom": "20260723",
       "showUntil": "20260723",
       "rank": 1
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816231",
+      "title": "Kansas City Royals @ Detroit Tigers",
+      "showFrom": "20260723",
+      "showUntil": "20260723",
+      "rank": 2
     }
   ],
   "watch": {
