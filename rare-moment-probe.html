@@ -1,0 +1,165 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rare-moment probe</title><style>
+body{background:#070b12;color:#e6edf7;font:13px/1.6 ui-monospace,Menlo,monospace;padding:14px;margin:0}
+h1{font-size:16px;color:#7dd3fc;margin:0 0 2px}
+.sub{color:#8695ab;font-size:11.5px;margin-bottom:12px;max-width:860px;line-height:1.6}
+h2{font-size:13px;color:#a78bfa;margin:20px 0 6px;border-bottom:1px solid #1c2838;padding-bottom:4px}
+.b{border:1px solid #1c2838;border-radius:8px;padding:11px 13px;margin:9px 0;background:#0c121d}
+.r{display:flex;gap:9px;font-size:12.5px;margin:4px 0}
+.r .n{width:190px;color:#8695ab;flex-shrink:0}
+.ok{color:#4ade80}.bad{color:#f87171}.warn{color:#fbbf24}.dim{color:#5b6b80}.hit{color:#4ade80;font-weight:700}
+table{border-collapse:collapse;width:100%;font-size:11.5px;margin:7px 0}
+td,th{border:1px solid #1c2838;padding:4px 7px;text-align:left;vertical-align:top}
+th{color:#7dd3fc;font-size:10px;text-transform:uppercase;letter-spacing:.07em}
+pre{background:#0a1420;border:1px solid #1c2838;border-radius:6px;padding:9px;font-size:10.5px;
+    color:#a9bacd;white-space:pre-wrap;max-height:340px;overflow:auto;line-height:1.5}
+input{background:#0a1420;border:1px solid #1c2838;color:#e6edf7;border-radius:5px;padding:6px 9px;font:inherit;width:300px}
+button{background:#12324a;border:1px solid #1c2838;color:#7dd3fc;border-radius:6px;padding:6px 13px;font:inherit;cursor:pointer}
+#v{border:1px solid #234;border-left:4px solid #7dd3fc;border-radius:8px;padding:12px;margin-top:14px;background:#0a1420;font-size:12.5px}
+#v b{color:#7dd3fc}
+</style></head><body>
+<h1>RARE-MOMENT PROBE</h1>
+<p class="sub">Two questions. <b>(1)</b> What does MLB actually call these events — the real <code>eventType</code> vocabulary, so the cheap-tier detectors match on fact rather than a guess. <b>(2)</b> Is an immaculate inning computable from <code>playByPlay</code>? Gavin Williams threw one for CLE on 23 Jul, so gamePk <b>824406</b> is a live test case with a known answer.</p>
+
+<div class="b">
+  gamePks <input id="pks" value="824406,824893,822785">
+  <button onclick="go()">run</button>
+  <div class="dim" style="margin-top:6px;font-size:11px">Runs on FINAL or in-progress games. No <code>fields=</code> filter — we need <code>playEvents</code> for pitch counts.</div>
+</div>
+<div id="out"></div><div id="v" class="dim">idle</div>
+
+<script>
+var out=document.getElementById('out'), V=document.getElementById('v');
+var VOCAB={}, FOUND={immaculate:[], triplePlay:[], insidePark:[], stealHome:[], cycle:[]};
+
+function esc(s){ return String(s==null?'':s).replace(/</g,'&lt;'); }
+function add(el,label,html){
+  var d=document.createElement('div'); d.className='r';
+  d.innerHTML='<div class="n">'+label+'</div><div>'+html+'</div>'; el.appendChild(d);
+}
+
+/* ── immaculate inning: 3 strikeouts on exactly 9 pitches in one half-inning ── */
+function scanImmaculate(plays, label){
+  var halves={};
+  plays.forEach(function(p){
+    var a=p.about||{}; if(a.inning==null) return;
+    var k=a.inning+'|'+(a.halfInning||'');
+    (halves[k]=halves[k]||[]).push(p);
+  });
+  var rows=[];
+  Object.keys(halves).forEach(function(k){
+    var ps=halves[k], pitches=0, ks=0, pitcher='';
+    ps.forEach(function(p){
+      (p.playEvents||[]).forEach(function(e){ if(e && e.isPitch) pitches++; });
+      var r=p.result||{};
+      if(r.eventType==='strikeout'||r.event==='Strikeout') ks++;
+      var m=p.matchup||{}; if(m.pitcher&&m.pitcher.fullName) pitcher=m.pitcher.fullName;
+    });
+    if(ks>=3) rows.push({half:k, pitches:pitches, ks:ks, pitcher:pitcher, batters:ps.length});
+  });
+  rows.forEach(function(r){
+    if(r.ks===3 && r.pitches===9) FOUND.immaculate.push(Object.assign({game:label},r));
+  });
+  return rows;
+}
+
+/* ── cheap tier: does MLB flag these directly? ── */
+function scanCheap(plays, label){
+  plays.forEach(function(p){
+    var r=p.result||{}, et=String(r.eventType||''), ev=String(r.event||''), ds=String(r.description||'');
+    var blob=(et+' '+ev+' '+ds).toLowerCase();
+    if(/triple play/.test(blob)) FOUND.triplePlay.push({game:label,eventType:et,event:ev,desc:ds.slice(0,110)});
+    if((et==='home_run'||ev==='Home Run') && /inside.the.park/.test(blob))
+      FOUND.insidePark.push({game:label,eventType:et,event:ev,desc:ds.slice(0,110)});
+    if(/steals home|stolen base home/.test(blob))
+      FOUND.stealHome.push({game:label,eventType:et,event:ev,desc:ds.slice(0,110)});
+    // runner-level events live outside result.* — check them too
+    (p.runners||[]).forEach(function(rn){
+      var d=rn&&rn.details||{}, t=String(d.event||'')+' '+String(d.eventType||'');
+      if(/steal.*home|home.*steal/i.test(t))
+        FOUND.stealHome.push({game:label,eventType:String(d.eventType||''),event:String(d.event||''),desc:'(runner event)'});
+    });
+    if(et) VOCAB[et]=(VOCAB[et]||0)+1;
+  });
+}
+
+async function go(){
+  out.innerHTML=''; V.className='dim'; V.textContent='fetching...';
+  VOCAB={}; FOUND={immaculate:[],triplePlay:[],insidePark:[],stealHome:[],cycle:[]};
+  var pks=document.getElementById('pks').value.split(',').map(function(x){return x.trim()}).filter(Boolean);
+  var samplePlay=null;
+
+  for(var i=0;i<pks.length;i++){
+    var pk=pks[i];
+    var d=document.createElement('div'); d.className='b';
+    d.innerHTML='<div style="color:#a78bfa;font-weight:700;margin-bottom:5px">gamePk '+pk+'</div>';
+    out.appendChild(d);
+    var j=null;
+    try{
+      var res=await fetch('https://statsapi.mlb.com/api/v1/game/'+pk+'/playByPlay');
+      add(d,'HTTP', res.ok?'<span class="ok">'+res.status+'</span>':'<span class="bad">'+res.status+'</span>');
+      j=await res.json();
+    }catch(e){ add(d,'fetch','<span class="bad">'+esc(e.message)+'</span>'); continue; }
+    var plays=(j&&j.allPlays)||[];
+    add(d,'plays', plays.length?'<span class="ok">'+plays.length+'</span>':'<span class="bad">0</span>');
+    if(!plays.length) continue;
+    if(!samplePlay){
+      for(var q=0;q<plays.length;q++){
+        if((plays[q].playEvents||[]).length){ samplePlay=plays[q]; break; }
+      }
+    }
+    var pitchTotal=0;
+    plays.forEach(function(p){ (p.playEvents||[]).forEach(function(e){ if(e&&e.isPitch) pitchTotal++; }); });
+    add(d,'pitch events', pitchTotal?'<span class="ok">'+pitchTotal+'</span> <span class="dim">isPitch flag present</span>'
+                                    :'<span class="bad">0 — no isPitch, immaculate NOT computable</span>');
+    var imm=scanImmaculate(plays,pk);
+    scanCheap(plays,pk);
+    if(imm.length){
+      var t='<table><tr><th>half-inning</th><th>K</th><th>pitches</th><th>pitcher</th><th></th></tr>';
+      imm.forEach(function(r){
+        var isImm=(r.ks===3&&r.pitches===9);
+        t+='<tr><td>'+esc(r.half)+'</td><td>'+r.ks+'</td><td>'+r.pitches+'</td><td>'+esc(r.pitcher)+'</td>'
+          +'<td>'+(isImm?'<span class="hit">IMMACULATE</span>':'<span class="dim">3K but '+r.pitches+' pitches</span>')+'</td></tr>';
+      });
+      d.innerHTML+=t+'</table>';
+    } else add(d,'3-K half-innings','<span class="dim">none</span>');
+  }
+
+  // ── vocabulary inventory: the real keyword database, built from data ──
+  var vh=document.createElement('div');
+  vh.innerHTML='<h2>eventType vocabulary <span class="dim" style="font-size:11px">— every distinct value seen</span></h2>';
+  var keys=Object.keys(VOCAB).sort(function(a,b){return VOCAB[b]-VOCAB[a]});
+  vh.innerHTML+='<div class="b">'+(keys.length
+    ? keys.map(function(k){return '<span style="display:inline-block;margin:2px 9px 2px 0"><code>'+esc(k)+'</code> <span class="dim">'+VOCAB[k]+'</span></span>'}).join('')
+    : '<span class="bad">none</span>')+'</div>';
+  out.appendChild(vh);
+
+  if(samplePlay){
+    var sp=document.createElement('div');
+    var pe=(samplePlay.playEvents||[])[0]||{};
+    sp.innerHTML='<h2>shape reference</h2><div class="b"><div class="dim" style="font-size:11px;margin-bottom:5px">'
+      +'first playEvents entry — this is what pitch counting relies on</div><pre>'
+      +esc(JSON.stringify({isPitch:pe.isPitch,type:pe.type,details:pe.details&&{call:pe.details.call,description:pe.details.description,isStrike:pe.details.isStrike}},null,1))
+      +'</pre><div class="dim" style="font-size:11px;margin:7px 0 5px">result + about of one play</div><pre>'
+      +esc(JSON.stringify({result:samplePlay.result,about:samplePlay.about},null,1).slice(0,700))+'</pre></div>';
+    out.appendChild(sp);
+  }
+
+  // ── verdict ──
+  var lines=[];
+  lines.push(FOUND.immaculate.length
+    ? '<b class="ok">IMMACULATE INNING DETECTED</b> — '+FOUND.immaculate.map(function(r){return esc(r.pitcher)+' ('+esc(r.half)+', game '+r.game+')'}).join(', ')
+      +'<br><span class="dim">Computable from playByPlay: group by inning+halfInning, count isPitch events and strikeouts. No new endpoint needed.</span>'
+    : '<b class="warn">No immaculate inning found</b> in these games. If 824406 was included and Gavin Williams threw one today, check the 3-K table above — if a half-inning shows 3K but more than 9 pitches, the pitch count is including non-pitch events and the filter needs tightening.');
+  ['triplePlay','insidePark','stealHome'].forEach(function(k){
+    var label={triplePlay:'Triple play',insidePark:'Inside-the-park HR',stealHome:'Steal of home'}[k];
+    lines.push(FOUND[k].length
+      ? '<b class="ok">'+label+':</b> '+FOUND[k].length+' found — <code>eventType='+esc(FOUND[k][0].eventType)+'</code> <span class="dim">'+esc(FOUND[k][0].desc)+'</span>'
+      : '<span class="dim">'+label+': none in these games (expected — they are rare; the vocabulary list above is what matters)</span>');
+  });
+  V.className='';
+  V.innerHTML=lines.join('<br><br>');
+}
+go();
+</script>
+</body></html>
