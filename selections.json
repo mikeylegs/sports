@@ -1,34 +1,7 @@
 {
   "v": 1,
-  "updated": "2026-07-23T16:54:37.896Z",
+  "updated": "2026-07-23T23:07:59.555Z",
   "events": [
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816233",
-      "title": "San Diego Padres @ Atlanta Braves",
-      "showFrom": "20260723",
-      "showUntil": "20260723",
-      "rank": 1
-    },
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816232",
-      "title": "Minnesota Twins @ Cleveland Guardians",
-      "showFrom": "20260723",
-      "showUntil": "20260723",
-      "rank": 2
-    },
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816234",
-      "title": "Tampa Bay Rays @ Toronto Blue Jays",
-      "showFrom": "20260723",
-      "showUntil": "20260723",
-      "rank": 3
-    },
     {
       "league": "baseball/mlb",
       "label": "MLB",
@@ -36,16 +9,7 @@
       "title": "Arizona Diamondbacks @ St. Louis Cardinals",
       "showFrom": "20260723",
       "showUntil": "20260723",
-      "rank": 4
-    },
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816231",
-      "title": "Kansas City Royals @ Detroit Tigers",
-      "showFrom": "20260723",
-      "showUntil": "20260723",
-      "rank": 5
+      "rank": 1
     }
   ],
   "watch": {
