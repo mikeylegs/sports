@@ -9929,7 +9929,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r187-command-center';
+const BUILD_MARKER = 'r188-cc-dot-left';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -11564,7 +11564,7 @@ document.addEventListener('webkitfullscreenchange', remeasureSubleagueRows);
 </script>
 <style>
 /* ══ r187 COMMAND CENTER — read-only. Additive block; nothing above is modified. ══ */
-#ccdot{position:fixed;top:9px;right:9px;z-index:100000;width:9px;height:9px;border-radius:50%;
+#ccdot{position:fixed;top:9px;left:9px;z-index:100000;width:9px;height:9px;border-radius:50%;
   cursor:pointer;transition:background .3s,box-shadow .3s}
 #ccdot::after{content:'';position:absolute;inset:-10px;border-radius:50%}
 #ccdot.green{background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,.85)}
@@ -11728,6 +11728,25 @@ window.CC = (function(){
     FLAGS.forEach(function(f){ var v=q.get(f.n); if(v!==null) a[f.n]=v; });
     return a;
   }
+  /* r188: sit on the same horizontal line as the audio dot, measured rather than
+     guessed — the header renders in two different layouts, so a hardcoded top would be
+     right in one and wrong in the other. There can be more than one #audioDot in the
+     DOM (getAllById is used elsewhere), so take the first one that is actually visible.
+     Falls back to the original 9px if none is on screen. */
+  function placeDot(){
+    try{
+      var d=$('ccdot'); if(!d) return;
+      var cands=document.querySelectorAll('#audioDot, .audio-dot');
+      for(var i=0;i<cands.length;i++){
+        var r=cands[i].getBoundingClientRect&&cands[i].getBoundingClientRect();
+        if(r&&r.height>0&&r.width>0&&r.top>=0){
+          d.style.top=Math.round(r.top+r.height/2-4.5)+'px';
+          return;
+        }
+      }
+      d.style.top='9px';
+    }catch(_){}
+  }
   function renderDot(){
     var h=health(), act=activeFlags();
     var s=h.some(function(x){return x.s==='bad'})?'red':h.some(function(x){return x.s==='warn'})?'amber':'green';
@@ -11832,9 +11851,10 @@ window.CC = (function(){
   try{
     loadPrefs();
     var p=$('ccp'); if(p) p.style.setProperty('--fs',FSZ+'px');
-    renderTabs(); renderAll();
+    renderTabs(); renderAll(); placeDot();
     var d=$('ccdot'); if(d) d.addEventListener('click',API.toggle);
-    setInterval(function(){ try{ renderDot(); if(open) renderHealth(); }catch(_){} },5000);
+    try{ window.addEventListener('resize',placeDot); }catch(_){}
+    setInterval(function(){ try{ placeDot(); renderDot(); if(open) renderHealth(); }catch(_){} },5000);
   }catch(e){ try{ console.warn('[CC] init',e); }catch(_){} }
   return API;
 })();
