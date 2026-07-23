@@ -7140,12 +7140,17 @@ function tkoRenderHud(){
       if (r.clipTitle) t += '  recap: ' + String(r.clipTitle).slice(0,44) + '\n';
       continue;
     }
-    t += '  ESPN lag (play→Brain fired):  ' + (d.espnLagS      != null ? d.espnLagS.toFixed(1)+'s' : '—') + '\n';
-    t += '  MLB cut  (play→clip posted):  ' + (d.mlbCutS       != null ? d.mlbCutS.toFixed(1)+'s' : '—') + '\n';
-    t += '  ★ WAIT   (fire→clip posted):  ' + (d.waitAfterFireS!= null ? d.waitAfterFireS.toFixed(1)+'s' : '—') + '\n';
-    t += '  poll granularity (post→found):' + (d.discoveryS    != null ? d.discoveryS.toFixed(1)+'s' : '—') + '\n';
-    t += '  ★★ DEAD AIR (card gone→clip): ' + (d.deadAirS      != null ? d.deadAirS.toFixed(1)+'s' : '—') + '\n';
-    t += '  buffer (found→playing):       ' + (d.bufferS       != null ? d.bufferS.toFixed(1)+'s' : '—') + '\n';
+    /* r192: print a timing line ONLY when it has a value. These six were added while
+       measuring ESPN-vs-MLB clip lag; that question is closed (HANDOFF §13/§14), so on a
+       seed or a card-fire row they were six lines of em-dashes burying the one line that
+       mattered. Rows that still carry timings render exactly as before. */
+    [['ESPN lag (play→fire)      ', d.espnLagS],
+     ['MLB cut  (play→clip)      ', d.mlbCutS],
+     ['WAIT     (fire→clip)      ', d.waitAfterFireS],
+     ['poll granularity          ', d.discoveryS],
+     ['★★ DEAD AIR (card→clip)   ', d.deadAirS],
+     ['buffer   (found→playing)  ', d.bufferS]
+    ].forEach(function(r){ if (r[1] != null) t += '  ' + r[0] + r[1].toFixed(1) + 's\n'; });
     t += '  polls: ' + (r.polls||0) + '   outcome: ' + (r.outcome||'in flight…') + '\n';
     /* r173: r163's HR-NOT-OURS rows and r172's SCORE-CHANGE rows carry their entire
        payload in `why` and `play`, and this renderer printed neither — the 7/20 HUD
@@ -8138,6 +8143,38 @@ window.brainTakeoverPayload = brainTakeoverPayload;
    · Fail-open throughout: any fetch/parse problem leaves the legacy path in charge. */
 const PBP_THROTTLE_MS = 20000;
 const _pbpState = Object.create(null);   // gamePk -> { seen:Set, t:ms, seeded:bool }
+/* ★★ r192 — SEEN-STATE MUST SURVIVE A PAGE LOAD.
+   THE BUG (23 Jul): tkolog showed the same games seeding over and over — CLE at 1:35,
+   again at 2:28, again at 2:47. _pbpState is in-memory, so every page load rebuilt it,
+   hit `!st.seeded`, and marked EVERY homer already in the game as "seen" without firing.
+   Patrick Bailey homered between two loads and was silently absorbed by the re-seed.
+   On a kiosk that reloads nightly — or any time Mike refreshes — homers get eaten.
+   FIX: persist the seen at-bat indexes per gamePk, scoped to the day. A reload now
+   RESUMES instead of re-seeding, and a homer that landed during the gap still fires,
+   provided it is recent (stale ones are absorbed quietly rather than bursting onto the
+   wall minutes late). Day-scoped so the store self-clears and cannot grow forever. */
+const PBP_SEEN_KEY = 'pbpSeen_v2';
+const PBP_RESUME_MAX_AGE_MS = 15 * 60000;   // fire a gap homer only if this fresh
+function _pbpDayStamp(){ try { return new Date().toDateString(); } catch(_){ return 'x'; } }
+function _pbpLoadSeen(){
+  try {
+    const raw = localStorage.getItem(PBP_SEEN_KEY); if (!raw) return {};
+    const j = JSON.parse(raw) || {};
+    if (j.day !== _pbpDayStamp()) return {};      // yesterday's state is not ours
+    return j.games || {};
+  } catch(_){ return {}; }
+}
+function _pbpSaveSeen(){
+  try {
+    const games = {};
+    Object.keys(_pbpState).forEach(pk => {
+      const st = _pbpState[pk];
+      if (st && st.seen && st.seen.size) games[pk] = Array.from(st.seen);
+    });
+    localStorage.setItem(PBP_SEEN_KEY, JSON.stringify({ day:_pbpDayStamp(), games }));
+  } catch(_){}
+}
+const _pbpRestored = _pbpLoadSeen();
 const _hrFired  = Object.create(null);   // game key -> ms of last HR takeover
 function _hrRecentlyFired(key){ try { const t=_hrFired[key]; return !!(t && Date.now()-t < 90000); } catch(_){ return false; } }
 function _markHrFired(key){ try { _hrFired[key]=Date.now(); } catch(_){} }
@@ -8198,6 +8235,35 @@ function mlbPbpHrWatch(games){
             return r.eventType === 'home_run' || r.event === 'Home Run'; };
           const hrs = plays.filter(isHR);
           if (!st.seeded){
+            const prior = _pbpRestored[pk];
+            if (prior && prior.length){
+              /* r192 RESUME: we already knew about this game before the reload. Restore
+                 what we had seen and DO NOT return — fall through so a homer that landed
+                 during the gap can still fire. */
+              prior.forEach(i => st.seen.add(i));
+              st.seeded = true;
+              const fresh = hrs.filter(p => {
+                const i = p.about && p.about.atBatIndex;
+                if (i == null || st.seen.has(i)) return false;
+                const end = new Date((p.about||{}).endTime || 0).getTime();
+                return end && (Date.now() - end) <= PBP_RESUME_MAX_AGE_MS;
+              });
+              hrs.forEach(p => { const i = p.about && p.about.atBatIndex;
+                                 if (i != null && !fresh.includes(p)) st.seen.add(i); });
+              if (TKO_MEASURE || TKO_PLAY){
+                try { tkoLogStart({ team:g.awayAbbr + '@' + g.homeAbbr, type:'PBP-RESUME',
+                  firedVia:'mlbPbpHrWatch (r192)', clock:new Date().toLocaleTimeString(),
+                  firedMs:Date.now(), polls:0,
+                  outcome: fresh.length ? ('resumed — ' + fresh.length + ' recent HR still to fire')
+                                        : 'resumed — nothing missed',
+                  why:'gamePk ' + pk + ' · knew ' + prior.length + ' · in game ' + hrs.length,
+                  play: fresh.length ? String((fresh[0].result||{}).description||'').slice(0,80) : '' });
+                  tkoRenderHud(); }
+                catch(e){ try{ console.warn('[PBP-RESUME] log failed:', e && e.message); }catch(_){} }
+              }
+              _pbpSaveSeen();
+              // fall through to the normal fire loop below
+            } else {
             hrs.forEach(p => st.seen.add(p.about && p.about.atBatIndex));
             st.seeded = true;
             if (TKO_MEASURE || TKO_PLAY){
@@ -8208,8 +8274,10 @@ function mlbPbpHrWatch(games){
                  why 7/23 showed seeded:true with a completely empty tkolog and no console
                  error. Label with the favourite when one is in the game, else the home
                  team; the row is a diagnostic, not a takeover. */
-              try { tkoLogStart({ team:(_FAV_MLB.has(g.homeAbbr)?g.homeAbbr
-                                       :_FAV_MLB.has(g.awayAbbr)?g.awayAbbr:g.homeAbbr),
+              /* r192: label with the MATCHUP. The old label showed only the home team,
+                 which read like the watcher was tracking one side (Mike flagged TOR/ATL/CLE
+                 all being home teams). PBP-INIT is about a GAME, not a team. */
+              try { tkoLogStart({ team:g.awayAbbr + '@' + g.homeAbbr,
                 type:'PBP-INIT', firedVia:'mlbPbpHrWatch (r174)', clock:new Date().toLocaleTimeString(),
                 firedMs:Date.now(), polls:0, outcome:'seeded — existing HRs marked, none fired',
                 why:'gamePk ' + pk + ' · plays=' + plays.length + ' · homers already in game=' + hrs.length,
@@ -8217,7 +8285,9 @@ function mlbPbpHrWatch(games){
                 tkoRenderHud(); }
               catch(e){ try{ console.warn('[PBP-INIT] log failed:', e && e.message); }catch(_){} }
             }
+            _pbpSaveSeen();
             return;
+            }
           }
           /* r180: the HR belongs to whoever was batting (half-inning), UNLESS a favorite
              is in the game — then favorite framing wins even on a non-favorite's homer?
@@ -8277,6 +8347,22 @@ function mlbPbpHrWatch(games){
               sub: batter.fullName || desc, subIcon:'\u26be',
               band:{ aAbbr:g.awayAbbr, aScore:g.awayScore, hAbbr:g.homeAbbr, hScore:g.homeScore,
                      lit:(teamAbbr===g.awayAbbr?'a':'h') } }});
+            /* ★ r192 — CARD-FIRED. Until now the only way to know a takeover rendered was
+               to be looking at the wall. The log recorded rejections (HR-NOT-OURS) and
+               seeds but never a success, so "detected but nothing appeared" and "never
+               detected" were indistinguishable after the fact. This row closes that. */
+            if (TKO_MEASURE || TKO_PLAY){
+              try { tkoLogStart({ team:teamAbbr, type:'CARD-FIRED', firedVia:'mlbPbpHrWatch (r174)',
+                clock:new Date().toLocaleTimeString(), firedMs:Date.now(), polls:0,
+                outcome:(TKO_PLAY ? 'hero card rendered on the wall'
+                                  : 'DETECTED but not shown — add ?companion=1'),
+                why:'gamePk ' + pk + ' · ' + (isFav ? 'favourite' : 'watchlist game')
+                   + ' · HR#' + (hrNum||'?') + ' · ' + _ctx.wrgb,
+                play: (batter.fullName||'') + ' — ' + desc });
+                tkoRenderHud(); }
+              catch(e){ try{ console.warn('[CARD-FIRED] log failed:', e && e.message); }catch(_){} }
+            }
+            _pbpSaveSeen();   // r192: remember this one across reloads
           });
         }).catch(()=>{});
       });
@@ -9938,7 +10024,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r191-pbpinit-fix';
+const BUILD_MARKER = 'r192-resume-and-log';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
