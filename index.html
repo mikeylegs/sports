@@ -9929,7 +9929,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r189-cc-panel-left';
+const BUILD_MARKER = 'r190-hr-watch-always';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -11321,6 +11321,19 @@ async function fetchAll() {
 
       renderTrack(lg, games);
       UCS_FEED[lg.key] = games;                       // R114: UCS reads, never mutates
+      /* ★ r190 — HR WATCHER MUST NOT DEPEND ON A LAYOUT MODE. Both mlbPbpHrWatch call
+         sites live inside renderMLBFullscreen, so the watchlist feature only ran when the
+         panel happened to be in mlbFull. Symptom on 7/23: favDump showed SD@ATL correctly
+         in willWatch with pkUnresolved empty, the StatsAPI chain fetched fine by hand
+         (5287 bytes of real playByPlay), yet tkolog was completely empty — not even the
+         PBP-INIT seed row. Detection was never reached because the render function that
+         calls it was not executing.
+         This site runs on every league fetch regardless of layout, so the watcher now
+         polls whenever MLB data arrives. The existing 20s per-game throttle means the
+         render-path calls (if they also fire) cost nothing extra — whichever arrives
+         first wins and the other returns early. Fail-open: wrapped, so a throw here can
+         never break the fetch loop. */
+      if (lg.key === 'MLB'){ try{ mlbPbpHrWatch(games); }catch(_){} }
       // MLB Fullscreen View
       if (lg.key === 'MLB') {
         mlbDesignatedTeamsLive = games.some(g =>
