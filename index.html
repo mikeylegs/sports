@@ -10024,7 +10024,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r192-resume-and-log';
+const BUILD_MARKER = 'r193-fired-count';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -11918,7 +11918,22 @@ window.CC = (function(){
   }
   function renderAll(){
     try{
-      var mk=$('ccmk'); if(mk&&window._ccBridge) mk.textContent=window._ccBridge.marker;
+      var mk=$('ccmk'); if(mk&&window._ccBridge){
+        var fired=0,last='';
+        try{
+          var rows=JSON.parse(localStorage.getItem('tkoLog_v1')||'[]')||[];
+          var today=new Date().toDateString();
+          rows.forEach(function(r){
+            if(r&&r.type==='CARD-FIRED'&&r.firedMs&&new Date(r.firedMs).toDateString()===today){
+              fired++; last=r.clock||'';
+            }
+          });
+        }catch(_){}
+        mk.textContent=window._ccBridge.marker+' \u00b7 '
+          + (fired? (fired+' card'+(fired===1?'':'s')+' today'+(last?' \u00b7 last '+last:''))
+                  : 'no cards yet today');
+        mk.style.color = fired ? '#4ade80' : '#8ca0b8';
+      }
       renderHealth(); renderOv(); renderFlags(); renderDot();
       TABS.forEach(function(t){ if(DUMPS[t[0]]) renderPane(t[0]); });
     }catch(e){ try{ console.warn('[CC] render',e); }catch(_){} }
