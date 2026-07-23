@@ -8201,12 +8201,21 @@ function mlbPbpHrWatch(games){
             hrs.forEach(p => st.seen.add(p.about && p.about.atBatIndex));
             st.seeded = true;
             if (TKO_MEASURE || TKO_PLAY){
-              try { tkoLogStart({ team:(tracked.includes(g.homeAbbr)?g.homeAbbr:g.awayAbbr),
+              /* r191: was `tracked.includes(...)`. r180 deleted the const tracked array
+                 from this function when HR scope went league-wide, but this log line kept
+                 referencing it — a ReferenceError swallowed by the catch below, so the
+                 PBP-INIT row was never written. seeded is set BEFORE this call, which is
+                 why 7/23 showed seeded:true with a completely empty tkolog and no console
+                 error. Label with the favourite when one is in the game, else the home
+                 team; the row is a diagnostic, not a takeover. */
+              try { tkoLogStart({ team:(_FAV_MLB.has(g.homeAbbr)?g.homeAbbr
+                                       :_FAV_MLB.has(g.awayAbbr)?g.awayAbbr:g.homeAbbr),
                 type:'PBP-INIT', firedVia:'mlbPbpHrWatch (r174)', clock:new Date().toLocaleTimeString(),
                 firedMs:Date.now(), polls:0, outcome:'seeded — existing HRs marked, none fired',
                 why:'gamePk ' + pk + ' · plays=' + plays.length + ' · homers already in game=' + hrs.length,
                 play: hrs.length ? String((hrs[hrs.length-1].result||{}).description||'').slice(0,80) : '(none yet)' });
-                tkoRenderHud(); } catch(_){}
+                tkoRenderHud(); }
+              catch(e){ try{ console.warn('[PBP-INIT] log failed:', e && e.message); }catch(_){} }
             }
             return;
           }
@@ -9929,7 +9938,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r190-hr-watch-always';
+const BUILD_MARKER = 'r191-pbpinit-fix';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
