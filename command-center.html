@@ -1,78 +1,107 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Command Center · sandbox</title>
+<title>Command Center · sandbox v2</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:#05070c;color:#e6edf7;font:13px/1.55 ui-monospace,Menlo,Consolas,monospace;overflow:hidden;height:100vh}
+  body{background:#05070c;color:#e6edf7;font:14px/1.6 ui-monospace,Menlo,Consolas,monospace;overflow:hidden;height:100vh}
 
-  /* ── faux wall behind, just enough to judge the dot in context ── */
   #wall{position:fixed;inset:0;background:
       radial-gradient(120% 90% at 20% 20%,rgba(11,42,94,.5),transparent 60%),
       radial-gradient(100% 80% at 85% 70%,rgba(30,20,60,.45),transparent 60%),#070b12;}
   .fauxgrid{position:absolute;inset:52px 16px 16px;display:grid;
       grid-template-columns:repeat(4,1fr);grid-auto-rows:112px;gap:11px;opacity:.5}
-  .fauxcard{border:1px solid #1b2432;border-radius:9px;background:#0c121d;padding:9px 11px;color:#3f4d63;font-size:11px}
-  .fauxcard b{color:#5d6e86;font-size:13px}
+  .fauxcard{border:1px solid #1b2432;border-radius:9px;background:#0c121d;padding:9px 11px;color:#3f4d63;font-size:12px}
+  .fauxcard b{color:#5d6e86;font-size:14px}
   .fauxcard.hot{border-color:#2a4a6a;background:#0e1726;box-shadow:0 0 22px rgba(28,120,255,.16)}
   #wallhdr{position:absolute;top:14px;left:18px;color:#3f4d63;font-size:12px;letter-spacing:.24em}
 
-  /* ── corner dots ── */
   #dots{position:fixed;top:8px;right:8px;z-index:100000;display:flex;gap:9px;align-items:center}
   .dot{width:13px;height:13px;border-radius:50%;position:relative;cursor:pointer}
-  .dot::after{content:'';position:absolute;inset:-7px;border-radius:50%}
+  .dot::after{content:'';position:absolute;inset:-8px;border-radius:50%}
   .dot.mute{background:#3d4a5a;box-shadow:0 0 7px rgba(120,150,190,.4)}
   .dot.cc{transition:background .25s,box-shadow .25s}
   .dot.cc.green {background:#22c55e;box-shadow:0 0 9px rgba(34,197,94,.85)}
-  .dot.cc.yellow{background:#eab308;box-shadow:0 0 9px rgba(234,179,8,.85)}
+  .dot.cc.amber {background:#f59e0b;box-shadow:0 0 9px rgba(245,158,11,.85)}
   .dot.cc.red   {background:#ef4444;box-shadow:0 0 9px rgba(239,68,68,.85)}
   .dot.cc.blink {animation:ccblink 1.25s ease-in-out infinite}
   @keyframes ccblink{0%,100%{opacity:1}50%{opacity:.22}}
 
-  /* ── the panel ── */
-  #cc{position:fixed;top:0;right:0;bottom:0;width:min(94vw,560px);z-index:99999;
-      background:rgba(6,10,18,.975);border-left:1px solid #1b2432;
-      transform:translateX(102%);transition:transform .22s ease;display:flex;flex-direction:column}
+  /* ── panel. --fs drives everything so the size control is one variable ── */
+  #cc{--fs:14px;
+      position:fixed;top:0;right:0;bottom:0;width:min(96vw,600px);z-index:99999;
+      background:rgba(6,10,18,.985);border-left:1px solid #22303f;
+      transform:translateX(102%);transition:transform .22s ease;display:flex;flex-direction:column;
+      font-size:var(--fs)}
   #cc.open{transform:none}
-  .cchdr{padding:11px 13px;border-bottom:1px solid #1b2432;display:flex;align-items:center;gap:10px;flex-shrink:0}
-  .cchdr h1{font-size:12px;color:#7dd3fc;letter-spacing:.16em;flex:1}
-  .cchdr .x{color:#5b6b80;cursor:pointer;font-size:16px;padding:0 5px}
-  .health{padding:9px 13px;border-bottom:1px solid #1b2432;font-size:11.5px;display:flex;flex-wrap:wrap;gap:5px 13px;flex-shrink:0}
-  .health .s{color:#8695ab}
-  .health .s b{color:#e6edf7}
-  .ok{color:#4ade80}.warn{color:#fbbf24}.bad{color:#f87171}.dim{color:#5b6b80}
-  .ovr{padding:7px 13px;background:#2a1a08;border-bottom:1px solid #4a3410;font-size:11.5px;
-       display:none;align-items:center;gap:9px;flex-shrink:0}
-  .ovr.show{display:flex}
-  .ovr b{color:#fbbf24}
-  .ovr button{margin-left:auto;background:#4a3410;border:1px solid #6b4d16;color:#fbbf24;
-              border-radius:5px;padding:3px 9px;font:inherit;font-size:11px;cursor:pointer}
-  .tabs{display:flex;gap:2px;padding:8px 10px 0;border-bottom:1px solid #1b2432;flex-shrink:0;overflow-x:auto}
-  .tabs button{background:none;border:0;border-bottom:2px solid transparent;color:#5b6b80;
-               padding:6px 10px;font:inherit;font-size:11.5px;cursor:pointer;white-space:nowrap}
-  .tabs button.on{color:#7dd3fc;border-bottom-color:#7dd3fc}
-  .body{flex:1;overflow-y:auto;padding:11px 13px}
-  .pane{display:none}.pane.on{display:block}
-  .grp{margin-bottom:14px}
-  .grp h2{font-size:10px;color:#a78bfa;letter-spacing:.13em;margin-bottom:6px;text-transform:uppercase}
-  .flag{display:flex;align-items:center;gap:9px;padding:5px 7px;border-radius:6px;font-size:11.5px}
-  .flag:hover{background:#0d1420}
-  .flag .nm{color:#8fb8e6;width:112px;flex-shrink:0}
-  .flag .ds{color:#5b6b80;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .sw{width:32px;height:17px;border-radius:9px;background:#1b2432;position:relative;cursor:pointer;flex-shrink:0;transition:background .15s}
-  .sw::after{content:'';position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;
-             background:#5b6b80;transition:transform .15s,background .15s}
-  .sw.on{background:#12324a}.sw.on::after{transform:translateX(15px);background:#7dd3fc}
-  .btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
-  .btns button{background:#12324a;border:1px solid #1b2432;color:#7dd3fc;border-radius:6px;
-               padding:6px 11px;font:inherit;font-size:11.5px;cursor:pointer}
-  pre{background:#0a1420;border:1px solid #1b2432;border-radius:6px;padding:9px;font-size:10.5px;
-      color:#8695ab;white-space:pre-wrap;max-height:280px;overflow:auto}
-  .note{color:#5b6b80;font-size:11px;margin-top:9px;line-height:1.6}
+  .cchdr{padding:12px 14px;border-bottom:1px solid #22303f;display:flex;align-items:center;gap:10px;flex-shrink:0}
+  .cchdr h1{font-size:calc(var(--fs) - 1px);color:#7dd3fc;letter-spacing:.16em;flex:1}
+  .cchdr .mk{color:#8ca0b8;font-size:calc(var(--fs) - 2px)}
+  .cchdr .x{color:#9fb0c4;cursor:pointer;font-size:calc(var(--fs) + 5px);padding:0 6px}
+  .fs{display:flex;gap:3px}
+  .fs button{background:#16202e;border:1px solid #2a3a4d;color:#9fb0c4;border-radius:5px;
+             width:26px;height:24px;font:inherit;font-size:calc(var(--fs) - 2px);cursor:pointer}
 
-  /* sandbox-only control rail */
-  #sb{position:fixed;left:0;bottom:0;z-index:100001;background:#0c121d;border:1px solid #1b2432;
-      border-radius:0 9px 0 0;padding:9px 12px;font-size:11px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
-  #sb b{color:#a78bfa;letter-spacing:.1em}
-  #sb button{background:#12324a;border:1px solid #1b2432;color:#7dd3fc;border-radius:5px;padding:4px 9px;font:inherit;font-size:11px;cursor:pointer}
+  /* health strip — 4 states */
+  .health{padding:10px 14px;border-bottom:1px solid #22303f;display:flex;flex-wrap:wrap;
+          gap:7px 16px;flex-shrink:0;font-size:calc(var(--fs) - 1px)}
+  .hs{display:flex;align-items:center;gap:6px;color:#c2cfe0}
+  .sdot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+  .sdot.ok{background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,.7)}
+  .sdot.warn{background:#f59e0b;box-shadow:0 0 6px rgba(245,158,11,.7)}
+  .sdot.bad{background:#ef4444;box-shadow:0 0 6px rgba(239,68,68,.7)}
+  .sdot.off{background:transparent;border:1px solid #3d4c60}
+
+  .ovr{padding:9px 14px;background:#2e1c07;border-bottom:1px solid #5c4213;
+       display:none;align-items:center;gap:10px;flex-shrink:0;font-size:calc(var(--fs) - 1px)}
+  .ovr.show{display:flex}
+  .ovr b{color:#fcd34d}
+  .ovr .lst{color:#d6c08a;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ovr button{background:#5c4213;border:1px solid #8a6518;color:#fde68a;border-radius:5px;
+              padding:4px 10px;font:inherit;font-size:calc(var(--fs) - 2px);cursor:pointer;flex-shrink:0}
+
+  .tabs{display:flex;gap:2px;padding:9px 10px 0;border-bottom:1px solid #22303f;flex-shrink:0;overflow-x:auto}
+  .tabs button{background:none;border:0;border-bottom:2px solid transparent;color:#8ca0b8;
+               padding:7px 11px;font:inherit;font-size:calc(var(--fs) - 1px);cursor:pointer;white-space:nowrap}
+  .tabs button.on{color:#7dd3fc;border-bottom-color:#7dd3fc}
+
+  .body{flex:1;overflow-y:auto;padding:12px 14px}
+  .pane{display:none}.pane.on{display:block}
+  .grp{margin-bottom:16px}
+  .grp h2{font-size:calc(var(--fs) - 3px);color:#b9a3f5;letter-spacing:.13em;margin-bottom:7px;text-transform:uppercase}
+
+  .flag{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:7px}
+  .flag:hover{background:#0f1725}
+  .star{color:#3d4c60;cursor:pointer;flex-shrink:0;font-size:calc(var(--fs) + 1px);width:18px;text-align:center}
+  .star.on{color:#fbbf24}
+  .flag .nm{color:#a8cdf0;width:118px;flex-shrink:0;font-size:calc(var(--fs) - 1px)}
+  .flag .ds{color:#93a5bb;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+            font-size:calc(var(--fs) - 1px)}
+  .flag .ds .val{color:#4ade80}
+
+  .sw{width:34px;height:18px;border-radius:9px;background:#22303f;position:relative;cursor:pointer;
+      flex-shrink:0;transition:background .15s}
+  .sw::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+             background:#8ca0b8;transition:transform .15s,background .15s}
+  .sw.on{background:#14496b}.sw.on::after{transform:translateX(16px);background:#7dd3fc}
+  .valin{background:#0d1725;border:1px solid #2a3a4d;color:#e6edf7;border-radius:5px;
+         padding:4px 7px;font:inherit;font-size:calc(var(--fs) - 2px);width:96px;flex-shrink:0}
+  .act{background:#3a2412;border:1px solid #6b4212;color:#fbbf24;border-radius:5px;
+       padding:4px 11px;font:inherit;font-size:calc(var(--fs) - 2px);cursor:pointer;flex-shrink:0}
+
+  .btns{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+  .btns button{background:#16202e;border:1px solid #2a3a4d;color:#7dd3fc;border-radius:6px;
+               padding:7px 12px;font:inherit;font-size:calc(var(--fs) - 1px);cursor:pointer}
+  pre{background:#0a1420;border:1px solid #22303f;border-radius:7px;padding:11px;
+      font-size:calc(var(--fs) - 2px);color:#a9bacd;white-space:pre-wrap;max-height:300px;overflow:auto;line-height:1.55}
+  .note{color:#8ca0b8;font-size:calc(var(--fs) - 2px);margin-top:11px;line-height:1.65}
+  .note b{color:#c2cfe0}
+  .empty{color:#8ca0b8;padding:16px 4px;line-height:1.7}
+  .empty b{color:#e6edf7}
+
+  #sb{position:fixed;left:0;bottom:0;z-index:100001;background:#0c121d;border:1px solid #22303f;
+      border-radius:0 9px 0 0;padding:10px 13px;font-size:12px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  #sb b{color:#b9a3f5;letter-spacing:.1em}
+  #sb button{background:#16202e;border:1px solid #2a3a4d;color:#7dd3fc;border-radius:5px;
+             padding:5px 10px;font:inherit;font-size:12px;cursor:pointer}
   #sb .cur{color:#7dd3fc}
 </style></head>
 <body>
@@ -92,198 +121,287 @@
 </div>
 
 <div id="dots">
-  <div class="dot mute" title="existing mute/unmute dot"></div>
+  <div class="dot mute" title="existing mute dot"></div>
   <div class="dot cc green" id="ccdot" title="command center" onclick="toggleCC()"></div>
 </div>
 
 <div id="cc">
   <div class="cchdr">
     <h1>COMMAND CENTER</h1>
-    <span class="dim" id="marker">r186-deluxe-30</span>
+    <span class="mk" id="marker">r186</span>
+    <span class="fs"><button onclick="fsz(-1)">A−</button><button onclick="fsz(1)">A+</button></span>
     <span class="x" onclick="toggleCC()">✕</span>
   </div>
 
   <div class="health" id="health"></div>
 
   <div class="ovr" id="ovr">
-    <b>⚠ OVERRIDES ACTIVE</b><span class="dim" id="ovrlist"></span>
+    <b>⚠ OVERRIDES</b><span class="lst" id="ovrlist"></span>
     <button onclick="clearOverrides()">clear all</button>
   </div>
 
   <div class="tabs" id="tabs"></div>
   <div class="body">
-    <div class="pane on" id="p-flags"></div>
-    <div class="pane" id="p-tko"><pre id="tkoOut"></pre><div class="btns">
-      <button>copy JSON</button><button>clear</button></div></div>
-    <div class="pane" id="p-fav"><pre id="favOut"></pre><div class="btns">
-      <button>copy JSON</button></div></div>
-    <div class="pane" id="p-pools"><pre id="poolsOut"></pre><div class="btns">
-      <button>copy JSON</button><button>dump full</button></div></div>
-    <div class="pane" id="p-health"><div id="healthDetail"></div></div>
+    <div class="pane on" id="p-fav"></div>
+    <div class="pane" id="p-flags"></div>
+    <div class="pane" id="p-debug"></div>
+    <div class="pane" id="p-tko"></div>
+    <div class="pane" id="p-sources"></div>
+    <div class="pane" id="p-yt"></div>
+    <div class="pane" id="p-watch"></div>
   </div>
 </div>
 
 <div id="sb">
   <b>SANDBOX</b>
-  <span>dot state: <span class="cur" id="stateName">green · solid</span></span>
-  <button onclick="cycleState()">cycle state ▸</button>
-  <button onclick="fakeOverride()">toggle fake override</button>
-  <span class="dim">click the green dot to open</span>
+  <span>dot: <span class="cur" id="stateName"></span></span>
+  <button onclick="cycleState()">cycle health ▸</button>
+  <button onclick="fakeOverride()">toggle override</button>
+  <button onclick="killFeed()">break a source</button>
 </div>
 
 <script>
-/* ── flag registry: harvested from dashboard_src.html (52 real flags) ──
-   This is the artefact that matters more than the UI. Today the flag list lives in the
-   handoff as prose and has ALREADY drifted — the docs say 36, the code has 52. If the
-   flags read from this object instead, an unregistered flag cannot exist. */
+/* ════════════════════════════════════════════════════════════════════════
+   REGISTRIES — the artefact that matters more than the UI.
+   Today the flag list lives in the handoff as prose and has ALREADY drifted:
+   docs say 36, the code has 52. If flags read from FLAGS, an unregistered
+   flag cannot exist. HUDS is the same idea for panels, so adding a HUD later
+   is one object entry rather than edits in four places.
+
+   type decides how a flag RENDERS and whether it may persist:
+     toggle  on/off switch, persistable
+     enum    picker, persistable
+     num     numeric field, persistable
+     text    free text, persistable
+     action  fires ONCE, never persists  ← the important one
+   ?tkoclear=1 persisted as a toggle would wipe the takeover log on every
+   reload, destroying the exact data you were trying to capture.
+   ════════════════════════════════════════════════════════════════════════ */
 const FLAGS=[
- {g:'Core',        n:'debug',       d:'Main HUD + build marker (Rule Zero)'},
- {g:'Core',        n:'nobuildtag',  d:'Hide the build tag'},
- {g:'Core',        n:'noreload',    d:'Suppress auto-reload'},
- {g:'Core',        n:'demo',        d:'Demo data mode'},
- {g:'Takeover/HR', n:'tkolog',      d:'Takeover timeline HUD'},
- {g:'Takeover/HR', n:'companion',   d:'Play companion clip + callback ribbon'},
- {g:'Takeover/HR', n:'hrscope',     d:'fav | all | favplus', type:'enum', opts:['fav','all','favplus']},
- {g:'Takeover/HR', n:'hrteams',     d:'Team override e.g. BOS,LAD', type:'text'},
- {g:'Takeover/HR', n:'hrlum',       d:'Team-wash luminance target (0.28)', type:'num'},
- {g:'Takeover/HR', n:'pbphr',       d:'0 = kill StatsAPI HR detector'},
- {g:'Takeover/HR', n:'takeover',    d:'Force a takeover'},
- {g:'Takeover/HR', n:'tkotest',     d:'Takeover test harness'},
- {g:'Video',       n:'recaps',      d:'0 = no recaps at all'},
- {g:'Video',       n:'liverecaps',  d:'1 = allow filler during live games (default OFF)'},
- {g:'Video',       n:'ytlog',       d:'YouTube playback log'},
- {g:'Video',       n:'dirlog',      d:'Director decision log'},
- {g:'Video',       n:'mlbvid',      d:'MLB video pipeline trace'},
- {g:'Video',       n:'rotations',   d:'Cap filler rotations', type:'num'},
- {g:'Video',       n:'video',       d:'Master video toggle'},
- {g:'Sources',     n:'pools',       d:'Per-source gate chain (most useful)'},
- {g:'Sources',     n:'poolsdump',   d:'Full pool dump'},
- {g:'Sources',     n:'wws',         d:'0 = disable WWS layer'},
- {g:'Sources',     n:'wwslive',     d:'WWS final video while anchor live'},
- {g:'Sources',     n:'golf',        d:'Golf layer'},
- {g:'Sources',     n:'golfoff',     d:'Kill golf'},
- {g:'Sources',     n:'netbugs',     d:'Network fault injection'},
- {g:'Layout',      n:'mlbfull',     d:'MLB fullscreen mode'},
- {g:'Layout',      n:'ucs',         d:'Universal Card System'},
- {g:'Layout',      n:'glow',        d:'Leverage glow'},
- {g:'Layout',      n:'dimtest',     d:'Dimming test'},
- {g:'Layout',      n:'standlogos',  d:'Standings logos'},
- {g:'Data',        n:'yesterday',   d:"Use yesterday's slate"},
- {g:'Data',        n:'stale',       d:'Simulate stale feed'},
- {g:'Data',        n:'delayed',     d:'Simulate rain delay'},
- {g:'Data',        n:'pregame',     d:'Force pregame state'},
- {g:'Data',        n:'lastfinal',   d:'Force final state'},
- {g:'Data',        n:'rosteroff',   d:'Disable roster fetch'},
- {g:'Brain',       n:'brain',       d:'Brain section in debug HUD'},
- {g:'Brain',       n:'brainfire',   d:'Allow Brain to fire takeovers'},
- {g:'Maintenance', n:'cleardead',   d:'Clear dead-id list'},
- {g:'Maintenance', n:'tkoclear',    d:'Clear takeover log'},
- {g:'Maintenance', n:'tkodump',     d:'Dump takeover log'}
+ {g:'Core',        n:'debug',       t:'toggle', d:'Main HUD + build marker (Rule Zero)'},
+ {g:'Core',        n:'nobuildtag',  t:'toggle', d:'Hide the build tag'},
+ {g:'Core',        n:'noreload',    t:'toggle', d:'Suppress auto-reload'},
+ {g:'Core',        n:'demo',        t:'toggle', d:'Demo data mode'},
+ {g:'Takeover/HR', n:'tkolog',      t:'toggle', d:'Takeover timeline HUD'},
+ {g:'Takeover/HR', n:'companion',   t:'toggle', d:'Play companion clip + callback ribbon'},
+ {g:'Takeover/HR', n:'hrscope',     t:'enum',   d:'HR scope', opts:['fav','all','favplus'], def:'fav'},
+ {g:'Takeover/HR', n:'hrteams',     t:'text',   d:'Team override', ph:'BOS,LAD'},
+ {g:'Takeover/HR', n:'hrlum',       t:'num',    d:'Team-wash luminance target', def:'0.28'},
+ {g:'Takeover/HR', n:'pbphr',       t:'toggle', d:'0 = kill StatsAPI HR detector'},
+ {g:'Takeover/HR', n:'takeover',    t:'action', d:'Force a takeover now'},
+ {g:'Video',       n:'recaps',      t:'toggle', d:'0 = no recaps at all'},
+ {g:'Video',       n:'liverecaps',  t:'toggle', d:'1 = filler during live games (default OFF)'},
+ {g:'Video',       n:'ytlog',       t:'toggle', d:'YouTube playback log'},
+ {g:'Video',       n:'dirlog',      t:'toggle', d:'Director decision log'},
+ {g:'Video',       n:'mlbvid',      t:'toggle', d:'MLB video pipeline trace'},
+ {g:'Video',       n:'rotations',   t:'num',    d:'Cap filler rotations', ph:'200'},
+ {g:'Sources',     n:'pools',       t:'toggle', d:'Per-source gate chain'},
+ {g:'Sources',     n:'poolsdump',   t:'action', d:'Dump full pool state'},
+ {g:'Sources',     n:'wws',         t:'toggle', d:'0 = disable WWS layer'},
+ {g:'Sources',     n:'golfoff',     t:'toggle', d:'Kill golf sources'},
+ {g:'Sources',     n:'netbugs',     t:'toggle', d:'Network fault injection'},
+ {g:'Layout',      n:'mlbfull',     t:'toggle', d:'MLB fullscreen mode'},
+ {g:'Layout',      n:'ucs',         t:'toggle', d:'Universal Card System'},
+ {g:'Layout',      n:'glow',        t:'toggle', d:'Leverage glow'},
+ {g:'Layout',      n:'standlogos',  t:'toggle', d:'Standings logos'},
+ {g:'Data',        n:'yesterday',   t:'toggle', d:"Use yesterday's slate"},
+ {g:'Data',        n:'stale',       t:'toggle', d:'Simulate stale feed'},
+ {g:'Data',        n:'delayed',     t:'toggle', d:'Simulate rain delay'},
+ {g:'Data',        n:'pregame',     t:'toggle', d:'Force pregame state'},
+ {g:'Data',        n:'rosteroff',   t:'toggle', d:'Disable roster fetch'},
+ {g:'Brain',       n:'brain',       t:'toggle', d:'Brain section in debug HUD'},
+ {g:'Brain',       n:'brainfire',   t:'toggle', d:'Allow Brain to fire takeovers'},
+ {g:'Maintenance', n:'tkoclear',    t:'action', d:'Clear takeover log'},
+ {g:'Maintenance', n:'tkodump',     t:'action', d:'Copy takeover log JSON'},
+ {g:'Maintenance', n:'cleardead',   t:'action', d:'Clear dead-id list'}
 ];
-const HEALTH=[
-  {n:'MLB StatsAPI', s:'ok'},   {n:'ESPN', s:'ok'},      {n:'YouTube', s:'warn', note:'quota latched 12m'},
-  {n:'MLB recaps', s:'ok'},     {n:'pga-golf', s:'bad', note:'FEED-FAIL'},
+
+/* HUDS — parallel registry. collect:'always' = records passively, no extra
+   network. collect:'flag' = initiates traffic, so it stays gated. */
+const HUDS=[
+ {id:'fav',    label:'★ Favorites', kind:'favorites'},
+ {id:'flags',  label:'Flags',       kind:'flags'},
+ {id:'debug',  label:'Debug',       flag:'debug',  collect:'always'},
+ {id:'tko',    label:'Takeover',    flag:'tkolog', collect:'always'},
+ {id:'sources',label:'Sources',     flag:'pools',  collect:'always'},
+ {id:'yt',     label:'YouTube',     flag:'ytlog',  collect:'always'},
+ {id:'watch',  label:'Watchlist',   collect:'always'}
+];
+
+let HEALTH=[
+  {n:'MLB StatsAPI', s:'ok'},  {n:'ESPN', s:'ok'},
+  {n:'YouTube', s:'warn', note:'quota latched · self-heals in 15m'},
+  {n:'MLB recaps', s:'ok'},    {n:'pga-golf', s:'bad', note:'FEED-FAIL'},
   {n:'nhl-fill', s:'off', note:'disabled r176'}, {n:'randa-open', s:'off', note:'parked r176'},
   {n:'Selector', s:'ok', note:'14 games'}, {n:'Proxy', s:'ok'}
 ];
-const TABS=[['flags','Flags'],['tko','Takeover log'],['fav','Watchlist'],['pools','Sources'],['health','Health']];
 
-const $=id=>document.getElementById(id);
-let overrides={}, STATE=0;
-const STATES=[['green',false,'green · solid','all healthy, no overrides'],
-              ['green',true ,'green · blink','healthy, overrides active'],
-              ['yellow',false,'yellow · solid','degraded — a source is down'],
-              ['yellow',true ,'yellow · blink','degraded + overrides'],
-              ['red',false,'red · solid','critical — core feed failing'],
-              ['red',true ,'red · blink','critical + overrides']];
-
-function toggleCC(){ $('cc').classList.toggle('open'); }
-function cycleState(){ STATE=(STATE+1)%STATES.length; applyState(); }
-function applyState(){
-  const [c,b,label,meaning]=STATES[STATE];
-  const d=$('ccdot'); d.className='dot cc '+c+(b?' blink':'');
-  $('stateName').textContent=label+' — '+meaning;
-}
-function fakeOverride(){
-  if(Object.keys(overrides).length) overrides={};
-  else overrides={rotations:'200', hrscope:'all'};
-  renderOverrides(); renderFlags();
-}
-function clearOverrides(){ overrides={}; renderOverrides(); renderFlags(); }
-function renderOverrides(){
-  const keys=Object.keys(overrides);
-  $('ovr').classList.toggle('show',!!keys.length);
-  $('ovrlist').textContent=keys.map(k=>k+'='+overrides[k]).join(' · ');
-  // the dot blinks whenever an override is live — motion = "not a clean state"
-  const base=STATES[STATE][0];
-  $('ccdot').className='dot cc '+base+(keys.length?' blink':'');
-}
-function renderHealth(){
-  $('health').innerHTML=HEALTH.map(h=>{
-    const m={ok:'<span class="ok">✓</span>',warn:'<span class="warn">⚠</span>',
-             bad:'<span class="bad">✕</span>',off:'<span class="dim">○</span>'}[h.s];
-    return `<span class="s">${m} <b>${h.n}</b></span>`;
-  }).join('');
-  const okc=HEALTH.filter(h=>h.s==='ok').length;
-  $('healthDetail').innerHTML=`<div class="grp"><h2>Sources ${okc}/${HEALTH.length} healthy</h2>`
-    + HEALTH.map(h=>{
-      const m={ok:'<span class="ok">✓ healthy</span>',warn:'<span class="warn">⚠ degraded</span>',
-               bad:'<span class="bad">✕ failing</span>',off:'<span class="dim">○ disabled</span>'}[h.s];
-      return `<div class="flag"><span class="nm">${h.n}</span><span class="ds">${m}${h.note?' · '+h.note:''}</span></div>`;
-    }).join('')+'</div>'
-    + `<div class="note">Health is derived from data the panel already collects — feed failures, quota latches, disabled-source flags, selector poll count. Nothing new needs measuring; it just needs surfacing.</div>`;
-}
-function renderTabs(){
-  $('tabs').innerHTML=TABS.map(([k,l],i)=>`<button class="${i?'':'on'}" onclick="setTab('${k}',this)">${l}</button>`).join('');
-}
-function setTab(k,btn){
-  document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));
-  $('p-'+k).classList.add('on');
-}
-function renderFlags(){
-  const groups=[...new Set(FLAGS.map(f=>f.g))];
-  $('p-flags').innerHTML=groups.map(g=>`<div class="grp"><h2>${g}</h2>`
-    + FLAGS.filter(f=>f.g===g).map(f=>{
-        const on=overrides[f.n]!==undefined;
-        const val=f.type&&on?` <span class="ok">${overrides[f.n]}</span>`:'';
-        return `<div class="flag"><span class="nm">?${f.n}</span>`
-             + `<span class="ds">${f.d}${val}</span>`
-             + `<span class="sw ${on?'on':''}" onclick="tog('${f.n}')"></span></div>`;
-      }).join('')+'</div>').join('')
-    + `<div class="note"><b>Stage 1 is read-only</b> — this pane shows which flags are set and what each does, and the toggles write to localStorage + reload (stage 2). Live toggling (stage 3) only for flags where a reload actually costs something.</div>`;
-}
-function tog(n){
-  if(overrides[n]!==undefined) delete overrides[n]; else overrides[n]='1';
-  renderOverrides(); renderFlags();
-}
-$('tkoOut').textContent=`NYY · takeover [mlbPbpHrWatch (r174)]  9:41:02 PM
-  ESPN lag (play→Brain fired):  4.1s
-  MLB cut  (play→clip posted):  24.8s
-  ★★ DEAD AIR (card gone→clip): 108.2s
+const SAMPLE={
+ debug:`BUILD_MARKER   r186-deluxe-30
+layout         mlbFull
+live games     6
+NYY            live · Bot 8th · 4-4
+NYM            final · W 5-2
+takeovers      2 fired this session
+brain          armed · 0 fires`,
+ tko:`NYY · takeover [mlbPbpHrWatch (r174)]  9:41:02 PM
+  ESPN lag (play to fire):      4.1s
+  MLB cut  (play to clip):     24.8s
+  DEAD AIR (card gone to clip):108.2s
   polls: 23   outcome: PLAYING
-  clip: Ben Rice's game-tying three-run homer (30)
+  clip: Ben Rice game-tying three-run homer (30)
 
 BOS · takeover [mlbPbpHrWatch (r174)]  9:12:44 PM
-  polls: 19   outcome: PLAYING
-  clip: Rafael Devers' two-run homer (21)`;
-$('favOut').textContent=`{
+  polls: 19   outcome: PLAYING`,
+ sources:`hoh-nyy      12 items  ->  4 gated  ->  SERVED
+mlb-daily    15 items  ->  9 gated  ->  served
+golf-fill     8 items  ->  8 gated  ->  GATED-EMPTY
+pga-golf      -                     ->  FEED-FAIL
+fifa-fill     6 items  ->  6 gated  ->  GATED-EMPTY
+nhl-fill      -                     ->  DISABLED (r176)`,
+ yt:`09:41:12  search  "yankees highlights"   -> 200  12 results
+09:41:14  play    IwzESXtiOnY               -> playing
+09:52:03  search  "mets highlights"          -> 429  QUOTA LATCH 15m
+10:07:41  search  (skipped, latched)`,
+ watch:`{
   "scope": "fav",
   "favoriteTeams": ["NYM","NYY"],
-  "selectedGameIds": [8 ids],
   "selectedGamesMatchedToLiveFeed": ["BOS@TOR (live)","SF@KC (live)"],
   "unmatchedIds": [],
   "willWatch": ["BOS@TOR","SF@KC","PIT@NYY"],
   "pkUnresolved": []
-}`;
-$('poolsOut').textContent=`hoh-nyy      12 items  →  4 gated  →  SERVED
-mlb-daily    15 items  →  9 gated  →  served
-golf-fill     8 items  →  8 gated  →  GATED-EMPTY
-pga-golf      —                    →  FEED-FAIL
-fifa-fill     6 items  →  6 gated  →  GATED-EMPTY
-nhl-fill      —                    →  DISABLED (r176)`;
+}`};
 
-renderTabs(); renderFlags(); renderHealth(); renderOverrides(); applyState();
+const $=id=>document.getElementById(id);
+let overrides={}, stars=[], FSZ=14, STATE=0;
+const HSTATES=[['green','all sources healthy'],['amber','a source degraded'],['red','core feed failing']];
+
+/* ── persistence. Real build uses the same keys; sandbox shares the shape. ── */
+function loadStars(){
+  try{ const r=localStorage.getItem('cc.stars'); stars=r?JSON.parse(r):
+       ['debug','tkolog','companion','hrscope','pools','ytlog','rotations','brain']; }
+  catch(_){ stars=['debug','tkolog','companion','hrscope','pools']; }
+}
+function saveStars(){ try{ localStorage.setItem('cc.stars',JSON.stringify(stars)); }catch(_){} }
+function loadFsz(){ try{ const v=parseInt(localStorage.getItem('cc.fsz')); if(v>=12&&v<=20) FSZ=v; }catch(_){} }
+function saveFsz(){ try{ localStorage.setItem('cc.fsz',String(FSZ)); }catch(_){} }
+function fsz(d){ FSZ=Math.max(12,Math.min(20,FSZ+d)); $('cc').style.setProperty('--fs',FSZ+'px'); saveFsz(); }
+
+function toggleCC(){ $('cc').classList.toggle('open'); }
+function cycleState(){ STATE=(STATE+1)%HSTATES.length; renderDot(); }
+function killFeed(){
+  const t=HEALTH.find(h=>h.n==='ESPN');
+  t.s = t.s==='ok' ? 'bad' : 'ok';
+  t.note = t.s==='bad' ? 'no response 3 polls' : '';
+  STATE = HEALTH.some(h=>h.s==='bad') ? 2 : HEALTH.some(h=>h.s==='warn') ? 1 : 0;
+  renderHealth(); renderDot();
+}
+function renderDot(){
+  const [c,meaning]=HSTATES[STATE];
+  const blink=Object.keys(overrides).length>0;
+  $('ccdot').className='dot cc '+c+(blink?' blink':'');
+  $('stateName').textContent=c+(blink?' · blinking':' · solid')+' — '+meaning+(blink?' + overrides active':'');
+}
+function fakeOverride(){
+  if(Object.keys(overrides).length) overrides={};
+  else overrides={rotations:'200', hrscope:'all'};
+  renderOverrides(); renderFlags(); renderFavorites(); renderDot();
+}
+function clearOverrides(){ overrides={}; renderOverrides(); renderFlags(); renderFavorites(); renderDot(); }
+function renderOverrides(){
+  const keys=Object.keys(overrides);
+  $('ovr').classList.toggle('show',keys.length>0);
+  $('ovrlist').textContent=keys.map(k=>'?'+k+'='+overrides[k]).join('  ');
+}
+function renderHealth(){
+  $('health').innerHTML=HEALTH.map(h=>
+    `<span class="hs"><span class="sdot ${h.s}"></span>${h.n}</span>`).join('');
+}
+
+/* ── flag rows. One renderer, four control types. ── */
+function flagRow(f, showStar){
+  const on=overrides[f.n]!==undefined;
+  const starred=stars.includes(f.n);
+  const star = showStar
+    ? `<span class="star ${starred?'on':''}" onclick="toggleStar('${f.n}')">${starred?'★':'☆'}</span>` : '';
+  let ctrl;
+  if(f.t==='action'){
+    ctrl=`<button class="act" onclick="runAction('${f.n}')">run</button>`;
+  } else if(f.t==='enum'){
+    ctrl=`<select class="valin" onchange="setVal('${f.n}',this.value)">`
+        + ['(default)'].concat(f.opts).map(o=>
+            `<option ${overrides[f.n]===o?'selected':''}>${o}</option>`).join('')+'</select>';
+  } else if(f.t==='num'||f.t==='text'){
+    ctrl=`<input class="valin" placeholder="${f.ph||f.def||''}" value="${on?overrides[f.n]:''}"
+           onchange="setVal('${f.n}',this.value)">`;
+  } else {
+    ctrl=`<span class="sw ${on?'on':''}" onclick="tog('${f.n}')"></span>`;
+  }
+  const val = on && f.t!=='toggle' ? ` <span class="val">= ${overrides[f.n]}</span>` : '';
+  return `<div class="flag">${star}<span class="nm">?${f.n}</span>`
+       + `<span class="ds">${f.d}${val}</span>${ctrl}</div>`;
+}
+function renderFavorites(){
+  const picked=stars.map(n=>FLAGS.find(f=>f.n===n)).filter(Boolean);
+  $('p-fav').innerHTML = picked.length
+    ? `<div class="grp"><h2>Pinned</h2>${picked.map(f=>flagRow(f,true)).join('')}</div>`
+      + `<div class="note">Star anything in <b>Flags</b> to pin it here. Order follows the order you starred them.</div>`
+    : `<div class="empty"><b>Nothing pinned yet.</b><br>Open the Flags tab and tap ☆ next to the ones you reach for most.</div>`;
+}
+function renderFlags(){
+  const groups=[...new Set(FLAGS.map(f=>f.g))];
+  $('p-flags').innerHTML=groups.map(g=>`<div class="grp"><h2>${g}</h2>`
+    + FLAGS.filter(f=>f.g===g).map(f=>flagRow(f,true)).join('')+'</div>').join('')
+    + `<div class="note"><b>Actions</b> (orange <i>run</i> buttons) fire once and never persist — a persisted
+       <code>?tkoclear</code> would wipe the takeover log on every reload.
+       <b>Toggles and values</b> persist to localStorage and reload the page (stage 2).</div>`;
+}
+function renderHudPanes(){
+  HUDS.filter(h=>!h.kind).forEach(h=>{
+    const el=$('p-'+h.id); if(!el) return;
+    const gated = h.flag && overrides[h.flag]===undefined && h.collect!=='always';
+    el.innerHTML = gated
+      ? `<div class="empty"><b>Collection is off.</b><br>Enable <code>?${h.flag}</code> to start recording.</div>`
+      : `<pre>${SAMPLE[h.id]||'(no sample)'}</pre>`
+        + `<div class="btns"><button>copy JSON</button>${h.id==='tko'?'<button>clear</button>':''}
+           ${h.flag?`<button onclick="tog('${h.flag}')">toggle ?${h.flag} HUD on wall</button>`:''}</div>`
+        + (h.collect==='always'
+            ? `<div class="note">Collection is <b>always on</b> for this HUD — it records events the panel
+               already produces and makes no extra network calls. The flag only controls whether it also
+               draws on the wall.</div>` : '');
+  });
+}
+function renderTabs(){
+  $('tabs').innerHTML=HUDS.map((h,i)=>
+    `<button class="${i?'':'on'}" onclick="setTab('${h.id}',this)">${h.label}</button>`).join('');
+}
+function setTab(k,btn){
+  const tb=document.querySelectorAll('.tabs button');
+  for(let i=0;i<tb.length;i++) tb[i].classList.remove('on');
+  if(btn) btn.classList.add('on');
+  const pn=document.querySelectorAll('.pane');
+  for(let i=0;i<pn.length;i++) pn[i].classList.remove('on');
+  const p=$('p-'+k); if(p) p.classList.add('on');
+}
+function toggleStar(n){
+  const i=stars.indexOf(n);
+  if(i<0) stars.push(n); else stars.splice(i,1);
+  saveStars(); renderFlags(); renderFavorites();
+}
+function tog(n){
+  if(overrides[n]!==undefined) delete overrides[n]; else overrides[n]='1';
+  afterChange();
+}
+function setVal(n,v){
+  if(!v||v==='(default)') delete overrides[n]; else overrides[n]=v;
+  afterChange();
+}
+function runAction(n){ window._lastAction=n; /* real build: fire once, never persist */ }
+function afterChange(){ renderOverrides(); renderFlags(); renderFavorites(); renderHudPanes(); renderDot(); }
+
+loadStars(); loadFsz();
+$('cc').style.setProperty('--fs',FSZ+'px');
+renderTabs(); renderHealth(); renderFavorites(); renderFlags(); renderHudPanes();
+renderOverrides(); renderDot();
 </script>
 </body></html>
