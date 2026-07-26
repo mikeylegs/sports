@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Watcher Lifecycle Probe</title>
+<style>
+:root{
+ --bg:#0b1016;--panel:#141b24;--panel2:#1a2430;--text:#edf3f8;
+ --muted:#8fa1b5;--good:#38d96b;--warn:#ffcc33;--bad:#ff5d5d;
+ --accent:#58a6ff;--border:#2b3948;
+}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(#0b1016,#101720);color:var(--text);
+font:14px/1.45 Inter,system-ui,sans-serif}
+header{padding:20px 24px;border-bottom:1px solid var(--border);
+display:flex;justify-content:space-between;align-items:center}
+h1{margin:0;font-size:28px}
+small{color:var(--muted)}
+.grid{display:grid;grid-template-columns:360px 1fr;gap:18px;padding:18px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px}
+.metric{font-size:34px;font-weight:700}
+.good{color:var(--good)} .warn{color:var(--warn)} .bad{color:var(--bad)}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px;border-bottom:1px solid var(--border);text-align:left}
+th{color:#c8d3df;background:var(--panel2);position:sticky;top:0}
+tbody tr:hover{background:#18222d;cursor:pointer}
+#timeline{white-space:pre-wrap;font-family:ui-monospace,monospace;background:#0e141b;
+padding:14px;border-radius:12px;border:1px solid var(--border);min-height:180px}
+.banner{display:none;padding:12px;border-radius:12px;margin-bottom:12px;background:#451818;
+border:1px solid #8f2d2d}
+.log{max-height:420px;overflow:auto}
+.pill{padding:3px 8px;border-radius:999px;background:#233140;color:#dce8f3}
+footer{padding:16px 24px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+<div>
+<h1>Watcher Lifecycle Probe</h1>
+<small>Enrollment • Attachment • PBP • Late Attach Detection</small>
+</div>
+<div class="pill" id="clock"></div>
+</header>
+
+<div class="grid">
+<div>
+<div class="card">
+<div>Late Attachments</div>
+<div class="metric bad" id="lateCount">0</div>
+<small>Watcher attached after game accumulated plays.</small>
+</div>
+<br>
+<div class="card">
+<div>Average Enrollment Latency</div>
+<div class="metric good" id="avgLatency">0.0s</div>
+</div>
+<br>
+<div class="card">
+<div>Integration Hooks</div>
+<pre style="font-size:12px;color:#c7d5e2">
+watchProbe.firstPitch(gamePk)
+watchProbe.eligible(gamePk)
+watchProbe.watchStarted(gamePk, reason)
+watchProbe.pbpInit(gamePk, plays, hrs)
+watchProbe.watchStopped(gamePk, reason)
+</pre>
+</div>
+</div>
+
+<div>
+<div class="banner" id="banner"></div>
+<div class="card">
+<h3 style="margin-top:0">Games</h3>
+<table>
+<thead>
+<tr><th>Game</th><th>Eligible</th><th>Watching</th><th>Latency</th><th>Plays@Attach</th><th>HRs</th></tr>
+</thead>
+<tbody id="games"></tbody>
+</table>
+</div>
+<br>
+<div class="card">
+<h3 style="margin-top:0">Timeline</h3>
+<div id="timeline">Select a game…</div>
+</div>
+<br>
+<div class="card">
+<h3 style="margin-top:0">Event Log</h3>
+<div class="log">
+<table>
+<thead><tr><th>Time</th><th>Game</th><th>Event</th><th>Reason</th></tr></thead>
+<tbody id="events"></tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+
+<footer>
+Designed as a deployment probe. Attach hooks into your watcher manager and leave this running during live games.
+</footer>
+
+<script>
+const games=new Map(),events=[];
+const $=id=>document.getElementById(id);
+function now(){return new Date()}
+setInterval(()=>$("clock").textContent=now().toLocaleTimeString(),1000);
+
+function g(id){
+ if(!games.has(id)) games.set(id,{id});
+ return games.get(id);
+}
+function fmt(t){return t?new Date(t).toLocaleTimeString():"—"}
+function latency(x){
+ if(!(x.eligible&&x.watchStart)) return "—";
+ return ((x.watchStart-x.eligible)/1000).toFixed(1)+"s";
+}
+function render(){
+ let late=0,total=0,cnt=0,rows="";
+ [...games.values()].forEach(x=>{
+  let cls="good";
+  if(x.plays>10||x.hrs>0){cls="bad";late++}
+  if(x.eligible&&x.watchStart){total+=(x.watchStart-x.eligible);cnt++}
+  rows+=`<tr onclick="showGame('${x.id}')">
+<td>${x.id}</td>
+<td>${fmt(x.eligible)}</td>
+<td>${x.watchStart?"✅":"❌"}</td>
+<td class="${cls}">${latency(x)}</td>
+<td>${x.plays??"—"}</td>
+<td>${x.hrs??"—"}</td></tr>`;
+ });
+ $("games").innerHTML=rows;
+ $("lateCount").textContent=late;
+ $("avgLatency").textContent=cnt?((total/cnt)/1000).toFixed(1)+"s":"0.0s";
+ let erows="";
+ [...events].reverse().forEach(e=>{
+ erows+=`<tr><td>${fmt(e.t)}</td><td>${e.g}</td><td>${e.e}</td><td>${e.r||""}</td></tr>`;
+ });
+ $("events").innerHTML=erows;
+}
+function log(gm,e,r){events.push({t:Date.now(),g:gm,e:e,r:r});render()}
+function showGame(id){
+ const x=g(id);
+ $("timeline").textContent=
+`FIRST PITCH    ${fmt(x.firstPitch)}
+ELIGIBLE       ${fmt(x.eligible)}
+WATCH START    ${fmt(x.watchStart)}
+PBP INIT       ${fmt(x.watchStart)}
+PLAYS ATTACH   ${x.plays??0}
+SEEDED HRS     ${x.hrs??0}
+SOURCE         ${x.reason||""}`;
+}
+window.watchProbe={
+ firstPitch(id){g(id).firstPitch=Date.now();log(id,"FIRST_PITCH")},
+ eligible(id){g(id).eligible=Date.now();log(id,"WATCH_ELIGIBLE")},
+ watchStarted(id,reason){
+   let x=g(id);x.watchStart=Date.now();x.reason=reason;
+   log(id,"WATCH_STARTED",reason);
+ },
+ pbpInit(id,plays,hrs){
+   let x=g(id);x.plays=plays;x.hrs=hrs;
+   log(id,"PBP_INIT",`plays=${plays} hrs=${hrs}`);
+   if(plays>10||hrs>0){
+      $("banner").style.display="block";
+      $("banner").innerHTML=`<b>⚠ Late Watcher Attach</b><br>
+      ${id} attached with <b>${plays}</b> plays already recorded and <b>${hrs}</b> existing HR(s).`;
+   }
+ },
+ watchStopped(id,reason){log(id,"WATCH_STOPPED",reason)}
+};
+render();
+</script>
+</body>
+</html>
