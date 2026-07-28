@@ -2202,9 +2202,29 @@ async function _montageBeat(){
   if(!clip){ try{ console.log('[montage] skip (no clip)', e.batter); }catch(_){}; return _montageBeat(); }
   const wrgb=(GLOW_TEAM[e.teamAbbr]||'11,42,94');
   const accent='rgb('+wrgb+')';
+  const heroUrl = e.batterId ? 'https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:action:hero:current.jpg/q_auto:good,w_1500/v1/people/'+e.batterId+'/action/hero/current' : '';
+  /* ★ r231 — DECODE THE HERO PHOTO BEFORE SHOWING THE CARD. Contact-sheet frames proved
+     the artifact: the card's TEXT + pill render and fade in fully, then sit on BLACK for
+     several frames, and the hero photo (a CSS background-image) paints LAST. The r229
+     timing probe misled us — Image().onload fired at +25ms, but that's download-complete,
+     NOT paint-ready; the background composite lagged far behind on this kiosk.
+     Fix: decode() the hero off-screen first — decode() resolves only when the bitmap is
+     fully decoded and paint-ready. The card mounts into the black the previous beat's fade
+     left up, so text + photo reveal TOGETHER out of the black, never text-on-black-then-photo.
+     Bounded so a slow/broken image can't stall the montage (200–1200ms cap via race). */
+  if (heroUrl){
+    try{
+      const im=new Image(); im.src=heroUrl;
+      await Promise.race([
+        (im.decode ? im.decode() : new Promise(r=>{ im.onload=r; im.onerror=r; })).catch(()=>{}),
+        new Promise(r=>setTimeout(r, 1200))          // hard cap: never wait >1.2s on a photo
+      ]);
+    }catch(_){}
+    if(!MONTAGE.on) return;                            // montage may have been stopped while decoding
+  }
   showTakeover({ side:'left', mlbTeam:e.teamAbbr, gamePk:e.pk, montage:true, a:{
     accent,
-    hero: e.batterId ? 'https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:action:hero:current.jpg/q_auto:good,w_1500/v1/people/'+e.batterId+'/action/hero/current' : '',
+    hero: heroUrl,
     head: e.batterId ? 'https://img.mlbstatic.com/mlb-photos/image/upload/w_240,q_auto/v1/people/'+e.batterId+'/headshot/67/current' : '',
     logo: logoUrl('MLB', e.teamAbbr), logoX:1, logoY:1, logoSize:14, logoGlow:4,
     /* r225: montage is full-screen now (tko-full), so the studio values apply exactly as
@@ -10813,7 +10833,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r230-pill-left-video-fadein';
+const BUILD_MARKER = 'r231-hero-decode-gate';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
