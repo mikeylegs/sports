@@ -2219,63 +2219,6 @@ function _montageStop(finished){
 window.montageStart = montageStart;
 window.montageStop = () => _montageStop(false);
 
-/* ★ r216 — MONTAGE COLLISION PROBE + FORCE-INTERRUPT. The panel deadlocked (blurred, no
-   player) when a real takeover interrupted a montage. Suspected cause: showTakeover is not
-   montage-aware — an intruding takeover overwrites the shared RECAP._onEnd (the montage's
-   advance hook) and shares the takeover DOM, but MONTAGE.on stays true and the scrim stays
-   up, so when the intruder's clip ends the montage never advances → dimmed, nothing plays.
-   This probe makes the collision observable and reproducible WITHOUT waiting for a real
-   recap. ?montagelog=1 renders a live state HUD; montageInterrupt() fires a fake takeover. */
-function _montageState(){
-  return { on:MONTAGE.on, active:MONTAGE.active, i:MONTAGE.i, queueLen:(MONTAGE.queue||[]).length,
-    hasOnEnd:(typeof RECAP._onEnd==='function'),
-    onEndIsMontage:(RECAP._onEnd && String(RECAP._onEnd).indexOf('_montageBeat')>=0),
-    scrimUp:!!(document.getElementById('montage-scrim')),
-    tkoScrimUp:!!(document.getElementById('tko-scrim') && document.getElementById('tko-scrim').classList.contains('show')),
-    recapActive:(typeof _recapActive!=='undefined'?_recapActive:'?'),
-    recapMp4:!!window._recapMp4,
-    takeoverShown:!!(document.getElementById('mlb-takeover') && document.getElementById('mlb-takeover').className.indexOf('show')>=0) };
-}
-let _montageLogT=null;
-function _montageLogPaint(){
-  if(new URLSearchParams(location.search).get('montagelog')!=='1') return;
-  let box=document.getElementById('montagelog-hud');
-  if(!box){ box=document.createElement('div'); box.id='montagelog-hud';
-    box.style.cssText='position:fixed;right:8px;bottom:8px;z-index:99999;max-width:44vw;'
-      +'background:rgba(6,12,20,0.94);border:1px solid #234;border-left:4px solid #a78bfa;'
-      +'border-radius:8px;padding:9px 11px;font:11px/1.45 ui-monospace,Menlo,monospace;'
-      +'color:#cdd8e6;white-space:pre-wrap;pointer-events:none;';
-    (document.querySelector('.shell')||document.body).appendChild(box); }
-  const st=_montageState();
-  const warn = (st.on && st.scrimUp && !st.recapMp4 && !st.takeoverShown) ? '  \u26a0 DEADLOCK (on+scrim, nothing playing)'
-             : (st.on && st.hasOnEnd && !st.onEndIsMontage) ? '  \u26a0 HIJACKED (_onEnd not montage)'
-             : '  ok';
-  box.textContent='[montagelog] '+new Date().toLocaleTimeString()+warn+'\n'
-    +'  on='+st.on+' active='+st.active+' i='+st.i+'/'+st.queueLen+'\n'
-    +'  onEnd='+(st.hasOnEnd?(st.onEndIsMontage?'montage':'OTHER'):'none')
-    +'  scrim='+st.scrimUp+' tkoScrim='+st.tkoScrimUp+'\n'
-    +'  recapActive='+st.recapActive+' mp4='+st.recapMp4+' cardShown='+st.takeoverShown;
-}
-if(new URLSearchParams(location.search).get('montagelog')==='1' && !_montageLogT){
-  _montageLogT=setInterval(_montageLogPaint, 1000); _montageLogPaint();
-}
-/* Fire a FAKE interrupting takeover so the collision reproduces on demand. Uses the same
-   showTakeover the real HR path uses, so it exercises the exact code path. */
-function montageInterrupt(){
-  try{ console.log('[montage] FORCED INTERRUPT — firing fake takeover mid-montage'); }catch(_){}
-  const before=_montageState();
-  showTakeover({ side:'left', mlbTeam:'NYY', a:{ accent:'rgb(0,48,135)',
-    hero:'', logo:'', headline:'HOME RUN', hrNum:'(99)', sub:'FORCED INTERRUPT', subIcon:'\u26be',
-    wash_r:0, wash_g:48, wash_b:135 } });
-  setTimeout(()=>{
-    const after=_montageState();
-    try{ console.log('[montage] INTERRUPT before:', JSON.stringify(before)); }catch(_){}
-    try{ console.log('[montage] INTERRUPT after :', JSON.stringify(after)); }catch(_){}
-    try{ console.log('[montage] onEnd hijacked?', before.onEndIsMontage && !after.onEndIsMontage); }catch(_){}
-  }, 300);
-}
-window.montageInterrupt = montageInterrupt;
-window.montageState = _montageState;
 if (new URLSearchParams(location.search).get('montage') === '1'){
   // manual trigger: start once the page has settled (rosters/feeds up)
   setTimeout(()=>{ try{ montageStart(); }catch(_){} }, 4000);
@@ -5841,6 +5784,65 @@ const RECAP = {
                     titleHint:/highlight|touchdown|recap|top play|best/i, glow:'rgba(120,140,200,0.9)' },
   },
 };
+
+/* r216 block relocated here — must run AFTER const RECAP is declared (TDZ fix) */
+/* ★ r216 — MONTAGE COLLISION PROBE + FORCE-INTERRUPT. The panel deadlocked (blurred, no
+   player) when a real takeover interrupted a montage. Suspected cause: showTakeover is not
+   montage-aware — an intruding takeover overwrites the shared RECAP._onEnd (the montage's
+   advance hook) and shares the takeover DOM, but MONTAGE.on stays true and the scrim stays
+   up, so when the intruder's clip ends the montage never advances → dimmed, nothing plays.
+   This probe makes the collision observable and reproducible WITHOUT waiting for a real
+   recap. ?montagelog=1 renders a live state HUD; montageInterrupt() fires a fake takeover. */
+function _montageState(){
+  return { on:MONTAGE.on, active:MONTAGE.active, i:MONTAGE.i, queueLen:(MONTAGE.queue||[]).length,
+    hasOnEnd:(typeof RECAP._onEnd==='function'),
+    onEndIsMontage:(RECAP._onEnd && String(RECAP._onEnd).indexOf('_montageBeat')>=0),
+    scrimUp:!!(document.getElementById('montage-scrim')),
+    tkoScrimUp:!!(document.getElementById('tko-scrim') && document.getElementById('tko-scrim').classList.contains('show')),
+    recapActive:(typeof _recapActive!=='undefined'?_recapActive:'?'),
+    recapMp4:!!window._recapMp4,
+    takeoverShown:!!(document.getElementById('mlb-takeover') && document.getElementById('mlb-takeover').className.indexOf('show')>=0) };
+}
+let _montageLogT=null;
+function _montageLogPaint(){
+  if(new URLSearchParams(location.search).get('montagelog')!=='1') return;
+  let box=document.getElementById('montagelog-hud');
+  if(!box){ box=document.createElement('div'); box.id='montagelog-hud';
+    box.style.cssText='position:fixed;right:8px;bottom:8px;z-index:99999;max-width:44vw;'
+      +'background:rgba(6,12,20,0.94);border:1px solid #234;border-left:4px solid #a78bfa;'
+      +'border-radius:8px;padding:9px 11px;font:11px/1.45 ui-monospace,Menlo,monospace;'
+      +'color:#cdd8e6;white-space:pre-wrap;pointer-events:none;';
+    (document.querySelector('.shell')||document.body).appendChild(box); }
+  const st=_montageState();
+  const warn = (st.on && st.scrimUp && !st.recapMp4 && !st.takeoverShown) ? '  \u26a0 DEADLOCK (on+scrim, nothing playing)'
+             : (st.on && st.hasOnEnd && !st.onEndIsMontage) ? '  \u26a0 HIJACKED (_onEnd not montage)'
+             : '  ok';
+  box.textContent='[montagelog] '+new Date().toLocaleTimeString()+warn+'\n'
+    +'  on='+st.on+' active='+st.active+' i='+st.i+'/'+st.queueLen+'\n'
+    +'  onEnd='+(st.hasOnEnd?(st.onEndIsMontage?'montage':'OTHER'):'none')
+    +'  scrim='+st.scrimUp+' tkoScrim='+st.tkoScrimUp+'\n'
+    +'  recapActive='+st.recapActive+' mp4='+st.recapMp4+' cardShown='+st.takeoverShown;
+}
+if(new URLSearchParams(location.search).get('montagelog')==='1' && !_montageLogT){
+  _montageLogT=setInterval(_montageLogPaint, 1000); _montageLogPaint();
+}
+/* Fire a FAKE interrupting takeover so the collision reproduces on demand. Uses the same
+   showTakeover the real HR path uses, so it exercises the exact code path. */
+function montageInterrupt(){
+  try{ console.log('[montage] FORCED INTERRUPT — firing fake takeover mid-montage'); }catch(_){}
+  const before=_montageState();
+  showTakeover({ side:'left', mlbTeam:'NYY', a:{ accent:'rgb(0,48,135)',
+    hero:'', logo:'', headline:'HOME RUN', hrNum:'(99)', sub:'FORCED INTERRUPT', subIcon:'\u26be',
+    wash_r:0, wash_g:48, wash_b:135 } });
+  setTimeout(()=>{
+    const after=_montageState();
+    try{ console.log('[montage] INTERRUPT before:', JSON.stringify(before)); }catch(_){}
+    try{ console.log('[montage] INTERRUPT after :', JSON.stringify(after)); }catch(_){}
+    try{ console.log('[montage] onEnd hijacked?', before.onEndIsMontage && !after.onEndIsMontage); }catch(_){}
+  }, 300);
+}
+window.montageInterrupt = montageInterrupt;
+window.montageState = _montageState;
 // R14: find the WWS slide + event backing a pane recap. 'golf' → a golf event
 // with a completed round. (Universal finals handled by wwsFinalTarget.)
 function wwsRecapTarget(kindWant){       // golf round recaps only now (see wwsFinalTarget)
@@ -10636,7 +10638,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r216-montage-probe';
+const BUILD_MARKER = 'r217-probe-tdz-fix';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -12827,7 +12829,7 @@ DONE SO FAR
     one cluster; right zone .mlb-header-status unchanged in role. hc-date/time/
     live bumped 19px->26px (above the 25.9px readability cutoff); sb-txt/sb-cd
     ->24px, sb-stale->22px, sb-sep/sb-dot/sb-cd-bar scaled up -- all scoped under
-    .mlb-header so the generic off-season per-row status-bug (same sb-* classes)
+    .mlb-header so the generic off-season per-row status-bug (same sb-* classes)https://github.com/mikeylegs/sports/blob/main/index.html
     is untouched. #hcDate/#hcTime/#hcLive still updated every second in tick()
     via getAllById; window._mlbLiveCount set in renderMLBFullscreen (live game
     count). .lev-glow / #mlb-takeover top moved 8%->9.5% in lockstep with the
