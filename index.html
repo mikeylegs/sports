@@ -10498,7 +10498,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r209-audio-unlock';
+const BUILD_MARKER = 'r210-mute-flap-fix';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -11784,7 +11784,8 @@ function _primeAudioUnlock(){
   } catch(_){}
 }
 function toggleAudio(){
-  _primeAudioUnlock();   // r209: unlock inside the gesture, before anything else
+  // r210: unlock/prime now handled by _audioGesture (fires on every gesture); this only
+  // flips the mute state and applies it. Called solely from a dot click now.
   audioUnlocked = true;
   _userMuted = !_userMuted;
   setAudioDot();
@@ -11808,8 +11809,24 @@ function toggleAudio(){
     }
   } catch(_){}
 }
-document.addEventListener('click',      toggleAudio);
-document.addEventListener('touchstart', toggleAudio);
+/* ★ r210 — THE MUTE FLAP. toggleAudio was bound to EVERY document click, so any stray
+   click — a VNC focus tap, an accidental click, interaction during a montage — silently
+   flipped _userMuted. The audiolog proved it: Ali Sánchez played muted=false (with audio),
+   then the very next clip started muted=true ("muted per toggle") because a click in
+   between toggled it back. The dot said green but the state was flapping.
+   Separate the two concerns the old global handler conflated:
+     · ANY gesture UNLOCKS audio (the browser needs a real gesture; harmless, idempotent)
+     · ONLY a click on the audio dot TOGGLES mute (the dot is the single source of truth)
+   This also fixes the long-standing footgun that the entire screen was a mute button. */
+function _audioGesture(ev){
+  audioUnlocked = true;                       // unlock is safe to set on any gesture
+  _primeAudioUnlock();                         // r209: real audible playback in-gesture
+  const t = ev && ev.target;
+  const onDot = t && (t.id === 'audioDot' || (t.closest && t.closest('#audioDot, .audio-dot')));
+  if (onDot) toggleAudio();                     // ONLY the dot toggles mute
+}
+document.addEventListener('click',      _audioGesture);
+document.addEventListener('touchstart', _audioGesture);
 
 // ── Sound gate — playoffs only ────────────────────────────────
 // Only fires during playoff/Finals games to avoid 20 whistles on a random Tuesday
