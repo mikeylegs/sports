@@ -1,7 +1,89 @@
 {
   "v": 1,
-  "updated": "2026-07-28T00:57:06.358Z",
-  "events": [],
+  "updated": "2026-07-28T01:00:53.137Z",
+  "events": [
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816280",
+      "title": "Arizona Diamondbacks @ Pittsburgh Pirates",
+      "showFrom": "20260727",
+      "showUntil": "20260727",
+      "rank": 1
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816282",
+      "title": "Baltimore Orioles @ Detroit Tigers",
+      "showFrom": "20260727",
+      "showUntil": "20260727",
+      "rank": 2
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816284",
+      "title": "Philadelphia Phillies @ Miami Marlins",
+      "showFrom": "20260727",
+      "showUntil": "20260727",
+      "rank": 3
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816285",
+      "title": "Toronto Blue Jays @ Washington Nationals",
+      "showFrom": "20260727",
+      "showUntil": "20260727",
+      "rank": 4
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816283",
+      "title": "Cleveland Guardians @ Cincinnati Reds",
+      "showFrom": "20260727",
+      "showUntil": "20260727",
+      "rank": 5
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816286",
+      "title": "Chicago Cubs @ St. Louis Cardinals",
+      "showFrom": "20260727",
+      "showUntil": "20260727",
+      "rank": 6
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816290",
+      "title": "Houston Astros @ Los Angeles Angels",
+      "showFrom": "20260727",
+      "showUntil": "20260727",
+      "rank": 7
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816289",
+      "title": "Boston Red Sox @ Athletics",
+      "showFrom": "20260727",
+      "showUntil": "20260727",
+      "rank": 8
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816291",
+      "title": "Milwaukee Brewers @ San Francisco Giants",
+      "showFrom": "20260727",
+      "showUntil": "20260727",
+      "rank": 9
+    }
+  ],
   "watch": {
     "teams": []
   }
