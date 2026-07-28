@@ -925,6 +925,15 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
   width:min(62%,1100px) !important; height:min(74%,820px) !important;
   transform:translate(-50%,-50%); }
 #mlb-takeover.tko-center.show{ animation:tkopopC 0.42s cubic-bezier(.22,1,.36,1); }
+/* ★ r225 — FULL-SCREEN MONTAGE CARD. r203 centered ALL takeovers in a ~62% window; the
+   live HR card keeps that. But the montage should be full-bleed like the original studio
+   design so the hero photo's radial vignette blends edge-to-edge (Mike: "full screen view
+   with the blend"). .tko-full overrides the center geometry to inset:0. The studio focus/
+   scale (41/13, 1.1, cover) are correct again at full size, so r222's contain-fit is
+   dropped for montage. */
+#mlb-takeover.tko-full{ left:0 !important; top:0 !important; right:0 !important; bottom:0 !important;
+  width:100% !important; height:100% !important; transform:none !important; }
+#mlb-takeover.tko-full.show{ animation:tkopop 0.4s ease-out; }
 @keyframes tkopopC{ from{ opacity:0; transform:translate(-50%,-50%) scale(0.94); }
                     to{ opacity:1; transform:translate(-50%,-50%) scale(1); } }
 #tko-scrim{ position:fixed; inset:0; z-index:65; display:none; opacity:0;
@@ -2168,10 +2177,9 @@ async function _montageBeat(){
     hero: e.batterId ? 'https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:action:hero:current.jpg/q_auto:good,w_1500/v1/people/'+e.batterId+'/action/hero/current' : '',
     head: e.batterId ? 'https://img.mlbstatic.com/mlb-photos/image/upload/w_240,q_auto/v1/people/'+e.batterId+'/headshot/67/current' : '',
     logo: logoUrl('MLB', e.teamAbbr), logoX:1, logoY:1, logoSize:14, logoGlow:4,
-    /* r222: the studio focus/scale were tuned for the full 1920x1080 takeover; in the
-       smaller centered montage window scale 1.1 + cover clips the player. contain + scale
-       1.0 fits the whole image (Mike). Live HR card is untouched — it keeps the defaults. */
-    focusX:41, focusY:13, focusScale:1.0, photoFit:'contain',
+    /* r225: montage is full-screen now (tko-full), so the studio values apply exactly as
+       the live HR card uses them — cover + scale 1.1 + the vignette blend, edge to edge. */
+    focusX:41, focusY:13, focusScale:1.1,
     wash_r:+wrgb.split(',')[0], wash_g:+wrgb.split(',')[1], wash_b:+wrgb.split(',')[2],
     headline:'HOME RUN', hrNum: e.hrNum!=null?('('+e.hrNum+')'):null, _hrNum:e.hrNum,
     sub: e.batter, subIcon:'\u26be',
@@ -2222,15 +2230,23 @@ function _montageHealthCheck(){
 }
 if(!window._montageHealT){ window._montageHealT=setInterval(_montageHealthCheck, 1500); }
 function _montageFade(done){
+  /* ★ r224 — FLICKER FIX. The old timing fired done() (endRecap teardown + next card) then
+     began fading back in the SAME frame, before the new card had painted — exposing the
+     unblurred panel for a beat. Now: fade fully to black, run done() while black, then hold
+     an extra beat so the next card/clip is definitely painted BEFORE we start lifting the
+     fade. The incoming content is opaque before black clears, so the panel is never seen. */
   let f=document.getElementById('mlb-fade');
   if(!f){ f=document.createElement('div'); f.id='mlb-fade'; (document.querySelector('.shell')||document.body).appendChild(f); }
   f.classList.add('show');
   requestAnimationFrame(()=>{ f.classList.add('on'); });     // fade to black (~280ms)
   setTimeout(()=>{
-    try{ done && done(); }catch(_){}                          // swap card/clip while black
-    requestAnimationFrame(()=>{ f.classList.remove('on'); }); // fade back in
-    setTimeout(()=>{ try{ f.classList.remove('show'); }catch(_){} }, 320);
-  }, 300);
+    try{ done && done(); }catch(_){}                          // swap card/clip WHILE fully black
+    // hold black an extra ~200ms so the new content paints before we lift the fade
+    setTimeout(()=>{
+      requestAnimationFrame(()=>{ f.classList.remove('on'); }); // now fade back in over painted content
+      setTimeout(()=>{ try{ f.classList.remove('show'); }catch(_){} }, 340);
+    }, 200);
+  }, 320);
 }
 function _montageScrim(on){
   let sc=document.getElementById('montage-scrim');
@@ -5166,7 +5182,12 @@ function showTakeover(opts){
     (document.querySelector('.shell') || document.body).appendChild(scrim); }
   scrim.classList.add('show');
   el.style.left = el.style.top = el.style.width = el.style.height = el.style.right = '';
-  el.className = 'show tko-center ' + side;
+  /* r225: montage renders FULL-SCREEN (tko-full); everything else keeps the centered window
+     (tko-center). The scrim is only needed to separate a windowed card from the panel, so a
+     full-screen montage card doesn't need it. */
+  const _fs = !!opts.montage;
+  if (_fs){ if (scrim) scrim.classList.remove('show'); el.className = 'show tko-full ' + side; }
+  else { el.className = 'show tko-center ' + side; }
   // R38: unified Design-A payload (opts.a) drives ALL sports. Legacy opts.wc mapped in.
   const A = opts.a || (opts.wc ? {
     accent:opts.accent||'#d4af37', flag:opts.wc.flag, head:opts.wc.head,
@@ -10719,7 +10740,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r223-video-card-fade';
+const BUILD_MARKER = 'r225-montage-fullscreen';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
