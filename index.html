@@ -956,24 +956,15 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 #mlb-takeover.tko-wc .tkoH-txt{position:absolute;z-index:4;line-height:1;animation:tkopop 0.5s ease-out .05s both;}
 #mlb-takeover.tko-wc .tkoH-head{font-size:17cqh;line-height:.82;font-weight:900;text-transform:uppercase;letter-spacing:-.01em;
   font-family:'Archivo Black','Arial Narrow',Arial,sans-serif;color:#fff;text-shadow:0 0.4cqh 3.4cqh rgba(0,0,0,.7);
-  display:flex;align-items:baseline;gap:1.4cqh;flex-wrap:nowrap;white-space:nowrap;}
-/* ★ r229 — CSS-ONLY PILL CENTERING (replaces the r227 JS getBoundingClientRect measure,
-   which forced an 85ms synchronous reflow at first paint — the split-second artifact,
-   confirmed by ?tkotiming=1). The HOME RUN word + pill live in an inline-flex COLUMN that
-   shrink-wraps to the widest child (the HOME RUN word); the pill centers within it via
-   align-items:center. The (N) sits OUTSIDE the column, baseline-aligned to the right, so
-   it never affects the centering width. No JS, no reflow, no flash — structurally can't
-   hitch because nothing runs late. */
-#mlb-takeover.tko-wc .tkoH-hlcol{display:inline-flex;flex-direction:column;align-items:center;}
-#mlb-takeover.tko-wc .tkoH-hlcol .tkoH-hltxt{display:block;}
+  display:flex;align-items:baseline;gap:1.4cqh;flex-wrap:wrap;white-space:nowrap;}
 #mlb-takeover.tko-wc .tkoH-head .tkoH-hr{font-size:14cqh;font-weight:800;color:#fff;   /* r178: WHITE, never accent (Mike) */
   font-family:'Archivo Black',Arial,sans-serif;text-shadow:0 0.2cqh 1.8cqh rgba(0,0,0,.6);}
 #mlb-takeover.tko-wc .tkoH-name{font-size:15cqh;font-weight:900;text-transform:uppercase;margin-top:1.4cqh;letter-spacing:.01em;
   color:#fff;text-shadow:0 0.2cqh 2cqh rgba(0,0,0,.7);white-space:nowrap;}   /* r226: 13→15cqh bigger bottom text (Mike) */
 /* ★ r226 — Statcast pill: single rounded chip under the name, EV · dist · LA. Sits in the
    lower third, glassy dark so it reads over the photo without competing with the name. */
-#mlb-takeover.tko-wc .tkoH-statcast{display:block;margin-top:1.8cqh;align-self:center;
-  font-size:6.1cqh;font-weight:700;letter-spacing:.04em;color:#fff;   /* r229: centered via flex column, no JS measure */   /* r227: bumped 5.4->6.1cqh (Mike) */
+#mlb-takeover.tko-wc .tkoH-statcast{display:inline-block;margin-top:1.8cqh;
+  font-size:6.1cqh;font-weight:700;letter-spacing:.04em;color:#fff;   /* r230: left-aligned below the name — clean, no JS measure, no reflow (Mike) */   /* r227: bumped 5.4->6.1cqh (Mike) */
   background:rgba(8,16,28,0.62);border:0.28cqh solid rgba(255,255,255,0.18);
   border-radius:999px;padding:1.1cqh 3.2cqh;backdrop-filter:blur(3px);
   text-shadow:0 0.15cqh 1cqh rgba(0,0,0,.6);white-space:nowrap;
@@ -5129,10 +5120,9 @@ function tkoABuild(o){
       <div class="tkoH-scrim"></div>${logo}
       <div class="tkoA-accent" style="background:${ac}"></div><div class="tkoA-sweep"></div>
       <div class="tkoH-txt" style="left:${o.txtX??5}%;bottom:${o.txtY??3}%">
-        <div class="tkoH-head">
-          <span class="tkoH-hlcol"><span class="tkoH-hltxt">${o.headline||''}</span>${o.statcastPill?`<span class="tkoH-statcast">${o.statcastPill}</span>`:''}</span>${hrTag}
-        </div>
+        <div class="tkoH-head"><span class="tkoH-hltxt">${o.headline||''}</span>${hrTag}</div>
         ${o.sub?`<div class="tkoH-name">${o.sub}</div>`:''}
+        ${o.statcastPill?`<div class="tkoH-statcast">${o.statcastPill}</div>`:''}
       </div>`;
   }
   const centered = !face;
@@ -5264,8 +5254,8 @@ function showTakeover(opts){
   if (A){                                             // Design-A path
     el.classList.add('tko-wc');
     el.innerHTML = tkoABuild(A);
-    /* r229: pill centering is now CSS-only (see .tkoH-hlcol) — the r227 JS measure forced a
-       reflow at paint time and caused the artifact. No rAF pill measure anymore. */
+    /* r230: pill is left-aligned below the name (no JS measure, no reflow). The centering
+       experiments (r227 JS measure, r229 CSS column) both caused artifacts — left is clean. */
     // R40: shrink-to-fit the headline (HOME RUN etc.) — nowrap + measured clamp
     requestAnimationFrame(()=>{ const gl=el.querySelector('.tkoA-goal'); if(!gl) return;
       let fs=parseFloat(getComputedStyle(gl).fontSize), guard=14;
@@ -7951,6 +7941,20 @@ function revealRecap(){
      whether any rotation ever ran. */
   const el = document.getElementById('mlb-recap');
   if (el){ el.classList.add('show'); el.classList.add('playing'); }
+  /* ★ r230 — VIDEO FADE-IN. During a montage the card fades to black (#mlb-fade) before the
+     clip mounts, but the video used to hard-cut in under that black (a stutter). Now: the
+     video is shown first, THEN we lift the black over it — so it fades FROM black INTO the
+     video, symmetric with the card's fade-out. Only during a montage; normal recap reveal
+     is unchanged. A rAF ensures the video paints before the fade lifts. */
+  try{
+    if (window.MONTAGE && MONTAGE.on){
+      const f=document.getElementById('mlb-fade');
+      if(f && f.classList.contains('on')){
+        requestAnimationFrame(()=>{ requestAnimationFrame(()=>{ f.classList.remove('on');
+          setTimeout(()=>{ try{ f.classList.remove('show'); }catch(_){} }, 340); }); });
+      }
+    }
+  }catch(_){}
 }
 
 // ── YTLT: YouTube Logging Tool (R85) ─────────────────────────────────────────
@@ -10809,7 +10813,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r229-css-pill-center';
+const BUILD_MARKER = 'r230-pill-left-video-fadein';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
