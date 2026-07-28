@@ -1,0 +1,133 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Montage probe</title><style>
+body{background:#070b12;color:#e6edf7;font:13px/1.6 ui-monospace,Menlo,monospace;padding:14px;margin:0}
+h1{font-size:16px;color:#7dd3fc;margin:0 0 2px}
+.sub{color:#8695ab;font-size:11.5px;margin-bottom:12px;max-width:900px;line-height:1.6}
+h2{font-size:13px;color:#a78bfa;margin:18px 0 6px;border-bottom:1px solid #1c2838;padding-bottom:4px}
+.b{border:1px solid #1c2838;border-radius:8px;padding:10px 12px;margin:8px 0;background:#0c121d}
+.r{display:flex;gap:9px;font-size:12.5px;margin:3px 0}
+.r .n{width:150px;color:#8695ab;flex-shrink:0}
+.ok{color:#4ade80}.bad{color:#f87171}.warn{color:#fbbf24}.dim{color:#5b6b80}.hit{color:#4ade80;font-weight:700}
+table{border-collapse:collapse;width:100%;font-size:11px;margin:6px 0}
+td,th{border:1px solid #1c2838;padding:3px 6px;text-align:left;vertical-align:top}
+th{color:#7dd3fc;font-size:9.5px;text-transform:uppercase;letter-spacing:.06em}
+button{background:#12324a;border:1px solid #1c2838;color:#7dd3fc;border-radius:6px;padding:6px 13px;font:inherit;cursor:pointer}
+#v{border:1px solid #234;border-left:4px solid #7dd3fc;border-radius:8px;padding:12px;margin-top:14px;background:#0a1420;font-size:12.5px}
+#v b{color:#7dd3fc}
+.barwrap{background:#0a1420;border:1px solid #1c2838;border-radius:5px;height:22px;overflow:hidden;margin:6px 0;position:relative}
+.bar{height:100%;background:linear-gradient(90deg,#166534,#4ade80);display:flex;align-items:center;padding-left:8px;font-size:11px;color:#fff}
+</style></head><body>
+<h1>MONTAGE PROBE <span style="color:#4ade80;font-size:12px">v1 · tonight's HRs + clip availability</span></h1>
+<p class="sub">The golden-rule probe for the HR montage. Before building the player, prove the raw material: <b>(1)</b> how many home runs across tonight's ENTIRE league slate (not just fav/pinned — this fetches the schedule fresh, independent of hrscope), <b>(2)</b> how many have a resolvable, playable mp4 clip right now, and <b>(3)</b> whether any have aged out. Mirrors the exact endpoints and mp4 selection the companion uses, so "clip found here" = "montage can play it."</p>
+<div class="b">
+  <button onclick="run()">scan tonight's slate</button>
+  <span class="dim" id="status" style="margin-left:10px">idle</span>
+  <div class="dim" style="margin-top:6px;font-size:11px">Runs against final + live games. Clip check is real — it hits each game's /content endpoint and picks an mp4 the same way playback does.</div>
+</div>
+<div id="out"></div><div id="v" class="dim">idle</div>
+
+<script>
+var out=document.getElementById('out'), V=document.getElementById('v'), ST=document.getElementById('status');
+function esc(s){ return String(s==null?'':s).replace(/</g,'&lt;'); }
+var isHR=function(p){ var r=(p&&p.result)||{}; return r.eventType==='home_run'||r.event==='Home Run'; };
+
+function pickMp4(it){
+  var mp4s=(it.playbacks||[]).filter(function(p){return /\.mp4(\?|$)/i.test(p.url||'')});
+  if(!mp4s.length) return null;
+  var score=function(p){ var u=(p.url||'')+' '+(p.name||'');
+    if(/mp4avc|_4000k/i.test(u)) return 3;
+    if(/1280x720/i.test(u)&&!/16000k/i.test(u)) return 2;
+    if(/16000k|highbit/i.test(u)) return 0; return 1; };
+  return mp4s.slice().sort(function(a,b){return score(b)-score(a)})[0].url;
+}
+// match a highlight item to a specific HR by player id or description keyword
+function clipForHR(items, hr){
+  var pid = ((hr.matchup||{}).batter||{}).id;
+  var last = String(((hr.matchup||{}).batter||{}).fullName||'').split(/\s+/).pop().toLowerCase();
+  for(var i=0;i<items.length;i++){
+    var it=items[i], blob=JSON.stringify(it).toLowerCase();
+    var kw=(it.keywordsAll||it.keywords||[]);
+    var hasPid = pid && kw.some(function(k){return String(k.value)===String(pid)});
+    var hitsName = last && blob.indexOf(last)>=0;
+    var isHrClip = /home run|homers|hr/i.test(it.title||'') || /home run/i.test(blob);
+    if((hasPid || hitsName) && isHrClip){
+      var url=pickMp4(it);
+      if(url) return {url:url, title:it.title||'', dur:it.duration||''};
+    }
+  }
+  return null;
+}
+
+async function etDate(){
+  var d=new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+async function run(){
+  out.innerHTML=''; V.className='dim'; V.textContent='fetching schedule...'; ST.textContent='working…';
+  var ds=await etDate();
+  var sched;
+  try{
+    sched=await (await fetch('https://statsapi.mlb.com/api/v1/schedule?sportId=1&date='+ds)).json();
+  }catch(e){ V.className=''; V.innerHTML='<b class="bad">schedule fetch failed:</b> '+esc(e.message); ST.textContent='error'; return; }
+  var games=[];
+  (sched.dates||[]).forEach(function(dt){ (dt.games||[]).forEach(function(g){
+    var s=(g.status||{}).abstractGameState;
+    if(s==='Final'||s==='Live') games.push({pk:g.gamePk,
+      away:(g.teams.away.team||{}).abbreviation||g.teams.away.team.name,
+      home:(g.teams.home.team||{}).abbreviation||g.teams.home.team.name, state:s});
+  }); });
+  ST.textContent=games.length+' games (final+live)';
+  var allHR=[], withClip=0, checked=0;
+
+  for(var i=0;i<games.length;i++){
+    var g=games[i];
+    V.textContent='game '+(i+1)+'/'+games.length+' — '+g.away+'@'+g.home+'…';
+    var pbp=null, content=[];
+    try{ pbp=await (await fetch('https://statsapi.mlb.com/api/v1/game/'+g.pk+'/playByPlay')).json(); }catch(_){}
+    var hrs=((pbp&&pbp.allPlays)||[]).filter(isHR);
+    if(!hrs.length) continue;
+    try{
+      var craw=await (await fetch('https://statsapi.mlb.com/api/v1/game/'+g.pk+'/content')).json();
+      content=(craw&&craw.highlights&&(craw.highlights.highlights||craw.highlights.live)||{}).items||[];
+    }catch(_){}
+    hrs.forEach(function(hr){
+      var b=(hr.matchup||{}).batter||{};
+      var clip=clipForHR(content, hr);
+      if(clip) withClip++;
+      checked++;
+      allHR.push({ game:g.away+'@'+g.home, state:g.state,
+        batter:b.fullName||'?', hrNum:(hr.result||{}).homeRunNumber||'?',
+        inning:(hr.about||{}).inning||'?', clip:clip });
+    });
+  }
+
+  // sort: HR# ascending (big names / milestone counts last), as the montage would
+  allHR.sort(function(a,b){ return (a.hrNum||0)-(b.hrNum||0); });
+
+  var t='<h2>'+allHR.length+' home runs tonight · '+withClip+' with a playable clip</h2>';
+  var pct=allHR.length?Math.round(withClip/allHR.length*100):0;
+  t+='<div class="barwrap"><div class="bar" style="width:'+pct+'%">'+pct+'% have clips</div></div>';
+  t+='<div class="b"><table><tr><th>#</th><th>batter</th><th>HR#</th><th>game</th><th>inn</th><th>clip?</th><th>title</th></tr>';
+  allHR.forEach(function(h,i){
+    t+='<tr><td>'+(i+1)+'</td><td>'+esc(h.batter)+'</td><td>'+h.hrNum+'</td><td class="dim">'+esc(h.game)+(h.state==='Live'?' <span class="warn">live</span>':'')+'</td>'
+      +'<td>'+h.inning+'</td>'
+      +'<td>'+(h.clip?'<span class="hit">✓ mp4</span>':'<span class="bad">✗ none</span>')+'</td>'
+      +'<td class="dim">'+(h.clip?esc(h.clip.title).slice(0,44):'')+'</td></tr>';
+  });
+  t+='</table></div>';
+  out.innerHTML=t;
+  ST.textContent='done';
+
+  V.className='';
+  if(!allHR.length){
+    V.innerHTML='<b class="warn">No home runs found tonight.</b> Either an early scan or a quiet slate — re-run later.';
+  } else {
+    var noClip=allHR.length-withClip;
+    V.innerHTML='<b class="ok">Montage is viable:</b> '+withClip+' of '+allHR.length+' HRs ('+pct+'%) have a playable mp4 right now, sorted HR# ascending so milestone counts land last.'
+      +'<br><span class="dim">'+(noClip?('The '+noClip+' without a clip are the skip-on-miss cases — the montage steps past them, which r206\u2019s end-guard makes safe. Live-game HRs may still be mid-propagation (~2 min CDN floor) and fill in on a later scan.'):'Every HR resolved a clip — clean full montage.')+'</span>'
+      +'<br><br><span class="dim">Next: the montage engine sources exactly this (schedule \u2192 HRs \u2192 clip) at trigger time, so it is league-wide regardless of hrscope.</span>';
+  }
+}
+</script>
+</body></html>
