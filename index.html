@@ -933,7 +933,19 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
    dropped for montage. */
 #mlb-takeover.tko-full{ left:0 !important; top:0 !important; right:0 !important; bottom:0 !important;
   width:100% !important; height:100% !important; transform:none !important; }
-#mlb-takeover.tko-full.show{ animation:tkopop 0.4s ease-out; }
+/* ★ r232 — OPACITY REVEAL (montage only). The real cause of the text-then-photo artifact,
+   finally understood: .show flips the card from display:none → display:flex in one frame,
+   which forces the browser to composite the scaled + radial-masked hero photo from scratch
+   AT reveal time. Text paints frame 1 (cheap); the photo composite takes several frames on
+   the kiosk GPU — hence text-on-black-then-photo. Decoding the bitmap (r231) didn't help
+   because the slow part is the COMPOSITE, a later pipeline stage than decode.
+   Fix: a two-phase reveal for .tko-full — first .tko-prep displays the card but at
+   opacity:0 (browser lays out AND composites the photo while it's invisible), then .show is
+   added a frame later to fade in an ALREADY-PAINTED layer. Opacity transitions don't
+   re-composite from scratch, so text + photo appear together. Live HR card (.tko-center)
+   keeps its original display:none→flex reveal — untouched. */
+#mlb-takeover.tko-full.tko-prep{ display:flex !important; opacity:0; animation:none !important; }
+#mlb-takeover.tko-full.show{ opacity:1; transition:opacity 0.34s ease-out; animation:none !important; }
 @keyframes tkopopC{ from{ opacity:0; transform:translate(-50%,-50%) scale(0.94); }
                     to{ opacity:1; transform:translate(-50%,-50%) scale(1); } }
 #tko-scrim{ position:fixed; inset:0; z-index:65; display:none; opacity:0;
@@ -5263,7 +5275,15 @@ function showTakeover(opts){
      (tko-center). The scrim is only needed to separate a windowed card from the panel, so a
      full-screen montage card doesn't need it. */
   const _fs = !!opts.montage;
-  if (_fs){ if (scrim) scrim.classList.remove('show'); el.className = 'show tko-full ' + side; }
+  if (_fs){
+    if (scrim) scrim.classList.remove('show');
+    /* r232: two-phase reveal. PREP first (displayed, opacity:0 — composites the photo while
+       invisible), then add .show next frame to fade in the already-painted layer. Text and
+       photo appear together; no display:none→flex composite hitch. */
+    el.className = 'tko-full tko-prep ' + side;
+    // set the content now (photo starts compositing under opacity:0)
+    window._tkoRevealPending = true;
+  }
   else { el.className = 'show tko-center ' + side; }
   // R38: unified Design-A payload (opts.a) drives ALL sports. Legacy opts.wc mapped in.
   const A = opts.a || (opts.wc ? {
@@ -5274,6 +5294,15 @@ function showTakeover(opts){
   if (A){                                             // Design-A path
     el.classList.add('tko-wc');
     el.innerHTML = tkoABuild(A);
+    /* r232: for a prepped full-screen (montage) card, reveal via opacity two frames after
+       the content mounts — long enough for the photo to composite under opacity:0, so the
+       fade-in shows an already-painted card (text + photo together). */
+    if (window._tkoRevealPending && el.classList.contains('tko-prep')){
+      window._tkoRevealPending = false;
+      requestAnimationFrame(()=>{ requestAnimationFrame(()=>{
+        el.classList.remove('tko-prep'); el.classList.add('show');
+      }); });
+    }
     /* r230: pill is left-aligned below the name (no JS measure, no reflow). The centering
        experiments (r227 JS measure, r229 CSS column) both caused artifacts — left is clean. */
     // R40: shrink-to-fit the headline (HOME RUN etc.) — nowrap + measured clamp
@@ -10833,7 +10862,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r231-hero-decode-gate';
+const BUILD_MARKER = 'r232-opacity-reveal';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
