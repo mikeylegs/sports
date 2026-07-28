@@ -1008,6 +1008,10 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
    Centered 16:9 viewer over a dimmed backdrop. Emerges (scale+fade), plays,
    then dissolves back to the board. Placement is intentionally board-centered
    for now; can be repositioned to a pane later without touching the player. */
+#mlb-fade{position:fixed;inset:0;z-index:92;background:#05070d;opacity:0;display:none;
+  transition:opacity 0.28s ease;pointer-events:none;}
+#mlb-fade.show{display:block;}
+#mlb-fade.on{opacity:1;}
 #mlb-recap{position:fixed;inset:0;z-index:90;display:none;align-items:center;justify-content:center;
   background:radial-gradient(ellipse at center,rgba(5,10,20,0.82),rgba(2,5,12,0.95));
   opacity:0;transition:opacity 0.6s ease;pointer-events:none;}
@@ -1354,7 +1358,12 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 /* ★ r213 — the real header audio dot floats above the video overlay (z90) so it stays
    visible and tappable mid-clip. Replaces the r212 float-mirror, which produced a second
    dot. One dot, in line with the ESPN LIVE header, always on top. */
-.audio-dot{ position:relative; z-index:95; }
+.audio-dot{ position:relative; z-index:95; width:13px; height:13px; }
+/* r215 #3 — bigger dot (13px vs 8px) so it reads and taps easily, and z95 keeps it above
+   the video overlay (z90). CSS-only: the video element and player logic are untouched, so
+   this cannot affect playback. If it still hides behind the clip on the wall, that means
+   the header's stacking context traps it and it needs a fixed top-level layer (Option B) —
+   flagged, not done, to avoid touching the video layer speculatively. */
 .audio-dot.inactive{
   background:#ef4444;
   box-shadow:0 0 6px rgba(239,68,68,0.7);
@@ -2075,19 +2084,27 @@ function _montageClipFor(items, hr){
     const hasPid=pid&&kw.some(k=>String(k.value)===String(pid));
     const hitsName=last&&blob.indexOf(last)>=0;
     if(!(hasPid||hitsName)) continue;                                   // must be this batter
-    if(/recap|highlights|condensed|game highlights/i.test(tl)) continue; // (1) title reject
-    const isHrClip=/\(\d+\)/.test(title)
+    if(/recap|highlights|condensed|game highlights/i.test(tl)) continue; // (1a) recap reject
+    /* r215 (1b) — REJECT INTERVIEWS/REACTIONS entirely. "Grant McCray on first home run of
+       2026" matched the ordinal pattern and outranked the real clip "...two-run home run
+       (1)". These player-availability clips are never what a montage wants. Signatures:
+       "X on ...", "reacts", "talks", "postgame", "discusses", "interview", "on his/their". */
+    if(/\b(on his|on their|on the|reacts|reaction|talks|postgame|post-game|discusses|interview|press conference|meets with|after the)\b/i.test(tl)) continue;
+    const hasParenN=/\(\d+\)/.test(title);                             // the definitive HR-clip format
+    const isHrClip=hasParenN
                  || /(first|second|third|1st|2nd|3rd)[^.]*(career )?home run/i.test(title)
                  || /homers|home run/i.test(title);
     if(!isHrClip) continue;                                             // (2) must be an HR clip
     const dur=_montageDurSec(it.duration);
     if(dur && dur>90) continue;                                        // backstop, not primary
     const url=mlbPickMp4(it); if(!url) continue;
-    // (3) rank
+    /* (3) rank — r215: (N) is the STANDARD play-clip format. If it exists it is ALWAYS the
+       correct clip, so it ranks first, unconditionally. Ordinal phrasing is unreliable
+       (interviews use it too) so it drops below (N). */
     let rank=3;
-    if(/(first|second|third|1st|2nd|3rd)[^.]*(career )?home run/i.test(title)) rank=0;  // ordinal career HR
-    else if(/\(\d+\)/.test(title)) rank=1;                                            // (N)
-    else if(/homers|home run/i.test(title)) rank=2;                                     // plain
+    if(hasParenN) rank=0;                                                                // (N) — definitive
+    else if(/(first|second|third|1st|2nd|3rd)[^.]*(career )?home run/i.test(title)) rank=1; // ordinal
+    else if(/homers|home run/i.test(title)) rank=2;                                      // plain
     cands.push({url, title, rank, dur:(dur==null?999:dur)});
   }
   if(!cands.length) return null;
@@ -2149,11 +2166,25 @@ async function _montageBeat(){
   clearTimeout(MONTAGE._holdT);
   MONTAGE._holdT=setTimeout(()=>{
     if(!MONTAGE.on) return;
-    RECAP._onEnd=()=>{ if(MONTAGE.on) _montageBeat(); };
+    /* r215 #2 — crossfade: when a clip ends, briefly fade to black before the next card,
+       so card→clip→card is not an abrupt cut. Purely visual (opacity), gated here inside
+       the hold window; it never touches play()/end logic so it can't race r206. */
+    RECAP._onEnd=()=>{ if(!MONTAGE.on) return; _montageFade(()=>{ if(MONTAGE.on) _montageBeat(); }); };
     const cb={ batter:e.batter, team:e.teamAbbr, hr:e.hrNum, inning:e.inning,
                half:(e.inning!=null?'':''), montageSummary:'\ud83d\udca5 TONIGHT \u00b7 '+e.batter+(e.hrNum!=null?' \u00b7 HR #'+e.hrNum:'') };
     playCompanionClip(clip, cb);
   }, 5000);
+}
+function _montageFade(done){
+  let f=document.getElementById('mlb-fade');
+  if(!f){ f=document.createElement('div'); f.id='mlb-fade'; (document.querySelector('.shell')||document.body).appendChild(f); }
+  f.classList.add('show');
+  requestAnimationFrame(()=>{ f.classList.add('on'); });     // fade to black (~280ms)
+  setTimeout(()=>{
+    try{ done && done(); }catch(_){}                          // swap card/clip while black
+    requestAnimationFrame(()=>{ f.classList.remove('on'); }); // fade back in
+    setTimeout(()=>{ try{ f.classList.remove('show'); }catch(_){} }, 320);
+  }, 300);
 }
 function _montageScrim(on){
   let sc=document.getElementById('montage-scrim');
@@ -10547,7 +10578,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r214-hr-clip-match';
+const BUILD_MARKER = 'r215-clip-fade-dot';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
