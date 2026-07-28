@@ -1,0 +1,123 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Clip-match probe</title><style>
+body{background:#070b12;color:#e6edf7;font:13px/1.6 ui-monospace,Menlo,monospace;padding:14px;margin:0}
+h1{font-size:16px;color:#7dd3fc;margin:0 0 2px}
+.sub{color:#8695ab;font-size:11.5px;margin-bottom:12px;max-width:900px;line-height:1.6}
+h2{font-size:13px;color:#a78bfa;margin:16px 0 5px}
+.b{border:1px solid #1c2838;border-radius:8px;padding:10px 12px;margin:8px 0;background:#0c121d}
+.ok{color:#4ade80}.bad{color:#f87171}.warn{color:#fbbf24}.dim{color:#5b6b80}.hit{color:#4ade80;font-weight:700}
+table{border-collapse:collapse;width:100%;font-size:11px;margin:6px 0}
+td,th{border:1px solid #1c2838;padding:3px 6px;text-align:left;vertical-align:top}
+th{color:#7dd3fc;font-size:9.5px;text-transform:uppercase;letter-spacing:.05em}
+button{background:#12324a;border:1px solid #1c2838;color:#7dd3fc;border-radius:6px;padding:6px 13px;font:inherit;cursor:pointer}
+input{background:#0a1420;border:1px solid #1c2838;color:#e6edf7;border-radius:5px;padding:5px 8px;font:inherit;width:110px}
+#v{border:1px solid #234;border-left:4px solid #7dd3fc;border-radius:8px;padding:12px;margin-top:14px;background:#0a1420;font-size:12.5px}
+.pick{background:rgba(74,222,128,0.12)}
+.recap{background:rgba(248,113,113,0.10)}
+</style></head><body>
+<h1>CLIP-MATCH PROBE <span style="color:#4ade80;font-size:12px">v1 · why recaps beat HR clips</span></h1>
+<p class="sub">The montage pulled full 2-3 min recaps instead of 20-30s HR clips. This dumps, for each HR in a game, EVERY content item the current matcher accepts — with <b>duration</b> and <b>title</b> — so we see exactly why a recap wins. Then it tests the proposed better rule: prefer titles carrying <b>"(N)"</b> or <b>"first/second/third career home run"</b>, and reject long-duration recap items. Mirrors the montage's mp4 pick.</p>
+<div class="b">
+  gamePk <input id="pk" value="823839"> <button onclick="run()">scan game</button>
+  <span class="dim" id="status" style="margin-left:8px">idle</span>
+  <div class="dim" style="margin-top:6px;font-size:11px">Use a gamePk from tonight's montage. Shows the full content list ranked, current match vs proposed match.</div>
+</div>
+<div id="out"></div><div id="v" class="dim">idle</div>
+
+<script>
+var out=document.getElementById('out'), V=document.getElementById('v'), ST=document.getElementById('status');
+function esc(s){ return String(s==null?'':s).replace(/</g,'&lt;'); }
+var isHR=function(p){ var r=(p&&p.result)||{}; return r.eventType==='home_run'||r.event==='Home Run'; };
+function pickMp4(it){ var m=(it.playbacks||[]).filter(function(p){return /\.mp4(\?|$)/i.test(p.url||'')}); return m.length?m[0].url:null; }
+
+// CURRENT matcher (r207) — name/id + "home run" keyword. This is what's over-matching.
+function currentMatch(items, hr){
+  var b=((hr.matchup||{}).batter)||{}, pid=b.id;
+  var last=String(b.fullName||'').split(/\s+/).pop().toLowerCase();
+  for(var i=0;i<items.length;i++){ var it=items[i], blob=JSON.stringify(it).toLowerCase();
+    var kw=(it.keywordsAll||it.keywords||[]);
+    var hasPid=pid&&kw.some(function(k){return String(k.value)===String(pid)});
+    var hitsName=last&&blob.indexOf(last)>=0;
+    var isHrClip=/home run|homers|hr/i.test(it.title||'')||/home run/i.test(blob);
+    if((hasPid||hitsName)&&isHrClip) return it;
+  }
+  return null;
+}
+// PROPOSED matcher — title must carry (N) or ordinal-career-HR, and NOT be a long recap.
+function proposedMatch(items, hr){
+  var b=((hr.matchup||{}).batter)||{}, pid=b.id;
+  var last=String(b.fullName||'').split(/\s+/).pop().toLowerCase();
+  var cands=items.filter(function(it){
+    var title=String(it.title||''), blob=JSON.stringify(it).toLowerCase();
+    var kw=(it.keywordsAll||it.keywords||[]);
+    var hasPid=pid&&kw.some(function(k){return String(k.value)===String(pid)});
+    var hitsName=last&&blob.indexOf(last)>=0;
+    if(!(hasPid||hitsName)) return false;
+    // reject obvious full-game recaps by duration (recaps are long) or title
+    var dur=_durSec(it.duration);
+    if(dur && dur>90) return false;                  // HR clips are ~15-40s; recaps 2-3min
+    if(/recap|highlights|condensed/i.test(title)) return false;
+    // must look like a specific HR clip
+    var isHR=/\(\d+\)/.test(title) || /(first|second|third|1st|2nd|3rd)[^.]*(career )?home run/i.test(title)
+             || /homers|home run/i.test(title);
+    return isHR;
+  });
+  // rank: ordinal-career-HR first (first-timers), then shortest duration
+  cands.sort(function(a,b){
+    var ao=/(first|second|third|career)/i.test(a.title||'')?0:1;
+    var bo=/(first|second|third|career)/i.test(b.title||'')?0:1;
+    if(ao!==bo) return ao-bo;
+    return (_durSec(a.duration)||999)-(_durSec(b.duration)||999);
+  });
+  return cands[0]||null;
+}
+function _durSec(d){ if(d==null) return null;
+  if(typeof d==='number') return d;
+  var s=String(d); var m=s.match(/(\d+):(\d+)/); if(m) return (+m[1])*60+(+m[2]);
+  var n=parseInt(s,10); return isFinite(n)?n:null;
+}
+
+async function run(){
+  out.innerHTML=''; V.className='dim'; V.textContent='fetching…'; ST.textContent='working';
+  var pk=document.getElementById('pk').value.trim();
+  var pbp, craw;
+  try{ pbp=await (await fetch('https://statsapi.mlb.com/api/v1/game/'+pk+'/playByPlay')).json(); }
+  catch(e){ V.className=''; V.innerHTML='<b class="bad">pbp failed:</b> '+esc(e.message); return; }
+  try{ craw=await (await fetch('https://statsapi.mlb.com/api/v1/game/'+pk+'/content')).json(); }
+  catch(e){ V.className=''; V.innerHTML='<b class="bad">content failed:</b> '+esc(e.message); return; }
+  var items=((craw&&craw.highlights&&(craw.highlights.highlights||craw.highlights.live)||{}).items)||[];
+  var hrs=((pbp&&pbp.allPlays)||[]).filter(isHR);
+  ST.textContent=hrs.length+' HRs · '+items.length+' content items';
+
+  // show the raw content list first — durations + titles
+  var lt='<h2>all '+items.length+' content items (duration · title)</h2><div class="b"><table><tr><th>dur</th><th>title</th><th>mp4?</th></tr>';
+  items.forEach(function(it){ var d=_durSec(it.duration);
+    lt+='<tr'+(d&&d>90?' class="recap"':'')+'><td>'+(d!=null?d+'s':'?')+'</td><td>'+esc(it.title||'').slice(0,70)+'</td><td>'+(pickMp4(it)?'✓':'—')+'</td></tr>';
+  });
+  lt+='</table><div class="dim" style="font-size:10.5px;margin-top:4px">red = >90s (likely a recap, not an HR clip)</div></div>';
+  out.innerHTML=lt;
+
+  var agree=0, fixed=0;
+  var ht='<h2>per-HR: current match vs proposed</h2><div class="b"><table><tr><th>batter</th><th>current match (dur)</th><th>proposed match (dur)</th><th>verdict</th></tr>';
+  hrs.forEach(function(hr){
+    var b=(hr.matchup||{}).batter||{};
+    var cur=currentMatch(items,hr), prop=proposedMatch(items,hr);
+    var cd=cur?_durSec(cur.duration):null, pd=prop?_durSec(prop.duration):null;
+    var curLong=cd&&cd>90, verdict, cls='';
+    if(cur&&prop&&cur.title===prop.title){ verdict='<span class="dim">same</span>'; agree++; }
+    else if(curLong&&prop&&pd&&pd<=90){ verdict='<span class="hit">FIXED — was recap, now HR clip</span>'; fixed++; cls='pick'; }
+    else if(cur&&!prop){ verdict='<span class="warn">proposed found nothing (too strict?)</span>'; }
+    else { verdict='<span class="warn">differ</span>'; }
+    ht+='<tr class="'+cls+'"><td>'+esc(b.fullName||'?')+'</td>'
+      +'<td'+(curLong?' class="recap"':'')+'>'+(cur?esc(cur.title||'').slice(0,40)+' ('+(cd!=null?cd+'s':'?')+')':'<span class="bad">none</span>')+'</td>'
+      +'<td>'+(prop?esc(prop.title||'').slice(0,40)+' ('+(pd!=null?pd+'s':'?')+')':'<span class="bad">none</span>')+'</td>'
+      +'<td>'+verdict+'</td></tr>';
+  });
+  ht+='</table></div>'; out.innerHTML+=ht;
+
+  V.className='';
+  V.innerHTML='<b class="ok">'+fixed+' HRs fixed</b> (current matched a long recap, proposed found the actual HR clip) · '+agree+' already agreed.'
+    +'<br><span class="dim">If the proposed column shows short-duration HR clips where current showed 2-3min recaps, the fix is: reject items >90s or titled recap/highlights/condensed, and prefer titles with (N) or ordinal career-HR. Watch for "proposed found nothing" — that means the rule is too strict and needs loosening for that case.</span>';
+}
+</script>
+</body></html>
