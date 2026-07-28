@@ -17,7 +17,7 @@ button{background:#12324a;border:1px solid #1c2838;color:#7dd3fc;border-radius:6
 .barwrap{background:#0a1420;border:1px solid #1c2838;border-radius:5px;height:22px;overflow:hidden;margin:6px 0;position:relative}
 .bar{height:100%;background:linear-gradient(90deg,#166534,#4ade80);display:flex;align-items:center;padding-left:8px;font-size:11px;color:#fff}
 </style></head><body>
-<h1>MONTAGE PROBE <span style="color:#4ade80;font-size:12px">v2 · tonight's HRs + clip availability</span></h1>
+<h1>MONTAGE PROBE <span style="color:#4ade80;font-size:12px">v3 · tonight's HRs + clip availability</span></h1>
 <p class="sub">The golden-rule probe for the HR montage. Before building the player, prove the raw material: <b>(1)</b> how many home runs across tonight's ENTIRE league slate (not just fav/pinned — this fetches the schedule fresh, independent of hrscope), <b>(2)</b> how many have a resolvable, playable mp4 clip right now, and <b>(3)</b> whether any have aged out. Mirrors the exact endpoints and mp4 selection the companion uses, so "clip found here" = "montage can play it."</p>
 <div class="b">
   <button onclick="run()">scan tonight's slate</button>
@@ -102,21 +102,27 @@ async function run(){
       var clip=clipForHR(content, hr);
       if(clip) withClip++;
       checked++;
+      /* HR# — the season count. result.homeRunNumber is unreliable on the unfiltered
+         feed, but the description always carries it: "homers (19) on a fly ball...".
+         Parse from there, same source the card uses. Fall back to result field, then '?'. */
+      var desc=String((hr.result||{}).description||'');
+      var m=desc.match(/homers?\s*\((\d+)\)/i);
+      var hrNum = m ? parseInt(m[1],10) : ((hr.result||{}).homeRunNumber || null);
       allHR.push({ game:g.away+'@'+g.home, state:g.state,
-        batter:b.fullName||'?', hrNum:(hr.result||{}).homeRunNumber||'?',
+        batter:b.fullName||'?', hrNum:hrNum,
         inning:(hr.about||{}).inning||'?', clip:clip });
     });
   }
 
   // sort: HR# ascending (big names / milestone counts last), as the montage would
-  allHR.sort(function(a,b){ return (a.hrNum||0)-(b.hrNum||0); });
+  allHR.sort(function(a,b){ var av=a.hrNum==null?9999:a.hrNum, bv=b.hrNum==null?9999:b.hrNum; return av-bv; });
 
   var t='<h2>'+allHR.length+' home runs tonight · '+withClip+' with a playable clip</h2>';
   var pct=allHR.length?Math.round(withClip/allHR.length*100):0;
   t+='<div class="barwrap"><div class="bar" style="width:'+pct+'%">'+pct+'% have clips</div></div>';
   t+='<div class="b"><table><tr><th>#</th><th>batter</th><th>HR#</th><th>game</th><th>inn</th><th>clip?</th><th>title</th></tr>';
   allHR.forEach(function(h,i){
-    t+='<tr><td>'+(i+1)+'</td><td>'+esc(h.batter)+'</td><td>'+h.hrNum+'</td><td class="dim">'+esc(h.game)+(h.state==='Live'?' <span class="warn">live</span>':'')+'</td>'
+    t+='<tr><td>'+(i+1)+'</td><td>'+esc(h.batter)+'</td><td>'+(h.hrNum==null?'?':h.hrNum)+'</td><td class="dim">'+esc(h.game)+(h.state==='Live'?' <span class="warn">live</span>':'')+'</td>'
       +'<td>'+h.inning+'</td>'
       +'<td>'+(h.clip?'<span class="hit">✓ mp4</span>':'<span class="bad">✗ none</span>')+'</td>'
       +'<td class="dim">'+(h.clip?esc(h.clip.title).slice(0,44):'')+'</td></tr>';
