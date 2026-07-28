@@ -959,8 +959,16 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
   display:flex;align-items:baseline;gap:1.4cqh;flex-wrap:wrap;white-space:nowrap;}
 #mlb-takeover.tko-wc .tkoH-head .tkoH-hr{font-size:14cqh;font-weight:800;color:#fff;   /* r178: WHITE, never accent (Mike) */
   font-family:'Archivo Black',Arial,sans-serif;text-shadow:0 0.2cqh 1.8cqh rgba(0,0,0,.6);}
-#mlb-takeover.tko-wc .tkoH-name{font-size:13cqh;font-weight:900;text-transform:uppercase;margin-top:1.4cqh;letter-spacing:.01em;
-  color:#fff;text-shadow:0 0.2cqh 2cqh rgba(0,0,0,.7);white-space:nowrap;}
+#mlb-takeover.tko-wc .tkoH-name{font-size:15cqh;font-weight:900;text-transform:uppercase;margin-top:1.4cqh;letter-spacing:.01em;
+  color:#fff;text-shadow:0 0.2cqh 2cqh rgba(0,0,0,.7);white-space:nowrap;}   /* r226: 13→15cqh bigger bottom text (Mike) */
+/* ★ r226 — Statcast pill: single rounded chip under the name, EV · dist · LA. Sits in the
+   lower third, glassy dark so it reads over the photo without competing with the name. */
+#mlb-takeover.tko-wc .tkoH-statcast{display:inline-block;margin-top:1.8cqh;
+  font-size:5.4cqh;font-weight:700;letter-spacing:.04em;color:#fff;
+  background:rgba(8,16,28,0.62);border:0.28cqh solid rgba(255,255,255,0.18);
+  border-radius:999px;padding:1.1cqh 3.2cqh;backdrop-filter:blur(3px);
+  text-shadow:0 0.15cqh 1cqh rgba(0,0,0,.6);white-space:nowrap;
+  animation:tkopop 0.5s ease-out .12s both;}
 #mlb-takeover.tko-wc .tkoA-inner{position:relative;display:flex;align-items:center;gap:6cqh;width:100%;box-sizing:border-box;padding:0 7cqh;animation:tkopop 0.5s ease-out;}
 #mlb-takeover.tko-wc .tkoA-headwrap{width:34cqh;height:34cqh;border-radius:50%;flex-shrink:0;position:relative;padding:0.9cqh;box-shadow:0 2cqh 6cqh rgba(0,0,0,0.55);}
 #mlb-takeover.tko-wc .tkoA-headwrap img{width:100%;height:100%;border-radius:50%;object-fit:cover;background:#0b1220;}
@@ -2065,6 +2073,28 @@ const MONTAGE = { on:false, queue:[], i:-1, active:false, builtAt:0 };
 function _montageEtDay(off){ const d=new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));
   d.setDate(d.getDate()+(off||0)); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function _montageHrNum(desc){ const m=String(desc||'').match(/(?:homers?|grand slam)[^()]*\((\d+)\)/i); return m?parseInt(m[1],10):null; }
+/* ★ r226 — STATCAST. hitData (launchSpeed/totalDistance/launchAngle) lives at
+   allPlays[].playEvents[].hitData, proven fetchable by statcast-probe.html. Walk playEvents
+   BACKWARD — the scoring contact is the last event and carries the read; earlier events are
+   pitches/fouls without it. For montage HRs (historical, two-day window) the data is fully
+   settled. Returns null when absent so the card shows the pill ONLY when present — never a
+   broken partial (Mike: card must be self-sufficient). */
+function _statcastHitData(play){
+  const ev=(play&&play.playEvents)||[];
+  for(let i=ev.length-1;i>=0;i--){
+    const hd=ev[i]&&ev[i].hitData;
+    if(hd && (hd.launchSpeed!=null || hd.totalDistance!=null || hd.launchAngle!=null)) return hd;
+  }
+  return null;
+}
+function _statcastPill(hd){
+  if(!hd) return null;
+  const parts=[];
+  if(hd.launchSpeed!=null)   parts.push((Math.round(hd.launchSpeed*10)/10)+' mph');
+  if(hd.totalDistance!=null) parts.push(Math.round(hd.totalDistance)+' ft');
+  if(hd.launchAngle!=null)   parts.push(Math.round(hd.launchAngle)+'\u00b0');
+  return parts.length?parts.join(' \u00b7 '):null;
+}
 const _montageIsHR = p => { const r=(p&&p.result)||{}; return r.eventType==='home_run'||r.event==='Home Run'; };
 function _montageDurSec(d){ if(d==null) return null;
   if(typeof d==='number') return d;
@@ -2183,6 +2213,7 @@ async function _montageBeat(){
     wash_r:+wrgb.split(',')[0], wash_g:+wrgb.split(',')[1], wash_b:+wrgb.split(',')[2],
     headline:'HOME RUN', hrNum: e.hrNum!=null?('('+e.hrNum+')'):null, _hrNum:e.hrNum,
     sub: e.batter, subIcon:'\u26be',
+    statcastPill: _statcastPill(_statcastHitData(e.hr)),   // r226: EV · dist · LA, only if present
     kicker:'\ud83d\udca5 TONIGHT'
   }});
   // hold the card 5s, then play the clip; clip end → RECAP._onEnd → next beat
@@ -5080,6 +5111,7 @@ function tkoABuild(o){
       <div class="tkoH-txt" style="left:${o.txtX??5}%;bottom:${o.txtY??1}%">
         <div class="tkoH-head">${o.headline||''}${hrTag}</div>
         ${o.sub?`<div class="tkoH-name">${o.sub}</div>`:''}
+        ${o.statcastPill?`<div class="tkoH-statcast">${o.statcastPill}</div>`:''}
       </div>`;
   }
   const centered = !face;
@@ -10740,7 +10772,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r225-montage-fullscreen';
+const BUILD_MARKER = 'r226-statcast-pill';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
