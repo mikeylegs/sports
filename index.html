@@ -1340,6 +1340,16 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .audio-dot{
   width:8px;height:8px;border-radius:50%;flex-shrink:0;
   transition:background 0.5s ease, box-shadow 0.5s ease;
+  position:relative; cursor:pointer;
+}
+/* ★ r211 — the visible dot is 8px, but r210 scoped the mute toggle to the dot ONLY, so
+   an 8px tap target at x=686 was near-impossible to hit on VNC/phone. This invisible halo
+   makes the CLICKABLE area 30px while the dot still LOOKS 8px. pe:auto so the halo catches
+   the tap; the dot's own closest('#audioDot') check still matches because the halo is a
+   child of the dot. */
+.audio-dot::before{
+  content:''; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:30px; height:30px; border-radius:50%;
 }
 .audio-dot.inactive{
   background:#ef4444;
@@ -10498,7 +10508,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r210-mute-flap-fix';
+const BUILD_MARKER = 'r211-dot-hit-area';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
