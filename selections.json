@@ -1,7 +1,16 @@
 {
   "v": 1,
-  "updated": "2026-07-28T01:18:25.927Z",
+  "updated": "2026-07-28T01:22:11.588Z",
   "events": [
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816280",
+      "title": "Arizona Diamondbacks @ Pittsburgh Pirates",
+      "showFrom": "20260727",
+      "showUntil": "20260727",
+      "rank": 1
+    },
     {
       "league": "baseball/mlb",
       "label": "MLB",
@@ -9,7 +18,7 @@
       "title": "Toronto Blue Jays @ Washington Nationals",
       "showFrom": "20260727",
       "showUntil": "20260727",
-      "rank": 1
+      "rank": 2
     },
     {
       "league": "baseball/mlb",
@@ -18,22 +27,13 @@
       "title": "Baltimore Orioles @ Detroit Tigers",
       "showFrom": "20260727",
       "showUntil": "20260727",
-      "rank": 2
+      "rank": 3
     },
     {
       "league": "baseball/mlb",
       "label": "MLB",
       "espnId": "401816284",
       "title": "Philadelphia Phillies @ Miami Marlins",
-      "showFrom": "20260727",
-      "showUntil": "20260727",
-      "rank": 3
-    },
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816280",
-      "title": "Arizona Diamondbacks @ Pittsburgh Pirates",
       "showFrom": "20260727",
       "showUntil": "20260727",
       "rank": 4
