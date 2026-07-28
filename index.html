@@ -2108,15 +2108,29 @@ async function _montageBeat(){
     playCompanionClip(clip, cb);
   }, 5000);
 }
+function _montageScrim(on){
+  let sc=document.getElementById('montage-scrim');
+  if(!sc && on){ sc=document.createElement('div'); sc.id='montage-scrim';
+    sc.style.cssText='position:fixed;inset:0;z-index:60;background:rgba(3,7,14,0.62);'
+      +'backdrop-filter:blur(9px) saturate(0.8);-webkit-backdrop-filter:blur(9px) saturate(0.8);'
+      +'opacity:0;transition:opacity 0.6s ease;pointer-events:none;';
+    (document.querySelector('.shell')||document.body).appendChild(sc);
+    requestAnimationFrame(()=>{ sc.style.opacity='1'; }); }
+  else if(sc && on){ sc.style.opacity='1'; }
+  else if(sc && !on){ sc.style.opacity='0'; setTimeout(()=>{ try{sc.remove();}catch(_){}}, 650); }
+}
 async function montageStart(){
   if(MONTAGE.active) return;
   MONTAGE.on=true; MONTAGE.active=true;
+  _montageScrim(true);   // r208 #3: one scrim for the whole sequence — panel stays dimmed,
+                         // so card→clip→card crossfades over a static backdrop, no repaint flash
   const n=await montageBuild();
   if(!n){ MONTAGE.on=false; MONTAGE.active=false; try{ console.log('[montage] nothing to play'); }catch(_){}; return; }
   _montageBeat();
 }
 function _montageStop(finished){
   MONTAGE.on=false; MONTAGE.active=false;
+  _montageScrim(false);   // r208 #3: drop the sequence scrim, panel returns
   clearTimeout(MONTAGE._holdT);
   if(RECAP._onEnd){ RECAP._onEnd=null; }
   const el=document.getElementById('mlb-takeover'); if(el) el.className='';
@@ -5330,6 +5344,12 @@ function classifyTitle(title, teamName){
 }
 window.classifyTitle = classifyTitle;
 
+/* r208: record the first real user gesture so the audio probe can report whether the
+   browser would allow autoplay WITH sound. VNC clicks sometimes do not count as gestures. */
+if (!window._gestureHook){ window._gestureHook = true;
+  ['pointerdown','keydown','touchstart'].forEach(ev =>
+    window.addEventListener(ev, () => { window._userGestured = true; }, { once:true, capture:true }));
+}
 const RECAP = {
   apiKey: 'AIzaSyDWheICh0zUFL-bkr5P8BLu3O_PtU-gaAs',  // restrict to YouTube Data API v3 in Cloud Console; rotate if shared
   ttlMs: 60 * 60 * 1000,           // re-search a source at most once/hour
@@ -7475,7 +7495,12 @@ function playCompanionClip(clip, callback){
     if (badge){
       /* r177: with a callback the badge becomes the reference ribbon tying this clip
          back to the takeover that fired ~2 min ago; without one it keeps the old label. */
-      if (callback && (callback.batter || callback.inning)){
+      if (callback && callback.montageSummary){
+        // r208 #1: montage uses its own compact label — "💥 TONIGHT — LINDOR (7)"
+        badge.className = 'recap-badge recap-callback';
+        badge.textContent = '\ud83d\udca5 TONIGHT \u2014 ' + String(callback.batter||'').toUpperCase()
+                          + (callback.hr!=null ? ' (' + callback.hr + ')' : '');
+      } else if (callback && (callback.batter || callback.inning)){
         const parts = [];
         if (callback.batter) parts.push(callback.batter);
         if (callback.hr)     parts.push('HR #' + callback.hr);
@@ -7528,7 +7553,39 @@ function playCompanionClip(clip, callback){
     window._recapMp4 = v;
     window._tkoCompanion = 'PLAYING: ' + clip.title + ' (' + clip.lagS + 's)';
     _armEndGuard();   // arm immediately with the fallback duration; re-armed on metadata
-    v.play().catch(() => { v.muted = true; v.play().catch(() => endRecap()); });
+    /* ★ r208 #2 — AUDIO PROBE (?audiolog=1). Mute/unmute was rock-solid for ages and broke
+       THIS session, so something in r206–r207 changed the audio path. Rather than guess,
+       log the exact state at each play() attempt and whether we fall into the muted
+       fallback. This distinguishes "autoplay-with-sound blocked → muted fallback fires
+       every time" (needs a user-gesture unlock) from "we are setting muted somewhere"
+       (a real regression). No behaviour change — pure observation. */
+    const _audiolog = (() => { try { return new URLSearchParams(location.search).get('audiolog')==='1'; } catch(_){ return false; } })();
+    const _alog = (tag) => { if(!_audiolog) return;
+      try {
+        const line = '[audiolog] ' + tag + ' muted=' + v.muted + ' vol=' + v.volume
+          + ' autoplayGesture=' + (window._userGestured===true)
+          + ' clip=' + String(clip.title||'').slice(0,30);
+        console.log(line);
+        if (typeof tkoLogStart==='function'){ tkoLogStart({ team:'AUDIO', type:'AUDIO-STATE',
+          firedVia:'audiolog (r208)', clock:new Date().toLocaleTimeString(), firedMs:Date.now(),
+          polls:0, outcome:tag, why:'muted='+v.muted+' vol='+v.volume+' gesture='+(window._userGestured===true), play:'' });
+          if(typeof tkoRenderHud==='function') tkoRenderHud(); }
+      } catch(_){}
+    };
+    /* ★ r208 FIX — the mp4 companion path NEVER consulted _userMuted. The dot toggle only
+       ever reached the YouTube player (_recapPlayer), so companion clips (all mp4) ignored
+       it: whether the dot said muted or unmuted, the clip played at browser default, and
+       an autoplay-with-sound rejection FORCE-muted it permanently. The montage made this
+       loud because every beat is an mp4. Now: honour the toggle. If the user wants sound
+       and audio is unlocked, play with sound; only fall back to muted when the browser
+       actually blocks autoplay — and remember that as a blocked state, not a preference. */
+    v.muted = (typeof _userMuted !== 'undefined') ? _userMuted : true;
+    v.volume = 1;
+    _alog('pre-play');
+    v.play().then(() => _alog(v.muted ? 'play OK (muted per toggle)' : 'play OK (with audio)'))
+            .catch(() => { _alog('play REJECTED → muted fallback');
+                           v.muted = true; _recapAudioBlocked = true; _alog('after set muted=true');
+                           v.play().then(()=>_alog('muted play OK')).catch(() => { _alog('muted play FAILED'); endRecap(); }); });
   } catch(e){ _recapActive = false; window._recapActiveSince = 0; }
 }
 
@@ -10441,7 +10498,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r207-hr-montage';
+const BUILD_MARKER = 'r208-audio-mp4-fix';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -11710,6 +11767,19 @@ function toggleAudio(){
     if (_recapPlayer && _recapPlayer.mute){
       if (_userMuted){ _recapPlayer.mute(); }
       else { _recapPlayer.unMute(); _recapPlayer.setVolume(100); _recapUnmuted = true; }
+    }
+  } catch(_){}
+  /* r208 FIX B: the toggle must also reach a live mp4 companion. Without this, toggling
+     the dot during a companion clip (or the whole montage) did nothing — the flag flipped
+     but the playing <video> was never updated. */
+  try {
+    const mv = window._recapMp4;
+    if (mv && mv.tagName === 'VIDEO'){
+      mv.muted = _userMuted;
+      if (!_userMuted){ mv.volume = 1;
+        // a play() nudge in case it was paused at the muted->unmuted transition
+        if (mv.paused) { mv.play().catch(()=>{}); }
+      }
     }
   } catch(_){}
 }
