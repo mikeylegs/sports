@@ -1351,16 +1351,10 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
   content:''; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
   width:30px; height:30px; border-radius:50%;
 }
-/* ★ r212 — always-on-top audio control. The header dot hides behind the video overlay
-   (z90) during clips, so it can't be tapped mid-montage. This fixed mirror sits above the
-   video, always visible and tappable. Mirrors _userMuted via setAudioDot(). */
-#audioFloat{ position:fixed; top:10px; right:12px; z-index:95; width:14px; height:14px;
-  border-radius:50%; cursor:pointer; display:none; }
-#audioFloat.show{ display:block; }
-#audioFloat.inactive{ background:#ef4444; box-shadow:0 0 8px rgba(239,68,68,0.8); animation:audioPulse 1.5s ease-in-out infinite; }
-#audioFloat.active{ background:#22c55e; box-shadow:0 0 8px rgba(34,197,94,0.8); }
-#audioFloat::before{ content:''; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
-  width:40px; height:40px; border-radius:50%; }
+/* ★ r213 — the real header audio dot floats above the video overlay (z90) so it stays
+   visible and tappable mid-clip. Replaces the r212 float-mirror, which produced a second
+   dot. One dot, in line with the ESPN LIVE header, always on top. */
+.audio-dot{ position:relative; z-index:95; }
 .audio-dot.inactive{
   background:#ef4444;
   box-shadow:0 0 6px rgba(239,68,68,0.7);
@@ -2054,18 +2048,51 @@ function _montageEtDay(off){ const d=new Date(new Date().toLocaleString('en-US',
   d.setDate(d.getDate()+(off||0)); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function _montageHrNum(desc){ const m=String(desc||'').match(/(?:homers?|grand slam)[^()]*\((\d+)\)/i); return m?parseInt(m[1],10):null; }
 const _montageIsHR = p => { const r=(p&&p.result)||{}; return r.eventType==='home_run'||r.event==='Home Run'; };
+function _montageDurSec(d){ if(d==null) return null;
+  if(typeof d==='number') return d;
+  const s=String(d), m=s.match(/(\d+):(\d+)/); if(m) return (+m[1])*60+(+m[2]);
+  const n=parseInt(s,10); return isFinite(n)?n:null; }
+/* ★ r214 — TITLE-FIRST HR CLIP MATCH. The old matcher returned the FIRST item with the
+   player + "home run" anywhere in its blob — and the full game recap ("Rangers vs. Yankees
+   Game Highlights") matched that and usually sorts first, so montages played 2-3 min
+   recaps instead of the 20-30s HR clip. The probe's "0 fixed" was vacuous: it compared two
+   matchers that shared this blind spot (duration-gated rejection, and duration is often a
+   missing/unparseable field so the gate never fired).
+   Fix per Mike, title-first:
+     1. REJECT any recap/highlights/condensed by TITLE — hard, regardless of duration.
+     2. Require the item to be a real HR clip for THIS batter (pid or last name).
+     3. RANK: ordinal career-HR ("first/second/third … home run") highest, then (N) titles,
+        then plain "homers", then shortest duration as a backstop tiebreaker.
+   Duration >90s is now only a backstop reject, never the primary gate. */
 function _montageClipFor(items, hr){
   const b=((hr.matchup||{}).batter)||{}, pid=b.id;
   const last=String(b.fullName||'').split(/\s+/).pop().toLowerCase();
+  const cands=[];
   for(const it of (items||[])){
+    const title=String(it.title||''), tl=title.toLowerCase();
     const blob=JSON.stringify(it).toLowerCase();
     const kw=(it.keywordsAll||it.keywords||[]);
     const hasPid=pid&&kw.some(k=>String(k.value)===String(pid));
     const hitsName=last&&blob.indexOf(last)>=0;
-    const isHrClip=/home run|homers|hr/i.test(it.title||'')||/home run/i.test(blob);
-    if((hasPid||hitsName)&&isHrClip){ const url=mlbPickMp4(it); if(url) return {url, title:it.title||''}; }
+    if(!(hasPid||hitsName)) continue;                                   // must be this batter
+    if(/recap|highlights|condensed|game highlights/i.test(tl)) continue; // (1) title reject
+    const isHrClip=/\(\d+\)/.test(title)
+                 || /(first|second|third|1st|2nd|3rd)[^.]*(career )?home run/i.test(title)
+                 || /homers|home run/i.test(title);
+    if(!isHrClip) continue;                                             // (2) must be an HR clip
+    const dur=_montageDurSec(it.duration);
+    if(dur && dur>90) continue;                                        // backstop, not primary
+    const url=mlbPickMp4(it); if(!url) continue;
+    // (3) rank
+    let rank=3;
+    if(/(first|second|third|1st|2nd|3rd)[^.]*(career )?home run/i.test(title)) rank=0;  // ordinal career HR
+    else if(/\(\d+\)/.test(title)) rank=1;                                            // (N)
+    else if(/homers|home run/i.test(title)) rank=2;                                     // plain
+    cands.push({url, title, rank, dur:(dur==null?999:dur)});
   }
-  return null;
+  if(!cands.length) return null;
+  cands.sort((a,b)=> a.rank!==b.rank ? a.rank-b.rank : a.dur-b.dur);
+  return { url:cands[0].url, title:cands[0].title };
 }
 /* Build tonight's queue league-wide. Returns count. Clip resolution is lazy (at play
    time), so building is cheap — one schedule call + one playByPlay per game. */
@@ -10520,7 +10547,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r212-fullscreen-audio-toggle';
+const BUILD_MARKER = 'r214-hr-clip-match';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -11780,13 +11807,6 @@ function setAudioDot(){
     dot.classList.toggle('inactive', _userMuted);
     dot.title = _userMuted ? 'Muted \u2014 tap to unmute' : 'Unmuted \u2014 tap to mute';
   });
-  // r212: the always-on-top mirror dot
-  let fl = document.getElementById('audioFloat');
-  if (!fl){ fl = document.createElement('div'); fl.id = 'audioFloat';
-    fl.title = 'Audio'; (document.querySelector('.shell')||document.body).appendChild(fl); }
-  fl.classList.add('show');
-  fl.classList.toggle('active', !_userMuted);
-  fl.classList.toggle('inactive', _userMuted);
 }
 /* ★ r209 — REAL AUTOPLAY UNLOCK. Green dot = _userMuted false, toggle reaches the mp4
    (r208), yet montage clips stayed silent. Cause: the browser only grants autoplay-with-
