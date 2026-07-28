@@ -10498,7 +10498,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r208-audio-mp4-fix';
+const BUILD_MARKER = 'r209-audio-unlock';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -11759,7 +11759,32 @@ function setAudioDot(){
     dot.title = _userMuted ? 'Muted \u2014 tap to unmute' : 'Unmuted \u2014 tap to mute';
   });
 }
+/* ★ r209 — REAL AUTOPLAY UNLOCK. Green dot = _userMuted false, toggle reaches the mp4
+   (r208), yet montage clips stayed silent. Cause: the browser only grants autoplay-with-
+   sound to media that plays DURING a genuine user gesture. Setting audioUnlocked=true is
+   our bookkeeping, not the browser's — a <video> created LATER (each montage beat) was
+   never blessed, so every play()-with-sound got rejected → muted fallback. VNC clicks make
+   this worse (sometimes not counted as gestures). Fix: on the unmute gesture, prime a real
+   element by playing it right then. Once the browser sees audible playback in a gesture,
+   the session is unlocked for subsequent elements. */
+let _audioPrimer = null;
+function _primeAudioUnlock(){
+  try {
+    if (!_audioPrimer){
+      _audioPrimer = document.createElement('audio');
+      _audioPrimer.src = SOUND_BASE + 'buzzer.wav';   // any bundled asset; played near-silent
+      _audioPrimer.preload = 'auto';
+    }
+    _audioPrimer.volume = 0.001;            // effectively inaudible, but REAL playback
+    _audioPrimer.currentTime = 0;
+    const pr = _audioPrimer.play();
+    if (pr && pr.then){ pr.then(() => { try { _audioPrimer.pause(); } catch(_){} })
+                          .catch(() => {}); }
+    audioUnlocked = true;
+  } catch(_){}
+}
 function toggleAudio(){
+  _primeAudioUnlock();   // r209: unlock inside the gesture, before anything else
   audioUnlocked = true;
   _userMuted = !_userMuted;
   setAudioDot();
