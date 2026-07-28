@@ -2021,6 +2021,115 @@ function mlbPickMp4(it) {
 }
 
 const _mlbContentCache = new Map();   // gamePk -> {t, items}
+/* ★ r207 — HR MONTAGE ENGINE. Fills the dead air between the last favourite final and
+   the final out of the night with our own programming: every HR across the league,
+   card→clip back to back, HR# ascending so milestone counts land last. Proven end to end
+   by montage-probe.html (28/28 clips, 100%, two-day ET window). This engine reuses the
+   exact pieces the probe validated — schedule fetch, playByPlay, mlbContent, mlbPickMp4 —
+   and hooks the r206-guarded RECAP._onEnd chain so each clip reliably hands to the next.
+   Toggle: ?montage=1 (manual) or auto in a schedule window (see _montageShouldAuto).
+   Skip-on-miss is safe because r206 guarantees a clip that stalls still ends. */
+const MONTAGE = { on:false, queue:[], i:-1, active:false, builtAt:0 };
+function _montageEtDay(off){ const d=new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));
+  d.setDate(d.getDate()+(off||0)); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function _montageHrNum(desc){ const m=String(desc||'').match(/(?:homers?|grand slam)[^()]*\((\d+)\)/i); return m?parseInt(m[1],10):null; }
+const _montageIsHR = p => { const r=(p&&p.result)||{}; return r.eventType==='home_run'||r.event==='Home Run'; };
+function _montageClipFor(items, hr){
+  const b=((hr.matchup||{}).batter)||{}, pid=b.id;
+  const last=String(b.fullName||'').split(/\s+/).pop().toLowerCase();
+  for(const it of (items||[])){
+    const blob=JSON.stringify(it).toLowerCase();
+    const kw=(it.keywordsAll||it.keywords||[]);
+    const hasPid=pid&&kw.some(k=>String(k.value)===String(pid));
+    const hitsName=last&&blob.indexOf(last)>=0;
+    const isHrClip=/home run|homers|hr/i.test(it.title||'')||/home run/i.test(blob);
+    if((hasPid||hitsName)&&isHrClip){ const url=mlbPickMp4(it); if(url) return {url, title:it.title||''}; }
+  }
+  return null;
+}
+/* Build tonight's queue league-wide. Returns count. Clip resolution is lazy (at play
+   time), so building is cheap — one schedule call + one playByPlay per game. */
+async function montageBuild(){
+  const dates=[_montageEtDay(-1), _montageEtDay(0)], seen={}, games=[];
+  for(const ds of dates){
+    let sched; try{ sched=JSON.parse(await proxyFetchText('https://statsapi.mlb.com/api/v1/schedule?sportId=1&date='+ds)); }catch(_){ continue; }
+    (sched.dates||[]).forEach(dt=>(dt.games||[]).forEach(g=>{
+      const st=(g.status||{}).abstractGameState;
+      if((st==='Final'||st==='Live')&&!seen[g.gamePk]){ seen[g.gamePk]=1;
+        games.push({pk:g.gamePk, away:(g.teams.away.team||{}).abbreviation||'', home:(g.teams.home.team||{}).abbreviation||''}); }
+    }));
+  }
+  const q=[];
+  for(const g of games){
+    let pbp; try{ pbp=JSON.parse(await proxyFetchText('https://statsapi.mlb.com/api/v1/game/'+g.pk+'/playByPlay')); }catch(_){ continue; }
+    ((pbp&&pbp.allPlays)||[]).filter(_montageIsHR).forEach(hr=>{
+      const b=(hr.matchup||{}).batter||{};
+      q.push({ pk:g.pk, game:g.away+'@'+g.home,
+        batter:b.fullName||'', batterId:b.id||null,
+        teamAbbr:(String((hr.about||{}).halfInning||'').toLowerCase().indexOf('top')===0?g.away:g.home),
+        hrNum:_montageHrNum((hr.result||{}).description), inning:(hr.about||{}).inning||null,
+        desc:(hr.result||{}).description||'', hr:hr });
+    });
+  }
+  q.sort((a,b)=>((a.hrNum==null?9999:a.hrNum)-(b.hrNum==null?9999:b.hrNum)));   // milestones last
+  MONTAGE.queue=q; MONTAGE.i=-1; MONTAGE.builtAt=Date.now();
+  try{ console.log('[montage] built', q.length, 'HRs'); }catch(_){}
+  return q.length;
+}
+/* Fire one beat: hero card, hold 5s, then its clip. On clip end, RECAP._onEnd advances. */
+async function _montageBeat(){
+  if(!MONTAGE.on){ _montageStop(); return; }
+  MONTAGE.i++;
+  if(MONTAGE.i>=MONTAGE.queue.length){ _montageStop(true); return; }   // finished — revert
+  const e=MONTAGE.queue[MONTAGE.i];
+  // resolve clip lazily; skip-on-miss (safe: r206 guarantees ends)
+  let clip=null; try{ clip=_montageClipFor(await mlbContent(e.pk), e.hr); }catch(_){}
+  if(!clip){ try{ console.log('[montage] skip (no clip)', e.batter); }catch(_){}; return _montageBeat(); }
+  const wrgb=(GLOW_TEAM[e.teamAbbr]||'11,42,94');
+  const accent='rgb('+wrgb+')';
+  showTakeover({ side:'left', mlbTeam:e.teamAbbr, gamePk:e.pk, montage:true, a:{
+    accent,
+    hero: e.batterId ? 'https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:action:hero:current.jpg/q_auto:good,w_1500/v1/people/'+e.batterId+'/action/hero/current' : '',
+    head: e.batterId ? 'https://img.mlbstatic.com/mlb-photos/image/upload/w_240,q_auto/v1/people/'+e.batterId+'/headshot/67/current' : '',
+    logo: logoUrl('MLB', e.teamAbbr), logoX:1, logoY:1, logoSize:14, logoGlow:4,
+    focusX:41, focusY:13, focusScale:1.1,
+    wash_r:+wrgb.split(',')[0], wash_g:+wrgb.split(',')[1], wash_b:+wrgb.split(',')[2],
+    headline:'HOME RUN', hrNum: e.hrNum!=null?('('+e.hrNum+')'):null, _hrNum:e.hrNum,
+    sub: e.batter, subIcon:'\u26be',
+    kicker:'\ud83d\udca5 TONIGHT'
+  }});
+  // hold the card 5s, then play the clip; clip end → RECAP._onEnd → next beat
+  clearTimeout(MONTAGE._holdT);
+  MONTAGE._holdT=setTimeout(()=>{
+    if(!MONTAGE.on) return;
+    RECAP._onEnd=()=>{ if(MONTAGE.on) _montageBeat(); };
+    const cb={ batter:e.batter, team:e.teamAbbr, hr:e.hrNum, inning:e.inning,
+               half:(e.inning!=null?'':''), montageSummary:'\ud83d\udca5 TONIGHT \u00b7 '+e.batter+(e.hrNum!=null?' \u00b7 HR #'+e.hrNum:'') };
+    playCompanionClip(clip, cb);
+  }, 5000);
+}
+async function montageStart(){
+  if(MONTAGE.active) return;
+  MONTAGE.on=true; MONTAGE.active=true;
+  const n=await montageBuild();
+  if(!n){ MONTAGE.on=false; MONTAGE.active=false; try{ console.log('[montage] nothing to play'); }catch(_){}; return; }
+  _montageBeat();
+}
+function _montageStop(finished){
+  MONTAGE.on=false; MONTAGE.active=false;
+  clearTimeout(MONTAGE._holdT);
+  if(RECAP._onEnd){ RECAP._onEnd=null; }
+  const el=document.getElementById('mlb-takeover'); if(el) el.className='';
+  const sc=document.getElementById('tko-scrim'); if(sc) sc.classList.remove('show');
+  try{ console.log('[montage]', finished?'finished — reverting to rotation':'stopped'); }catch(_){}
+  // normal render loop resumes on its own next tick; if a clip is mid-play let it end
+}
+window.montageStart = montageStart;
+window.montageStop = () => _montageStop(false);
+if (new URLSearchParams(location.search).get('montage') === '1'){
+  // manual trigger: start once the page has settled (rosters/feeds up)
+  setTimeout(()=>{ try{ montageStart(); }catch(_){} }, 4000);
+}
 async function mlbContent(gamePk) {
   const hit = _mlbContentCache.get(gamePk);
   if (hit && Date.now() - hit.t < 120000) return hit.items;          // 2-min TTL
@@ -7388,9 +7497,37 @@ function playCompanionClip(clip, callback){
     v.onplaying = () => revealRecap();
     v.onended   = () => endRecap();
     v.onerror   = () => endRecap();
+    /* ★ r206 — END-OF-CLIP GUARD (Mike: "video played through and froze paused/muted,
+       dealbreaker"). The mp4 exit depends entirely on `ended` firing. Some clips play to
+       the final frame and PAUSE without ever dispatching `ended`, so endRecap() is never
+       called: the clip sits frozen, _recapActive stays true, and the r148 watchdog cannot
+       help — it waits 240s AND only fires for clips that never revealed. A clip that
+       played fully DID reveal, so it fell through every net.
+       Two guards: (a) once metadata gives us the real duration, arm a timer for
+       duration + 1.5s that force-ends if we are still active; (b) a 'pause' near the end
+       is treated as an end (the frozen-final-frame case). Both are belt-and-suspenders on
+       top of `ended`, which still fires normally when it works. */
+    const _armEndGuard = () => {
+      clearTimeout(window._recapEndGuard);
+      const dur = (isFinite(v.duration) && v.duration > 0) ? v.duration : (clip.duration || 210);
+      window._recapEndGuard = setTimeout(() => {
+        if (_recapActive && window._recapMp4 === v){
+          try { console.warn('[recap] end-guard fired — clip froze without `ended` after ' + Math.round(dur) + 's'); } catch(_){}
+          endRecap();
+        }
+      }, (dur + 1.5) * 1000);
+    };
+    v.onloadedmetadata = _armEndGuard;
+    v.onpause = () => {
+      // a pause within the last 0.6s is a frozen final frame, not a real pause
+      if (_recapActive && isFinite(v.duration) && v.duration > 0 && (v.duration - v.currentTime) < 0.6){
+        endRecap();
+      }
+    };
     host.appendChild(v);
     window._recapMp4 = v;
     window._tkoCompanion = 'PLAYING: ' + clip.title + ' (' + clip.lagS + 's)';
+    _armEndGuard();   // arm immediately with the fallback duration; re-armed on metadata
     v.play().catch(() => { v.muted = true; v.play().catch(() => endRecap()); });
   } catch(e){ _recapActive = false; window._recapActiveSince = 0; }
 }
@@ -7416,6 +7553,7 @@ function endRecap(){
   try { _recapPlayer && _recapPlayer.destroy && _recapPlayer.destroy(); } catch(_){}
   _recapPlayer = null;
   _resetRecapHost();
+  clearTimeout(window._recapEndGuard);   // r206: don't let a stale guard end a future clip
   try { if (window._recapMp4){ window._recapMp4.pause(); window._recapMp4.remove(); window._recapMp4 = null; } } catch(_){}
   if (typeof RECAP._onEnd === 'function'){ const cb = RECAP._onEnd; RECAP._onEnd = null; setTimeout(cb, 650); }
 }
@@ -10303,7 +10441,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r205-wwsdiag-standalone';
+const BUILD_MARKER = 'r207-hr-montage';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
