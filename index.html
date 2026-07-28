@@ -2069,7 +2069,7 @@ const _mlbContentCache = new Map();   // gamePk -> {t, items}
    and hooks the r206-guarded RECAP._onEnd chain so each clip reliably hands to the next.
    Toggle: ?montage=1 (manual) or auto in a schedule window (see _montageShouldAuto).
    Skip-on-miss is safe because r206 guarantees a clip that stalls still ends. */
-const MONTAGE = { on:false, queue:[], i:-1, active:false, builtAt:0 };
+const MONTAGE = { on:false, queue:[], i:-1, active:false, builtAt:0, ownsWall:false, deferred:null };
 function _montageEtDay(off){ const d=new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));
   d.setDate(d.getDate()+(off||0)); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function _montageHrNum(desc){ const m=String(desc||'').match(/(?:homers?|grand slam)[^()]*\((\d+)\)/i); return m?parseInt(m[1],10):null; }
@@ -2293,6 +2293,7 @@ function _montageScrim(on){
 async function montageStart(){
   if(MONTAGE.active) return;
   MONTAGE.on=true; MONTAGE.active=true;
+  MONTAGE.ownsWall=true; MONTAGE.deferred=null;   // r228: claim the wall for the whole run
   _montageScrim(true);   // r208 #3: one scrim for the whole sequence — panel stays dimmed,
                          // so card→clip→card crossfades over a static backdrop, no repaint flash
   const n=await montageBuild();
@@ -2303,6 +2304,16 @@ function _montageStop(finished){
   MONTAGE.on=false; MONTAGE.active=false;
   MONTAGE._advancing=false; MONTAGE._clipAt=0;      // r219: reset watchdog stamps
   clearTimeout(MONTAGE._healT); MONTAGE._healT=null;
+  /* r228: release the wall. If a takeover was deferred during the montage (the real Yankee
+     recap that tried to interrupt), fire it now that we've reverted — but only on a natural
+     finish, not a manual stop, and only if it's still fresh (<3min old is meaningless here
+     since we don't stamp it; just fire the latest one). */
+  const _deferred = MONTAGE.deferred;
+  MONTAGE.ownsWall=false; MONTAGE.deferred=null;
+  if(finished && _deferred){
+    try{ console.log('[montage] wall released — firing deferred takeover'); }catch(_){}
+    setTimeout(()=>{ try{ showTakeover(_deferred); }catch(_){} }, 400);
+  }
   _montageScrim(false);   // r208 #3: drop the sequence scrim, panel returns
   clearTimeout(MONTAGE._holdT);
   if(RECAP._onEnd){ RECAP._onEnd=null; }
@@ -5125,6 +5136,20 @@ function tkoABuild(o){
     </div>${band}`;
 }
 function showTakeover(opts){
+  /* ★ r228 — MONTAGE OWNERSHIP LOCK. Mike's model: while a montage runs, IT owns the video
+     wall until its queue finishes. Everything else queues behind the montage's last beat.
+     This is the PREVENTIVE fix that replaces the reactive r219 watchdog as the primary
+     defense — a competing takeover (real Yankee recap) can no longer interrupt mid-montage
+     and cause the deadlock / audio-only teardown race we saw. The montage's OWN beats pass
+     montage:true and sail through; every other caller is blocked while ownsWall is set.
+     The most recent non-montage takeover is STASHED and fired once the montage reverts to
+     rotation (montage already 'tries to catch the real Yankee recap' on finish — this makes
+     that deterministic). r219 watchdog stays as the backstop against a lock hole. */
+  if (window.MONTAGE && MONTAGE.ownsWall && !(opts && opts.montage)){
+    MONTAGE.deferred = opts;   // remember the latest interrupt; fire it after the montage
+    try{ console.log('[montage] wall locked — deferring takeover', (opts&&opts.mlbTeam)||''); }catch(_){}
+    return;
+  }
   // ★ R116 — THE COMPANION HOOK. Both fire paths (Brain.fire and checkBigMoments)
   // funnel through showTakeover, so one hook catches both.
   // The card goes up NOW. The clip does not exist yet (17–39s). So we start a WATCH
@@ -10785,7 +10810,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r227-pill-center-nudge';
+const BUILD_MARKER = 'r228-montage-wall-lock';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
