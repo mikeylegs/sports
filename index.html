@@ -1351,6 +1351,16 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
   content:''; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
   width:30px; height:30px; border-radius:50%;
 }
+/* ★ r212 — always-on-top audio control. The header dot hides behind the video overlay
+   (z90) during clips, so it can't be tapped mid-montage. This fixed mirror sits above the
+   video, always visible and tappable. Mirrors _userMuted via setAudioDot(). */
+#audioFloat{ position:fixed; top:10px; right:12px; z-index:95; width:14px; height:14px;
+  border-radius:50%; cursor:pointer; display:none; }
+#audioFloat.show{ display:block; }
+#audioFloat.inactive{ background:#ef4444; box-shadow:0 0 8px rgba(239,68,68,0.8); animation:audioPulse 1.5s ease-in-out infinite; }
+#audioFloat.active{ background:#22c55e; box-shadow:0 0 8px rgba(34,197,94,0.8); }
+#audioFloat::before{ content:''; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:40px; height:40px; border-radius:50%; }
 .audio-dot.inactive{
   background:#ef4444;
   box-shadow:0 0 6px rgba(239,68,68,0.7);
@@ -7591,6 +7601,7 @@ function playCompanionClip(clip, callback){
        actually blocks autoplay — and remember that as a blocked state, not a preference. */
     v.muted = (typeof _userMuted !== 'undefined') ? _userMuted : true;
     v.volume = 1;
+    window._audioTxnAt = Date.now();   // r212: mark a playback transition for the toggle debounce
     _alog('pre-play');
     v.play().then(() => _alog(v.muted ? 'play OK (muted per toggle)' : 'play OK (with audio)'))
             .catch(() => { _alog('play REJECTED → muted fallback');
@@ -7621,6 +7632,7 @@ function endRecap(){
   _recapPlayer = null;
   _resetRecapHost();
   clearTimeout(window._recapEndGuard);   // r206: don't let a stale guard end a future clip
+  window._audioTxnAt = Date.now();       // r212: mark clip-end transition for the toggle debounce
   try { if (window._recapMp4){ window._recapMp4.pause(); window._recapMp4.remove(); window._recapMp4 = null; } } catch(_){}
   if (typeof RECAP._onEnd === 'function'){ const cb = RECAP._onEnd; RECAP._onEnd = null; setTimeout(cb, 650); }
 }
@@ -10508,7 +10520,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r211-dot-hit-area';
+const BUILD_MARKER = 'r212-fullscreen-audio-toggle';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -11768,6 +11780,13 @@ function setAudioDot(){
     dot.classList.toggle('inactive', _userMuted);
     dot.title = _userMuted ? 'Muted \u2014 tap to unmute' : 'Unmuted \u2014 tap to mute';
   });
+  // r212: the always-on-top mirror dot
+  let fl = document.getElementById('audioFloat');
+  if (!fl){ fl = document.createElement('div'); fl.id = 'audioFloat';
+    fl.title = 'Audio'; (document.querySelector('.shell')||document.body).appendChild(fl); }
+  fl.classList.add('show');
+  fl.classList.toggle('active', !_userMuted);
+  fl.classList.toggle('inactive', _userMuted);
 }
 /* ★ r209 — REAL AUTOPLAY UNLOCK. Green dot = _userMuted false, toggle reaches the mp4
    (r208), yet montage clips stayed silent. Cause: the browser only grants autoplay-with-
@@ -11828,12 +11847,18 @@ function toggleAudio(){
      · ANY gesture UNLOCKS audio (the browser needs a real gesture; harmless, idempotent)
      · ONLY a click on the audio dot TOGGLES mute (the dot is the single source of truth)
    This also fixes the long-standing footgun that the entire screen was a mute button. */
+/* ★ r212 — full-screen tap toggle is BACK, but debounced. r210 scoped toggling to the dot
+   because any click flipped mute (the flap). The flap's real cause was clicks firing during
+   playback TRANSITIONS (a clip starting/ending dispatched a synthetic click-ish event that
+   toggled). So instead of shrinking the target to an un-tappable 8px dot, we make the whole
+   screen a toggle again but IGNORE toggles within 500ms of a clip start/end. A deliberate
+   human tap is never that precisely timed to a transition; the stray ones always were. */
 function _audioGesture(ev){
-  audioUnlocked = true;                       // unlock is safe to set on any gesture
-  _primeAudioUnlock();                         // r209: real audible playback in-gesture
-  const t = ev && ev.target;
-  const onDot = t && (t.id === 'audioDot' || (t.closest && t.closest('#audioDot, .audio-dot')));
-  if (onDot) toggleAudio();                     // ONLY the dot toggles mute
+  audioUnlocked = true;
+  _primeAudioUnlock();
+  // debounce: swallow toggles that land right on a playback transition
+  if (window._audioTxnAt && (Date.now() - window._audioTxnAt) < 500) return;
+  toggleAudio();                                // any deliberate tap toggles
 }
 document.addEventListener('click',      _audioGesture);
 document.addEventListener('touchstart', _audioGesture);
