@@ -5794,14 +5794,26 @@ const RECAP = {
    This probe makes the collision observable and reproducible WITHOUT waiting for a real
    recap. ?montagelog=1 renders a live state HUD; montageInterrupt() fires a fake takeover. */
 function _montageState(){
-  return { on:MONTAGE.on, active:MONTAGE.active, i:MONTAGE.i, queueLen:(MONTAGE.queue||[]).length,
-    hasOnEnd:(typeof RECAP._onEnd==='function'),
-    onEndIsMontage:(RECAP._onEnd && String(RECAP._onEnd).indexOf('_montageBeat')>=0),
-    scrimUp:!!(document.getElementById('montage-scrim')),
-    tkoScrimUp:!!(document.getElementById('tko-scrim') && document.getElementById('tko-scrim').classList.contains('show')),
-    recapActive:(typeof _recapActive!=='undefined'?_recapActive:'?'),
-    recapMp4:!!window._recapMp4,
-    takeoverShown:!!(document.getElementById('mlb-takeover') && document.getElementById('mlb-takeover').className.indexOf('show')>=0) };
+  /* ★ r218 — each field read individually inside try/catch. The montagelog interval starts
+     ~1s after load; several vars it reads (_recapActive @~7335, and const RECAP/MONTAGE if
+     the source order ever shifts) may still be in their temporal dead zone then. `typeof`
+     does NOT save you from the TDZ for let/const — `typeof _recapActive` THROWS while the
+     variable is dead, which is exactly the 13-error box. Real try/catch is the only guard
+     that works; a not-yet-initialized field just reports '…' until it comes alive. */
+  const g = (fn) => { try { return fn(); } catch(_) { return '…'; } };
+  return {
+    on:          g(()=>MONTAGE.on),
+    active:      g(()=>MONTAGE.active),
+    i:           g(()=>MONTAGE.i),
+    queueLen:    g(()=>(MONTAGE.queue||[]).length),
+    hasOnEnd:    g(()=>typeof RECAP._onEnd==='function'),
+    onEndIsMontage: g(()=>!!(RECAP._onEnd && String(RECAP._onEnd).indexOf('_montageBeat')>=0)),
+    scrimUp:     g(()=>!!document.getElementById('montage-scrim')),
+    tkoScrimUp:  g(()=>!!(document.getElementById('tko-scrim') && document.getElementById('tko-scrim').classList.contains('show'))),
+    recapActive: g(()=>_recapActive),
+    recapMp4:    g(()=>!!window._recapMp4),
+    takeoverShown: g(()=>!!(document.getElementById('mlb-takeover') && document.getElementById('mlb-takeover').className.indexOf('show')>=0))
+  };
 }
 let _montageLogT=null;
 function _montageLogPaint(){
@@ -5814,8 +5826,9 @@ function _montageLogPaint(){
       +'color:#cdd8e6;white-space:pre-wrap;pointer-events:none;';
     (document.querySelector('.shell')||document.body).appendChild(box); }
   const st=_montageState();
-  const warn = (st.on && st.scrimUp && !st.recapMp4 && !st.takeoverShown) ? '  \u26a0 DEADLOCK (on+scrim, nothing playing)'
-             : (st.on && st.hasOnEnd && !st.onEndIsMontage) ? '  \u26a0 HIJACKED (_onEnd not montage)'
+  // r218: fields may read '…' during early load; only flag warnings on real booleans
+  const warn = (st.on===true && st.scrimUp===true && !st.recapMp4 && !st.takeoverShown) ? '  \u26a0 DEADLOCK (on+scrim, nothing playing)'
+             : (st.on===true && st.hasOnEnd===true && st.onEndIsMontage===false) ? '  \u26a0 HIJACKED (_onEnd not montage)'
              : '  ok';
   box.textContent='[montagelog] '+new Date().toLocaleTimeString()+warn+'\n'
     +'  on='+st.on+' active='+st.active+' i='+st.i+'/'+st.queueLen+'\n'
@@ -10638,7 +10651,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r217-probe-tdz-fix';
+const BUILD_MARKER = 'r218-tdz-real-catch';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -12829,7 +12842,7 @@ DONE SO FAR
     one cluster; right zone .mlb-header-status unchanged in role. hc-date/time/
     live bumped 19px->26px (above the 25.9px readability cutoff); sb-txt/sb-cd
     ->24px, sb-stale->22px, sb-sep/sb-dot/sb-cd-bar scaled up -- all scoped under
-    .mlb-header so the generic off-season per-row status-bug (same sb-* classes)https://github.com/mikeylegs/sports/blob/main/index.html
+    .mlb-header so the generic off-season per-row status-bug (same sb-* classes)
     is untouched. #hcDate/#hcTime/#hcLive still updated every second in tick()
     via getAllById; window._mlbLiveCount set in renderMLBFullscreen (live game
     count). .lev-glow / #mlb-takeover top moved 8%->9.5% in lockstep with the
