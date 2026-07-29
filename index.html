@@ -10240,6 +10240,31 @@ if (new URLSearchParams(location.search).get('wws') !== '0'){
     + 'font:11px/1.5 ui-monospace,Menlo,monospace;color:#9fd;white-space:pre;pointer-events:auto;';
   document.body.appendChild(el);
 
+  /* ★ r235 — CC RE-MOUNT (Debug tab, tab one). Register this overlay's element so the
+     Command Center can host it inside the Debug tab when open, and return it to its fixed
+     wall position when closed. State-anchored (reads CC-open, never toggles) + idempotent —
+     the exact pattern proven in remount-proof.html. The renderer below keeps writing to `el`
+     regardless of where it's mounted; we move the element, never recreate it. Wrapped so a
+     failure can't touch the wall. */
+  el._wallCss = el.style.cssText;                       // remember the fixed wall styling
+  window._ccDebugEl = el;
+  window._placeCcDebug = function(ccOpen){
+    try{
+      if(ccOpen){
+        var host=document.getElementById('cc-debug');
+        if(host){
+          el.style.cssText='position:static;right:auto;top:auto;z-index:auto;width:auto;max-width:100%;'
+            + 'background:rgba(5,8,16,0.88);border:1px solid rgba(255,255,255,0.15);border-radius:8px;'
+            + 'padding:8px 11px;font:11px/1.5 ui-monospace,Menlo,monospace;color:#9fd;white-space:pre;pointer-events:auto;';
+          if(el.parentNode!==host) host.appendChild(el);
+        }
+      } else {
+        el.style.cssText=el._wallCss;                   // restore exact fixed wall styling
+        if(el.parentNode!==document.body) document.body.appendChild(el);
+      }
+    }catch(_){}
+  };
+
   // ── header bar: collapse toggle + copy-log ────────────────────────────────
   const bar = document.createElement('div');
   bar.style.cssText = 'display:flex;gap:6px;align-items:center;margin:-2px 0 5px;';
@@ -10894,7 +10919,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r234-dynamic-hero-fit';
+const BUILD_MARKER = 'r235-cc-debug-remount';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -12889,6 +12914,18 @@ window.CC = (function(){
   }
   function renderPane(id){
     var el=$('cc-'+id); if(!el) return;
+    /* r235: the Debug tab HOSTS the live ?debug=1 overlay element (re-mounted by
+       _placeCcDebug). If that element exists, it IS the tab content — don't overwrite it.
+       If ?debug=1 wasn't set, there's no overlay to host, so show the enable hint. */
+    if(id==='debug'){
+      if(window._ccDebugEl){
+        if(open && window._placeCcDebug) window._placeCcDebug(true);   // ensure it's mounted here
+        return;                                                       // live element owns the pane
+      }
+      el.innerHTML='<div class="em"><b>Debug HUD is off.</b><br>Add <code>?debug=1</code> and reload — '
+        + 'the live debug HUD will mount right here in this tab (and on the wall when the panel is closed).</div>';
+      return;
+    }
     var txt=_ccRead(id);
     var flag=({tko:'tkolog',sources:'pools',yt:'ytlog',debug:'dirlog'})[id];
     if(txt){ el.innerHTML='<pre>'+String(txt).replace(/</g,'&lt;')+'</pre>'; return; }
@@ -12930,6 +12967,7 @@ window.CC = (function(){
     toggle:function(){ try{
         open=!open; var p=$('ccp'); if(p) p.className=open?'open':'';
         document.body.style.cursor=open?'auto':'';   // wall runs cursor:none; restore on close
+        try{ if(window._placeCcDebug) window._placeCcDebug(open); }catch(_){}  // r235: re-mount Debug HUD
         if(open) renderAll();
       }catch(e){} },
     tab:function(k,btn){ try{
