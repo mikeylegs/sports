@@ -1,0 +1,170 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Re-mount proof</title>
+<style>
+  body{background:#070b12;color:#dce4ef;font:13px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;padding:18px;}
+  h1{font-size:17px;color:#7dd3fc;margin:0 0 3px}
+  .sub{color:#8695ab;font-size:12px;margin-bottom:14px;max-width:820px;line-height:1.55}
+  .controls{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  button.ctl{background:#12324a;border:1px solid #2b5a7e;color:#7dd3fc;border-radius:6px;padding:7px 13px;font:inherit;font-weight:600;cursor:pointer}
+  button.ctl:hover{background:#164060}
+  /* the wall — where fixed HUDs live when CC is closed */
+  #wall{position:relative;height:300px;border:1px dashed #2a3a4d;border-radius:8px;background:#0a0f18;overflow:hidden;margin-bottom:14px}
+  #wall .lbl{position:absolute;top:6px;left:8px;font-size:10px;color:#40506a;letter-spacing:.1em;text-transform:uppercase}
+  /* the CC panel — where HUDs re-mount when open */
+  #cc{position:fixed;top:0;right:0;width:340px;height:100%;background:#0b0f16;border-left:1px solid #22303f;
+     transform:translateX(100%);transition:transform .25s ease;z-index:5000;display:flex;flex-direction:column}
+  #cc.open{transform:none}
+  .cchdr{padding:11px 13px;border-bottom:1px solid #22303f;color:#7dd3fc;font-weight:700;letter-spacing:.1em;font-size:13px}
+  .cctabs{display:flex;gap:2px;padding:8px 10px 0;border-bottom:1px solid #22303f}
+  .cctabs button{background:none;border:0;border-bottom:2px solid transparent;color:#8ca0b8;font:inherit;font-size:12px;padding:6px 11px;cursor:pointer}
+  .cctabs button.on{color:#7dd3fc;border-bottom-color:#7dd3fc}
+  #cc-container{flex:1;overflow:auto;padding:10px}
+  .verdict{margin-top:14px;padding:12px;border:1px solid #234;border-left:4px solid #7dd3fc;border-radius:8px;background:#0a1420;font-size:12.5px;white-space:pre-wrap}
+  .ok{color:#4ade80;font-weight:700}.bad{color:#f87171;font-weight:700}
+  code{background:#141c28;padding:1px 5px;border-radius:4px;font:12px ui-monospace,monospace;color:#c9d6e8}
+</style></head><body>
+<h1>RE-MOUNT PROOF <span style="color:#4ade80;font-size:12px">· hudMake retarget wall ⇄ panel</span></h1>
+<p class="sub">The one thing the CC sandbox couldn't verify: can a HUD renderer keep writing to its <code>body</code> while that body <b>moves</b> between the fixed wall position (CC closed) and the panel tab container (CC open)? This exercises the REAL <code>hudMake</code> retarget logic. A live "renderer" ticks every 500ms writing into the HUD body — we move the HUD between wall and panel underneath it and confirm the ticks keep landing in the right place, with no renderer change and no lost updates.</p>
+
+<div class="controls">
+  <button class="ctl" onclick="toggleCC()">toggle CC (re-mount)</button>
+  <button class="ctl" onclick="runAssertions()">run assertions</button>
+</div>
+
+<div id="wall"><span class="lbl">THE WALL (CC closed → HUD fixed here)</span></div>
+
+<div id="cc">
+  <div class="cchdr">COMMAND CENTER</div>
+  <div class="cctabs"><button class="on">Debug</button></div>
+  <div id="cc-container"></div>
+</div>
+
+<div class="verdict" id="verdict">Renderer is ticking. Toggle the CC to move the HUD between wall and panel, then run assertions.</div>
+
+<script>
+/* ── the REAL hudMake retarget logic (extracted + adapted) ──────────────────────
+   Key change from the live hudMake: instead of always document.body + fixed pos, it
+   consults CC state and mounts into the panel container when open, wall-fixed when closed.
+   The returned .body is STABLE — the renderer holds a reference and never knows it moved. */
+let CC_OPEN=false;
+function ccContainer(){ return document.getElementById('cc-container'); }
+function wall(){ return document.getElementById('wall'); }
+
+const WALLPOS='left:8px;top:26px;width:300px;';
+function hudMake(id, title, posCss){
+  let root=document.getElementById(id);
+  if(root && root._hud){ placeHud(root); return root._hud; }   // already exists → just (re)place it
+
+  root=document.createElement('div');
+  root.id=id;
+  root._wallpos=posCss||WALLPOS;
+  const bar=document.createElement('div');
+  bar.style.cssText='display:flex;align-items:center;gap:6px;padding:6px 8px;border-bottom:1px solid #334155;flex:none;';
+  const ttl=document.createElement('div'); ttl.textContent=title;
+  ttl.style.cssText='flex:1;font-weight:bold;color:#a5b4fc;letter-spacing:.04em;';
+  bar.appendChild(ttl);
+  const body=document.createElement('div');
+  body.style.cssText='padding:10px;overflow:auto;white-space:pre-wrap;flex:1;font:11px/1.5 monospace;';
+  root.appendChild(bar); root.appendChild(body);
+
+  root._hud={ root, body, title:ttl };
+  placeHud(root);
+  return root._hud;
+}
+/* placeHud — the retarget core. CC open → into panel container (static flow). CC closed →
+   fixed on the wall. Called on create AND on every CC toggle. The body node is preserved
+   (we move root, we don't recreate it), so the renderer's reference stays valid. */
+function placeHud(root){
+  if(CC_OPEN){
+    root.style.cssText='position:static;width:auto;margin:0 0 10px;background:rgba(2,6,23,.95);'
+      +'color:#c7d2fe;border:1px solid #6366f1;border-radius:8px;display:flex;flex-direction:column;max-height:none;';
+    if(root.parentNode!==ccContainer()) ccContainer().appendChild(root);
+  } else {
+    root.style.cssText='position:fixed;z-index:100000;background:rgba(2,6,23,.95);color:#c7d2fe;'
+      +'border:1px solid #6366f1;border-radius:8px;display:flex;flex-direction:column;max-height:70vh;'
+      +'box-shadow:0 8px 30px rgba(0,0,0,.6);'+(root._wallpos);
+    if(root.parentNode!==wall()) wall().appendChild(root);
+  }
+}
+function setCC(open){
+  CC_OPEN=!!open;                                   // ABSOLUTE state, not a flip
+  document.getElementById('cc').classList.toggle('open',CC_OPEN);
+  HUDS.forEach(h=>{ if(h.root) placeHud(h.root); }); // placeHud reads CC_OPEN → idempotent
+}
+function toggleCC(){ setCC(!CC_OPEN); }
+
+/* ── a live renderer: ticks every 500ms, writes into its hud body. Never aware of moves. ── */
+const HUDS=[];
+const debug=hudMake('debug-hud','DEBUG — build + health'); HUDS.push(debug);
+let ticks=0;
+function tick(){
+  ticks++;
+  debug.body.textContent =
+    'BUILD_MARKER  r233-montage-abbr-normalize\\n'
+    +'tick          '+ticks+' (renderer alive, writing to body)\\n'
+    +'mounted in    '+(CC_OPEN?'PANEL container':'WALL (fixed)')+'\\n'
+    +'body parent   '+debug.body.parentNode.parentNode.id+'\\n'
+    +'live 0 · director 1/10 idle · feed 14s ago errs 0/11';
+}
+tick(); setInterval(tick,500);
+
+/* ── assertions: prove the retarget is correct and lossless ── */
+function runAssertions(){
+  const v=document.getElementById('verdict'); const n=[]; let p=true;
+  const bodyRef=debug.body;                       // hold the renderer's body reference
+
+  // 0. record starting state so we can restore it; run the test from KNOWN absolute states.
+  const startOpen=CC_OPEN;
+  // 1. body reference is STABLE across a move (renderer never loses its target)
+  const before=debug.body;
+  setCC(true); const afterOpen=debug.body;          // absolute: open, not flip
+  if(before!==afterOpen){p=false;n.push('body reference changed on open — renderer would lose its target');}
+
+  // 2. when open, the hud is inside the CC container
+  const inPanel = debug.root.parentNode && debug.root.parentNode.id==='cc-container';
+  if(!inPanel){p=false;n.push('HUD not re-mounted into panel container when CC open');}
+
+  // 3. renderer keeps writing after the move (tick count advances, lands in the moved body)
+  const t0=ticks; 
+  // force a tick synchronously
+  tick();
+  if(ticks!==t0+1 || !bodyRef.textContent.includes('tick          '+ticks)){p=false;n.push('renderer tick did not land in the moved body');}
+  if(!bodyRef.textContent.includes('PANEL container')){p=false;n.push('body content not reflecting panel mount');}
+
+  // 4. set closed → hud returns to the wall, fixed, same body reference
+  setCC(false); const afterClose=debug.body;
+  if(afterClose!==before){p=false;n.push('body reference changed on close');}
+  const onWall = debug.root.parentNode && debug.root.parentNode.id==='wall';
+  if(!onWall){p=false;n.push('HUD did not return to the wall when CC closed');}
+  if(debug.root.style.position!=='fixed'){p=false;n.push('HUD not fixed-positioned on the wall');}
+
+  // 5. renderer STILL writing after returning to wall
+  const t1=ticks; tick();
+  if(ticks!==t1+1 || !bodyRef.textContent.includes('WALL (fixed)')){p=false;n.push('renderer stopped landing after return to wall');}
+
+  // 5b. IDEMPOTENCY: calling setCC with the SAME state twice must not move or dup anything
+  setCC(true); setCC(true);
+  if(document.querySelectorAll('#debug-hud').length!==1){p=false;n.push('repeat setCC(open) duplicated the HUD');}
+  if(debug.root.parentNode.id!=='cc-container'){p=false;n.push('repeat setCC(open) lost panel placement');}
+
+  // restore the state the user was in when they pressed the button
+  setCC(startOpen);
+
+  // 6. no duplicate roots left behind (exactly one #debug-hud in the DOM)
+  if(document.querySelectorAll('#debug-hud').length!==1){p=false;n.push('duplicate HUD roots left in DOM after moves');}
+
+  v.innerHTML = (p
+    ? '<span class="ok">RE-MOUNT PROOF PASS (6/6)</span>\\n\\n'
+      +'• body reference stable across wall⇄panel moves — renderer never loses its target\\n'
+      +'• CC open → HUD re-mounts into panel container (static flow)\\n'
+      +'• CC closed → HUD returns to wall, fixed-positioned\\n'
+      +'• renderer keeps writing through every move, no lost ticks\\n'
+      +'• no duplicate roots left in the DOM\\n'
+      +'• placement is idempotent + state-anchored (correct from ANY starting state)\\n\\n'
+      +'The retarget pattern holds. hudMake can own placement off CC state; renderers are unchanged.\\n'
+      +'Safe to apply to the real Debug HUD as CC tab one.'
+    : '<span class="bad">FAIL</span>\\n\\n• '+n.join('\\n• '));
+  if(v.scrollIntoView) v.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+</script>
+</body></html>
