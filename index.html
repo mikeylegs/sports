@@ -10919,7 +10919,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r239-cc-fold-favorites';
+const BUILD_MARKER = 'r240-cc-pipeline';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -12648,6 +12648,10 @@ body.ccopen #ccdot{top:20px;left:15px}   /* r238: inline-left of the COMMAND CEN
 #ccp .h{padding:12px 14px 12px 34px;border-bottom:1px solid #22303f;display:flex;align-items:center;gap:10px;flex-shrink:0}   /* r237: left room for the in-header dot */
 #ccp .h b{font-size:calc(var(--fs) - 1px);color:#7dd3fc;letter-spacing:.16em;flex:1;font-weight:700}
 #ccp .g.pinned h3{color:#fbbf24}   /* P1: pinned group heading */
+#ccp .subtabs{display:flex;gap:4px;margin:0 0 12px;border-bottom:1px solid #22303f}
+#ccp .subtabs button{background:none;border:0;border-bottom:2px solid transparent;color:#8ca0b8;
+  font:inherit;font-size:calc(var(--fs) - 2px);padding:5px 12px 7px;cursor:pointer}
+#ccp .subtabs button.on{color:#7dd3fc;border-bottom-color:#7dd3fc}
 #ccp .h .mk{color:#8ca0b8;font-size:calc(var(--fs) - 2px)}
 #ccp .h button{background:#16202e;border:1px solid #2a3a4d;color:#9fb0c4;border-radius:5px;
   width:27px;height:25px;font:inherit;font-size:calc(var(--fs) - 2px);cursor:pointer}
@@ -12702,7 +12706,7 @@ body.ccopen #ccdot{top:20px;left:15px}   /* r238: inline-left of the COMMAND CEN
   <div class="bd">
     <div class="pn on" id="cc-flags"></div>
     <div class="pn" id="cc-debug"></div><div class="pn" id="cc-tko"></div>
-    <div class="pn" id="cc-sources"></div><div class="pn" id="cc-yt"></div>
+    <div class="pn" id="cc-pipeline"></div>
     <div class="pn" id="cc-watch"></div>
   </div>
 </div>
@@ -12755,9 +12759,9 @@ window.CC = (function(){
    {g:'Maintenance',n:'cleardead',t:'action',d:'Clear dead-id list'}
   ];
   var TABS=[['flags','Flags'],['debug','Debug'],['tko','Takeover'],
-            ['sources','Sources'],['yt','YouTube'],['watch','Watchlist']];
-  var DUMPS={tko:'tkoDump',watch:'favDump',sources:'poolsDump',yt:'ytltDump',debug:'dirDump'};
-  var stars=[],FSZ=14,open=false;
+            ['pipeline','Pipeline'],['watch','Watchlist']];
+  var DUMPS={tko:'tkoDump',watch:'favDump',pipeline:'poolsDump',debug:'dirDump'};   // P3: sources/yt folded into pipeline
+  var stars=[],FSZ=14,open=false,PIPE_SUB='sources';   // P3: pipeline sub-tab
   var $=function(i){return document.getElementById(i)};
   var qs=function(){ try{ return new URLSearchParams(location.search); }catch(_){ return new URLSearchParams(); } };
 
@@ -12934,6 +12938,24 @@ window.CC = (function(){
         + 'the live debug HUD will mount right here in this tab (and on the wall when the panel is closed).</div>';
       return;
     }
+    /* P3 (r240): Pipeline = Sources + YouTube under one tab, sub-tabs (one shown at a time).
+       These logs grow long, so stacking meant endless scroll; sub-tabs give each the full
+       pane. Both stay flag-gated (?pools / ?ytlog) — collection has real network cost. */
+    if(id==='pipeline'){
+      var sub=PIPE_SUB, subFlag=(sub==='sources'?'pools':'ytlog');
+      var txtP=_ccRead(sub);
+      var bodyP = txtP
+        ? '<pre>'+String(txtP).replace(/</g,'&lt;')+'</pre>'
+        : '<div class="em"><b>Nothing recorded yet.</b><br>Add <code>?'+subFlag+'=1</code> and reload — '
+          + 'this fills in as events happen. <span style="color:#6b8299">(Collection is flag-gated here '
+          + 'because it makes live network calls.)</span></div>';
+      el.innerHTML =
+          '<div class="subtabs">'
+        + '<button class="'+(sub==='sources'?'on':'')+'" onclick="CC.pipe(\'sources\')">\ud83d\udce6 Sources</button>'
+        + '<button class="'+(sub==='yt'?'on':'')+'" onclick="CC.pipe(\'yt\')">\u25b6 YouTube</button>'
+        + '</div>' + bodyP;
+      return;
+    }
     var txt=_ccRead(id);
     var flag=({tko:'tkolog',sources:'pools',yt:'ytlog',debug:'dirlog'})[id];
     if(txt){ el.innerHTML='<pre>'+String(txt).replace(/</g,'&lt;')+'</pre>'; return; }
@@ -12988,6 +13010,7 @@ window.CC = (function(){
         var p=$('cc-'+k); if(p) p.classList.add('on');
         try{ renderPane(k); }catch(_){}   // r200: refresh on switch, never stale
       }catch(e){} },
+    pipe:function(which){ try{ PIPE_SUB=which; renderPane('pipeline'); }catch(e){} },   // P3: pipeline sub-tab
     star:function(n){ try{ var i=stars.indexOf(n); if(i<0) stars.push(n); else stars.splice(i,1);
         savePrefs(); renderFlags(); }catch(e){} },
     fsz:function(d){ try{ FSZ=Math.max(12,Math.min(20,FSZ+d));
