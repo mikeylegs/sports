@@ -10919,7 +10919,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r238-dot-placement';
+const BUILD_MARKER = 'r239-cc-fold-favorites';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -12647,6 +12647,7 @@ body.ccopen #ccdot{top:20px;left:15px}   /* r238: inline-left of the COMMAND CEN
 #ccp.open{transform:none}
 #ccp .h{padding:12px 14px 12px 34px;border-bottom:1px solid #22303f;display:flex;align-items:center;gap:10px;flex-shrink:0}   /* r237: left room for the in-header dot */
 #ccp .h b{font-size:calc(var(--fs) - 1px);color:#7dd3fc;letter-spacing:.16em;flex:1;font-weight:700}
+#ccp .g.pinned h3{color:#fbbf24}   /* P1: pinned group heading */
 #ccp .h .mk{color:#8ca0b8;font-size:calc(var(--fs) - 2px)}
 #ccp .h button{background:#16202e;border:1px solid #2a3a4d;color:#9fb0c4;border-radius:5px;
   width:27px;height:25px;font:inherit;font-size:calc(var(--fs) - 2px);cursor:pointer}
@@ -12699,7 +12700,7 @@ body.ccopen #ccdot{top:20px;left:15px}   /* r238: inline-left of the COMMAND CEN
   <div class="ov" id="ccov"><b>&#9888; OVERRIDES</b><span id="ccovl"></span></div>
   <div class="tb" id="cctb"></div>
   <div class="bd">
-    <div class="pn on" id="cc-fav"></div><div class="pn" id="cc-flags"></div>
+    <div class="pn on" id="cc-flags"></div>
     <div class="pn" id="cc-debug"></div><div class="pn" id="cc-tko"></div>
     <div class="pn" id="cc-sources"></div><div class="pn" id="cc-yt"></div>
     <div class="pn" id="cc-watch"></div>
@@ -12753,7 +12754,7 @@ window.CC = (function(){
    {g:'Maintenance',n:'tkodump',t:'action',d:'Copy takeover log JSON'},
    {g:'Maintenance',n:'cleardead',t:'action',d:'Clear dead-id list'}
   ];
-  var TABS=[['fav','\u2605 Favorites'],['flags','Flags'],['debug','Debug'],['tko','Takeover'],
+  var TABS=[['flags','Flags'],['debug','Debug'],['tko','Takeover'],
             ['sources','Sources'],['yt','YouTube'],['watch','Watchlist']];
   var DUMPS={tko:'tkoDump',watch:'favDump',sources:'poolsDump',yt:'ytltDump',debug:'dirDump'};
   var stars=[],FSZ=14,open=false;
@@ -12846,20 +12847,23 @@ window.CC = (function(){
   }
   function renderFlags(){
     var act=activeFlags();
+    /* P1 (r239): Favorites folded into Flags. Starred flags render as a PINNED group at the
+       TOP of the flags pane (sort-to-top), then the normal groups below. No separate tab. */
     var picked=stars.map(function(n){for(var i=0;i<FLAGS.length;i++) if(FLAGS[i].n===n) return FLAGS[i];}).filter(Boolean);
-    var fv=$('cc-fav');
-    if(fv) fv.innerHTML = picked.length
-      ? '<div class="g"><h3>Pinned</h3>'+picked.map(function(f){return row(f,act)}).join('')+'</div>'
-        + '<div class="nt">Tap <b>\u2606</b> in Flags to pin. Tap a <b>?flag name</b> to copy a URL with it flipped.</div>'
-      : '<div class="em"><b>Nothing pinned.</b><br>Open Flags and tap \u2606 next to the ones you use most.</div>';
+    var fl=$('cc-flags'); if(!fl) return;
+    var html='';
+    if(picked.length){
+      html+='<div class="g pinned"><h3>\u2605 Pinned</h3>'
+          + picked.map(function(f){return row(f,act)}).join('')+'</div>';
+    }
     var groups=[]; FLAGS.forEach(function(f){ if(groups.indexOf(f.g)<0) groups.push(f.g); });
-    var fl=$('cc-flags');
-    if(fl) fl.innerHTML=groups.map(function(g){
+    html+=groups.map(function(g){
         return '<div class="g"><h3>'+g+'</h3>'
              + FLAGS.filter(function(f){return f.g===g}).map(function(f){return row(f,act)}).join('')+'</div>';
-      }).join('')
-      + '<div class="nt"><b>Read-only.</b> This panel reports state, it does not change it. Tap a flag name to '
-      + 'copy a URL with that flag flipped, then paste it. Toggling in place comes in a later build.</div>';
+      }).join('');
+    html+='<div class="nt"><b>Tap \u2606</b> to pin a flag to the top. <b>Read-only for now</b> — tap a flag name to '
+        + 'copy a URL with that flag flipped, then paste it. Toggling in place comes in a later build.</div>';
+    fl.innerHTML=html;
   }
   /* ★ r200 — SHOW THE DATA, do not offer to fetch it. r187 rendered a "tap to read"
      button because calling an unknown dump function felt risky — and tkoDump() really
