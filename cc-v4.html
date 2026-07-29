@@ -1,0 +1,476 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Command Center · sandbox v2</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#05070c;color:#e6edf7;font:14px/1.6 ui-monospace,Menlo,Consolas,monospace;overflow:hidden;height:100vh}
+
+  #wall{position:fixed;inset:0;background:
+      radial-gradient(120% 90% at 20% 20%,rgba(11,42,94,.5),transparent 60%),
+      radial-gradient(100% 80% at 85% 70%,rgba(30,20,60,.45),transparent 60%),#070b12;}
+  .fauxgrid{position:absolute;inset:52px 16px 16px;display:grid;
+      grid-template-columns:repeat(4,1fr);grid-auto-rows:112px;gap:11px;opacity:.5}
+  .fauxcard{border:1px solid #1b2432;border-radius:9px;background:#0c121d;padding:9px 11px;color:#3f4d63;font-size:12px}
+  .fauxcard b{color:#5d6e86;font-size:14px}
+  .fauxcard.hot{border-color:#2a4a6a;background:#0e1726;box-shadow:0 0 22px rgba(28,120,255,.16)}
+  #wallhdr{position:absolute;top:14px;left:18px;color:#3f4d63;font-size:12px;letter-spacing:.24em}
+
+  #dots{position:fixed;top:8px;right:8px;z-index:100000;display:flex;gap:9px;align-items:center}
+  .dot{width:13px;height:13px;border-radius:50%;position:relative;cursor:pointer}
+  .dot::after{content:'';position:absolute;inset:-8px;border-radius:50%}
+  .dot.mute{background:#3d4a5a;box-shadow:0 0 7px rgba(120,150,190,.4)}
+  .dot.cc{transition:background .25s,box-shadow .25s}
+  .dot.cc.green {background:#22c55e;box-shadow:0 0 9px rgba(34,197,94,.85)}
+  .dot.cc.amber {background:#f59e0b;box-shadow:0 0 9px rgba(245,158,11,.85)}
+  .dot.cc.red   {background:#ef4444;box-shadow:0 0 9px rgba(239,68,68,.85)}
+  .dot.cc.blink {animation:ccblink 1.25s ease-in-out infinite}
+  @keyframes ccblink{0%,100%{opacity:1}50%{opacity:.22}}
+
+  /* ── panel. --fs drives everything so the size control is one variable ── */
+  #cc{--fs:14px;
+      position:fixed;top:0;right:0;bottom:0;width:min(96vw,600px);z-index:99999;
+      background:rgba(6,10,18,.985);border-left:1px solid #22303f;
+      transform:translateX(102%);transition:transform .22s ease;display:flex;flex-direction:column;
+      font-size:var(--fs)}
+  #cc.open{transform:none}
+  .cchdr{padding:12px 14px;border-bottom:1px solid #22303f;display:flex;align-items:center;gap:10px;flex-shrink:0}
+  .cchdr h1{font-size:calc(var(--fs) - 1px);color:#7dd3fc;letter-spacing:.16em;flex:1}
+  .cchdr .mk{color:#8ca0b8;font-size:calc(var(--fs) - 2px)}
+  .cchdr .x{color:#9fb0c4;cursor:pointer;font-size:calc(var(--fs) + 5px);padding:0 6px}
+  .fs{display:flex;gap:3px}
+  .fs button{background:#16202e;border:1px solid #2a3a4d;color:#9fb0c4;border-radius:5px;
+             width:26px;height:24px;font:inherit;font-size:calc(var(--fs) - 2px);cursor:pointer}
+
+  /* health strip — 4 states */
+  .health{padding:10px 14px;border-bottom:1px solid #22303f;display:flex;flex-wrap:wrap;
+          gap:7px 16px;flex-shrink:0;font-size:calc(var(--fs) - 1px)}
+  .hs{display:flex;align-items:center;gap:6px;color:#c2cfe0}
+  .sdot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+  .sdot.ok{background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,.7)}
+  .sdot.warn{background:#f59e0b;box-shadow:0 0 6px rgba(245,158,11,.7)}
+  .sdot.bad{background:#ef4444;box-shadow:0 0 6px rgba(239,68,68,.7)}
+  .sdot.off{background:transparent;border:1px solid #3d4c60}
+
+  .ovr{padding:9px 14px;background:#2e1c07;border-bottom:1px solid #5c4213;
+       display:none;align-items:center;gap:10px;flex-shrink:0;font-size:calc(var(--fs) - 1px)}
+  .ovr.show{display:flex}
+  .ovr b{color:#fcd34d}
+  .ovr .lst{color:#d6c08a;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ovr button{background:#5c4213;border:1px solid #8a6518;color:#fde68a;border-radius:5px;
+              padding:4px 10px;font:inherit;font-size:calc(var(--fs) - 2px);cursor:pointer;flex-shrink:0}
+
+  .tabs{display:flex;gap:2px;padding:9px 10px 0;border-bottom:1px solid #22303f;flex-shrink:0;overflow-x:auto}
+  .tabs button{background:none;border:0;border-bottom:2px solid transparent;color:#8ca0b8;
+               padding:7px 11px;font:inherit;font-size:calc(var(--fs) - 1px);cursor:pointer;white-space:nowrap}
+  .tabs button.on{color:#7dd3fc;border-bottom-color:#7dd3fc}
+
+  .body{flex:1;overflow-y:auto;padding:12px 14px}
+  .pane{display:none}.pane.on{display:block}
+  .grp{margin-bottom:16px}
+  .grp h2{font-size:calc(var(--fs) - 3px);color:#b9a3f5;letter-spacing:.13em;margin-bottom:7px;text-transform:uppercase}
+
+  .flag{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:7px}
+  .flag:hover{background:#0f1725}
+  .star{color:#3d4c60;cursor:pointer;flex-shrink:0;font-size:calc(var(--fs) + 1px);width:18px;text-align:center}
+  .star.on{color:#fbbf24}
+  .flag .nm{color:#a8cdf0;width:118px;flex-shrink:0;font-size:calc(var(--fs) - 1px)}
+  .flag .ds{color:#93a5bb;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+            font-size:calc(var(--fs) - 1px)}
+  .flag .ds .val{color:#4ade80}
+
+  .sw{width:34px;height:18px;border-radius:9px;background:#22303f;position:relative;cursor:pointer;
+      flex-shrink:0;transition:background .15s}
+  .sw::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+             background:#8ca0b8;transition:transform .15s,background .15s}
+  .sw.on{background:#14496b}.sw.on::after{transform:translateX(16px);background:#7dd3fc}
+  .valin{background:#0d1725;border:1px solid #2a3a4d;color:#e6edf7;border-radius:5px;
+         padding:4px 7px;font:inherit;font-size:calc(var(--fs) - 2px);width:96px;flex-shrink:0}
+  .act{background:#3a2412;border:1px solid #6b4212;color:#fbbf24;border-radius:5px;
+       padding:4px 11px;font:inherit;font-size:calc(var(--fs) - 2px);cursor:pointer;flex-shrink:0}
+
+  .btns{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+  .btns button{background:#16202e;border:1px solid #2a3a4d;color:#7dd3fc;border-radius:6px;
+               padding:7px 12px;font:inherit;font-size:calc(var(--fs) - 1px);cursor:pointer}
+  pre{background:#0a1420;border:1px solid #22303f;border-radius:7px;padding:11px;
+      font-size:calc(var(--fs) - 2px);color:#a9bacd;white-space:pre-wrap;max-height:300px;overflow:auto;line-height:1.55}
+  .note{color:#8ca0b8;font-size:calc(var(--fs) - 2px);margin-top:11px;line-height:1.65}
+  .note b{color:#c2cfe0}
+  .empty{color:#8ca0b8;padding:16px 4px;line-height:1.7}
+  .empty b{color:#e6edf7}
+
+  #sb{position:fixed;left:0;bottom:0;z-index:100001;background:#0c121d;border:1px solid #22303f;
+      border-radius:0 9px 0 0;padding:10px 13px;font-size:12px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  #sb b{color:#b9a3f5;letter-spacing:.1em}
+  #sb button{background:#16202e;border:1px solid #2a3a4d;color:#7dd3fc;border-radius:5px;
+             padding:5px 10px;font:inherit;font-size:12px;cursor:pointer}
+  #sb .cur{color:#7dd3fc}
+
+  /* ── v3 uniform chrome ── */
+  .grp.pinned h2{color:#fbbf24}
+  .reloadbar{display:flex;align-items:center;gap:10px;margin:12px 0 4px;padding:10px;
+    background:#0c1622;border:1px solid #22303f;border-radius:8px;flex-wrap:wrap}
+  .reload{background:#12324a;border:1px solid #2b5a7e;color:#7dd3fc;border-radius:6px;
+    padding:7px 13px;font:inherit;font-weight:600;cursor:pointer}
+  .reload:hover{background:#164060}
+  .reloadnote{font:11px ui-monospace,Menlo,monospace;color:#6b8299;word-break:break-all;line-height:1.5}
+  /* v4 #5: CC log tabs show the FULL log (scroll), unlike the truncated wall HUD */
+  .pane pre{max-height:none;overflow:visible}
+  .val.off{color:#5b6b80;font-style:italic}
+  .btnlegend{font-size:10.5px;color:#6b8299;margin-top:5px}
+  .btns .clearbtn{background:#3a1620;border-color:#7e2b3a;color:#f8a0b0}
+  /* v4 #2: wrap long text instead of hiding behind ellipsis */
+  .ovr .lst{white-space:normal !important;overflow:visible !important;text-overflow:clip !important;word-break:break-word;line-height:1.5}
+  .flag .ds{white-space:normal !important;overflow:visible !important;text-overflow:clip !important}
+</style></head>
+<body>
+
+<div id="wall">
+  <div id="wallhdr">SPORTS WALL · 1920×1080</div>
+  <div class="fauxgrid">
+    <div class="fauxcard hot"><b>NYY 4 — 4 BOS</b><br>Bot 8th · 2 on</div>
+    <div class="fauxcard"><b>LAD 2 — 1 SF</b><br>Top 6th</div>
+    <div class="fauxcard"><b>HOU 7 — 3 SEA</b><br>Final</div>
+    <div class="fauxcard"><b>NYM 5 — 2 MIL</b><br>Bot 7th</div>
+    <div class="fauxcard"><b>ATL 1 — 0 PHI</b><br>Top 4th</div>
+    <div class="fauxcard"><b>CHC 6 — 6 STL</b><br>Bot 9th</div>
+    <div class="fauxcard"><b>TOR 3 — 5 TB</b><br>Final</div>
+    <div class="fauxcard"><b>SD 2 — 2 COL</b><br>Top 7th</div>
+  </div>
+</div>
+
+<div id="dots">
+  <div class="dot mute" title="existing mute dot"></div>
+  <div class="dot cc green" id="ccdot" title="command center" onclick="toggleCC()"></div>
+</div>
+
+<div id="cc">
+  <div class="cchdr">
+    <h1>COMMAND CENTER</h1>
+    <span class="mk" id="marker">r233-montage-abbr-normalize</span>
+    <span class="fs"><button onclick="fsz(-1)">A−</button><button onclick="fsz(1)">A+</button></span>
+  </div>
+
+  <div class="health" id="health"></div>
+
+  <div class="ovr" id="ovr">
+    <b>⚠ OVERRIDES</b><span class="lst" id="ovrlist"></span>
+    <button onclick="clearOverrides()">clear all</button>
+  </div>
+
+  <div class="reloadbar" id="reloadbar">
+    <button class="reload" onclick="reloadWithFlags()">⟳ Reload page with selected flags</button>
+    <span class="reloadnote" id="reloadPreview"></span>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+  <div class="body">
+    <div class="pane on" id="p-flags"></div>
+    <div class="pane" id="p-debug"></div>
+    <div class="pane" id="p-tko"></div>
+    <div class="pane" id="p-sources"></div>
+    <div class="pane" id="p-yt"></div>
+    <div class="pane" id="p-watch"></div>
+  </div>
+</div>
+
+<div id="sb">
+  <b>SANDBOX</b>
+  <span>dot: <span class="cur" id="stateName"></span></span>
+  <button onclick="cycleState()">cycle health ▸</button>
+  <button onclick="fakeOverride()">toggle override</button>
+  <button onclick="killFeed()">break a source</button>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════════════
+   REGISTRIES — the artefact that matters more than the UI.
+   Today the flag list lives in the handoff as prose and has ALREADY drifted:
+   docs say 36, the code has 52. If flags read from FLAGS, an unregistered
+   flag cannot exist. HUDS is the same idea for panels, so adding a HUD later
+   is one object entry rather than edits in four places.
+
+   type decides how a flag RENDERS and whether it may persist:
+     toggle  on/off switch, persistable
+     enum    picker, persistable
+     num     numeric field, persistable
+     text    free text, persistable
+     action  fires ONCE, never persists  ← the important one
+   ?tkoclear=1 persisted as a toggle would wipe the takeover log on every
+   reload, destroying the exact data you were trying to capture.
+   ════════════════════════════════════════════════════════════════════════ */
+const FLAGS=[
+ {g:'Core',        n:'debug',       t:'toggle', d:'Main HUD + build marker (Rule Zero)'},
+ {g:'Core',        n:'nobuildtag',  t:'toggle', d:'Hide the build tag'},
+ {g:'Core',        n:'noreload',    t:'toggle', d:'Suppress auto-reload'},
+ {g:'Core',        n:'demo',        t:'toggle', d:'Demo data mode'},
+ {g:'Takeover/HR', n:'tkolog',      t:'toggle', d:'Takeover timeline HUD'},
+ {g:'Takeover/HR', n:'companion',   t:'toggle', d:'Play companion clip + callback ribbon'},
+ {g:'Takeover/HR', n:'hrscope',     t:'enum',   d:'HR scope', opts:['fav','all','favplus'], def:'fav'},
+ {g:'Takeover/HR', n:'hrteams',     t:'text',   d:'Team override', ph:'BOS,LAD'},
+ {g:'Takeover/HR', n:'hrlum',       t:'num',    d:'Team-wash luminance target', def:'0.28'},
+ {g:'Takeover/HR', n:'pbphr',       t:'toggle', d:'0 = kill StatsAPI HR detector'},
+ {g:'Takeover/HR', n:'takeover',    t:'action', d:'Force a takeover now'},
+ {g:'Video',       n:'recaps',      t:'toggle', d:'0 = no recaps at all'},
+ {g:'Video',       n:'liverecaps',  t:'toggle', d:'1 = filler during live games (default OFF)'},
+ {g:'Video',       n:'ytlog',       t:'toggle', d:'YouTube playback log'},
+ {g:'Video',       n:'dirlog',      t:'toggle', d:'Director decision log'},
+ {g:'Video',       n:'mlbvid',      t:'toggle', d:'MLB video pipeline trace'},
+ {g:'Video',       n:'rotations',   t:'num',    d:'Cap filler rotations', ph:'200'},
+ {g:'Sources',     n:'pools',       t:'toggle', d:'Per-source gate chain'},
+ {g:'Sources',     n:'poolsdump',   t:'action', d:'Dump full pool state'},
+ {g:'Sources',     n:'wws',         t:'toggle', d:'0 = disable WWS layer'},
+ {g:'Sources',     n:'golfoff',     t:'toggle', d:'Kill golf sources'},
+ {g:'Sources',     n:'netbugs',     t:'toggle', d:'Network fault injection'},
+ {g:'Layout',      n:'mlbfull',     t:'toggle', d:'MLB fullscreen mode'},
+ {g:'Layout',      n:'ucs',         t:'toggle', d:'Universal Card System'},
+ {g:'Layout',      n:'glow',        t:'toggle', d:'Leverage glow'},
+ {g:'Layout',      n:'standlogos',  t:'toggle', d:'Standings logos'},
+ {g:'Data',        n:'yesterday',   t:'toggle', d:"Use yesterday's slate"},
+ {g:'Data',        n:'stale',       t:'toggle', d:'Simulate stale feed'},
+ {g:'Data',        n:'delayed',     t:'toggle', d:'Simulate rain delay'},
+ {g:'Data',        n:'pregame',     t:'toggle', d:'Force pregame state'},
+ {g:'Data',        n:'rosteroff',   t:'toggle', d:'Disable roster fetch'},
+ {g:'Brain',       n:'brain',       t:'toggle', d:'Brain section in debug HUD'},
+ {g:'Brain',       n:'brainfire',   t:'toggle', d:'Allow Brain to fire takeovers'},
+ {g:'Maintenance', n:'tkoclear',    t:'action', d:'Clear takeover log'},
+ {g:'Maintenance', n:'tkodump',     t:'action', d:'Copy takeover log JSON'},
+ {g:'Maintenance', n:'cleardead',   t:'action', d:'Clear dead-id list'}
+];
+
+/* HUDS — parallel registry. collect:'always' = records passively, no extra
+   network. collect:'flag' = initiates traffic, so it stays gated. */
+const HUDS=[
+ {id:'flags',  label:'Flags',       kind:'flags'},
+ {id:'debug',  label:'Debug',       flag:'debug',  collect:'always'},
+ {id:'tko',    label:'Takeover',    flag:'tkolog', collect:'always'},
+ {id:'sources',label:'Sources',     flag:'pools',  collect:'always'},
+ {id:'yt',     label:'YouTube',     flag:'ytlog',  collect:'always'},
+ {id:'brain',  label:'Brain',       flag:'brain',  collect:'always'},
+ {id:'watch',  label:'Watchlist',   collect:'always'}
+];
+
+let HEALTH=[
+  {n:'MLB StatsAPI', s:'ok'},  {n:'ESPN', s:'ok'},
+  {n:'YouTube', s:'warn', note:'quota latched · self-heals in 15m'},
+  {n:'MLB recaps', s:'ok'},    {n:'pga-golf', s:'bad', note:'FEED-FAIL'},
+  {n:'nhl-fill', s:'off', note:'disabled r176'}, {n:'randa-open', s:'off', note:'parked r176'},
+  {n:'Selector', s:'ok', note:'14 games'}, {n:'Proxy', s:'ok'}
+];
+
+const SAMPLE={
+ brain:`BRAIN \u2014 candidate scoring (?brain=1)
+last eval  15s ago \u00b7 0 candidates cleared threshold
+armed: yes   fireEnabled: no (brainfire off)
+
+recent evaluations:
+  9:41:02  NYY Ben Rice HR (30)     score 0.94  \u2192 FIRE
+  9:38:14  BOS lead change          score 0.61  \u2192 hold (below 0.75)
+  9:31:50  LAD double play          score 0.22  \u2192 hold
+  9:22:07  no candidates
+threshold 0.75 \u00b7 cooldown 90s \u00b7 last fire 9:41:02`,
+ debug:`r233-montage-abbr-normalize
+up 0m    live 0
+director 1/10  idx 0  idle
+lf-cards yank:yes mets:no
+vidCache \u2014
+proxies direct\u00b714s
+feed 14s ago   errs 0/11 fail/60s
+sel  15s ago \u00b7 10 events
+brain 15s ago \u00b7 0 cands
+recapEvt \u2014
+nextGame \u2014   standings 14s`,
+ tko:`TAKEOVER TIMELINE \u2014 full log (7 fired today)  \u00b7 scroll for all
+NYY \u00b7 takeover [mlbPbpHrWatch (r174)]  9:41:02 PM
+  ESPN lag (play\u2192fire): 4.1s   MLB cut (play\u2192clip): 24.8s
+  DEAD AIR (card\u2192clip): 108.2s   polls: 23   outcome: PLAYING
+  clip: Ben Rice game-tying three-run homer (30)
+NYM \u00b7 takeover  8:52:19 PM   polls: 21  outcome: PLAYING
+  clip: Lindor two-run shot (8)
+BOS \u00b7 takeover  9:12:44 PM   polls: 19  outcome: PLAYING
+CWS \u00b7 takeover  7:33:10 PM   polls: 14  outcome: PLAYING
+DET \u00b7 takeover  7:05:41 PM   polls: 17  outcome: PLAYING
+TEX \u00b7 takeover  6:48:22 PM   polls: 12  outcome: NO-CLIP (skipped)
+LAD \u00b7 takeover  10:02:55 PM  polls: 20  outcome: PLAYING
+  \u2014 end of log \u2014`,
+ sources:`hoh-nyy      12 items  ->  4 gated  ->  SERVED
+mlb-daily    15 items  ->  9 gated  ->  served
+golf-fill     8 items  ->  8 gated  ->  GATED-EMPTY
+pga-golf      -                     ->  FEED-FAIL
+fifa-fill     6 items  ->  6 gated  ->  GATED-EMPTY
+nhl-fill      -                     ->  DISABLED (r176)`,
+ yt:`09:41:12  search  "yankees highlights"   -> 200  12 results
+09:41:14  play    IwzESXtiOnY               -> playing
+09:52:03  search  "mets highlights"          -> 429  QUOTA LATCH 15m
+10:07:41  search  (skipped, latched)`,
+ watch:`{
+  "scope": "fav",
+  "favoriteTeams": ["NYM","NYY"],
+  "selectedGamesMatchedToLiveFeed": ["BOS@TOR (live)","SF@KC (live)"],
+  "unmatchedIds": [],
+  "willWatch": ["BOS@TOR","SF@KC","PIT@NYY"],
+  "pkUnresolved": []
+}`};
+
+const $=id=>document.getElementById(id);
+let overrides={}, stars=[], FSZ=14, STATE=0;
+const HSTATES=[['green','all sources healthy'],['amber','a source degraded'],['red','core feed failing']];
+
+/* ── persistence. Real build uses the same keys; sandbox shares the shape. ── */
+function loadStars(){
+  try{ const r=localStorage.getItem('cc.stars'); stars=r?JSON.parse(r):
+       ['debug','tkolog','companion','hrscope','pools','ytlog','rotations','brain']; }
+  catch(_){ stars=['debug','tkolog','companion','hrscope','pools']; }
+}
+function saveStars(){ try{ localStorage.setItem('cc.stars',JSON.stringify(stars)); }catch(_){} }
+function loadFsz(){ try{ const v=parseInt(localStorage.getItem('cc.fsz')); if(v>=12&&v<=20) FSZ=v; }catch(_){} }
+function saveFsz(){ try{ localStorage.setItem('cc.fsz',String(FSZ)); }catch(_){} }
+function fsz(d){ FSZ=Math.max(12,Math.min(20,FSZ+d)); $('cc').style.setProperty('--fs',FSZ+'px'); saveFsz(); }
+
+function toggleCC(){ $('cc').classList.toggle('open'); }
+function cycleState(){ STATE=(STATE+1)%HSTATES.length; renderDot(); }
+function killFeed(){
+  const t=HEALTH.find(h=>h.n==='ESPN');
+  t.s = t.s==='ok' ? 'bad' : 'ok';
+  t.note = t.s==='bad' ? 'no response 3 polls' : '';
+  STATE = HEALTH.some(h=>h.s==='bad') ? 2 : HEALTH.some(h=>h.s==='warn') ? 1 : 0;
+  renderHealth(); renderDot();
+}
+function renderDot(){
+  const [c,meaning]=HSTATES[STATE];
+  const blink=Object.keys(overrides).length>0;
+  $('ccdot').className='dot cc '+c+(blink?' blink':'');
+  $('stateName').textContent=c+(blink?' · blinking':' · solid')+' — '+meaning+(blink?' + overrides active':'');
+}
+function fakeOverride(){
+  if(Object.keys(overrides).length) overrides={};
+  else overrides={rotations:'200', hrscope:'all'};
+  renderOverrides(); renderFlags();; renderDot();
+}
+function clearOverrides(){ overrides={}; renderOverrides(); renderFlags();; renderDot(); }
+function renderOverrides(){
+  const keys=Object.keys(overrides);
+  $('ovr').classList.toggle('show',keys.length>0);
+  $('ovrlist').textContent=keys.map(k=>'?'+k+'='+overrides[k]).join('  ');
+}
+function renderHealth(){
+  $('health').innerHTML=HEALTH.map(h=>
+    `<span class="hs"><span class="sdot ${h.s}"></span>${h.n}</span>`).join('');
+}
+
+/* ── flag rows. One renderer, four control types. ── */
+function flagRow(f, showStar){
+  const on=overrides[f.n]!==undefined;
+  const starred=stars.includes(f.n);
+  const star = showStar
+    ? `<span class="star ${starred?'on':''}" onclick="toggleStar('${f.n}')">${starred?'\u2605':'\u2606'}</span>` : '';
+  let ctrl;
+  if(f.t==='action'){
+    ctrl=`<button class="act" onclick="runAction('${f.n}')">run</button>`;
+  } else if(f.t==='enum'){
+    /* v4 #4: valued flags get an EXPLICIT enable switch. OFF = flag absent (default state,
+       nothing in the URL). ON = flag sent with the chosen value. This is how you KILL a flag
+       like ?rotations back to default vs. force it to 0 — "no flag" is now a first-class
+       choice, not an empty-box side effect. */
+    ctrl=`<span class="sw ${on?'on':''}" onclick="togVal('${f.n}','${f.def||f.opts[0]}')" title="enable / disable this flag"></span>`
+        + `<select class="valin" ${on?'':'disabled'} onchange="setVal('${f.n}',this.value)">`
+        + f.opts.map(o=>`<option ${overrides[f.n]===o?'selected':''}>${o}</option>`).join('')+'</select>';
+  } else if(f.t==='num'||f.t==='text'){
+    ctrl=`<span class="sw ${on?'on':''}" onclick="togVal('${f.n}','${f.def||''}')" title="enable / disable this flag"></span>`
+        + `<input class="valin" ${on?'':'disabled'} placeholder="${f.ph||f.def||''}" value="${on?overrides[f.n]:''}"
+           onchange="setVal('${f.n}',this.value)">`;
+  } else {
+    ctrl=`<span class="sw ${on?'on':''}" onclick="tog('${f.n}')"></span>`;
+  }
+  const val = on && f.t!=='toggle' ? ` <span class="val">= ${overrides[f.n]}</span>` : (f.t!=='toggle'&&f.t!=='action'?` <span class="val off">(off · default)</span>`:'');
+  return `<div class="flag">${star}<span class="nm">?${f.n}</span>`
+       + `<span class="ds">${f.d}${val}</span>${ctrl}</div>`;
+}
+/* v4: toggle a VALUED flag on/off. on → seed with default value; off → remove entirely. */
+function togVal(n, def){
+  if(overrides[n]!==undefined){ delete overrides[n]; }
+  else { overrides[n]= def || '1'; }
+  afterChange();
+}
+function renderFlags(){
+  const pinned=stars.map(n=>FLAGS.find(f=>f.n===n)).filter(Boolean);
+  const groups=[...new Set(FLAGS.map(f=>f.g))];
+  const pinnedHtml = pinned.length
+    ? `<div class="grp pinned"><h2>\u2605 Pinned</h2>${pinned.map(f=>flagRow(f,true)).join('')}</div>` : '';
+  const groupsHtml = groups.map(g=>`<div class="grp"><h2>${g}</h2>`
+    + FLAGS.filter(f=>f.g===g).map(f=>flagRow(f,true)).join('')+'</div>').join('');
+  $('p-flags').innerHTML = pinnedHtml + groupsHtml
+    + `<div class="note"><b>Actions</b> (orange <i>run</i> buttons) fire once and never persist \u2014 a persisted
+       <code>?tkoclear</code> would wipe the takeover log on every reload, so actions are <b>excluded</b> from the
+       reload URL by type. <b>Toggles and values</b> go into the URL and reload (stage 2). Tap \u2606 to pin a flag to the top.</div>`;
+  updateReloadPreview();
+}
+function reloadURL(){
+  const parts=[];
+  Object.keys(overrides).forEach(k=>{
+    const f=FLAGS.find(x=>x.n===k);
+    if(!f || f.t==='action') return;
+    parts.push(k+'='+encodeURIComponent(overrides[k]));
+  });
+  return location.pathname + (parts.length?('?'+parts.join('&')):'');
+}
+function updateReloadPreview(){
+  const el=$('reloadPreview'); if(!el) return;
+  const u=reloadURL(); const q=u.indexOf('?')>=0?u.slice(u.indexOf('?')):'(no flags \u2014 clean reload)';
+  el.textContent=q;
+}
+function reloadWithFlags(){
+  alert('Would reload to:\n'+reloadURL()+'\n\n(actions excluded by type \u2014 they never persist)');
+}
+function renderHudPanes(){
+  HUDS.filter(h=>!h.kind).forEach(h=>{
+
+    const el=$('p-'+h.id); if(!el) return;
+    const gated = h.flag && overrides[h.flag]===undefined && h.collect!=='always';
+    el.innerHTML = gated
+      ? `<div class="empty"><b>Collection is off.</b><br>Enable <code>?${h.flag}</code> to start recording.</div>`
+      : `<pre>${SAMPLE[h.id]||'(no sample)'}</pre>`
+        + `<div class="btns"><button title="copy the visible log text to clipboard">copy</button>`
+        + `<button title="download the full structured JSON record">dump</button>`
+        + `<button class="clearbtn" title="wipe this log (fires once, never persists)">clear</button>`
+        + `${h.flag?`<button onclick="tog('${h.flag}')">toggle ?${h.flag} on wall</button>`:''}</div>`
+        + `<div class="btnlegend"><b>copy</b> visible text \u00b7 <b>dump</b> full JSON \u00b7 <b>clear</b> wipe log (action \u2014 never persists)</div>`
+        + (h.collect==='always'
+            ? `<div class="note">Collection is <b>always on</b> for this HUD — it records events the panel
+               already produces and makes no extra network calls. The flag only controls whether it also
+               draws on the wall.</div>` : '');
+  });
+}
+function renderTabs(){
+  $('tabs').innerHTML=HUDS.map((h,i)=>
+    `<button class="${i?'':'on'}" onclick="setTab('${h.id}',this)">${h.label}</button>`).join('');
+}
+function setTab(k,btn){
+  const tb=document.querySelectorAll('.tabs button');
+  for(let i=0;i<tb.length;i++) tb[i].classList.remove('on');
+  if(btn) btn.classList.add('on');
+  const pn=document.querySelectorAll('.pane');
+  for(let i=0;i<pn.length;i++) pn[i].classList.remove('on');
+  const p=$('p-'+k); if(p) p.classList.add('on');
+}
+function toggleStar(n){
+  const i=stars.indexOf(n);
+  if(i<0) stars.push(n); else stars.splice(i,1);
+  saveStars(); renderFlags();;
+}
+function tog(n){
+  if(overrides[n]!==undefined) delete overrides[n]; else overrides[n]='1';
+  afterChange();
+}
+function setVal(n,v){
+  if(!v||v==='(default)') delete overrides[n]; else overrides[n]=v;
+  afterChange();
+}
+function runAction(n){ window._lastAction=n; /* real build: fire once, never persist */ }
+
+function afterChange(){ renderOverrides(); renderFlags();; renderHudPanes(); renderDot(); }
+
+loadStars(); loadFsz();
+$('cc').style.setProperty('--fs',FSZ+'px');
+renderTabs(); renderHealth();; renderFlags(); renderHudPanes();
+renderOverrides(); renderDot();
+</script>
+</body></html>
