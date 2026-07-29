@@ -1,62 +1,7 @@
 {
   "v": 1,
-  "updated": "2026-07-29T00:58:49.888Z",
-  "events": [
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816331",
-      "title": "San Francisco Giants @ San Diego Padres",
-      "showFrom": "20260730",
-      "showUntil": "20260730",
-      "rank": 1
-    },
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816329",
-      "title": "Boston Red Sox @ Athletics",
-      "showFrom": "20260730",
-      "showUntil": "20260730",
-      "rank": 2
-    },
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816323",
-      "title": "Pittsburgh Pirates @ Cincinnati Reds",
-      "showFrom": "20260730",
-      "showUntil": "20260730",
-      "rank": 3
-    },
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816322",
-      "title": "Miami Marlins @ New York Mets",
-      "showFrom": "20260730",
-      "showUntil": "20260730",
-      "rank": 4
-    },
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816325",
-      "title": "Washington Nationals @ Atlanta Braves",
-      "showFrom": "20260730",
-      "showUntil": "20260730",
-      "rank": 5
-    },
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816330",
-      "title": "Seattle Mariners @ Los Angeles Dodgers",
-      "showFrom": "20260730",
-      "showUntil": "20260730",
-      "rank": 6
-    }
-  ],
+  "updated": "2026-07-29T01:01:51.833Z",
+  "events": [],
   "watch": {
     "teams": []
   }
