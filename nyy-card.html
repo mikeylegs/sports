@@ -1,0 +1,198 @@
+<!doctype html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NYY card stopgap — sandbox</title>
+<style>
+/* ── page chrome (sandbox only) ── */
+body{margin:0;background:#05070d;color:#dce4ef;font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;}
+.bar{position:sticky;top:0;z-index:50;display:flex;gap:14px;align-items:center;
+  padding:10px 16px;background:#0b0f16;border-bottom:1px solid #1e2836;}
+.bar b{color:#7dd3fc}.bar .n{color:#6b7a8f;font-size:12px}
+.bar button{background:#12324a;color:#cde4ff;border:1px solid #2b5a7e;border-radius:7px;padding:6px 12px;font:600 13px inherit;cursor:pointer}
+.bar button.on{background:#2b5a7e}
+.variant{padding:8px 16px 30px}
+.variant h2{font:700 15px/1.2 inherit;color:#a78bfa;margin:18px 0 4px}
+.variant .why{color:#6b7a8f;font-size:12.5px;margin:0 0 10px;max-width:70ch}
+/* scale wrapper: real stage is 1920x1080 so cq* match the kiosk; we shrink visually only */
+.frame{overflow:hidden;border:1px solid #1e2836;border-radius:8px;background:#0b0f16;}
+.frame .scaler{transform-origin:top left}
+
+/* ══════════ REAL DASHBOARD CSS (verbatim values from dashboard_src r260) ══════════ */
+#row-MLB{width:1920px;height:1080px;container-type:size;container-name:mlb-row;position:relative;
+  background:#0b0f16;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;}
+:root{--sp-1:0.5cqh;--sp-2:1cqh;--sp-3:1.5cqh;--sp-4:2cqh;--sp-5:3cqh;--sp-6:4cqh;--edge:3cqh;}
+/* featured band = 57% tall (under 8% header), slot = 50% wide */
+.band{position:absolute;left:0;top:8%;width:100%;height:57%;display:flex;}
+.slot-wrap{width:50%;height:100%;position:relative;}
+
+.mlb-feat-slot{display:flex;flex-direction:row;align-items:center;padding:0 var(--edge);gap:var(--sp-4);
+  position:relative;overflow:hidden;min-width:0;box-sizing:border-box;height:100%;}
+.mlb-feat-slot.team-tinted{background:linear-gradient(120deg, color-mix(in srgb, var(--slot-color,#0C2340) 22%, transparent) 0%, transparent 75%);}
+.mlb-feat-teams{display:flex;flex-direction:column;gap:var(--sp-3);flex:1;min-width:0;}
+.mlb-feat-team-row{display:flex;align-items:center;gap:var(--sp-4);width:100%;}
+.mlb-feat-team-info{display:flex;flex-direction:column;flex:1;min-width:0;gap:var(--sp-1);}
+.mlb-feat-team-logo{height:15cqmin;width:15cqmin;object-fit:contain;flex-shrink:0;filter:drop-shadow(0 0 6px rgba(255,255,255,0.15));animation:featLogoGlow 4s ease-in-out infinite;}
+@keyframes featLogoGlow{0%,100%{filter:drop-shadow(0 0 8px rgba(255,255,255,0.1));}50%{filter:drop-shadow(0 0 22px rgba(255,255,255,0.35));}}
+.mlb-feat-abbr{font-size:min(9cqmin,6cqw);font-weight:900;color:rgba(255,255,255,0.45);letter-spacing:-1px;line-height:1;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mlb-feat-abbr.w,.mlb-feat-abbr.desig{color:#fff;}
+.mlb-feat-record{font-size:3.6cqh;color:rgba(255,255,255,0.4);font-weight:500;}
+.mlb-feat-score{font-size:13cqmin;font-weight:900;color:rgba(255,255,255,0.2);min-width:10cqmin;text-align:right;font-variant-numeric:tabular-nums;line-height:1;flex-shrink:0;}
+.mlb-feat-score.w{color:#fff;}
+.mlb-feat-score.w.glow{text-shadow:0 0 24px var(--team-color,rgba(255,255,255,0.4));}
+.mlb-feat-sep{width:100%;height:1px;background:rgba(255,255,255,0.05);}
+.mlb-feat-status{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-2);flex-shrink:0;min-width:18cqh;max-width:39cqh;padding:0 var(--sp-2);overflow:hidden;}
+.mlb-feat-statusline{display:flex;align-items:center;justify-content:center;gap:2cqh;flex-wrap:wrap;}
+.mlb-feat-time-label{font-size:4.6cqh;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.2);text-align:center;}
+.mlb-feat-time-label.live{color:#FF6B6B;}
+.mlb-feat-net-pill{font-size:3.6cqh;font-weight:700;letter-spacing:1px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.45);padding:0.5cqh 1.8cqh;border-radius:10px;}
+.mlb-feat-sit{display:flex;align-items:center;gap:1.5cqh;}
+.nyy-logo{animation:yankLogoGlow 4s ease-in-out infinite;}
+@keyframes yankLogoGlow{0%,100%{filter:drop-shadow(0 0 1px rgba(255,255,255,0.9)) drop-shadow(0 0 3px rgba(255,255,255,0.5)) drop-shadow(0 0 10px rgba(0,80,200,0.5));}50%{filter:drop-shadow(0 0 2px rgba(255,255,255,1)) drop-shadow(0 0 5px rgba(255,255,255,0.8)) drop-shadow(0 0 20px rgba(0,80,200,0.8));}}
+/* situation: base + bso */
+.sit-divider{width:1px;background:rgba(255,255,255,0.06);}
+.sit-block{display:flex;flex-direction:row;align-items:center;gap:14px;}
+.sit-diamond{display:block;overflow:visible;}
+.sit-bso{display:flex;flex-direction:column;}
+.bso-col{display:flex;align-items:center;gap:12px;}
+.bso-lbl{font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);}
+.bso-dots{display:flex;}
+.bso-dot{border-radius:50%;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.15);}
+.bso-dot.on-b{background:#34d399;border-color:#34d399;box-shadow:0 0 8px rgba(52,211,153,0.9),0 0 16px rgba(52,211,153,0.5);}
+.bso-dot.on-s{background:#fbbf24;border-color:#ffd700;box-shadow:0 0 8px rgba(251,191,36,0.9),0 0 16px rgba(251,191,36,0.5);}
+.bso-dot.on-o{background:#f87171;border-color:#ef4444;box-shadow:0 0 8px rgba(248,113,113,0.9),0 0 16px rgba(239,68,68,0.5);}
+/* #row-MLB overrides (the real live sizes) */
+#row-MLB .sit-diamond{width:37.5cqh;height:30cqh;}
+#row-MLB .sit-divider{height:30cqh;}
+#row-MLB .sit-bso{gap:4.5cqh;}
+#row-MLB .bso-lbl{font-size:7.5cqh;width:7.5cqh;}
+#row-MLB .bso-dot{width:7.5cqh;height:7.5cqh;}
+#row-MLB .bso-dots{gap:2.8cqh;}
+
+/* ══════════ VARIANT A — full mockup grid ══════════ */
+.mockA{display:grid;grid-template-columns:15cqmin 1fr auto minmax(30cqh,39cqh);
+  grid-template-rows:1fr 1fr;align-items:center;column-gap:var(--sp-4);row-gap:0;
+  padding:2cqh var(--edge);height:100%;box-sizing:border-box;}
+.mockA .cell{display:flex;align-items:center;min-width:0;}
+.mockA .a-logo{grid-column:1;justify-content:center;}
+.mockA .a-info{grid-column:2;}
+.mockA .a-score{grid-column:3;justify-content:flex-end;}
+.mockA .a-logo,.mockA .a-info,.mockA .a-score{border-radius:12px;background:rgba(255,255,255,0.015);}
+.mockA .a-right-top{grid-column:4;grid-row:1;border:1px solid rgba(255,255,255,0.08);border-radius:12px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center;height:88%;align-self:center;}
+.mockA .a-right-bot{grid-column:4;grid-row:2;border:1px solid rgba(255,255,255,0.08);border-radius:12px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:space-between;gap:1.5cqh;padding:1.5cqh 2cqh;height:88%;align-self:center;box-sizing:border-box;}
+.mockA .a-statuscol{display:flex;flex-direction:column;align-items:flex-end;gap:0.6cqh;flex-shrink:0;}
+.mockA .a-net-yes{font-size:3.4cqh;font-weight:700;letter-spacing:0.5px;background:rgba(255,255,255,0.9);color:#0b0f16;padding:0.2cqh 1.4cqh;border-radius:6px;}
+
+/* ══════════ VARIANT B — minimal (status column, label+net moved to bottom) ══════════ */
+.mockB .mlb-feat-status{justify-content:center;}
+.mockB .b-statusbottom{display:flex;flex-direction:column;align-items:center;gap:0.6cqh;margin-top:1cqh;}
+.mockB .b-net-yes{font-size:3.4cqh;font-weight:700;letter-spacing:0.5px;background:rgba(255,255,255,0.9);color:#0b0f16;padding:0.2cqh 1.4cqh;border-radius:6px;}
+</style></head>
+<body>
+<div class="bar"><b>NYY card stopgap</b> <span class="n">r260 base · sandbox · pick A or B on the wall</span>
+  <button id="s-fit" class="on" onclick="setScale('fit')">Fit</button>
+  <button id="s-1" onclick="setScale('1')">1:1 (kiosk px)</button>
+</div>
+
+<div class="variant">
+  <h2>① CURRENT (r260 — P/AB already cut)</h2>
+  <p class="why">Baseline: label top, sit block, nothing relocated. This is what ships from Phase A alone.</p>
+  <div class="frame"><div class="scaler" id="stage-cur"></div></div>
+
+  <h2>② VARIANT A — full mockup grid (borders as drawn)</h2>
+  <p class="why">Each team in its own cell; right column split into a diamond cell (top) and a count+status cell (bottom) with BOT 10TH / YES stacked at right. Closest to your drawing; biggest structural change.</p>
+  <div class="frame"><div class="scaler" id="stage-a"></div></div>
+
+  <h2>③ VARIANT B — minimal relocate (keep current cells)</h2>
+  <p class="why">Same flex layout as current; only the BOT 10TH label + YES pill move from the top of the status column to the bottom, under the sit block. Cheapest, lowest-risk.</p>
+  <div class="frame"><div class="scaler" id="stage-b"></div></div>
+</div>
+
+<script>
+const NYY_LOGO="https://a.espncdn.com/i/teamlogos/mlb/500/nyy.png";
+const CWS_LOGO="https://a.espncdn.com/i/teamlogos/mlb/500/chw.png";
+const fb=(a)=>`this.outerHTML='<div class=&quot;mlb-feat-team-logo&quot; style=&quot;display:flex;align-items:center;justify-content:center;font:800 6cqh sans-serif;color:#fff;background:rgba(255,255,255,.06);border-radius:12px&quot;>${a}</div>'`;
+
+// real situationHtml output: runner on 2nd (gold), B=1, S=0, O=0
+const base=(on,cx,cy)=>{const f=on?'#fbbf24':'rgba(255,255,255,0.07)',s=on?'#ffd700':'rgba(255,255,255,0.15)',w=on?'2.5':'1.5',g=on?'filter="url(#bg)"':'';
+  return `<rect x="${cx-16}" y="${cy-16}" width="32" height="32" rx="3" fill="${f}" stroke="${s}" stroke-width="${w}" transform="rotate(45 ${cx} ${cy})" ${g}/>`;};
+const diamond=`<svg class="sit-diamond" viewBox="-20 -20 150 120" overflow="visible">
+  <defs><filter id="bg" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+  ${base(true,55,5)}${base(false,5,55)}${base(false,105,55)}</svg>`;
+const dot=(on,cls)=>`<div class="bso-dot${on?' '+cls:''}"></div>`;
+const bso=`<div class="sit-bso">
+  <div class="bso-col"><span class="bso-lbl">B</span><div class="bso-dots">${dot(true,'on-b')}${dot(false,'on-b')}${dot(false,'on-b')}${dot(false,'on-b')}</div></div>
+  <div class="bso-col"><span class="bso-lbl">S</span><div class="bso-dots">${dot(false,'on-s')}${dot(false,'on-s')}</div></div>
+  <div class="bso-col"><span class="bso-lbl">O</span><div class="bso-dots">${dot(false,'on-o')}${dot(false,'on-o')}${dot(false,'on-o')}</div></div>
+</div>`;
+const sitInner=`<div class="sit-divider"></div><div class="sit-block">${diamond}${bso}</div>`;
+const sitOnly=`<div class="sit-block" style="justify-content:center">${diamond}${bso}</div>`;
+
+const teamRow=(logo,abbr,rec,score,cls)=>`
+  <div class="mlb-feat-team-row">
+    <img class="mlb-feat-team-logo${abbr==='NYY'?' nyy-logo':''}" src="${logo}" alt="${abbr}" onerror="${fb(abbr)}">
+    <div class="mlb-feat-team-info">
+      <span class="mlb-feat-abbr w desig">${abbr}</span>
+      <span class="mlb-feat-record">${rec}</span>
+    </div>
+    <span class="mlb-feat-score ${cls}">${score}</span>
+  </div>`;
+
+const teams=`<div class="mlb-feat-teams">
+  ${teamRow(NYY_LOGO,'NYY','61-47','1','w glow')}
+  <div class="mlb-feat-sep"></div>
+  ${teamRow(CWS_LOGO,'CWS','56-51','0','')}
+</div>`;
+
+// ① current
+document.getElementById('stage-cur').innerHTML=`<div id="row-MLB"><div class="band"><div class="slot-wrap">
+  <div class="mlb-feat-slot team-tinted" style="--slot-color:#0C2340">
+    ${teams}
+    <div class="mlb-feat-status">
+      <div class="mlb-feat-statusline"><span class="mlb-feat-time-label live">BOT 10TH</span><span class="mlb-feat-net-pill">YES</span></div>
+      <div class="mlb-feat-sit">${sitInner}</div>
+    </div>
+  </div></div></div></div>`;
+
+// ② Variant A — grid
+document.getElementById('stage-a').innerHTML=`<div id="row-MLB"><div class="band"><div class="slot-wrap">
+  <div class="mlb-feat-slot team-tinted" style="--slot-color:#0C2340;padding:0">
+    <div class="mockA">
+      <div class="cell a-logo"><img class="mlb-feat-team-logo nyy-logo" src="${NYY_LOGO}" onerror="${fb('NYY')}"></div>
+      <div class="cell a-info"><div class="mlb-feat-team-info"><span class="mlb-feat-abbr w desig">NYY</span><span class="mlb-feat-record">61-47</span></div></div>
+      <div class="cell a-score"><span class="mlb-feat-score w glow">1</span></div>
+      <div class="a-right-top">${sitOnly.replace(bso,'')}</div>
+
+      <div class="cell a-logo" style="grid-row:2"><img class="mlb-feat-team-logo" src="${CWS_LOGO}" onerror="${fb('CWS')}"></div>
+      <div class="cell a-info" style="grid-row:2"><div class="mlb-feat-team-info"><span class="mlb-feat-abbr w desig">CWS</span><span class="mlb-feat-record">56-51</span></div></div>
+      <div class="cell a-score" style="grid-row:2"><span class="mlb-feat-score">0</span></div>
+      <div class="a-right-bot">
+        ${bso}
+        <div class="a-statuscol"><span class="mlb-feat-time-label live">BOT 10TH</span><span class="a-net-yes">YES</span></div>
+      </div>
+    </div>
+  </div></div></div></div>`;
+
+// ③ Variant B — minimal
+document.getElementById('stage-b').innerHTML=`<div id="row-MLB"><div class="mockB"><div class="band"><div class="slot-wrap">
+  <div class="mlb-feat-slot team-tinted" style="--slot-color:#0C2340">
+    ${teams}
+    <div class="mlb-feat-status">
+      <div class="mlb-feat-sit">${sitInner}</div>
+      <div class="b-statusbottom"><span class="mlb-feat-time-label live">BOT 10TH</span><span class="b-net-yes">YES</span></div>
+    </div>
+  </div></div></div></div></div>`;
+
+// scale to fit each frame width
+function setScale(mode){
+  document.getElementById('s-fit').classList.toggle('on',mode==='fit');
+  document.getElementById('s-1').classList.toggle('on',mode==='1');
+  document.querySelectorAll('.frame').forEach(f=>{
+    const sc=f.querySelector('.scaler');
+    const k = mode==='1' ? 1 : (f.clientWidth-2)/1920;
+    sc.style.transform=`scale(${k})`;
+    f.style.height=(1080*k)+'px';
+  });
+}
+addEventListener('resize',()=>{if(document.getElementById('s-fit').classList.contains('on'))setScale('fit');});
+setScale('fit');
+</script>
+</body></html>
