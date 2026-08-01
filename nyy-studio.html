@@ -1,0 +1,231 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NYY Card Studio v2</title>
+<style>
+  *{box-sizing:border-box}
+  body{background:#0b0f16;color:#dce4ef;font:13px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0}
+  .top{display:flex;height:100vh}
+  .stagecol{flex:1;min-width:0;display:flex;flex-direction:column;padding:12px 14px;overflow:auto}
+  .ctrls{width:380px;flex-shrink:0;background:#0d131e;border-left:1px solid #1e2836;padding:12px 14px 60px;overflow-y:auto}
+  h1{font-size:15px;color:#7dd3fc;margin:0 0 2px}.sub{color:#6b7a8f;font-size:11.5px;margin:0 0 10px}
+  .bar{display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+  .bar button{background:#12324a;color:#cde4ff;border:1px solid #2b5a7e;border-radius:6px;padding:5px 10px;font:600 12px inherit;cursor:pointer}
+  .bar button.on{background:#2b5a7e}
+  .frame{overflow:hidden;border:1px solid #1e2836;border-radius:8px;background:#0b0f16;position:relative}
+  .frame .scaler{transform-origin:top left}
+  .anchors{position:absolute;inset:0;pointer-events:none;z-index:50}
+  .anchors .v{position:absolute;width:1px;background:rgba(125,211,252,0.5)}
+  .anchors .lbl{position:absolute;font:10px ui-monospace,monospace;color:#7dd3fc;background:#0b0f16;padding:1px 4px}
+  .grp{border:1px solid #1e2836;border-radius:8px;padding:8px 10px;margin:8px 0;background:#0f1520}
+  .grp h3{font-size:12px;color:#a78bfa;margin:0 0 6px;text-transform:uppercase;letter-spacing:.06em}
+  .rw{display:flex;align-items:center;gap:7px;margin:5px 0}
+  .rw label{width:74px;font-size:11px;color:#8ea2bd;flex-shrink:0}
+  .rw input[type=range]{flex:1;min-width:0}
+  .rw .val{width:66px;text-align:right;font:11px ui-monospace,monospace;color:#cde4ff;flex-shrink:0}
+  .readout{background:#12324a;border:1px solid #2b5a7e;border-radius:8px;padding:8px 10px;margin:8px 0;font:11px ui-monospace,monospace;color:#cde4ff;line-height:1.7}
+  .readout b{color:#7dd3fc}.readout .ok{color:#4ade80}.readout .cap{color:#f8a0b0}
+  .exp{width:100%;background:#1a5a3a;color:#d7ffe9;border:1px solid #2f8f5e;border-radius:8px;padding:9px;font:600 12.5px inherit;cursor:pointer;margin-top:10px}
+  textarea{width:100%;height:220px;background:#0b0f16;color:#9fe;border:1px solid #1e2836;border-radius:7px;font:10.5px ui-monospace,monospace;padding:8px;margin-top:8px;display:none}
+  .note{font-size:10.5px;color:#6b7a8f;margin:4px 0 0}
+
+  /* REAL CASCADE (verbatim base rules incl. #row-MLB ID rules) */
+  #row-MLB{width:1920px;height:1080px;container-type:size;container-name:mlb-row;position:relative;background:#0b0f16;}
+  :root{--sp-1:0.5cqh;--sp-2:1cqh;--sp-3:1.5cqh;--sp-4:2cqh;--sp-5:3cqh;--sp-6:4cqh;--edge:3cqh;}
+  .band{position:absolute;left:0;top:8%;width:100%;height:57%;display:flex;}
+  .slot-wrap{width:50%;height:100%;position:relative;}
+  .mlb-feat-slot{display:flex;flex-direction:row;align-items:center;padding:0 var(--edge);gap:var(--sp-4);position:relative;overflow:hidden;min-width:0;height:100%;}
+  .mlb-feat-slot.team-tinted{background:linear-gradient(120deg,color-mix(in srgb,var(--slot-color,#0C2340) 22%,transparent) 0%,transparent 75%);}
+  .mlb-feat-team-logo{height:15cqmin;width:15cqmin;object-fit:contain;flex-shrink:0;filter:drop-shadow(0 0 6px rgba(255,255,255,0.15));}
+  .mlb-feat-teams{display:flex;flex-direction:column;gap:var(--sp-3);flex:1;min-width:0;}
+  .mlb-feat-team-row{display:flex;align-items:center;gap:var(--sp-4);width:100%;}
+  .mlb-feat-team-info{display:flex;flex-direction:column;flex:1;min-width:0;gap:var(--sp-1);}
+  .mlb-feat-abbr{font-size:min(9cqmin,6cqw);font-weight:900;color:rgba(255,255,255,0.45);letter-spacing:-1px;line-height:1;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .mlb-feat-abbr.w,.mlb-feat-abbr.desig{color:#fff;}
+  .mlb-feat-record{font-size:3.6cqh;color:rgba(255,255,255,0.4);font-weight:500;}
+  .mlb-feat-score{font-size:13cqmin;font-weight:900;color:rgba(255,255,255,0.2);min-width:10cqmin;text-align:right;font-variant-numeric:tabular-nums;line-height:1;flex-shrink:0;}
+  .mlb-feat-score.w{color:#fff;}.mlb-feat-score.w.glow{text-shadow:0 0 24px var(--team-color,rgba(255,255,255,0.4));}
+  .mlb-feat-status{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-2);flex-shrink:0;min-width:18cqh;max-width:39cqh;padding:0 var(--sp-2);overflow:hidden;}
+  .mlb-feat-time-label{font-size:4.6cqh;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.2);text-align:center;}
+  .mlb-feat-time-label.live{color:#FF6B6B;}
+  .mlb-feat-statusline{display:flex;align-items:center;justify-content:center;gap:2cqh;flex-wrap:wrap;}
+  .mlb-feat-statusline .net-logo{height:8cqh;max-width:24cqh;object-fit:contain;opacity:0.95;}
+  .net-logo{height:6cqh;width:auto;max-width:30cqw;object-fit:contain;display:inline-block;vertical-align:middle;}
+  .mlb-feat-net-inline{font-size:3.6cqh;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.45);}
+  .mlb-feat-sit{display:flex;align-items:center;gap:1.5cqh;}
+  #row-MLB .mlb-feat-sit .sit-divider{height:22cqh;}
+  #row-MLB .mlb-feat-sit .sit-diamond{width:15cqmin;height:11.8cqmin;}
+  #row-MLB .mlb-feat-sit .sit-bso{gap:1.4cqh;}
+  #row-MLB .mlb-feat-sit .bso-lbl{font-size:2.6cqmin;width:2.6cqmin;}
+  #row-MLB .mlb-feat-sit .bso-dot{width:2.6cqmin;height:2.6cqmin;}
+  #row-MLB .mlb-feat-sit .bso-dots{gap:0.7cqh;}
+  .sit-diamond{display:block;overflow:visible;}
+  .sit-block{display:flex;align-items:center;}
+  .sit-bso{display:flex;flex-direction:column;}
+  .bso-col{display:flex;align-items:center;gap:10px;}
+  .bso-lbl{font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);}
+  .bso-dots{display:flex;}
+  .bso-dot{border-radius:50%;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.15);}
+  .bso-dot.on-b{background:#34d399;border-color:#34d399;box-shadow:0 0 8px rgba(52,211,153,0.9);}
+  .bso-dot.on-s{background:#fbbf24;border-color:#ffd700;box-shadow:0 0 8px rgba(251,191,36,0.9);}
+  .bso-dot.on-o{background:#f87171;border-color:#ef4444;box-shadow:0 0 8px rgba(239,68,68,0.9);}
+  .mlb-feat-slot.has-wp{padding-bottom:var(--wp-pad,5.5cqh);}
+  .mlb-feat-wp{position:absolute;left:var(--wp-side,3cqh);right:var(--wp-side,3cqh);bottom:var(--wp-btm,1.2cqh);z-index:5;}
+  .mlb-feat-wp .wp-bar{display:flex;height:var(--wp-h,4cqh);border-radius:var(--wp-rad,1cqh);overflow:hidden;box-shadow:0 0.4cqh 2cqh rgba(0,0,0,0.4);}
+  .mlb-feat-wp .wp-seg{display:flex;align-items:center;justify-content:space-between;gap:0.8cqh;padding:0 1.4cqh;min-width:0;overflow:hidden;white-space:nowrap;}
+  .mlb-feat-wp .wp-abbr,.mlb-feat-wp .wp-pct{font-weight:900;font-size:3.6cqh;color:#fff;}
+  .mlb-feat-wp .wp-seg.dim .wp-abbr,.mlb-feat-wp .wp-seg.dim .wp-pct{color:rgba(255,255,255,0.7);}
+
+  /* STUDIO OVERRIDE — ID-prefixed (wins), matches export exactly */
+  #row-MLB .studio .mlb-feat-teams{justify-content:space-between;height:100%;gap:0;}
+  #row-MLB .studio .mlb-feat-team-row{gap:var(--rowgap);min-width:0;align-items:center;}
+  #row-MLB .studio .mlb-feat-team-logo{height:var(--logo);width:var(--logo);}
+  #row-MLB .studio .mlb-feat-record{display:none;}
+  #row-MLB .studio .mlb-feat-team-info{min-width:0;justify-content:center;flex:1 1 auto;align-items:flex-start;}
+  #row-MLB .studio .mlb-feat-abbr{font-size:clamp(var(--abbrMin),var(--abbr),var(--abbrMax));overflow:visible;text-overflow:clip;max-width:none;text-align:left;letter-spacing:-1.5px;}
+  #row-MLB .studio .mlb-feat-score{font-size:clamp(var(--scoreMin),var(--score),var(--scoreMax));min-width:0;flex-shrink:0;text-align:right;}
+  #row-MLB .studio .mlb-feat-status{flex-direction:column;min-width:0;max-width:var(--statusMax);gap:var(--sp-2);flex-shrink:0;justify-content:center;}
+  #row-MLB .studio .mlb-feat-sit{flex-direction:column;gap:1.5cqh;}
+  #row-MLB .studio .mlb-feat-sit .sit-divider{display:none;}
+  #row-MLB .studio .mlb-feat-sit .sit-block{flex-direction:column;gap:1.4cqh;align-items:center;}
+  #row-MLB .studio .mlb-feat-sit .sit-diamond{width:var(--diaW);height:calc(var(--diaW) * 0.78);}
+  #row-MLB .studio .mlb-feat-sit .bso-lbl{font-size:var(--bsoLbl);width:auto;}
+  #row-MLB .studio .mlb-feat-sit .bso-dot{width:var(--bsoDot);height:var(--bsoDot);}
+  #row-MLB .studio .mlb-feat-statusline-btm{flex-direction:column;align-items:center;gap:var(--sp-1);margin-top:1cqh;}
+  #row-MLB .studio .mlb-feat-statusline-btm .mlb-feat-time-label{font-size:clamp(11px,var(--label),40px);}
+  #row-MLB .studio .mlb-feat-statusline-btm .mlb-feat-net-inline{font-size:var(--net);font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.55);}
+</style></head>
+<body>
+<div class="top">
+  <div class="stagecol">
+    <h1>NYY Card Studio v2 &mdash; faithful mirror</h1>
+    <p class="sub">Embeds the REAL cascade (#row-MLB ID rules + .statusline net-logo). What you see = the wall. Export = full ID-prefixed block, replaces the r260 block wholesale.</p>
+    <div class="bar">
+      <button id="s-fit" class="on" onclick="setScale('fit')">Fit</button>
+      <button id="s-1" onclick="setScale('1')">1:1 kiosk px</button>
+      <button onclick="reset()">Reset</button>
+      <button onclick="setScores('20','18')">20&ndash;18</button>
+      <button onclick="setScores('1','0')">1&ndash;0</button>
+    </div>
+    <div class="frame" id="frame"><div class="scaler" id="stage"></div><div class="anchors" id="anch"></div></div>
+    <p class="note">Blue lines = pane content edges. Box = 960&times;616 (real full-shell 8/57/35, slot 50%).</p>
+  </div>
+  <div class="ctrls">
+    <div class="readout" id="readout"></div>
+    <div class="grp"><h3>Logo &amp; row</h3>
+      <div class="rw"><label>logo</label><input type="range" id="logo" min="12" max="34" step="0.5" value="25.5"><span class="val" id="logo-v"></span></div>
+      <div class="rw"><label>row gap</label><input type="range" id="rowgap" min="0" max="5" step="0.1" value="0.3"><span class="val" id="rowgap-v"></span></div>
+    </div>
+    <div class="grp"><h3>Abbr</h3>
+      <div class="rw"><label>preferred</label><input type="range" id="abbr" min="8" max="30" step="0.5" value="18"><span class="val" id="abbr-v"></span></div>
+      <div class="rw"><label>min px</label><input type="range" id="abbrMin" min="10" max="60" step="1" value="30"><span class="val" id="abbrMin-v"></span></div>
+      <div class="rw"><label>max px</label><input type="range" id="abbrMax" min="40" max="200" step="1" value="78"><span class="val" id="abbrMax-v"></span></div>
+    </div>
+    <div class="grp"><h3>Score</h3>
+      <div class="rw"><label>preferred</label><input type="range" id="score" min="10" max="50" step="0.5" value="30"><span class="val" id="score-v"></span></div>
+      <div class="rw"><label>min px</label><input type="range" id="scoreMin" min="12" max="80" step="1" value="34"><span class="val" id="scoreMin-v"></span></div>
+      <div class="rw"><label>max px</label><input type="range" id="scoreMax" min="50" max="240" step="1" value="116"><span class="val" id="scoreMax-v"></span></div>
+    </div>
+    <div class="grp"><h3>Status column</h3>
+      <div class="rw"><label>col max-w</label><input type="range" id="statusMax" min="30" max="60" step="1" value="44"><span class="val" id="statusMax-v"></span></div>
+      <div class="rw"><label>diamond W</label><input type="range" id="diaW" min="14" max="44" step="0.5" value="18.5"><span class="val" id="diaW-v"></span></div>
+      <div class="rw"><label>BSO dot</label><input type="range" id="bsoDot" min="2" max="9" step="0.2" value="5"><span class="val" id="bsoDot-v"></span></div>
+      <div class="rw"><label>BSO label</label><input type="range" id="bsoLbl" min="2" max="8" step="0.2" value="4.4"><span class="val" id="bsoLbl-v"></span></div>
+      <div class="rw"><label>BOT 10TH</label><input type="range" id="label" min="4" max="16" step="0.2" value="7.4"><span class="val" id="label-v"></span></div>
+      <div class="rw"><label>network txt</label><input type="range" id="net" min="2" max="10" step="0.2" value="3.6"><span class="val" id="net-v"></span></div>
+    </div>
+    <div class="grp"><h3>Test scenarios (worst-case dialing)</h3>
+      <div class="rw"><label>NYY score</label><input type="text" id="scoreN" value="1" maxlength="2" style="width:48px;background:#0b0f16;color:#cde4ff;border:1px solid #2b5a7e;border-radius:5px;padding:3px 6px;font:inherit;text-align:center"><label style="width:auto;padding-left:6px">CWS</label><input type="text" id="scoreC" value="0" maxlength="2" style="width:48px;background:#0b0f16;color:#cde4ff;border:1px solid #2b5a7e;border-radius:5px;padding:3px 6px;font:inherit;text-align:center"></div>
+      <div class="note">Type any score (double digits) to stress-test width. Or use the 20-18 / 1-0 buttons up top.</div>
+    </div>
+    <div class="grp"><h3>Win-prob bar (flush target = all 0)</h3>
+      <div class="rw"><label>side inset</label><input type="range" id="wpSide" min="0" max="5" step="0.1" value="0"><span class="val" id="wpSide-v"></span></div>
+      <div class="rw"><label>bottom</label><input type="range" id="wpBtm" min="0" max="5" step="0.1" value="0"><span class="val" id="wpBtm-v"></span></div>
+      <div class="rw"><label>height</label><input type="range" id="wpH" min="2" max="9" step="0.2" value="4"><span class="val" id="wpH-v"></span></div>
+      <div class="rw"><label>radius</label><input type="range" id="wpRad" min="0" max="3" step="0.1" value="0"><span class="val" id="wpRad-v"></span></div>
+      <div class="rw"><label>win %</label><input type="range" id="wp" min="1" max="99" step="1" value="62"><span class="val" id="wp-v"></span></div>
+    </div>
+    <button class="exp" onclick="exportCss()">Copy FULL block (ID-prefixed, wall-ready)</button>
+    <textarea id="out" readonly></textarea>
+  </div>
+</div>
+<script>
+const NYY_LOGO="https://a.espncdn.com/i/teamlogos/mlb/500/nyy.png";
+const CWS_LOGO="https://a.espncdn.com/i/teamlogos/mlb/500/chw.png";
+const NET_LOGO="https://a.espncdn.com/i/espn/networks_shows/500/espn.png";
+const bs=(on,cx,cy)=>`<rect x="${cx-16}" y="${cy-16}" width="32" height="32" rx="3" fill="${on?'#fbbf24':'rgba(255,255,255,0.07)'}" stroke="${on?'#ffd700':'rgba(255,255,255,0.15)'}" stroke-width="${on?2.5:1.5}" transform="rotate(45 ${cx} ${cy})"/>`;
+const diamond=`<svg class="sit-diamond" width="250" height="200" viewBox="-20 -20 150 120" overflow="visible">${bs(true,55,5)}${bs(false,5,55)}${bs(false,105,55)}</svg>`;
+const dot=(on,c)=>`<div class="bso-dot${on?' '+c:''}"></div>`;
+const bso=`<div class="sit-bso"><div class="bso-col"><span class="bso-lbl">B</span><div class="bso-dots">${dot(true,'on-b')}${dot(false,'on-b')}${dot(false,'on-b')}</div></div><div class="bso-col"><span class="bso-lbl">S</span><div class="bso-dots">${dot(false,'on-s')}${dot(false,'on-s')}</div></div><div class="bso-col"><span class="bso-lbl">O</span><div class="bso-dots">${dot(true,'on-o')}${dot(false,'on-o')}</div></div></div>`;
+const wpBar=`<div class="mlb-feat-wp"><div class="wp-bar"><div class="wp-seg wp-away" id="wp-away" style="flex-basis:62%;background:#0C2340"><span class="wp-abbr">NYY</span><span class="wp-pct" id="wp-away-pct">62%</span></div><div class="wp-seg wp-home dim" id="wp-home" style="flex-basis:38%;background:#343b48"><span class="wp-pct" id="wp-home-pct">38%</span><span class="wp-abbr">CWS</span></div></div></div>`;
+const teamRow=(logo,abbr,score,cls,id)=>`<div class="mlb-feat-team-row"><img class="mlb-feat-team-logo" src="${logo}" alt="${abbr}" onerror="this.style.opacity=0"><div class="mlb-feat-team-info"><span class="mlb-feat-abbr w desig">${abbr}</span><span class="mlb-feat-record">61-47</span></div><span class="mlb-feat-score ${cls}" id="score-${id}">${score}</span></div>`;
+const card=`<div id="row-MLB"><div class="studio"><div class="band"><div class="slot-wrap"><div class="mlb-feat-slot team-tinted has-wp" style="--slot-color:#0C2340"><div class="mlb-feat-teams">${teamRow(NYY_LOGO,'NYY','1','w glow','nyy')}${teamRow(CWS_LOGO,'CWS','0','','cws')}</div><div class="mlb-feat-status"><div class="mlb-feat-sit"><div class="sit-block">${diamond}${bso}</div></div><div class="mlb-feat-statusline mlb-feat-statusline-btm"><span class="mlb-feat-time-label live">BOT 10TH</span><span class="mlb-feat-net-inline">ESPN</span></div></div>${wpBar}</div></div></div></div></div>`;
+document.getElementById('stage').innerHTML=card;
+const rowEl=document.getElementById('stage').querySelector('#row-MLB');
+const CFG={logo:{v:'--logo',u:'cqmin'},rowgap:{v:'--rowgap',u:'cqh'},abbr:{v:'--abbr',u:'cqmin'},abbrMin:{v:'--abbrMin',u:'px'},abbrMax:{v:'--abbrMax',u:'px'},score:{v:'--score',u:'cqmin'},scoreMin:{v:'--scoreMin',u:'px'},scoreMax:{v:'--scoreMax',u:'px'},statusMax:{v:'--statusMax',u:'cqh'},diaW:{v:'--diaW',u:'cqmin'},bsoDot:{v:'--bsoDot',u:'cqmin'},bsoLbl:{v:'--bsoLbl',u:'cqmin'},label:{v:'--label',u:'cqh'},net:{v:'--net',u:'cqh'},wpSide:{v:'--wp-side',u:'cqh'},wpBtm:{v:'--wp-btm',u:'cqh'},wpH:{v:'--wp-h',u:'cqh'},wpRad:{v:'--wp-rad',u:'cqh'}};
+const DEF={};Object.keys(CFG).forEach(k=>DEF[k]=document.getElementById(k).value);
+function gv(k){return document.getElementById(k).value;}
+function apply(){
+  Object.keys(CFG).forEach(k=>{const el=document.getElementById(k),c=CFG[k];rowEl.style.setProperty(c.v,el.value+c.u);document.getElementById(k+'-v').textContent=el.value+c.u;});
+  const pad=(parseFloat(gv('wpH'))+parseFloat(gv('wpBtm'))+1).toFixed(1);
+  rowEl.style.setProperty('--wp-pad',pad+'cqh');
+  updateReadout();
+}
+function updateReadout(){
+  const cq=10.8,logo=parseFloat(gv('logo')),abbr=parseFloat(gv('abbr')),score=parseFloat(gv('score'));
+  const abbrMax=parseFloat(gv('abbrMax')),scoreMax=parseFloat(gv('scoreMax'));
+  const ap=abbr*cq,sp=score*cq;
+  const aS=ap>=abbrMax?`<span class="cap">MAX-capped ${abbrMax}px</span>`:`<span class="ok">${Math.round(ap)}px active</span>`;
+  const sS=sp>=scoreMax?`<span class="cap">MAX-capped ${scoreMax}px</span>`:`<span class="ok">${Math.round(sp)}px active</span>`;
+  document.getElementById('readout').innerHTML=`<b>1:1 kiosk px</b> (logo ${Math.round(logo*cq)}px)<br>abbr: ${aS} &middot; ${Math.round(abbr/logo*100)}% logo<br>score: ${sS} &middot; ${Math.round(score/logo*100)}% logo<br><span style="color:#6b7a8f">slider "does nothing" = MAX-capped, raise max px</span>`;
+}
+Object.keys(CFG).forEach(k=>document.getElementById(k).addEventListener('input',apply));
+document.getElementById('wp').addEventListener('input',pushWP);
+function pushWP(){const wp=parseInt(gv('wp'),10);document.getElementById('wp-v').textContent=wp+'%';const a=document.getElementById('wp-away'),h=document.getElementById('wp-home');if(a)a.style.flexBasis=wp+'%';if(h)h.style.flexBasis=(100-wp)+'%';document.getElementById('wp-away-pct').textContent=wp+'%';document.getElementById('wp-home-pct').textContent=(100-wp)+'%';}
+function pushScores(){const n=document.getElementById('scoreN').value||'0',c=document.getElementById('scoreC').value||'0';const a=document.getElementById('score-nyy'),b=document.getElementById('score-cws');if(a)a.textContent=n;if(b)b.textContent=c;}
+function setScores(n,c){document.getElementById('scoreN').value=n;document.getElementById('scoreC').value=c;pushScores();}
+document.getElementById('scoreN').addEventListener('input',pushScores);
+document.getElementById('scoreC').addEventListener('input',pushScores);
+function reset(){Object.keys(DEF).forEach(k=>document.getElementById(k).value=DEF[k]);apply();pushWP();}
+function exportCss(){
+  const g=k=>document.getElementById(k).value;
+  const css=`/* NYY CARD STOPGAP (7a) - studio v2 faithful export. LIVE-ONLY, ID-prefixed. */
+#row-MLB .mlb-feat-slot.has-wp{padding-bottom:${(parseFloat(g('wpH'))+parseFloat(g('wpBtm'))+1).toFixed(1)}cqh;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-teams{justify-content:space-between;height:100%;gap:0;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-team-row{gap:${g('rowgap')}cqh;min-width:0;align-items:center;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-team-logo{height:${g('logo')}cqmin;width:${g('logo')}cqmin;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-record{display:none;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-pbline{display:none;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-team-info{min-width:0;justify-content:center;flex:1 1 auto;align-items:flex-start;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-abbr{font-size:clamp(${g('abbrMin')}px,${g('abbr')}cqmin,${g('abbrMax')}px);overflow:visible;text-overflow:clip;max-width:none;letter-spacing:-1.5px;line-height:1;text-align:left;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-score{font-size:clamp(${g('scoreMin')}px,${g('score')}cqmin,${g('scoreMax')}px);min-width:0;flex-shrink:0;text-align:right;line-height:1;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-status{flex-direction:column;min-width:0;max-width:${g('statusMax')}cqh;gap:var(--sp-2);flex-shrink:0;justify-content:center;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit{flex-direction:column;gap:1.5cqh;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .sit-divider{display:none;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .sit-block{flex-direction:column;gap:1.4cqh;align-items:center;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .sit-diamond{width:${g('diaW')}cqmin;height:calc(${g('diaW')}cqmin * 0.78);}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .bso-lbl{font-size:${g('bsoLbl')}cqmin;width:auto;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .bso-dot{width:${g('bsoDot')}cqmin;height:${g('bsoDot')}cqmin;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-statusline-btm{flex-direction:column;align-items:center;gap:var(--sp-1);margin-top:1cqh;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-statusline-btm .mlb-feat-time-label{font-size:clamp(11px,${g('label')}cqh,40px);}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-statusline-btm .mlb-feat-net-inline{font-size:${g('net')}cqh;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.55);}
+#row-MLB .mlb-feat-wp{position:absolute;left:${g('wpSide')}cqh;right:${g('wpSide')}cqh;bottom:${g('wpBtm')}cqh;z-index:5;}
+#row-MLB .mlb-feat-wp .wp-bar{height:${g('wpH')}cqh;border-radius:${g('wpRad')}cqh;}`;
+  const ta=document.getElementById('out');ta.style.display='block';ta.value=css;ta.select();try{navigator.clipboard.writeText(css);}catch(e){}
+}
+function drawAnchors(){
+  const a=document.getElementById('anch');
+  const sc=document.getElementById('s-fit').classList.contains('on')?(document.getElementById('frame').clientWidth/1920):1;
+  const px=n=>n*sc,paneT=86.4,paneH=616,edge=32.4,slotW=960;
+  a.innerHTML=`<div style="position:absolute;left:0;top:${px(paneT)}px;width:${px(slotW)}px;height:${px(paneH)}px;border:2px solid rgba(125,211,252,0.7);box-shadow:0 0 0 9999px rgba(0,0,0,0.5)"></div><div class="lbl" style="left:4px;top:${px(paneT)+4}px">PANE 960x616</div><div class="v" style="left:${px(edge)}px;top:${px(paneT)}px;height:${px(paneH)}px"></div><div class="v" style="left:${px(slotW-edge)}px;top:${px(paneT)}px;height:${px(paneH)}px"></div>`;
+}
+function setScale(mode){
+  document.getElementById('s-fit').classList.toggle('on',mode==='fit');
+  document.getElementById('s-1').classList.toggle('on',mode==='1');
+  const frame=document.getElementById('frame'),scaler=document.getElementById('stage');
+  if(mode==='1'){scaler.style.transform='none';frame.style.height='1080px';frame.style.width='1920px';frame.style.maxWidth='100%';}
+  else{const w=frame.clientWidth,sc=w/1920;scaler.style.transform=`scale(${sc})`;frame.style.height=(1080*sc)+'px';frame.style.width='100%';}
+  drawAnchors();
+}
+addEventListener('resize',()=>{if(document.getElementById('s-fit').classList.contains('on'))setScale('fit');});
+apply();pushWP();pushScores();setScale('fit');
+</script>
+</body></html>
