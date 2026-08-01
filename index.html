@@ -1169,31 +1169,34 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 #row-MLB .mlb-feat-sit .bso-dots{gap:0.7cqh;}
 
 /* ══════════════════════════════════════════════════════════════════════════
-   r260 NYY CARD STOPGAP (⑦a) — studio-tuned (nyy-studio.html), LIVE-ONLY.
-   Scoped under .mlb-feat-slot.has-wp so only the live featured card changes.
-   Targets the REAL live markup: record cut; logo/abbr/score enlarged (clamp-
-   bounded → can't clip); abbr pinned left; diamond+BSO stacked vertically;
-   the statusline (time-label + REAL ESPN network bug) relocated to the bottom
-   of the status column. P/AB stays cut until UCS. Re-tune in the studio.
+   r267 NYY CARD STOPGAP (⑦a) — studio v2 faithful export, LIVE-ONLY, ID-PREFIXED.
+   Replaced wholesale from nyy-studio.html (full-block export). Every rule is
+   #row-MLB-prefixed so it wins vs. the base #row-MLB rules (the specificity
+   trap that cost r261-r263). Record + P/AB cut; abbr pinned left; diamond+BSO
+   stacked; statusline (time-label + real net text pill) at bottom; WP bar flush
+   to the edges. Re-tune ONLY in the studio → paste the full block here again.
    ────────────────────────────────────────────────────────────────────────── */
-.mlb-feat-slot.has-wp .mlb-feat-teams{justify-content:space-between;height:100%;gap:0;}
-.mlb-feat-slot.has-wp .mlb-feat-team-row{gap:0.3cqh;min-width:0;align-items:center;}
-.mlb-feat-slot.has-wp .mlb-feat-team-logo{height:25.5cqmin;width:25.5cqmin;}
-.mlb-feat-slot.has-wp .mlb-feat-record{display:none;}
-.mlb-feat-slot.has-wp .mlb-feat-pbline{display:none;}   /* r260: cut the P:/AB: sublines too (same call as the record — restore in UCS era) */
-.mlb-feat-slot.has-wp .mlb-feat-team-info{min-width:0;justify-content:center;flex:1 1 auto;align-items:flex-start;}
-.mlb-feat-slot.has-wp .mlb-feat-abbr{font-size:clamp(30px,18cqmin,78px);overflow:visible;text-overflow:clip;max-width:none;letter-spacing:-1.5px;line-height:1;text-align:left;}
-.mlb-feat-slot.has-wp .mlb-feat-score{font-size:clamp(34px,30cqmin,116px);min-width:0;flex-shrink:0;text-align:right;line-height:1;}
-.mlb-feat-slot.has-wp .mlb-feat-status{flex-direction:column;min-width:0;gap:var(--sp-2);flex-shrink:0;justify-content:center;}
-.mlb-feat-slot.has-wp .mlb-feat-sit{flex-direction:column;gap:1.5cqh;}
-.mlb-feat-slot.has-wp .mlb-feat-sit .sit-divider{display:none;}
-.mlb-feat-slot.has-wp .mlb-feat-sit .sit-block{flex-direction:column;gap:1.4cqh;align-items:center;}
-.mlb-feat-slot.has-wp .mlb-feat-statusline-btm{flex-direction:column;align-items:center;gap:var(--sp-1);margin-top:1cqh;}
-.mlb-feat-slot.has-wp .mlb-feat-statusline-btm .net-logo{height:6.8cqh;max-width:24cqh;}   /* studio b-net-yes 6.8cqh → real network bug */
-.mlb-feat-slot.has-wp .mlb-feat-time-label{font-size:clamp(11px,7.4cqh,34px);}
-#row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .sit-diamond{width:18.5cqmin;height:calc(18.5cqmin * 0.78);}
+#row-MLB .mlb-feat-slot.has-wp{padding-bottom:5.2cqh;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-teams{justify-content:space-between;height:100%;gap:0;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-team-row{gap:0cqh;min-width:0;align-items:center;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-team-logo{height:26.5cqmin;width:26.5cqmin;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-record{display:none;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-pbline{display:none;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-team-info{min-width:0;justify-content:center;flex:1 1 auto;align-items:flex-start;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-abbr{font-size:clamp(10px,30cqmin,88px);overflow:visible;text-overflow:clip;max-width:none;letter-spacing:-1.5px;line-height:1;text-align:left;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-score{font-size:clamp(34px,41cqmin,115px);min-width:0;flex-shrink:0;text-align:right;line-height:1;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-status{flex-direction:column;min-width:0;max-width:60cqh;gap:var(--sp-2);flex-shrink:0;justify-content:center;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit{flex-direction:column;gap:1.5cqh;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .sit-divider{display:none;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .sit-block{flex-direction:column;gap:1.4cqh;align-items:center;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .sit-diamond{width:14.5cqmin;height:calc(14.5cqmin * 0.78);}
 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .bso-lbl{font-size:4.4cqmin;width:auto;}
-#row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .bso-dot{width:5cqmin;height:5cqmin;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .bso-dot{width:4.4cqmin;height:4.4cqmin;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-statusline-btm{flex-direction:column;align-items:center;gap:var(--sp-1);margin-top:1cqh;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-statusline-btm .mlb-feat-time-label{font-size:clamp(11px,8.4cqh,40px);}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-statusline-btm .mlb-feat-net-inline{font-size:3.6cqh;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.55);}
+#row-MLB .mlb-feat-wp{position:absolute;left:0cqh;right:0cqh;bottom:0cqh;z-index:5;}
+#row-MLB .mlb-feat-wp .wp-bar{height:4.2cqh;border-radius:0cqh;}
 
 /* Pitcher strip below teams in featured */
 .mlb-feat-pitcher{
@@ -11054,7 +11057,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r265-cc-click-outside';
+const BUILD_MARKER = 'r268-anchor-nyy-only';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -11511,14 +11514,13 @@ function renderMLBFullscreen(games, yesterdayGames=[]) {
   // R12 topology: anchor = NYY live > NYM live > merged evergreen.
   // Slot-2 = golf > NYM clutch > perpetual WWS (curated events, else idle mix).
   const wwsIdle = !golfActive && !nymClutch && !(typeof wwsActive === 'function' && wwsActive().length > 0);
-  const anchorGame = _yLive ? yankGame : (_metLive && !nymClutch ? _metLive : null);
-  const nymInPane = nymClutch || (!!_metLive && !_yLive);
+  const anchorGame = _yLive ? yankGame : null;   // r268: anchor = NYY-live or rotation; NYM never owns it
+  const nymInPane = nymClutch;   // r268: NYM holds a pane only via slot-2 clutch; never the anchor
   const featIds = new Set([anchorGame?.id, nymClutch ? metGame?.id : null, (wwsIdle && bestLive) ? bestLive.id : null].filter(Boolean));
   const gridGames = sorted.filter(g => !featIds.has(g.id));
 
-  // ── Chip modes for NYY and NYM ──
-  const yankMode = getTeamChipMode('NYY', sorted, yesterdayGames);
-  const metMode  = getTeamChipMode('NYM', sorted, yesterdayGames);
+  // r268: yankMode/metMode removed — the rotation now checks gameStatus directly (no noon
+  // guillotine). getTeamChipMode is retained for the ?pregame=1/?lastfinal=1 test overrides.
 
   // Find next game for each (first upcoming)
   const yankNext = sorted.find(g=>(g.awayAbbr==='NYY'||g.homeAbbr==='NYY')&&g.gameStatus==='upcoming') || null;
@@ -11548,10 +11550,11 @@ function renderMLBFullscreen(games, yesterdayGames=[]) {
   // and yesterday's is only used while still fresh.
   const yankSlotHtml = () => {          // R12: the ANCHOR pane (name kept — .yank plumbing throughout)
     if (_yLive){ window._anchorMerged = false; if(_wwsLiveEnabled()) startWwsLiveClock(); return mlbFeaturedSlotHtml(yankGame, 'yank', 'YANKEES'); }
-    if (_metLive && !nymClutch){ window._anchorMerged = false; if(_wwsLiveEnabled()) startWwsLiveClock(); return mlbFeaturedSlotHtml(_metLive, 'yank', 'METS'); }
+    // r268: NO NYM-anchor takeover — a live NYM game shows in slot-2 (clutch) only, never here.
+    // When NYY isn't live, the anchor ALWAYS runs the rotation below (last-final/next-game/standings).
     // R79: show the last-game card+recap from final → next-game-live, capped at 2 days stale.
-    const yRecap = yankMode === 'final' ? yankGame : (yankYest && _recapFresh(yankYest)) ? yankYest : null;
-    const mRecap = metMode === 'final' ? metGame : (metYest && _recapFresh(metYest)) ? metYest : null;
+    const yRecap = (yankGame && yankGame.gameStatus === 'final') ? yankGame : (yankYest && _recapFresh(yankYest)) ? yankYest : null;   // r268: direct final check, no noon/midnight gate
+    const mRecap = (metGame && metGame.gameStatus === 'final') ? metGame : (metYest && _recapFresh(metYest)) ? metYest : null;
     return renderAnchorIdleSlot(yRecap, mRecap, yankNext, metNext);
   };
   const metSlotHtml = () => {           // R12: slot-2 — golf > NYM clutch > perpetual WWS
@@ -11559,7 +11562,7 @@ function renderMLBFullscreen(games, yesterdayGames=[]) {
     if (nymClutch && _metLive) return mlbFeaturedSlotHtml(_metLive, 'secondary', 'METS');
     return renderWwsSlot(wwsIdle ? bestLive : null);
   };
-  const anchorMode = _yLive ? 'nyy-live' : (_metLive && !nymClutch) ? 'nym-live' : 'idle';
+  const anchorMode = _yLive ? 'nyy-live' : 'idle';   // r268: anchor never nym-live
   const slot2Mode = golfActive ? 'golf' : nymClutch ? 'clutch' : 'wws';
 
   const isFirstRender = !row.querySelector('.mlb-header');
@@ -12855,7 +12858,8 @@ body.ccopen #ccdot{top:5px;right:6px}   /* r259: stays in the corner, open or cl
     <button onclick="CC.fsz(-1)">A&minus;</button><button onclick="CC.fsz(1)">A+</button>
 </div>
   <div class="hl" id="cchl"></div>
-  <div class="ov" id="ccov"><b>&#9888; OVERRIDES</b><span id="ccovl"></span></div>
+  <div class="ov" id="ccov"><b>&#9888; OVERRIDES</b><span id="ccovl"></span><button class="ovclr" id="ccovclr" onclick="CC.clearFlags()">Clear all</button></div>
+  <style>.ov .ovclr{margin-left:auto;background:#2a1620;color:#f8a0b0;border:1px solid #7e2b3a;border-radius:5px;font:inherit;font-size:calc(var(--fs) - 3px);padding:2px 9px;cursor:pointer}.ov .ovclr:hover{background:#3a1e2a}.ov{display:flex;align-items:center;gap:8px}</style>
   <div class="rlbar" id="ccrl">
     <button class="rlbtn" onclick="CC.reload()">\u27f3 Reload with selected flags</button>
     <span class="rlprev" id="ccrlprev"></span>
@@ -13363,6 +13367,14 @@ window.CC = (function(){
     setVal:function(n,v){ try{ if(overrides===null) initOverrides();
         overrides[n]=v; updateReloadBar(); }catch(e){} },
     reload:function(){ try{ location.href=buildReloadURL(); }catch(e){} },
+    clearFlags:function(){ try{
+        /* r266: reset ALL flag selections to default. Empties the overrides object — this is
+           pure selection-reset; it fires NOTHING (action flags are one-shot buttons, never in
+           overrides as a persisted value). After clearing, the reload URL shows "clean reload";
+           tap Reload to load with no flags. */
+        overrides={};
+        renderFlags(); renderOv(); updateReloadBar(); renderDot();
+      }catch(e){} },
     run:function(id,fn){ try{
         var out=window[fn](); var el=$('ccout-'+id);
         if(el) el.outerHTML='<pre>'+String(typeof out==='string'?out:JSON.stringify(out,null,1)||'(no return value — check the console)')
@@ -13423,9 +13435,12 @@ LAYOUT (mlbFull)
   Featured band = two 50/50 slots (Yankees + Mets; Mets slot can swap to a US
   Open golf pane). Bottom band = AL + NL scroll rows of game cards.
 
-FEATURED SLOT STATES (per team; getTeamChipMode + time of day pick the mode)
-  lastFinal  -> renderLastFinalSlot (lf-* classes): last night final + W/L/S
-                pitcher decisions + next game. Shown pre-noon.
+FEATURED SLOT STATES (anchor = NYY only; NYM never owns it — r268)
+  Anchor shows the NYY live card ONLY while NYY is actually Live. Otherwise it runs
+  the evergreen rotation: last-final (renderLastFinalSlot, lf-* classes: final + W/L/S
+  pitcher decisions) -> next game -> standings. The rotation holds from a game's final
+  until the NEXT NYY game goes live (capped at 2 days stale via _recapFresh) — no noon/
+  midnight guillotine. A live NYM game appears in SLOT-2 (clutch) only, never the anchor.
   live / final / pregame / ambient -> mlbFeaturedSlotHtml (mlb-feat-* classes).
   Bottom cards -> mlbCardHtml (mlb-card-* classes), used in every state.
 
