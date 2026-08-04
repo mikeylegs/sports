@@ -1,0 +1,181 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Standings Card Studio</title>
+<style>
+  *{box-sizing:border-box}
+  body{background:#0b0f16;color:#dce4ef;font:13px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0}
+  .top{display:flex;height:100vh}
+  .stagecol{flex:1;min-width:0;display:flex;flex-direction:column;padding:12px 14px;overflow:auto}
+  .ctrls{width:400px;flex-shrink:0;background:#0d131e;border-left:1px solid #1e2836;padding:12px 14px 60px;overflow-y:auto}
+  h1{font-size:15px;color:#7dd3fc;margin:0 0 2px}.sub{color:#6b7a8f;font-size:11.5px;margin:0 0 10px}
+  .bar{display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+  .bar button{background:#12324a;color:#cde4ff;border:1px solid #2b5a7e;border-radius:6px;padding:5px 10px;font:600 12px inherit;cursor:pointer}
+  .bar button.on{background:#2b5a7e}
+  .frame{overflow:hidden;border:1px solid #1e2836;border-radius:8px;background:#0b0f16;position:relative}
+  .frame .scaler{transform-origin:top left}
+  .edgemark{position:absolute;inset:0;pointer-events:none;z-index:50}
+  .edgemark .v{position:absolute;width:2px;background:rgba(125,211,252,0.6)}
+  .edgemark .lbl{position:absolute;font:10px ui-monospace,monospace;color:#7dd3fc;background:#0b0f16;padding:1px 4px}
+  .grp{border:1px solid #1e2836;border-radius:8px;padding:8px 10px;margin:8px 0;background:#0f1520}
+  .grp h3{font-size:12px;color:#a78bfa;margin:0 0 6px;text-transform:uppercase;letter-spacing:.06em}
+  .rw{display:flex;align-items:center;gap:7px;margin:5px 0}
+  .rw label{width:88px;font-size:11px;color:#8ea2bd;flex-shrink:0}
+  .rw input[type=range]{flex:1;min-width:0}
+  .rw .val{width:56px;text-align:right;font:11px ui-monospace,monospace;color:#cde4ff;flex-shrink:0}
+  .readout{background:#12324a;border:1px solid #2b5a7e;border-radius:8px;padding:8px 10px;margin:8px 0;font:11px ui-monospace,monospace;color:#cde4ff;line-height:1.7}
+  .readout b{color:#7dd3fc}.readout .ok{color:#4ade80}.readout .cap{color:#f8a0b0}
+  .exp{width:100%;background:#1a5a3a;color:#d7ffe9;border:1px solid #2f8f5e;border-radius:8px;padding:9px;font:600 12.5px inherit;cursor:pointer;margin-top:10px}
+  textarea{width:100%;height:210px;background:#0b0f16;color:#9fe;border:1px solid #1e2836;border-radius:7px;font:10px ui-monospace,monospace;padding:8px;margin-top:8px;display:none}
+  .note{font-size:10.5px;color:#6b7a8f;margin:4px 0 0}
+
+  /* ══ FAITHFUL GEOMETRY: #row-MLB 1920×1080 (cqh=10.8px, cqw=19.2px), card in 960 half-slot ══ */
+  #row-MLB{width:1920px;height:1080px;container-type:size;container-name:mlb-row;position:relative;background:#0b0f16;}
+  .wws-slot{position:absolute;left:0;top:8%;width:960px;height:57%;overflow:hidden;padding:0.8cqh 1.6cqh;}
+  .lf-slide{height:100%;display:flex;flex-direction:column;justify-content:center;}
+
+  /* base standings rules (verbatim from dashboard) */
+  .lf-stand3{display:flex;flex-direction:column;gap:0.6cqh;width:100%;flex:1;justify-content:space-between;}
+  .lf-stand3-head,.lf-stand3-row{display:grid;align-items:baseline;white-space:nowrap;}
+  .lf-stand3-head{padding:0 0.9cqh 0.35cqh;font-size:3.6cqh;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,0.4);}
+  .lf-stand3-head span.r{text-align:right;letter-spacing:0;}
+  .lf-stand3-row{padding:0.9cqh 0.9cqh;border-radius:6px;font-size:3.9cqh;}
+  .lf-stand3-row.me{background:linear-gradient(90deg,var(--me-tint,rgba(52,211,153,0.16)),transparent);border-left:3px solid var(--me-accent,#34d399);}
+  .lf-stand3-team{font-weight:700;color:rgba(255,255,255,0.55);display:flex;align-items:center;gap:1.4cqh;min-width:0;}
+  .lf-stand3-rank{opacity:0.55;font-size:0.85em;flex-shrink:0;min-width:1.5em;}
+  .lf-stand3-logo{width:6cqh;height:6cqh;object-fit:contain;flex-shrink:0;}
+  .lf-stand3-row.me .lf-stand3-team{color:#fff;}
+  .lf-stand3-rec,.lf-stand3-gb,.lf-stand3-l10{color:rgba(255,255,255,0.55);font-weight:800;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;}
+  .lf-stand3-gb{color:rgba(255,255,255,0.45);}
+  .lf-stand3-row.me .lf-stand3-rec,.lf-stand3-row.me .lf-stand3-gb,.lf-stand3-row.me .lf-stand3-l10{color:#fff;}
+
+  /* ══ STUDIO OVERRIDE — .stand-studio scoped, all customizable ══ */
+  .stand-studio.lf-stand3{gap:var(--rowGap)cqh;}
+  .stand-studio .lf-stand3-head,.stand-studio .lf-stand3-row{grid-template-columns:var(--cols);}
+  .stand-studio .lf-stand3-head{font-size:var(--headFont)cqh;padding:0 var(--rowPadH)cqh 0.35cqh;}
+  .stand-studio .lf-stand3-row{font-size:var(--rowFont)cqh;padding:var(--rowPadV)cqh var(--rowPadH)cqh;}
+  .stand-studio .lf-stand3-team{gap:var(--teamGap)cqh;}
+  .stand-studio .lf-stand3-rank{font-size:var(--rankEm)em;}
+  .stand-studio .lf-stand3-logo{width:var(--logo)cqh;height:var(--logo)cqh;}
+</style></head>
+<body>
+<div class="top">
+  <div class="stagecol">
+    <h1>Standings Card Studio</h1>
+    <p class="sub">Real 960 half-slot, 5-team division. Toggle L10 (4th col) + logos. One team is 10&ndash;0 to stress column widths. Cyan line = 960 edge; nothing may cross it.</p>
+    <div class="bar">
+      <button id="s-fit" class="on" onclick="setScale('fit')">Fit</button>
+      <button id="s-1" onclick="setScale('1')">1:1</button>
+      <button id="t-l10" onclick="toggleL10()">L10: OFF</button>
+      <button id="t-logo" onclick="toggleLogo()">Logos: OFF</button>
+      <button onclick="reset()">Reset</button>
+    </div>
+    <div class="frame" id="frame"><div class="scaler" id="stage"></div><div class="edgemark" id="edge"></div></div>
+    <p class="note">10&ndash;0 team tests the W-L + L10 width. Watch the 960 edge — if GB/L10 clips, widen those cols or shrink the font.</p>
+  </div>
+  <div class="ctrls">
+    <div class="readout" id="readout"></div>
+    <div class="grp"><h3>Columns (widths in cqw)</h3>
+      <div class="rw"><label>W-L col</label><input type="range" id="wlCol" min="10" max="26" step="0.5" value="15"><span class="val" id="wlCol-v"></span></div>
+      <div class="rw"><label>GB col</label><input type="range" id="gbCol" min="5" max="18" step="0.5" value="8"><span class="val" id="gbCol-v"></span></div>
+      <div class="rw"><label>L10 col</label><input type="range" id="l10Col" min="8" max="24" step="0.5" value="16"><span class="val" id="l10Col-v"></span></div>
+    </div>
+    <div class="grp"><h3>Rows</h3>
+      <div class="rw"><label>row font</label><input type="range" id="rowFont" min="2.5" max="7" step="0.1" value="3.9"><span class="val" id="rowFont-v"></span></div>
+      <div class="rw"><label>header font</label><input type="range" id="headFont" min="2.5" max="6" step="0.1" value="3.6"><span class="val" id="headFont-v"></span></div>
+      <div class="rw"><label>row pad V</label><input type="range" id="rowPadV" min="0.2" max="3" step="0.1" value="0.9"><span class="val" id="rowPadV-v"></span></div>
+      <div class="rw"><label>row pad H</label><input type="range" id="rowPadH" min="0.2" max="3" step="0.1" value="0.9"><span class="val" id="rowPadH-v"></span></div>
+      <div class="rw"><label>row gap</label><input type="range" id="rowGap" min="0" max="3" step="0.1" value="0.6"><span class="val" id="rowGap-v"></span></div>
+    </div>
+    <div class="grp"><h3>Team cell</h3>
+      <div class="rw"><label>logo</label><input type="range" id="logo" min="3" max="12" step="0.2" value="6"><span class="val" id="logo-v"></span></div>
+      <div class="rw"><label>team gap</label><input type="range" id="teamGap" min="0.4" max="4" step="0.1" value="1.4"><span class="val" id="teamGap-v"></span></div>
+      <div class="rw"><label>rank size</label><input type="range" id="rankEm" min="0.6" max="1.1" step="0.01" value="0.85"><span class="val" id="rankEm-v"></span></div>
+    </div>
+    <button class="exp" onclick="exportCss()">Copy standings block (wall-ready)</button>
+    <textarea id="out" readonly></textarea>
+  </div>
+</div>
+<script>
+let L10=false, LOGOS=false;
+// 5-team AL East, one team 10-0 to stress the W-L + L10 columns
+const TEAMS=[
+  {abbr:'NYY', w:10, l:0,  l10:'10-0', me:true},
+  {abbr:'TB',  w:41, l:27, l10:'7-3'},
+  {abbr:'TOR', w:34, l:38, l10:'4-6'},
+  {abbr:'BAL', w:34, l:39, l10:'5-5'},
+  {abbr:'BOS', w:29, l:40, l10:'3-7'},
+];
+const logoUrl=a=>`https://a.espncdn.com/i/teamlogos/mlb/500/${a.toLowerCase()}.png`;
+function gbOf(t){ const lead=TEAMS[0]; const gb=((lead.w-t.w)+(t.l-lead.l))/2; return gb===0?'—':(gb%1===0?gb.toFixed(0):gb.toFixed(1)); }
+function buildCard(){
+  const head=`<div class="lf-stand3-head"><span>Team</span><span class="r">W-L</span><span class="r">GB</span>${L10?'<span class="r">L10</span>':''}</div>`;
+  const rows=TEAMS.map((t,i)=>`<div class="lf-stand3-row${t.me?' me':''}">
+    <span class="lf-stand3-team"><span class="lf-stand3-rank">${i+1}.</span>${LOGOS?`<img class="lf-stand3-logo" src="${logoUrl(t.abbr)}" onerror="this.style.opacity=0">`:''}${t.abbr}</span>
+    <span class="lf-stand3-rec">${t.w}–${t.l}</span>
+    <span class="lf-stand3-gb">${gbOf(t)}</span>
+    ${L10?`<span class="lf-stand3-l10">${t.l10}</span>`:''}
+  </div>`).join('');
+  return `<div id="row-MLB"><div class="wws-slot"><div class="lf-slide"><div class="lf-stand3 stand-studio">${head}${rows}</div></div></div></div>`;
+}
+function render(){document.getElementById('stage').innerHTML=buildCard();apply();drawEdge();}
+const CFG={wlCol:0,gbCol:0,l10Col:0,rowFont:{v:'--rowFont'},headFont:{v:'--headFont'},rowPadV:{v:'--rowPadV'},rowPadH:{v:'--rowPadH'},rowGap:{v:'--rowGap'},logo:{v:'--logo'},teamGap:{v:'--teamGap'},rankEm:{v:'--rankEm'}};
+const DEF={};Object.keys(CFG).forEach(k=>DEF[k]=document.getElementById(k).value);
+['wlCol','gbCol','l10Col','rowFont','headFont','rowPadV','rowPadH','rowGap','logo','teamGap','rankEm'].forEach(k=>document.getElementById(k).addEventListener('input',apply));
+function gv(k){return document.getElementById(k).value;}
+function apply(){
+  const el=document.getElementById('stage').querySelector('#row-MLB');if(!el)return;
+  // grid-template-columns: team(1fr) W-L GB [L10]
+  const cols=L10 ? `1fr ${gv('wlCol')}cqw ${gv('gbCol')}cqw ${gv('l10Col')}cqw` : `1fr ${gv('wlCol')}cqw ${gv('gbCol')}cqw`;
+  el.style.setProperty('--cols',cols);
+  el.style.setProperty('--rowFont',gv('rowFont')+'cqh');el.style.setProperty('--headFont',gv('headFont')+'cqh');
+  el.style.setProperty('--rowPadV',gv('rowPadV'));el.style.setProperty('--rowPadH',gv('rowPadH'));
+  el.style.setProperty('--rowGap',gv('rowGap'));el.style.setProperty('--logo',gv('logo'));
+  el.style.setProperty('--teamGap',gv('teamGap'));el.style.setProperty('--rankEm',gv('rankEm'));
+  ['wlCol','gbCol','l10Col','rowFont','headFont','rowPadV','rowPadH','rowGap','logo','teamGap','rankEm'].forEach(k=>document.getElementById(k+'-v').textContent=gv(k)+(['wlCol','gbCol','l10Col'].includes(k)?'cqw':(k==='rankEm'?'em':'cqh')));
+  updateReadout();
+}
+function updateReadout(){
+  const cqw=19.2;
+  const used=(parseFloat(gv('wlCol'))+parseFloat(gv('gbCol'))+(L10?parseFloat(gv('l10Col')):0))*cqw;
+  const slot=960-2*(1.6*10.8); // slot minus its padding
+  const teamMin=used<slot;
+  document.getElementById('readout').innerHTML=`<b>${L10?'4-col (L10)':'3-col'}</b> · logos ${LOGOS?'on':'off'}<br>numeric cols ≈ ${Math.round(used)}px of ${Math.round(slot)}px slot<br>${teamMin?'<span class="ok">team name has '+Math.round(slot-used)+'px</span>':'<span class="cap">cols exceed slot — clip risk</span>'}<br><span style="color:#6b7a8f">the 10-0 row stresses W-L + L10 width</span>`;
+}
+function toggleL10(){L10=!L10;document.getElementById('t-l10').textContent='L10: '+(L10?'ON':'OFF');document.getElementById('t-l10').classList.toggle('on',L10);render();}
+function toggleLogo(){LOGOS=!LOGOS;document.getElementById('t-logo').textContent='Logos: '+(LOGOS?'ON':'OFF');document.getElementById('t-logo').classList.toggle('on',LOGOS);render();}
+function reset(){Object.keys(DEF).forEach(k=>document.getElementById(k).value=DEF[k]);render();}
+function exportCss(){
+  const g=k=>gv(k);
+  const cols3=`1fr ${g('wlCol')}cqw ${g('gbCol')}cqw`;
+  const cols4=`1fr ${g('wlCol')}cqw ${g('gbCol')}cqw ${g('l10Col')}cqw`;
+  const css=`/* STANDINGS CARD — studio export. 5-team division, faithful 960 slot.
+   Base = 3-col (Team|W-L|GB); .has-l10 = 4-col adds L10. Dial per-column widths (cqw) so
+   the 10-0 worst case never clips. Apply .has-l10 to the container when L10 data is present. */
+.lf-stand3{gap:${g('rowGap')}cqh;}
+.lf-stand3-head,.lf-stand3-row{grid-template-columns:${cols3};}
+.lf-stand3.has-l10 .lf-stand3-head,.lf-stand3.has-l10 .lf-stand3-row{grid-template-columns:${cols4};}
+.lf-stand3-head{font-size:${g('headFont')}cqh;padding:0 ${g('rowPadH')}cqh 0.35cqh;}
+.lf-stand3-row{font-size:${g('rowFont')}cqh;padding:${g('rowPadV')}cqh ${g('rowPadH')}cqh;}
+.lf-stand3-team{gap:${g('teamGap')}cqh;}
+.lf-stand3-rank{font-size:${g('rankEm')}em;}
+.lf-stand3-logo{width:${g('logo')}cqh;height:${g('logo')}cqh;}
+.lf-stand3-head span:nth-child(2),.lf-stand3-head span:nth-child(3),.lf-stand3-head span:nth-child(4){text-align:right;letter-spacing:0;}`;
+  const ta=document.getElementById('out');ta.style.display='block';ta.value=css;ta.select();try{navigator.clipboard.writeText(css);}catch(e){}
+}
+function drawEdge(){
+  const e=document.getElementById('edge');const fit=document.getElementById('s-fit').classList.contains('on');
+  const sc=fit?(document.getElementById('frame').clientWidth/1920):1;const px=n=>n*sc;
+  const top=1080*0.08, h=1080*0.57;
+  e.innerHTML=`<div class="v" style="left:${px(960)}px;top:${px(top)}px;height:${px(h)}px"></div><div class="lbl" style="left:${px(960)-52}px;top:${px(top)}px">960 edge</div>`;
+}
+function setScale(mode){
+  document.getElementById('s-fit').classList.toggle('on',mode==='fit');
+  document.getElementById('s-1').classList.toggle('on',mode==='1');
+  const frame=document.getElementById('frame'),scaler=document.getElementById('stage');
+  if(mode==='1'){scaler.style.transform='none';frame.style.height='1080px';frame.style.width='1920px';frame.style.maxWidth='100%';}
+  else{const w=frame.clientWidth,sc=w/1920;scaler.style.transform=`scale(${sc})`;frame.style.height=(1080*sc)+'px';frame.style.width='100%';}
+  drawEdge();
+}
+addEventListener('resize',()=>{if(document.getElementById('s-fit').classList.contains('on'))setScale('fit');});
+render();setScale('fit');
+</script>
+</body></html>
