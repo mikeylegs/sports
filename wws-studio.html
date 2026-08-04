@@ -1,0 +1,185 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WWS-MLB Studio v2</title>
+<style>
+  *{box-sizing:border-box}
+  body{background:#0b0f16;color:#dce4ef;font:13px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0}
+  .top{display:flex;height:100vh}
+  .stagecol{flex:1;min-width:0;display:flex;flex-direction:column;padding:12px 14px;overflow:auto}
+  .ctrls{width:400px;flex-shrink:0;background:#0d131e;border-left:1px solid #1e2836;padding:12px 14px 60px;overflow-y:auto}
+  h1{font-size:15px;color:#7dd3fc;margin:0 0 2px}.sub{color:#6b7a8f;font-size:11.5px;margin:0 0 10px}
+  .bar{display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+  .bar button{background:#12324a;color:#cde4ff;border:1px solid #2b5a7e;border-radius:6px;padding:5px 10px;font:600 12px inherit;cursor:pointer}
+  .bar button.on{background:#2b5a7e}
+  .frame{overflow:hidden;border:1px solid #1e2836;border-radius:8px;background:#0b0f16;position:relative}
+  .frame .scaler{transform-origin:top left}
+  .anchmark{position:absolute;inset:0;pointer-events:none;z-index:50}
+  .anchmark .v{position:absolute;width:2px;background:rgba(248,160,176,0.55)}
+  .anchmark .lbl{position:absolute;font:10px ui-monospace,monospace;color:#f8a0b0;background:#0b0f16;padding:1px 4px}
+  .grp{border:1px solid #1e2836;border-radius:8px;padding:8px 10px;margin:8px 0;background:#0f1520}
+  .grp h3{font-size:12px;color:#a78bfa;margin:0 0 6px;text-transform:uppercase;letter-spacing:.06em}
+  .rw{display:flex;align-items:center;gap:7px;margin:5px 0}
+  .rw label{width:82px;font-size:11px;color:#8ea2bd;flex-shrink:0}
+  .rw input[type=range]{flex:1;min-width:0}
+  .rw .val{width:58px;text-align:right;font:11px ui-monospace,monospace;color:#cde4ff;flex-shrink:0}
+  .readout{background:#12324a;border:1px solid #2b5a7e;border-radius:8px;padding:8px 10px;margin:8px 0;font:11px ui-monospace,monospace;color:#cde4ff;line-height:1.7}
+  .readout b{color:#7dd3fc}.readout .ok{color:#4ade80}.readout .cap{color:#f8a0b0}
+  .exp{width:100%;background:#1a5a3a;color:#d7ffe9;border:1px solid #2f8f5e;border-radius:8px;padding:9px;font:600 12.5px inherit;cursor:pointer;margin-top:10px}
+  textarea{width:100%;height:210px;background:#0b0f16;color:#9fe;border:1px solid #1e2836;border-radius:7px;font:10px ui-monospace,monospace;padding:8px;margin-top:8px;display:none}
+  .note{font-size:10.5px;color:#6b7a8f;margin:4px 0 0}
+  input[type=text]{width:44px;background:#0b0f16;color:#cde4ff;border:1px solid #2b5a7e;border-radius:5px;padding:3px 6px;font:inherit;text-align:center}
+
+  /* ══ FAITHFUL GEOMETRY ══
+     Real container-query root = #row-MLB at 1920×1080 (cqh=10.8px, cqw=19.2px). The WWS card
+     sits in the SECONDARY half → 960px wide. So we render #row-MLB at full size but constrain
+     the card to a 960-wide slot. This is what r276 got wrong (studio was full-width → the
+     cqh horizontal values fit in-studio but overflowed the real 960 pane). */
+  #row-MLB{width:1920px;height:1080px;container-type:size;container-name:mlb-row;position:relative;background:#0b0f16;}
+  .wws-slot{position:absolute;left:0;top:8%;width:960px;height:57%;overflow:hidden;}  /* the real WWS half-slot */
+  .wws-full{width:100%;height:100%;}
+  .lf-slide{padding:0.8cqh 1.6cqh;height:100%;display:flex;flex-direction:column;justify-content:center;}
+
+  /* base rules (verbatim) */
+  .wws-tm-crest{width:15cqh;height:15cqh;border-radius:50%;object-fit:contain;}
+  .wws-tm-name{font-size:4.2cqh;font-weight:900;color:#fff;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .wws-tm-rec{font-size:3.6cqh;font-weight:700;color:rgba(255,255,255,0.5);}
+  .wws-hero{font-size:12.5cqh;font-weight:900;color:#fff;line-height:1;font-variant-numeric:tabular-nums;}
+  .wws-hero-dash{font-size:0.7em;font-weight:700;color:rgba(255,255,255,0.5);margin:0 0.12em;vertical-align:0.1em;}
+  .lf-wws-status{font-size:3.6cqh;font-weight:600;color:rgba(255,255,255,0.55);text-align:center;margin-top:1.6cqh;}
+  .lf-wws-status.live{color:#34d399;}
+  .wws-tm-row{display:flex;align-items:center;justify-content:space-around;padding:2.4cqh 1.5cqh 0;height:100%;}
+  .wws-tm-side{display:flex;flex-direction:column;align-items:center;gap:0.8cqh;min-width:0;flex:1;}
+  .wws-tm-mid{display:flex;flex-direction:column;align-items:center;gap:1cqh;flex-shrink:0;}
+
+  /* ══ STUDIO OVERRIDE — .wws-mlb, PERCENT horizontal (fits any width) + cqh fonts ══ */
+  .wws-mlb.wws-tm-row{justify-content:space-between;padding:var(--rowPadV)cqh var(--rowPadH)cqh 0;}
+  .wws-mlb .wws-tm-side{flex:0 0 var(--sideW);width:var(--sideW);gap:var(--sideGap)cqh;}
+  .wws-mlb .wws-tm-mid{flex:0 0 var(--midW);width:var(--midW);gap:var(--midGap)cqh;}
+  .wws-mlb .wws-tm-crest{width:var(--logo);height:var(--logo);border-radius:0;max-width:95%;}
+  .wws-mlb .wws-tm-name{font-size:var(--abbr);}
+  .wws-mlb .wws-tm-rec{font-size:var(--rec);}
+  .wws-mlb .wws-hero{font-size:var(--score);white-space:nowrap;overflow:hidden;}
+  .wws-mlb .lf-wws-status{font-size:var(--inning);}
+  /* stacked pregame kickoff */
+  .wws-mlb .wws-mlb-kick-stack{display:flex;flex-direction:column;align-items:center;gap:var(--kickGap)cqh;white-space:nowrap;}
+  .wws-mlb .wws-kick-word{font-size:var(--kickWord);font-weight:900;color:#fbbf24;line-height:1;}
+  .wws-mlb .wws-kick-time{font-size:var(--kickTime);font-weight:800;color:#fbbf24;line-height:1;opacity:0.92;}
+</style></head>
+<body>
+<div class="top">
+  <div class="stagecol">
+    <h1>WWS-MLB Studio v2 &mdash; faithful geometry</h1>
+    <p class="sub">Real 960-wide half-slot (cqh resolves against 1080). Horizontal = %, fonts = cqh. Stacked pregame. Toggle PRE/LIVE + 14&ndash;12 to prove logos anchor. Export = .wws-mlb block, wall-ready.</p>
+    <div class="bar">
+      <button id="s-fit" class="on" onclick="setScale('fit')">Fit</button>
+      <button id="s-1" onclick="setScale('1')">1:1</button>
+      <button id="v-live" class="on" onclick="setView('live')">LIVE</button>
+      <button id="v-pre" onclick="setView('pre')">PRE</button>
+      <button onclick="setScores('14','12')">14&ndash;12</button>
+      <button onclick="setScores('1','0')">1&ndash;0</button>
+      <button onclick="reset()">Reset</button>
+    </div>
+    <div class="frame" id="frame"><div class="scaler" id="stage"></div><div class="anchmark" id="anch"></div></div>
+    <p class="note">Pink lines = logo anchors. The 960 slot edge is the right border of the card. Toggle scores: lines must not move.</p>
+  </div>
+  <div class="ctrls">
+    <div class="readout" id="readout"></div>
+    <div class="grp"><h3>Score test</h3>
+      <div class="rw"><label>away / home</label><input type="text" id="scoreA" value="1" maxlength="2"><input type="text" id="scoreH" value="0" maxlength="2" style="margin-left:6px"></div>
+    </div>
+    <div class="grp"><h3>Layout (horizontal = % of card)</h3>
+      <div class="rw"><label>side width</label><input type="range" id="sideW" min="18" max="40" step="0.5" value="30"><span class="val" id="sideW-v"></span></div>
+      <div class="rw"><label>mid width</label><input type="range" id="midW" min="24" max="60" step="0.5" value="40"><span class="val" id="midW-v"></span></div>
+      <div class="rw"><label>row pad V</label><input type="range" id="rowPadV" min="0" max="8" step="0.2" value="2.4"><span class="val" id="rowPadV-v"></span></div>
+      <div class="rw"><label>row pad H</label><input type="range" id="rowPadH" min="0" max="6" step="0.2" value="1.5"><span class="val" id="rowPadH-v"></span></div>
+      <div class="rw"><label>side gap</label><input type="range" id="sideGap" min="0" max="4" step="0.1" value="0.8"><span class="val" id="sideGap-v"></span></div>
+      <div class="rw"><label>mid gap</label><input type="range" id="midGap" min="0" max="5" step="0.1" value="1"><span class="val" id="midGap-v"></span></div>
+    </div>
+    <div class="grp"><h3>Sizes</h3>
+      <div class="rw"><label>logo</label><input type="range" id="logo" min="12" max="40" step="0.5" value="24.4"><span class="val" id="logo-v"></span></div>
+      <div class="rw"><label>abbr</label><input type="range" id="abbr" min="3" max="12" step="0.1" value="8.7"><span class="val" id="abbr-v"></span></div>
+      <div class="rw"><label>record</label><input type="range" id="rec" min="3" max="10" step="0.1" value="7.3"><span class="val" id="rec-v"></span></div>
+      <div class="rw"><label>score</label><input type="range" id="score" min="8" max="28" step="0.5" value="24"><span class="val" id="score-v"></span></div>
+      <div class="rw"><label>inning</label><input type="range" id="inning" min="3" max="12" step="0.1" value="8.4"><span class="val" id="inning-v"></span></div>
+    </div>
+    <div class="grp"><h3>Pregame kickoff (stacked)</h3>
+      <div class="rw"><label>word</label><input type="range" id="kickWord" min="5" max="16" step="0.2" value="10.4"><span class="val" id="kickWord-v"></span></div>
+      <div class="rw"><label>time</label><input type="range" id="kickTime" min="4" max="14" step="0.2" value="8"><span class="val" id="kickTime-v"></span></div>
+      <div class="rw"><label>stack gap</label><input type="range" id="kickGap" min="0" max="4" step="0.1" value="1"><span class="val" id="kickGap-v"></span></div>
+    </div>
+    <button class="exp" onclick="exportCss()">Copy .wws-mlb block (wall-ready)</button>
+    <textarea id="out" readonly></textarea>
+  </div>
+</div>
+<script>
+const NYY="https://a.espncdn.com/i/teamlogos/mlb/500/nyy.png";
+const BOS="https://a.espncdn.com/i/teamlogos/mlb/500/bos.png";
+let VIEW='live';
+function buildCard(){
+  const pre=VIEW==='pre';
+  const sa=document.getElementById('scoreA').value||'0', sh=document.getElementById('scoreH').value||'0';
+  const side=(logo,name,rec)=>`<div class="wws-tm-side"><img class="wws-tm-crest" src="${logo}" onerror="this.style.opacity=0"><span class="wws-tm-name">${name}</span><span class="wws-tm-rec">${rec}</span></div>`;
+  const mid=pre
+    ? `<div class="wws-mlb-kick-stack"><span class="wws-kick-word">Tonight</span><span class="wws-kick-time">6:45 PM</span></div>`
+    : `<span class="wws-hero">${sa}<span class="wws-hero-dash">–</span>${sh}</span><div class="lf-wws-status live">BOT 7TH</div>`;
+  return `<div id="row-MLB"><div class="wws-slot"><div class="wws-full"><div class="lf-slide"><div class="wws-tm-row wws-mlb">${side(NYY,'NYY','61-47')}<div class="wws-tm-mid">${mid}</div>${side(BOS,'BOS','55-53')}</div></div></div></div></div>`;
+}
+function render(){document.getElementById('stage').innerHTML=buildCard();apply();drawAnchors();}
+const CFG={sideW:{v:'--sideW',u:'%'},midW:{v:'--midW',u:'%'},rowPadV:{v:'--rowPadV',u:''},rowPadH:{v:'--rowPadH',u:''},sideGap:{v:'--sideGap',u:''},midGap:{v:'--midGap',u:''},logo:{v:'--logo',u:'cqh'},abbr:{v:'--abbr',u:'cqh'},rec:{v:'--rec',u:'cqh'},score:{v:'--score',u:'cqh'},inning:{v:'--inning',u:'cqh'},kickWord:{v:'--kickWord',u:'cqh'},kickTime:{v:'--kickTime',u:'cqh'},kickGap:{v:'--kickGap',u:''}};
+const DEF={};Object.keys(CFG).forEach(k=>DEF[k]=document.getElementById(k).value);
+function gv(k){return document.getElementById(k).value;}
+function apply(){
+  const row=document.getElementById('stage').querySelector('#row-MLB');if(!row)return;
+  Object.keys(CFG).forEach(k=>{const c=CFG[k];row.style.setProperty(c.v,gv(k)+c.u);document.getElementById(k+'-v').textContent=gv(k)+(c.u||'cqh');});
+  updateReadout();
+}
+function updateReadout(){
+  const sa=document.getElementById('scoreA').value||'0', sh=document.getElementById('scoreH').value||'0';
+  const dd=sa.length>1&&sh.length>1;
+  const sum=parseFloat(gv('sideW'))*2+parseFloat(gv('midW'));
+  document.getElementById('readout').innerHTML=`<b>${VIEW.toUpperCase()}</b> · ${sa}–${sh} ${dd?'<span class="cap">double-digit</span>':'<span class="ok">single</span>'}<br>side+mid+side = ${sum.toFixed(0)}% ${sum>100?'<span class="cap">OVER 100% — overflow!</span>':'<span class="ok">fits</span>'}<br><span style="color:#6b7a8f">toggle 14–12 ↔ 1–0: anchor lines must not move</span>`;
+}
+Object.keys(CFG).forEach(k=>document.getElementById(k).addEventListener('input',apply));
+['scoreA','scoreH'].forEach(id=>document.getElementById(id).addEventListener('input',render));
+function setScores(a,h){document.getElementById('scoreA').value=a;document.getElementById('scoreH').value=h;render();}
+function setView(v){VIEW=v;document.getElementById('v-live').classList.toggle('on',v==='live');document.getElementById('v-pre').classList.toggle('on',v==='pre');render();}
+function reset(){Object.keys(DEF).forEach(k=>document.getElementById(k).value=DEF[k]);render();}
+function exportCss(){
+  const g=k=>gv(k);
+  const css=`/* WWS-MLB CARD — studio v2 export. Fixed-anchor (horizontal = %, fits the 960 slot);
+   stacked pregame kickoff; score flexes in the reserved mid. Scoped .wws-mlb. */
+.wws-full .wws-mlb.wws-tm-row{justify-content:space-between;padding:${g('rowPadV')}cqh ${g('rowPadH')}cqh 0;}
+.wws-mlb .wws-tm-side{flex:0 0 ${g('sideW')}%;width:${g('sideW')}%;gap:${g('sideGap')}cqh;}
+.wws-mlb .wws-tm-mid{flex:0 0 ${g('midW')}%;width:${g('midW')}%;gap:${g('midGap')}cqh;}
+.wws-mlb .wws-tm-crest{width:${g('logo')}cqh;height:${g('logo')}cqh;border-radius:0;max-width:95%;}
+.wws-mlb .wws-tm-name{font-size:${g('abbr')}cqh;}
+.wws-mlb .wws-tm-rec{font-size:${g('rec')}cqh;}
+.wws-mlb .wws-hero{font-size:${g('score')}cqh;white-space:nowrap;overflow:hidden;}
+.wws-mlb .lf-wws-status{font-size:${g('inning')}cqh;}
+.wws-mlb .wws-mlb-kick-stack{display:flex;flex-direction:column;align-items:center;gap:${g('kickGap')}cqh;white-space:nowrap;}
+.wws-mlb .wws-kick-word{font-size:${g('kickWord')}cqh;font-weight:900;color:#fbbf24;line-height:1;}
+.wws-mlb .wws-kick-time{font-size:${g('kickTime')}cqh;font-weight:800;color:#fbbf24;line-height:1;opacity:0.92;}`;
+  const ta=document.getElementById('out');ta.style.display='block';ta.value=css;ta.select();try{navigator.clipboard.writeText(css);}catch(e){}
+}
+function drawAnchors(){
+  const a=document.getElementById('anch');const fit=document.getElementById('s-fit').classList.contains('on');
+  const sc=fit?(document.getElementById('frame').clientWidth/1920):1;const px=n=>n*sc;
+  const slotW=960, padH=parseFloat(gv('rowPadH'))*10.8, sideWpct=parseFloat(gv('sideW'))/100;
+  const inner=slotW-padH*2, sideWpx=inner*sideWpct;
+  const awayC=padH+sideWpx/2, homeC=slotW-padH-sideWpx/2;
+  const top=1080*0.08+20, h=1080*0.5;
+  a.innerHTML=`<div class="v" style="left:${px(awayC)}px;top:${px(top)}px;height:${px(h)}px"></div><div class="lbl" style="left:${px(awayC)-16}px;top:${px(top)-16}px">away</div>`
+    +`<div class="v" style="left:${px(homeC)}px;top:${px(top)}px;height:${px(h)}px"></div><div class="lbl" style="left:${px(homeC)-16}px;top:${px(top)-16}px">home</div>`
+    +`<div class="v" style="left:${px(slotW)}px;top:${px(top-10)}px;height:${px(h+10)}px;background:rgba(125,211,252,0.6)"></div><div class="lbl" style="left:${px(slotW)-52}px;top:${px(top-10)}px;color:#7dd3fc">960 edge</div>`;
+}
+function setScale(mode){
+  document.getElementById('s-fit').classList.toggle('on',mode==='fit');
+  document.getElementById('s-1').classList.toggle('on',mode==='1');
+  const frame=document.getElementById('frame'),scaler=document.getElementById('stage');
+  if(mode==='1'){scaler.style.transform='none';frame.style.height='1080px';frame.style.width='1920px';frame.style.maxWidth='100%';}
+  else{const w=frame.clientWidth,sc=w/1920;scaler.style.transform=`scale(${sc})`;frame.style.height=(1080*sc)+'px';frame.style.width='100%';}
+  drawAnchors();
+}
+addEventListener('resize',()=>{if(document.getElementById('s-fit').classList.contains('on'))setScale('fit');});
+render();setScale('fit');
+</script>
+</body></html>
