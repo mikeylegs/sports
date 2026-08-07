@@ -1,0 +1,58 @@
+sports/?montage=1&mtrace=1:6106 [roster] Yankees: 24 players
+sports/?montage=1&mtrace=1:6106 [roster] Mets: 26 players
+sports/?montage=1&mtrace=1:2392 [mtrace] armed — reproduce the issue, then montageTraceDump()
+sports/?montage=1&mtrace=1:2362 [montage] built 25 HRs
+simHR({live:1})
+Promise {<pending>}
+sports/?montage=1&mtrace=1:2607 [simHR] live clip: Zach Neto's three-run home run (20)
+sports/?montage=1&mtrace=1:5681 [montage] wall locked — HR queued (1) NYY
+sports/?montage=1&mtrace=1:2639 [simHR] montage running — HR queued via showTakeover (montage-safe: not stomping the player). This is the faithful live-HR-during-montage test.
+sports/?montage=1&mtrace=1:2641 [simHR] fired (mode B: queued into montage — safe) — Aaron Judge (42)
+sports/?montage=1&mtrace=1:1732 [montage] SELF-HEAL — deadlock detected (on, no mp4/card, idle 36s); forcing next beat
+console.warn @ sports/?montage=1&mtrace=1:1732
+_montageHealthCheck @ sports/?montage=1&mtrace=1:2545
+setInterval
+(anonymous) @ sports/?montage=1&mtrace=1:2548
+sports/?montage=1&mtrace=1:1732 [montage] SELF-HEAL — deadlock detected (on, no mp4/card, idle 31s); forcing next beat
+console.warn @ sports/?montage=1&mtrace=1:1732
+_montageHealthCheck @ sports/?montage=1&mtrace=1:2545
+sports/?montage=1&mtrace=1:1732 [montage] SELF-HEAL — deadlock detected (on, no mp4/card, idle 34s); forcing next beat
+console.warn @ sports/?montage=1&mtrace=1:1732
+_montageHealthCheck @ sports/?montage=1&mtrace=1:2545
+montageTraceDump()
+sports/?montage=1&mtrace=1:2404 ── MONTAGE TRACE · 25 transitions ──
+ms      | driver              | on adv own q recapA onEnd card mp4 heal | note
+3805    | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter
+38568   | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown
+38568   | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown
+39218   | RECAP._onEnd        | Y  ·   Y  0 ·      ·     ·    ·   ·    | clip ended → advance
+39538   | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter
+59242   | showTakeover        | Y  ·   Y  1 ·      ·     ·    Y   ·    | HR queued (1) NYY
+80336   | endRecap            | Y  ·   Y  1 ·      ·     ·    Y   ·    | teardown
+80337   | endRecap            | Y  ·   Y  1 ·      ·     ·    ·   ·    | teardown
+80501   | watchdog            | Y  ·   Y  1 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 36s
+80552   | _montageBeat        | Y  ·   Y  1 ·      ·     ·    ·   ·    | enter
+80552   | seam-release        | Y  Y   Y  0 ·      ·     ·    ·   ·    | HR NYY · q now 0
+80987   | RECAP._onEnd        | Y  Y   Y  0 ·      ·     Y    ·   ·    | clip ended → advance
+81308   | _montageBeat        | Y  ·   Y  0 ·      ·     Y    ·   ·    | enter
+92953   | seam-resume         | Y  ·   Y  0 ·      ·     Y    Y   ·    | HR done → next beat
+92953   | _montageBeat        | Y  ·   Y  0 ·      ·     Y    Y   ·    | enter
+127394  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown
+127394  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown
+128500  | watchdog            | Y  ·   Y  0 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 31s
+128552  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter
+166854  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown
+166854  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown
+167500  | watchdog            | Y  ·   Y  0 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 34s
+167505  | RECAP._onEnd        | Y  ·   Y  0 ·      ·     ·    ·   Y    | clip ended → advance
+167551  | _montageBeat        | Y  Y   Y  0 ·      ·     ·    ·   ·    | enter
+167825  | _montageBeat        | Y  ·   Y  0 ·      ·     Y    ·   ·    | enter
+'── MONTAGE TRACE · 25 transitions ──\nms      | driver              | on adv own q recapA onEnd card mp4 heal | note\n3805    | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter\n38568   | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown\n38568   | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown\n39218   | RECAP._onEnd        | Y  ·   Y  0 ·      ·     ·    ·   ·    | clip ended → advance\n39538   | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter\n59242   | showTakeover        | Y  ·   Y  1 ·      ·     ·    Y   ·    | HR queued (1) NYY\n80336   | endRecap            | Y  ·   Y  1 ·      ·     ·    Y   ·    | teardown\n80337   | endRecap            | Y  ·   Y  1 ·      ·     ·    ·   ·    | teardown\n80501   | watchdog            | Y  ·   Y  1 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 36s\n80552   | _montageBeat        | Y  ·   Y  1 ·      ·     ·    ·   ·    | enter\n80552   | seam-release        | Y  Y   Y  0 ·      ·     ·    ·   ·    | HR NYY · q now 0\n80987   | RECAP._onEnd        | Y  Y   Y  0 ·      ·     Y    ·   ·    | clip ended → advance\n81308   | _montageBeat        | Y  ·   Y  0 ·      ·     Y    ·   ·    | enter\n92953   | seam-resume         | Y  ·   Y  0 ·      ·     Y    Y   ·    | HR done → next beat\n92953   | _montageBeat        | Y  ·   Y  0 ·      ·     Y    Y   ·    | enter\n127394  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown\n127394  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown\n128500  | watchdog            | Y  ·   Y  0 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 31s\n128552  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter\n166854  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown\n166854  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown\n167500  | watchdog            | Y  ·   Y  0 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 34s\n167505  | RECAP._onEnd        | Y  ·   Y  0 ·      ·     ·    ·   Y    | clip ended → advance\n167551  | _montageBeat        | Y  Y   Y  0 ·      ·     ·    ·   ·    | enter\n167825  | _montageBeat        | Y  ·   Y  0 ·      ·     Y    ·   ·    | enter\n(copied)'
+sports/?montage=1&mtrace=1:2405 Uncaught (in promise) NotAllowedError: Failed to execute 'writeText' on 'Clipboard': Document is not focused.
+    at montageTraceDump (sports/?montage=1&mtrace=1:2405:28)
+    at <anonymous>:1:1
+montageTraceDump @ sports/?montage=1&mtrace=1:2405
+(anonymous) @ VM5037:1
+sports/?montage=1&mtrace=1:1732 [montage] SELF-HEAL — deadlock detected (on, no mp4/card, idle 31s); forcing next beat
+console.warn @ sports/?montage=1&mtrace=1:1732
+_montageHealthCheck @ sports/?montage=1&mtrace=1:2545
