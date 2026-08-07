@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-08-06T19:59:13.888Z",
+  "updated": "2026-08-07T13:39:53.631Z",
   "events": [
     {
       "league": "baseball/mlb",
@@ -91,6 +91,15 @@
       "showFrom": "20260806",
       "showUntil": "20260806",
       "rank": 10
+    },
+    {
+      "league": "golf/pga",
+      "label": "Golf (PGA)",
+      "espnId": "401811961",
+      "title": "Wyndham Championship",
+      "showFrom": "20260807",
+      "showUntil": "20260807",
+      "rank": 11
     }
   ],
   "watch": {
