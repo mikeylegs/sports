@@ -1,0 +1,130 @@
+sports/?montage=1&mtrace=1:6106 [roster] Yankees: 24 players
+sports/?montage=1&mtrace=1:6106 [roster] Mets: 26 players
+sports/?montage=1&mtrace=1:2392 [mtrace] armed — reproduce the issue, then montageTraceDump()
+sports/?montage=1&mtrace=1:2362 [montage] built 25 HRs
+sports/?montage=1&mtrace=1:1732 [montage] SELF-HEAL — deadlock detected (on, no mp4/card, idle 36s); forcing next beat
+console.warn @ sports/?montage=1&mtrace=1:1732
+_montageHealthCheck @ sports/?montage=1&mtrace=1:2545
+setInterval
+(anonymous) @ sports/?montage=1&mtrace=1:2548
+sports/?montage=1&mtrace=1:1732 [montage] SELF-HEAL — deadlock detected (on, no mp4/card, idle 34s); forcing next beat
+console.warn @ sports/?montage=1&mtrace=1:1732
+_montageHealthCheck @ sports/?montage=1&mtrace=1:2545
+sports/?montage=1&mtrace=1:1732 [montage] SELF-HEAL — deadlock detected (on, no mp4/card, idle 30s); forcing next beat
+console.warn @ sports/?montage=1&mtrace=1:1732
+_montageHealthCheck @ sports/?montage=1&mtrace=1:2545
+sports/?montage=1&mtrace=1:1732 [montage] SELF-HEAL — deadlock detected (on, no mp4/card, idle 28s); forcing next beat
+console.warn @ sports/?montage=1&mtrace=1:1732
+_montageHealthCheck @ sports/?montage=1&mtrace=1:2545
+sports/?montage=1&mtrace=1:1732 [montage] SELF-HEAL — deadlock detected (on, no mp4/card, idle 32s); forcing next beat
+console.warn @ sports/?montage=1&mtrace=1:1732
+_montageHealthCheck @ sports/?montage=1&mtrace=1:2545
+sports/?montage=1&mtrace=1:1732 [montage] SELF-HEAL — deadlock detected (on, no mp4/card, idle 29s); forcing next beat
+console.warn @ sports/?montage=1&mtrace=1:1732
+_montageHealthCheck @ sports/?montage=1&mtrace=1:2545
+favicon.ico:1  GET https://mikeylegs.github.io/favicon.ico 404 (Not Found)
+sports/?montage=1&mtrace=1:1732 [montage] SELF-HEAL — deadlock detected (on, no mp4/card, idle 31s); forcing next beat
+console.warn @ sports/?montage=1&mtrace=1:1732
+_montageHealthCheck @ sports/?montage=1&mtrace=1:2545
+sports/?montage=1&mtrace=1:1732 [montage] SELF-HEAL — deadlock detected (on, no mp4/card, idle 33s); forcing next beat
+console.warn @ sports/?montage=1&mtrace=1:1732
+_montageHealthCheck @ sports/?montage=1&mtrace=1:2545
+sports/?montage=1&mtrace=1:1732 [montage] SELF-HEAL — deadlock detected (on, no mp4/card, idle 34s); forcing next beat
+console.warn @ sports/?montage=1&mtrace=1:1732
+_montageHealthCheck @ sports/?montage=1&mtrace=1:2545
+sports/?montage=1&mtrace=1:1732 [montage] SELF-HEAL — deadlock detected (on, no mp4/card, idle 36s); forcing next beat
+console.warn @ sports/?montage=1&mtrace=1:1732
+_montageHealthCheck @ sports/?montage=1&mtrace=1:2545
+sports/?montage=1&mtrace=1:1732 [montage] SELF-HEAL — deadlock detected (on, no mp4/card, idle 37s); forcing next beat
+console.warn @ sports/?montage=1&mtrace=1:1732
+_montageHealthCheck @ sports/?montage=1&mtrace=1:2545
+sports/?montage=1&mtrace=1:2812 [montage] finished — reverting to rotation
+montageTraceDump()
+sports/?montage=1&mtrace=1:2404 ── MONTAGE TRACE · 80 transitions ──
+ms      | driver              | on adv own q recapA onEnd card mp4 heal | note
+3805    | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter
+38586   | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown
+38587   | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown
+39238   | RECAP._onEnd        | Y  ·   Y  0 ·      ·     ·    ·   ·    | clip ended → advance
+39559   | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter
+80359   | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown
+80359   | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown
+80500   | watchdog            | Y  ·   Y  0 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 36s
+80551   | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter
+81010   | RECAP._onEnd        | Y  ·   Y  0 ·      ·     Y    ·   ·    | clip ended → advance
+81331   | _montageBeat        | Y  ·   Y  0 ·      ·     Y    ·   ·    | enter
+115773  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown
+115773  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown
+116424  | RECAP._onEnd        | Y  ·   Y  0 ·      ·     ·    ·   ·    | clip ended → advance
+116745  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter
+155012  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown
+155012  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown
+155500  | watchdog            | Y  ·   Y  0 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 34s
+155551  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter
+155663  | RECAP._onEnd        | Y  ·   Y  0 ·      ·     Y    ·   ·    | clip ended → advance
+155986  | _montageBeat        | Y  ·   Y  0 ·      ·     Y    ·   ·    | enter
+191136  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown
+191137  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown
+191500  | watchdog            | Y  ·   Y  0 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 30s
+191550  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter
+191787  | RECAP._onEnd        | Y  ·   Y  0 ·      ·     Y    ·   ·    | clip ended → advance
+192107  | _montageBeat        | Y  ·   Y  0 ·      ·     Y    ·   ·    | enter
+226362  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown
+226362  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown
+227013  | RECAP._onEnd        | Y  ·   Y  0 ·      ·     ·    ·   ·    | clip ended → advance
+227334  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter
+260916  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown
+260916  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown
+261567  | RECAP._onEnd        | Y  ·   Y  0 ·      ·     ·    ·   ·    | clip ended → advance
+261888  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter
+295593  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown
+295594  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown
+296245  | RECAP._onEnd        | Y  ·   Y  0 ·      ·     ·    ·   ·    | clip ended → advance
+296565  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter
+330119  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown
+330119  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown
+330770  | RECAP._onEnd        | Y  ·   Y  0 ·      ·     ·    ·   ·    | clip ended → advance
+331090  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter
+363692  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown
+363692  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown
+363999  | watchdog            | Y  ·   Y  0 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 28s
+364050  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter
+364343  | RECAP._onEnd        | Y  ·   Y  0 ·      ·     Y    ·   ·    | clip ended → advance
+364663  | _montageBeat        | Y  ·   Y  0 ·      ·     Y    ·   ·    | enter
+401399  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown
+401400  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown
+401499  | watchdog            | Y  ·   Y  0 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 32s
+401550  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter
+402051  | RECAP._onEnd        | Y  ·   Y  0 ·      ·     Y    ·   ·    | clip ended → advance
+402371  | _montageBeat        | Y  ·   Y  0 ·      ·     Y    ·   ·    | enter
+435491  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown
+435492  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown
+436000  | watchdog            | Y  ·   Y  0 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 29s
+436051  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter
+436142  | RECAP._onEnd        | Y  ·   Y  0 ·      ·     ·    ·   ·    | clip ended → advance
+436462  | _montageBeat        | Y  ·   Y  0 ·      ·     Y    ·   ·    | enter
+472135  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown
+472136  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown
+472786  | RECAP._onEnd        | Y  ·   Y  0 ·      ·     ·    ·   ·    | clip ended → advance
+473107  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter
+509333  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown
+509333  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown
+509499  | watchdog            | Y  ·   Y  0 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 31s
+509552  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter
+509984  | RECAP._onEnd        | Y  ·   Y  0 ·      ·     ·    ·   ·    | clip ended → advance
+510305  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter
+511001  | watchdog            | Y  ·   Y  0 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 33s
+511052  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter
+512500  | watchdog            | Y  ·   Y  0 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 34s
+512551  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter
+514000  | watchdog            | Y  ·   Y  0 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 36s
+514051  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter
+515500  | watchdog            | Y  ·   Y  0 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 37s
+515551  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter
+515551  | _montageStop        | Y  ·   Y  0 ·      ·     ·    ·   ·    | finished
+'── MONTAGE TRACE · 80 transitions ──\nms      | driver              | on adv own q recapA onEnd card mp4 heal | note\n3805    | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter\n38586   | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown\n38587   | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown\n39238   | RECAP._onEnd        | Y  ·   Y  0 ·      ·     ·    ·   ·    | clip ended → advance\n39559   | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter\n80359   | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown\n80359   | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown\n80500   | watchdog            | Y  ·   Y  0 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 36s\n80551   | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter\n81010   | RECAP._onEnd        | Y  ·   Y  0 ·      ·     Y    ·   ·    | clip ended → advance\n81331   | _montageBeat        | Y  ·   Y  0 ·      ·     Y    ·   ·    | enter\n115773  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown\n115773  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown\n116424  | RECAP._onEnd        | Y  ·   Y  0 ·      ·     ·    ·   ·    | clip ended → advance\n116745  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter\n155012  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown\n155012  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown\n155500  | watchdog            | Y  ·   Y  0 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 34s\n155551  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter\n155663  | RECAP._onEnd        | Y  ·   Y  0 ·      ·     Y    ·   ·    | clip ended → advance\n155986  | _montageBeat        | Y  ·   Y  0 ·      ·     Y    ·   ·    | enter\n191136  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown\n191137  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown\n191500  | watchdog            | Y  ·   Y  0 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 30s\n191550  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter\n191787  | RECAP._onEnd        | Y  ·   Y  0 ·      ·     Y    ·   ·    | clip ended → advance\n192107  | _montageBeat        | Y  ·   Y  0 ·      ·     Y    ·   ·    | enter\n226362  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown\n226362  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown\n227013  | RECAP._onEnd        | Y  ·   Y  0 ·      ·     ·    ·   ·    | clip ended → advance\n227334  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter\n260916  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown\n260916  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown\n261567  | RECAP._onEnd        | Y  ·   Y  0 ·      ·     ·    ·   ·    | clip ended → advance\n261888  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter\n295593  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown\n295594  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown\n296245  | RECAP._onEnd        | Y  ·   Y  0 ·      ·     ·    ·   ·    | clip ended → advance\n296565  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter\n330119  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown\n330119  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown\n330770  | RECAP._onEnd        | Y  ·   Y  0 ·      ·     ·    ·   ·    | clip ended → advance\n331090  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter\n363692  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown\n363692  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown\n363999  | watchdog            | Y  ·   Y  0 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 28s\n364050  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter\n364343  | RECAP._onEnd        | Y  ·   Y  0 ·      ·     Y    ·   ·    | clip ended → advance\n364663  | _montageBeat        | Y  ·   Y  0 ·      ·     Y    ·   ·    | enter\n401399  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown\n401400  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown\n401499  | watchdog            | Y  ·   Y  0 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 32s\n401550  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter\n402051  | RECAP._onEnd        | Y  ·   Y  0 ·      ·     Y    ·   ·    | clip ended → advance\n402371  | _montageBeat        | Y  ·   Y  0 ·      ·     Y    ·   ·    | enter\n435491  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown\n435492  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown\n436000  | watchdog            | Y  ·   Y  0 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 29s\n436051  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter\n436142  | RECAP._onEnd        | Y  ·   Y  0 ·      ·     ·    ·   ·    | clip ended → advance\n436462  | _montageBeat        | Y  ·   Y  0 ·      ·     Y    ·   ·    | enter\n472135  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown\n472136  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown\n472786  | RECAP._onEnd        | Y  ·   Y  0 ·      ·     ·    ·   ·    | clip ended → advance\n473107  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter\n509333  | endRecap            | Y  ·   Y  0 ·      ·     ·    Y   ·    | teardown\n509333  | endRecap            | Y  ·   Y  0 ·      ·     ·    ·   ·    | teardown\n509499  | watchdog            | Y  ·   Y  0 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 31s\n509552  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter\n509984  | RECAP._onEnd        | Y  ·   Y  0 ·      ·     ·    ·   ·    | clip ended → advance\n510305  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter\n511001  | watchdog            | Y  ·   Y  0 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 33s\n511052  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter\n512500  | watchdog            | Y  ·   Y  0 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 34s\n512551  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter\n514000  | watchdog            | Y  ·   Y  0 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 36s\n514051  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter\n515500  | watchdog            | Y  ·   Y  0 ·      ·     ·    ·   ·    | SELF-HEAL force-advance · idle 37s\n515551  | _montageBeat        | Y  ·   Y  0 ·      ·     ·    ·   ·    | enter\n515551  | _montageStop        | Y  ·   Y  0 ·      ·     ·    ·   ·    | finished\n(copied)'
+sports/?montage=1&mtrace=1:2405 Uncaught (in promise) NotAllowedError: Failed to execute 'writeText' on 'Clipboard': Document is not focused.
+    at montageTraceDump (sports/?montage=1&mtrace=1:2405:28)
+    at <anonymous>:1:1
+montageTraceDump @ sports/?montage=1&mtrace=1:2405
+(anonymous) @ VM5294:1
