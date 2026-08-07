@@ -1,0 +1,818 @@
+ts/:5961 [roster] Yankees: 24 players
+sports/:5961 [roster] Mets: 26 players
+readAuditWatch()
+sports/:2647 [readAudit] watching every 20s. Let the panel rotate through states, then run readAuditDump().
+'watching — readAuditDump() when ready'
+sports/:2646 [readAudit] sample 2 · state standings · 21 unique below floor so far
+sports/:2646 [readAudit] sample 3 · state standings · 21 unique below floor so far
+sports/:2646 [readAudit] sample 4 · state standings · 29 unique below floor so far
+sports/:2646 [readAudit] sample 5 · state standings · 29 unique below floor so far
+sports/:2646 [readAudit] sample 6 · state standings · 30 unique below floor so far
+sports/:2646 [readAudit] sample 7 · state standings · 31 unique below floor so far
+sports/:2646 [readAudit] sample 8 · state standings · 31 unique below floor so far
+sports/:2646 [readAudit] sample 9 · state standings · 31 unique below floor so far
+sports/:2646 [readAudit] sample 10 · state standings · 31 unique below floor so far
+sports/:2646 [readAudit] sample 11 · state standings · 31 unique below floor so far
+sports/:2646 [readAudit] sample 12 · state standings · 31 unique below floor so far
+sports/:2646 [readAudit] sample 13 · state standings · 31 unique below floor so far
+sports/:2646 [readAudit] sample 14 · state standings · 31 unique below floor so far
+favicon.ico:1  GET https://mikeylegs.github.io/favicon.ico 404 (Not Found)
+sports/:2646 [readAudit] sample 15 · state standings · 31 unique below floor so far
+sports/:2646 [readAudit] sample 16 · state standings · 31 unique below floor so far
+readAuditDump()
+sports/:2656 ── READ AUDIT (watch) · 16 samples · 31 unique below floor ──
+  0.52×  14px  [standings]  span.lf-player-label  “AVG”
+  0.52×  14px  [standings]  span.lf-tlead-cat  “AVG”
+  0.59×  16px  [standings]  div.ov-txt  “Loading scores…”
+  0.63×  17px  [standings]  span.lf-leader-rank  “1”
+  0.63×  17px  [standings]  div.green  “⚙”
+  0.65×  18px  [standings]  span.lf-next-matchup  “No game scheduled”
+  0.70×  19px  [standings]  span.lf-decision-label  “W”
+  0.74×  20px  [standings]  span.lf-leader-name  “B. Rice”
+  0.74×  20px  [standings]  span.lf-leader-val  “31”
+  0.76×  20px  [standings]  span.recap-badge  “Yankees Recap · Aug 5 · L 1–3 vs”
+  0.78×  21px  [standings]  span.lf-tlead-name  “L. García Jr.”
+  0.78×  21px  [standings]  div.wws-banner-venue  “Oriole Park at Camden Yards · Ba”
+  0.78×  21px  [standings]  span.lf-next2-vslabel  “vs”
+  0.78×  21px  [standings]  span.lf-next-network.net-yes  “YES”
+  0.78×  21px  [standings]  span.lf-next-network  “WPIX”
+  0.81×  22px  [standings]  span.lf-decision-name  “A. Pallante”
+  0.81×  22px  [standings]  span.lf-decision-rec  “(12-6)”
+  0.87×  23px  [standings]  span.lf-score-abbr.l  “NYY”
+  0.87×  23px  [standings]  span.lf-score-abbr.w  “STL”
+  0.87×  23px  [standings]  span.lf-tlead-val  “.283”
+  0.87×  23px  [standings]  span.lf-np-team  “NYY”
+  0.88×  24px  [standings]  span.lf-wws-live  “LIVE”
+  0.91×  25px  [standings]  span  “Team”
+  0.91×  25px  [standings]  div.lf-player-name  “A. Judge”
+  0.95×  26px  [standings]  div.lf-slide-head  “Last Game”
+  0.95×  26px  [standings]  span.lf-player-val  “.248”
+  0.95×  26px  [standings]  span.mlb-card2-status.live  “Top 4th”
+  0.95×  26px  [standings]  span.mlb-card2-status.upcoming  “9:40 PM”
+  0.95×  26px  [standings]  span.mlb-card2-status.final  “FINAL”
+  0.95×  26px  [standings]  div.lf-next2-rec  “69-45”
+  0.97×  26px  [standings]  span.lf-next-timepill.tomorrow  “7:05 PM”
+'── READ AUDIT (watch) · 16 samples · 31 unique below floor ──\n  0.52×  14px  [standings]  span.lf-player-label  “AVG”\n  0.52×  14px  [standings]  span.lf-tlead-cat  “AVG”\n  0.59×  16px  [standings]  div.ov-txt  “Loading scores…”\n  0.63×  17px  [standings]  span.lf-leader-rank  “1”\n  0.63×  17px  [standings]  div.green  “⚙”\n  0.65×  18px  [standings]  span.lf-next-matchup  “No game scheduled”\n  0.70×  19px  [standings]  span.lf-decision-label  “W”\n  0.74×  20px  [standings]  span.lf-leader-name  “B. Rice”\n  0.74×  20px  [standings]  span.lf-leader-val  “31”\n  0.76×  20px  [standings]  span.recap-badge  “Yankees Recap · Aug 5 · L 1–3 vs”\n  0.78×  21px  [standings]  span.lf-tlead-name  “L. García Jr.”\n  0.78×  21px  [standings]  div.wws-banner-venue  “Oriole Park at Camden Yards · Ba”\n  0.78×  21px  [standings]  span.lf-next2-vslabel  “vs”\n  0.78×  21px  [standings]  span.lf-next-network.net-yes  “YES”\n  0.78×  21px  [standings]  span.lf-next-network  “WPIX”\n  0.81×  22px  [standings]  span.lf-decision-name  “A. Pallante”\n  0.81×  22px  [standings]  span.lf-decision-rec  “(12-6)”\n  0.87×  23px  [standings]  span.lf-score-abbr.l  “NYY”\n  0.87×  23px  [standings]  span.lf-score-abbr.w  “STL”\n  0.87×  23px  [standings]  span.lf-tlead-val  “.283”\n  0.87×  23px  [standings]  span.lf-np-team  “NYY”\n  0.88×  24px  [standings]  span.lf-wws-live  “LIVE”\n  0.91×  25px  [standings]  span  “Team”\n  0.91×  25px  [standings]  div.lf-player-name  “A. Judge”\n  0.95×  26px  [standings]  div.lf-slide-head  “Last Game”\n  0.95×  26px  [standings]  span.lf-player-val  “.248”\n  0.95×  26px  [standings]  span.mlb-card2-status.live  “Top 4th”\n  0.95×  26px  [standings]  span.mlb-card2-status.upcoming  “9:40 PM”\n  0.95×  26px  [standings]  span.mlb-card2-status.final  “FINAL”\n  0.95×  26px  [standings]  div.lf-next2-rec  “69-45”\n  0.97×  26px  [standings]  span.lf-next-timepill.tomorrow  “7:05 PM”\n(copied to clipboard)'
+sports/:2657 Uncaught (in promise) NotAllowedError: Failed to execute 'writeText' on 'Clipboard': Document is not focused.
+    at readAuditDump (sports/:2657:28)
+    at <anonymous>:1:1
+readAuditDump @ sports/:2657
+(anonymous) @ VM173:1
+sports/:2646 [readAudit] sample 17 · state standings · 32 unique below floor so far
+sports/:2646 [readAudit] sample 18 · state standings · 32 unique below floor so far
+sports/:2646 [readAudit] sample 19 · state standings · 32 unique below floor so far
+oardefault.jpg:1  GET https://i.ytimg.com/vi/mXPiVhgk2Jw/oardefault.jpg 404 (Not Found)
+maxresdefault.jpg:1  GET https://i.ytimg.com/vi/mXPiVhgk2Jw/maxresdefault.jpg 404 (Not Found)
+Image
+(anonymous) @ sports/:7734
+_seamPortrait @ sports/:7681
+img.onload @ sports/:7664
+oardefault.jpg:1  GET https://i.ytimg.com/vi/D5X2GgJ7C6U/oardefault.jpg 404 (Not Found)
+sports/:1732 [recap] no video found for mlb-daily
+console.warn @ sports/:1732
+findRecap @ sports/:7373
+await in findRecap
+resolveVideo @ sports/:8588
+playRecap @ sports/:8629
+recapDirectorTick @ sports/:6662
+(anonymous) @ sports/:10859
+sports/:2646 [readAudit] sample 20 · state wws · 33 unique below floor so far
+sports/:2646 [readAudit] sample 21 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 22 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 23 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 24 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 25 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 26 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 27 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 28 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 29 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 30 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 31 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 32 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 33 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 34 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 35 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 36 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 37 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 38 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 39 · state standings · 33 unique below floor so far
+oardefault.jpg:1  GET https://i.ytimg.com/vi/WRr4TAEl0n8/oardefault.jpg 404 (Not Found)
+oardefault.jpg:1  GET https://i.ytimg.com/vi/6rp9882S-A8/oardefault.jpg 404 (Not Found)
+maxresdefault.jpg:1  GET https://i.ytimg.com/vi/WRr4TAEl0n8/maxresdefault.jpg 404 (Not Found)
+Image
+(anonymous) @ sports/:7734
+_seamPortrait @ sports/:7681
+img.onload @ sports/:7664
+oardefault.jpg:1  GET https://i.ytimg.com/vi/R14D5hQgc7w/oardefault.jpg 404 (Not Found)
+sports/:2646 [readAudit] sample 40 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 41 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 42 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 43 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 44 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 45 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 46 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 47 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 48 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 49 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 50 · state wws · 33 unique below floor so far
+sports/:2646 [readAudit] sample 51 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 52 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 53 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 54 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 55 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 56 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 57 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 58 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 59 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 60 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 61 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 62 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 63 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 64 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 65 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 66 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 67 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 68 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 69 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 70 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 71 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 72 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 73 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 74 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 75 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 76 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 77 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 78 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 79 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 80 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 81 · state wws · 33 unique below floor so far
+sports/:2646 [readAudit] sample 82 · state wws · 33 unique below floor so far
+sports/:2646 [readAudit] sample 83 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 84 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 85 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 86 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 87 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 88 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 89 · state takeover/montage · 33 unique below floor so far
+sports/:2646 [readAudit] sample 90 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 91 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 92 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 93 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 94 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 95 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 96 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 97 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 98 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 99 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 100 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 101 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 102 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 103 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 104 · state takeover/montage · 33 unique below floor so far
+sports/:2646 [readAudit] sample 105 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 106 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 107 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 108 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 109 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 110 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 111 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 112 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 113 · state wws · 33 unique below floor so far
+sports/:2646 [readAudit] sample 114 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 115 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 116 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 117 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 118 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 119 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 120 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 121 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 122 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 123 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 124 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 125 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 126 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 127 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 128 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 129 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 130 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 131 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 132 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 133 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 134 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 135 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 136 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 137 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 138 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 139 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 140 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 141 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 142 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 143 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 144 · state wws · 33 unique below floor so far
+sports/:1 Access to fetch at 'https://www.youtube.com/feeds/videos.xml?channel_id=UCyeer4UbTK9pzZL9_hhCimA' from origin 'https://mikeylegs.github.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+sports/:1964  GET https://www.youtube.com/feeds/videos.xml?channel_id=UCyeer4UbTK9pzZL9_hhCimA net::ERR_FAILED 200 (OK)
+fetchWithTimeout @ sports/:1964
+proxyFetchText @ sports/:1971
+fetchChannelRSS @ sports/:6749
+findRecap @ sports/:6840
+await in findRecap
+resolveVideo @ sports/:8588
+playRecap @ sports/:8629
+recapDirectorTick @ sports/:6662
+(anonymous) @ sports/:10864
+sports/:6841 [recap] RSS ok: 15 videos from cbsgolf
+sports/:1732 [recap] no video found for golf-fill
+console.warn @ sports/:1732
+findRecap @ sports/:7373
+await in findRecap
+resolveVideo @ sports/:8588
+playRecap @ sports/:8629
+recapDirectorTick @ sports/:6662
+(anonymous) @ sports/:10864
+sports/:2646 [readAudit] sample 145 · state takeover/montage · 33 unique below floor so far
+sports/:2646 [readAudit] sample 146 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 147 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 148 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 149 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 150 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 151 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 152 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 153 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 154 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 155 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 156 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 157 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 158 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 159 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 160 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 161 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 162 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 163 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 164 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 165 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 166 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 167 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 168 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 169 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 170 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 171 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 172 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 173 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 174 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 175 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 176 · state wws · 33 unique below floor so far
+sports/:2646 [readAudit] sample 177 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 178 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 179 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 180 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 181 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 182 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 183 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 184 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 185 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 186 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 187 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 188 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 189 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 190 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 191 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 192 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 193 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 194 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 195 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 196 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 197 · state standings · 33 unique below floor so far
+sports/:1 Access to fetch at 'https://www.youtube.com/feeds/videos.xml?channel_id=UCWJ2lWNubArHWmf3FIHbfcQ' from origin 'https://mikeylegs.github.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+sports/:1964  GET https://www.youtube.com/feeds/videos.xml?channel_id=UCWJ2lWNubArHWmf3FIHbfcQ net::ERR_FAILED 200 (OK)
+fetchWithTimeout @ sports/:1964
+proxyFetchText @ sports/:1971
+fetchChannelRSS @ sports/:6749
+findRecap @ sports/:6840
+await in findRecap
+resolveVideo @ sports/:8588
+playRecap @ sports/:8629
+recapDirectorTick @ sports/:6662
+(anonymous) @ sports/:10864
+sports/:6841 [recap] RSS ok: 15 videos from NBA
+sports/:2646 [readAudit] sample 198 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 199 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 200 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 201 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 202 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 203 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 204 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 205 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 206 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 207 · state wws · 33 unique below floor so far
+sports/:2646 [readAudit] sample 208 · state wws · 33 unique below floor so far
+sports/:2646 [readAudit] sample 209 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 210 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 211 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 212 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 213 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 214 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 215 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 216 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 217 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 218 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 219 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 220 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 221 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 222 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 223 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 224 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 225 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 226 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 227 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 228 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 229 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 230 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 231 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 232 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 233 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 234 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 235 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 236 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 237 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 238 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 239 · state wws · 33 unique below floor so far
+sports/:2646 [readAudit] sample 240 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 241 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 242 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 243 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 244 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 245 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 246 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 247 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 248 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 249 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 250 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 251 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 252 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 253 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 254 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 255 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 256 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 257 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 258 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 259 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 260 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 261 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 262 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 263 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 264 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 265 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 266 · state takeover/montage · 33 unique below floor so far
+sports/:2646 [readAudit] sample 267 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 268 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 269 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 270 · state wws · 33 unique below floor so far
+sports/:2646 [readAudit] sample 271 · state wws · 33 unique below floor so far
+sports/:2646 [readAudit] sample 272 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 273 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 274 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 275 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 276 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 277 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 278 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 279 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 280 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 281 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 282 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 283 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 284 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 285 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 286 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 287 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 288 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 289 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 290 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 291 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 292 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 293 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 294 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 295 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 296 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 297 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 298 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 299 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 300 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 301 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 302 · state wws · 33 unique below floor so far
+sports/:2646 [readAudit] sample 303 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 304 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 305 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 306 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 307 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 308 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 309 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 310 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 311 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 312 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 313 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 314 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 315 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 316 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 317 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 318 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 319 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 320 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 321 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 322 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 323 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 324 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 325 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 326 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 327 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 328 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 329 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 330 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 331 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 332 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 333 · state wws · 33 unique below floor so far
+sports/:2646 [readAudit] sample 334 · state wws · 33 unique below floor so far
+sports/:2646 [readAudit] sample 335 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 336 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 337 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 338 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 339 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 340 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 341 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 342 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 343 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 344 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 345 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 346 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 347 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 348 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 349 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 350 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 351 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 352 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 353 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 354 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 355 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 356 · state standings · 33 unique below floor so far
+sports/:1 Access to fetch at 'https://www.youtube.com/feeds/videos.xml?channel_id=UCyeer4UbTK9pzZL9_hhCimA' from origin 'https://mikeylegs.github.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+sports/:1964  GET https://www.youtube.com/feeds/videos.xml?channel_id=UCyeer4UbTK9pzZL9_hhCimA net::ERR_FAILED 200 (OK)
+fetchWithTimeout @ sports/:1964
+proxyFetchText @ sports/:1971
+fetchChannelRSS @ sports/:6749
+findRecap @ sports/:6840
+await in findRecap
+resolveVideo @ sports/:8588
+playRecap @ sports/:8629
+recapDirectorTick @ sports/:6662
+(anonymous) @ sports/:10864
+sports/:6841 [recap] RSS ok: 15 videos from cbsgolf
+oardefault.jpg:1  GET https://i.ytimg.com/vi/v7xS3vtYXE4/oardefault.jpg 404 (Not Found)
+www-widgetapi.js:163 Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('https://www.youtube.com') does not match the recipient window's origin ('https://mikeylegs.github.io').
+n.sendMessage @ www-widgetapi.js:163
+bb @ www-widgetapi.js:159
+n.R @ www-widgetapi.js:158
+setInterval
+Ya @ www-widgetapi.js:160
+X @ www-widgetapi.js:150
+start @ sports/:8701
+(anonymous) @ sports/:8799
+requestAnimationFrame
+(anonymous) @ sports/:8799
+requestAnimationFrame
+(anonymous) @ sports/:8799
+setTimeout
+playRecap @ sports/:8796
+await in playRecap
+recapDirectorTick @ sports/:6662
+(anonymous) @ sports/:10864
+www-widgetapi.js:163 Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('https://www.youtube.com') does not match the recipient window's origin ('https://mikeylegs.github.io').
+n.sendMessage @ www-widgetapi.js:163
+bb @ www-widgetapi.js:159
+n.R @ www-widgetapi.js:158
+setInterval
+Ya @ www-widgetapi.js:160
+X @ www-widgetapi.js:150
+start @ sports/:8701
+(anonymous) @ sports/:8799
+requestAnimationFrame
+(anonymous) @ sports/:8799
+requestAnimationFrame
+(anonymous) @ sports/:8799
+setTimeout
+playRecap @ sports/:8796
+await in playRecap
+recapDirectorTick @ sports/:6662
+(anonymous) @ sports/:10864
+www-widgetapi.js:163 Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('https://www.youtube.com') does not match the recipient window's origin ('https://mikeylegs.github.io').
+n.sendMessage @ www-widgetapi.js:163
+bb @ www-widgetapi.js:159
+n.R @ www-widgetapi.js:158
+setInterval
+Ya @ www-widgetapi.js:160
+X @ www-widgetapi.js:150
+start @ sports/:8701
+(anonymous) @ sports/:8799
+requestAnimationFrame
+(anonymous) @ sports/:8799
+requestAnimationFrame
+(anonymous) @ sports/:8799
+setTimeout
+playRecap @ sports/:8796
+await in playRecap
+recapDirectorTick @ sports/:6662
+(anonymous) @ sports/:10864
+www-widgetapi.js:163 Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('https://www.youtube.com') does not match the recipient window's origin ('https://mikeylegs.github.io').
+n.sendMessage @ www-widgetapi.js:163
+bb @ www-widgetapi.js:159
+n.R @ www-widgetapi.js:158
+setInterval
+Ya @ www-widgetapi.js:160
+X @ www-widgetapi.js:150
+start @ sports/:8701
+(anonymous) @ sports/:8799
+requestAnimationFrame
+(anonymous) @ sports/:8799
+requestAnimationFrame
+(anonymous) @ sports/:8799
+setTimeout
+playRecap @ sports/:8796
+await in playRecap
+recapDirectorTick @ sports/:6662
+(anonymous) @ sports/:10864
+sports/:2646 [readAudit] sample 357 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 358 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 359 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 360 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 361 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 362 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 363 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 364 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 365 · state wws · 33 unique below floor so far
+sports/:2646 [readAudit] sample 366 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 367 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 368 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 369 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 370 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 371 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 372 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 373 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 374 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 375 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 376 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 377 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 378 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 379 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 380 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 381 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 382 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 383 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 384 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 385 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 386 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 387 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 388 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 389 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 390 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 391 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 392 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 393 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 394 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 395 · state wws · 33 unique below floor so far
+sports/:2646 [readAudit] sample 396 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 397 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 398 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 399 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 400 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 401 · state standings · 33 unique below floor so far
+sports/:2646 [readAudit] sample 402 · state standings · 33 unique below floor so far
+sports/:1 Access to fetch at 'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?limit=100&dates=20260805&enable=leaders,linescores,probables' from origin 'https://mikeylegs.github.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+sports/:1964  GET https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?limit=100&dates=20260805&enable=leaders,linescores,probables net::ERR_FAILED 200 (OK)
+fetchWithTimeout @ sports/:1964
+proxyFetch @ sports/:3480
+fetchLeagueYesterday @ sports/:12560
+fetchAll @ sports/:12801
+await in fetchAll
+tick @ sports/:12903
+sports/:1732 Direct fetch failed, trying proxies: Failed to fetch
+console.warn @ sports/:1732
+proxyFetch @ sports/:3485
+await in proxyFetch
+fetchLeagueYesterday @ sports/:12560
+fetchAll @ sports/:12801
+await in fetchAll
+tick @ sports/:12903
+sports/:1964  GET https://sports.michael-legra.workers.dev/?url=https%3A%2F%2Fsite.api.espn.com%2Fapis%2Fsite%2Fv2%2Fsports%2Fbaseball%2Fmlb%2Fscoreboard%3Flimit%3D100%26dates%3D20260805%26enable%3Dleaders%2Clinescores%2Cprobables 403 (Forbidden)
+fetchWithTimeout @ sports/:1964
+proxyFetch @ sports/:3494
+await in proxyFetch
+fetchLeagueYesterday @ sports/:12560
+fetchAll @ sports/:12801
+await in fetchAll
+tick @ sports/:12903
+sports/:1732 Proxy failed (sports.michael-legra.workers.dev): HTTP 403
+console.warn @ sports/:1732
+proxyFetch @ sports/:3506
+await in proxyFetch
+fetchLeagueYesterday @ sports/:12560
+fetchAll @ sports/:12801
+await in fetchAll
+tick @ sports/:12903
+sports/:1 Access to fetch at 'https://api.codetabs.com/v1/proxy?quest=https%3A%2F%2Fsite.api.espn.com%2Fapis%2Fsite%2Fv2%2Fsports%2Fbaseball%2Fmlb%2Fscoreboard%3Flimit%3D100%26dates%3D20260805%26enable%3Dleaders%2Clinescores%2Cprobables' from origin 'https://mikeylegs.github.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+sports/:1964  GET https://api.codetabs.com/v1/proxy?quest=https%3A%2F%2Fsite.api.espn.com%2Fapis%2Fsite%2Fv2%2Fsports%2Fbaseball%2Fmlb%2Fscoreboard%3Flimit%3D100%26dates%3D20260805%26enable%3Dleaders%2Clinescores%2Cprobables net::ERR_FAILED 521
+fetchWithTimeout @ sports/:1964
+proxyFetch @ sports/:3494
+await in proxyFetch
+fetchLeagueYesterday @ sports/:12560
+fetchAll @ sports/:12801
+await in fetchAll
+tick @ sports/:12903
+sports/:1732 Proxy failed (api.codetabs.com): Failed to fetch
+console.warn @ sports/:1732
+proxyFetch @ sports/:3506
+await in proxyFetch
+fetchLeagueYesterday @ sports/:12560
+fetchAll @ sports/:12801
+await in fetchAll
+tick @ sports/:12903
+sports/:1732 Proxy failed (api.allorigins.win): signal is aborted without reason
+console.warn @ sports/:1732
+proxyFetch @ sports/:3506
+await in proxyFetch
+fetchLeagueYesterday @ sports/:12560
+fetchAll @ sports/:12801
+await in fetchAll
+tick @ sports/:12903
+sports/:2646 [readAudit] sample 403 · state standings · 34 unique below floor so far
+sports/:1732 Proxy failed (api.allorigins.win): signal is aborted without reason
+console.warn @ sports/:1732
+proxyFetch @ sports/:3506
+await in proxyFetch
+fetchLeagueYesterday @ sports/:12560
+fetchAll @ sports/:12801
+await in fetchAll
+tick @ sports/:12903
+sports/:1964  GET https://proxy.corsfix.com/?https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?limit=100&dates=20260805&enable=leaders,linescores,probables 403 (Forbidden)
+fetchWithTimeout @ sports/:1964
+proxyFetch @ sports/:3494
+await in proxyFetch
+fetchLeagueYesterday @ sports/:12560
+fetchAll @ sports/:12801
+await in fetchAll
+tick @ sports/:12903
+sports/:1732 Proxy failed (proxy.corsfix.com): HTTP 403
+console.warn @ sports/:1732
+proxyFetch @ sports/:3506
+await in proxyFetch
+fetchLeagueYesterday @ sports/:12560
+fetchAll @ sports/:12801
+await in fetchAll
+tick @ sports/:12903
+sports/:1964  GET https://thingproxy.freeboard.io/fetch/https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?limit=100&dates=20260805&enable=leaders,linescores,probables net::ERR_NAME_NOT_RESOLVED
+fetchWithTimeout @ sports/:1964
+proxyFetch @ sports/:3494
+await in proxyFetch
+fetchLeagueYesterday @ sports/:12560
+fetchAll @ sports/:12801
+await in fetchAll
+tick @ sports/:12903
+sports/:1732 Proxy failed (thingproxy.freeboard.io): Failed to fetch
+console.warn @ sports/:1732
+proxyFetch @ sports/:3506
+await in proxyFetch
+fetchLeagueYesterday @ sports/:12560
+fetchAll @ sports/:12801
+await in fetchAll
+tick @ sports/:12903
+sports/:2646 [readAudit] sample 404 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 405 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 406 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 407 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 408 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 409 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 410 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 411 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 412 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 413 · state standings · 34 unique below floor so far
+sports/:1732 [recap] no video found for mlb-daily
+console.warn @ sports/:1732
+findRecap @ sports/:7373
+await in findRecap
+resolveVideo @ sports/:8588
+playRecap @ sports/:8629
+recapDirectorTick @ sports/:6662
+(anonymous) @ sports/:10864
+sports/:2646 [readAudit] sample 414 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 415 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 416 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 417 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 418 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 419 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 420 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 421 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 422 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 423 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 424 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 425 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 426 · state wws · 34 unique below floor so far
+sports/:2646 [readAudit] sample 427 · state wws · 34 unique below floor so far
+sports/:2646 [readAudit] sample 428 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 429 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 430 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 431 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 432 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 433 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 434 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 435 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 436 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 437 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 438 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 439 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 440 · state standings · 34 unique below floor so far
+sports/:1 Access to fetch at 'https://www.youtube.com/feeds/videos.xml?channel_id=UCWJ2lWNubArHWmf3FIHbfcQ' from origin 'https://mikeylegs.github.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+sports/:1964  GET https://www.youtube.com/feeds/videos.xml?channel_id=UCWJ2lWNubArHWmf3FIHbfcQ net::ERR_FAILED 200 (OK)
+fetchWithTimeout @ sports/:1964
+proxyFetchText @ sports/:1971
+fetchChannelRSS @ sports/:6749
+findRecap @ sports/:6840
+await in findRecap
+resolveVideo @ sports/:8588
+playRecap @ sports/:8629
+recapDirectorTick @ sports/:6662
+(anonymous) @ sports/:10864
+sports/:6841 [recap] RSS ok: 15 videos from NBA
+sports/:2646 [readAudit] sample 441 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 442 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 443 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 444 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 445 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 446 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 447 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 448 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 449 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 450 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 451 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 452 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 453 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 454 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 455 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 456 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 457 · state wws · 34 unique below floor so far
+sports/:2646 [readAudit] sample 458 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 459 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 460 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 461 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 462 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 463 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 464 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 465 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 466 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 467 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 468 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 469 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 470 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 471 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 472 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 473 · state standings · 34 unique below floor so far
+sports/:2646 [readAudit] sample 474 · state standings · 34 unique below floor so far
+readAuditDump()
+sports/:2656 ── READ AUDIT (watch) · 474 samples · 34 unique below floor ──
+  0.48×  13px  [standings,wws,takeover/montage]  div  “⚠ 1 JS ERROR — unhandled promise”
+  0.52×  14px  [standings,wws,takeover/montage]  span.lf-player-label  “AVG”
+  0.52×  14px  [standings,wws,takeover/montage]  span.lf-tlead-cat  “AVG”
+  0.59×  16px  [standings,wws,takeover/montage]  div.ov-txt  “Loading scores…”
+  0.63×  17px  [standings,wws,takeover/montage]  span.lf-leader-rank  “1”
+  0.63×  17px  [standings,wws,takeover/montage]  div.green  “⚙”
+  0.63×  17px  [standings]  div.amber  “⚙”
+  0.65×  18px  [standings,wws]  span.lf-next-matchup  “No game scheduled”
+  0.65×  18px  [wws,takeover/montage]  div.lf-slide-head  “Standings unavailable”
+  0.70×  19px  [standings,wws,takeover/montage]  span.lf-decision-label  “W”
+  0.74×  20px  [standings,wws,takeover/montage]  span.lf-leader-name  “B. Rice”
+  0.74×  20px  [standings,wws,takeover/montage]  span.lf-leader-val  “31”
+  0.76×  20px  [standings,wws,takeover/montage]  span.recap-badge  “Yankees Recap · Aug 5 · L 1–3 vs”
+  0.78×  21px  [standings,wws,takeover/montage]  span.lf-tlead-name  “L. García Jr.”
+  0.78×  21px  [standings,wws,takeover/montage]  div.wws-banner-venue  “Oriole Park at Camden Yards · Ba”
+  0.78×  21px  [standings,wws,takeover/montage]  span.lf-next2-vslabel  “vs”
+  0.78×  21px  [standings,wws,takeover/montage]  span.lf-next-network.net-yes  “YES”
+  0.78×  21px  [standings,wws,takeover/montage]  span.lf-next-network  “WPIX”
+  0.81×  22px  [standings,wws,takeover/montage]  span.lf-decision-name  “A. Pallante”
+  0.81×  22px  [standings,wws,takeover/montage]  span.lf-decision-rec  “(12-6)”
+  0.87×  23px  [standings,wws,takeover/montage]  span.lf-score-abbr.l  “NYY”
+  0.87×  23px  [standings,wws,takeover/montage]  span.lf-score-abbr.w  “STL”
+  0.87×  23px  [standings,wws,takeover/montage]  span.lf-tlead-val  “.283”
+  0.87×  23px  [standings,wws,takeover/montage]  span.lf-np-team  “NYY”
+  0.88×  24px  [standings,wws,takeover/montage]  span.lf-wws-live  “LIVE”
+  0.91×  25px  [standings,takeover/montage]  span  “Team”
+  0.91×  25px  [standings,wws,takeover/montage]  div.lf-player-name  “A. Judge”
+  0.95×  26px  [standings,wws,takeover/montage]  div.lf-slide-head  “Last Game”
+  0.95×  26px  [standings,wws,takeover/montage]  span.lf-player-val  “.248”
+  0.95×  26px  [standings,wws,takeover/montage]  span.mlb-card2-status.live  “Top 4th”
+  0.95×  26px  [standings,wws,takeover/montage]  span.mlb-card2-status.upcoming  “9:40 PM”
+  0.95×  26px  [standings,wws,takeover/montage]  span.mlb-card2-status.final  “FINAL”
+  0.95×  26px  [standings,wws,takeover/montage]  div.lf-next2-rec  “69-45”
+  0.97×  26px  [standings,wws,takeover/montage]  span.lf-next-timepill.tomorrow  “7:05 PM”
+'── READ AUDIT (watch) · 474 samples · 34 unique below floor ──\n  0.48×  13px  [standings,wws,takeover/montage]  div  “⚠ 1 JS ERROR — unhandled promise”\n  0.52×  14px  [standings,wws,takeover/montage]  span.lf-player-label  “AVG”\n  0.52×  14px  [standings,wws,takeover/montage]  span.lf-tlead-cat  “AVG”\n  0.59×  16px  [standings,wws,takeover/montage]  div.ov-txt  “Loading scores…”\n  0.63×  17px  [standings,wws,takeover/montage]  span.lf-leader-rank  “1”\n  0.63×  17px  [standings,wws,takeover/montage]  div.green  “⚙”\n  0.63×  17px  [standings]  div.amber  “⚙”\n  0.65×  18px  [standings,wws]  span.lf-next-matchup  “No game scheduled”\n  0.65×  18px  [wws,takeover/montage]  div.lf-slide-head  “Standings unavailable”\n  0.70×  19px  [standings,wws,takeover/montage]  span.lf-decision-label  “W”\n  0.74×  20px  [standings,wws,takeover/montage]  span.lf-leader-name  “B. Rice”\n  0.74×  20px  [standings,wws,takeover/montage]  span.lf-leader-val  “31”\n  0.76×  20px  [standings,wws,takeover/montage]  span.recap-badge  “Yankees Recap · Aug 5 · L 1–3 vs”\n  0.78×  21px  [standings,wws,takeover/montage]  span.lf-tlead-name  “L. García Jr.”\n  0.78×  21px  [standings,wws,takeover/montage]  div.wws-banner-venue  “Oriole Park at Camden Yards · Ba”\n  0.78×  21px  [standings,wws,takeover/montage]  span.lf-next2-vslabel  “vs”\n  0.78×  21px  [standings,wws,takeover/montage]  span.lf-next-network.net-yes  “YES”\n  0.78×  21px  [standings,wws,takeover/montage]  span.lf-next-network  “WPIX”\n  0.81×  22px  [standings,wws,takeover/montage]  span.lf-decision-name  “A. Pallante”\n  0.81×  22px  [standings,wws,takeover/montage]  span.lf-decision-rec  “(12-6)”\n  0.87×  23px  [standings,wws,takeover/montage]  span.lf-score-abbr.l  “NYY”\n  0.87×  23px  [standings,wws,takeover/montage]  span.lf-score-abbr.w  “STL”\n  0.87×  23px  [standings,wws,takeover/montage]  span.lf-tlead-val  “.283”\n  0.87×  23px  [standings,wws,takeover/montage]  span.lf-np-team  “NYY”\n  0.88×  24px  [standings,wws,takeover/montage]  span.lf-wws-live  “LIVE”\n  0.91×  25px  [standings,takeover/montage]  span  “Team”\n  0.91×  25px  [standings,wws,takeover/montage]  div.lf-player-name  “A. Judge”\n  0.95×  26px  [standings,wws,takeover/montage]  div.lf-slide-head  “Last Game”\n  0.95×  26px  [standings,wws,takeover/montage]  span.lf-player-val  “.248”\n  0.95×  26px  [standings,wws,takeover/montage]  span.mlb-card2-status.live  “Top 4th”\n  0.95×  26px  [standings,wws,takeover/montage]  span.mlb-card2-status.upcoming  “9:40 PM”\n  0.95×  26px  [standings,wws,takeover/montage]  span.mlb-card2-status.final  “FINAL”\n  0.95×  26px  [standings,wws,takeover/montage]  div.lf-next2-rec  “69-45”\n  0.97×  26px  [standings,wws,takeover/montage]  span.lf-next-timepill.tomorrow  “7:05 PM”\n(copied to clipboard)'
+sports/:2657 Uncaught (in promise) NotAllowedError: Failed to execute 'writeText' on 'Clipboard': Document is not focused.
+    at readAuditDump (sports/:2657:28)
+    at <anonymous>:1:1
+readAuditDump @ sports/:2657
+(anonymous) @ VM2060:1
+sports/:2646 [readAudit] sample 475 · state standings · 34 unique below floor so far
