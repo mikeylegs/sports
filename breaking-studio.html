@@ -1,0 +1,216 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Breaking Entrance Studio</title>
+<style>
+body{margin:0;background:#0a0e14;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#cdd6e4;padding:16px}
+h1{font-size:17px;color:#7dd3fc;margin:0 0 4px}.sub{font-size:12px;color:#8ea2bd;margin-bottom:14px}
+.wrap{display:flex;gap:20px;flex-wrap:wrap}
+.stagewrap{flex:2;min-width:340px}.panel{flex:1;min-width:290px;background:#0f1520;border:1px solid #1e2836;border-radius:10px;padding:14px}
+.stage{position:relative;width:100%;aspect-ratio:16/9;background:#0a0f16;border-radius:10px;overflow:hidden;container-type:size}
+#mlb-takeover.tko-wc{position:absolute;inset:0;}
+#mlb-takeover.tko-wc .tkoH-photo{ animation:none !important; }
+#mlb-takeover.tko-wc .tkoA-sweep{ display:none !important; }
+#mlb-takeover.tko-wc .tkoA-bgflag{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:1;animation:tkoFlagIn 0.5s ease-out;}
+#mlb-takeover.tko-wc .tkoA-scrim{position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,10,20,0.35),rgba(5,10,20,0.72));}
+#mlb-takeover.tko-wc .tkoA-accent{position:absolute;left:0;top:0;height:100%;width:1.4cqh;}
+#mlb-takeover.tko-wc .tkoA-sweep{position:absolute;top:0;left:0;height:100%;width:40%;pointer-events:none;background:linear-gradient(100deg,transparent,rgba(255,255,255,0.07),transparent);animation:tkoSweep 1.6s ease-out;}
+#mlb-takeover.tko-wc .tkoH-bg{position:absolute;inset:0;}
+#mlb-takeover.tko-wc .tkoH-photo{position:absolute;inset:0;background-size:cover;background-repeat:no-repeat;transform-origin:78% 30%;animation:tkoFlagIn 0.5s ease-out;}
+#mlb-takeover.tko-wc .tkoH-duo{position:absolute;inset:0;mix-blend-mode:color;}
+#mlb-takeover.tko-wc .tkoH-scrim{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.82),transparent 48%);}
+#mlb-takeover.tko-wc .tkoH-logo{position:absolute;display:block;z-index:3;animation:tkopop 0.5s ease-out;}
+#mlb-takeover.tko-wc .tkoH-txt{position:absolute;z-index:4;line-height:1;animation:tkopop 0.5s ease-out .05s both;}
+#mlb-takeover.tko-wc .tkoH-head{font-size:17cqh;line-height:.82;font-weight:900;text-transform:uppercase;letter-spacing:-.01em;
+  font-family:'Archivo Black','Arial Narrow',Arial,sans-serif;color:#fff;text-shadow:0 0.4cqh 3.4cqh rgba(0,0,0,.7);
+  display:flex;align-items:baseline;gap:1.4cqh;flex-wrap:nowrap;white-space:nowrap;}
+#mlb-takeover.tko-wc .tkoH-head .tkoH-hr{font-size:14cqh;font-weight:800;color:#fff;   /* r178: WHITE, never accent (Mike) */
+  font-family:'Archivo Black',Arial,sans-serif;text-shadow:0 0.2cqh 1.8cqh rgba(0,0,0,.6);}
+#mlb-takeover.tko-wc .tkoH-name{font-size:15cqh;font-weight:900;text-transform:uppercase;margin-top:1.4cqh;letter-spacing:.01em;   /* r226: 13->15cqh bigger bottom text (Mike) */
+  color:#fff;text-shadow:0 0.2cqh 2cqh rgba(0,0,0,.7);white-space:nowrap;}
+#mlb-takeover.tko-wc .tkoH-statcast{display:inline-block;margin-top:1.8cqh;
+  font-size:6.1cqh;font-weight:700;letter-spacing:.04em;color:#fff;   /* r230: left-aligned below the name — clean, no JS measure, no reflow (Mike) */   /* r227: bumped 5.4->6.1cqh (Mike) */
+  background:rgba(8,16,28,0.62);border:0.28cqh solid rgba(255,255,255,0.18);
+  border-radius:999px;padding:1.1cqh 3.2cqh;backdrop-filter:blur(3px);
+  text-shadow:0 0.15cqh 1cqh rgba(0,0,0,.6);white-space:nowrap;
+  animation:tkopop 0.5s ease-out .12s both;}
+#mlb-takeover.tko-wc .tkoA-inner{position:relative;display:flex;align-items:center;gap:6cqh;width:100%;box-sizing:border-box;padding:0 7cqh;animation:tkopop 0.5s ease-out;}
+#mlb-takeover.tko-wc .tkoA-headwrap{width:34cqh;height:34cqh;border-radius:50%;flex-shrink:0;position:relative;padding:0.9cqh;box-shadow:0 2cqh 6cqh rgba(0,0,0,0.55);}
+#mlb-takeover.tko-wc .tkoA-headwrap img{width:100%;height:100%;border-radius:50%;object-fit:cover;background:#0b1220;}
+#mlb-takeover.tko-wc .tkoA-txt{display:flex;flex-direction:column;gap:1.2cqh;align-items:flex-start;flex:1;min-width:0;}
+#mlb-takeover.tko-wc .tkoA-kicker{font-size:4.6cqh;letter-spacing:0.7cqh;font-weight:800;text-transform:uppercase;}
+#mlb-takeover.tko-wc .tkoH-live,#mlb-takeover.tko-wc .tkoA-live{display:inline-flex;align-items:center;gap:2.4cqh;font-size:7cqh;font-weight:900;letter-spacing:0.9cqh;color:#ff2d2d;text-transform:uppercase;margin-bottom:1.5cqh;}
+#mlb-takeover.tko-wc .tkoA-live-dot{width:3.6cqh;height:3.6cqh;border-radius:50%;background:#ff2d2d;box-shadow:0 0 5.8cqh #ff2d2d;animation:tkoLivePulse 2.1s ease-in-out infinite;}
+#mlb-takeover.tko-wc .tkoA-goal{font-size:18cqh;white-space:nowrap;max-width:100%;overflow:hidden;font-weight:900;line-height:0.82;letter-spacing:-0.6cqh;color:#fff;text-shadow:0 1cqh 5cqh rgba(0,0,0,0.6);}
+#mlb-takeover.tko-wc .tkoA-scorer{font-size:6.4cqh;font-weight:800;color:#fff;display:flex;align-items:center;gap:1.6cqh;max-width:100%;min-width:0;}
+#mlb-takeover.tko-wc .tkoA-ball{font-size:5cqh;}
+#mlb-takeover.tko-wc .tkoA-subtxt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+#mlb-takeover.tko-wc .tkoA-band{position:absolute;left:0;right:0;bottom:0;height:20cqh;display:flex;align-items:center;justify-content:center;gap:3.4cqh;background:linear-gradient(to top,rgba(0,0,0,0.62),transparent);animation:tkopop 0.6s ease-out;}
+#mlb-takeover.tko-wc .tkoA-nm{font-size:6.4cqh;font-weight:800;color:rgba(255,255,255,0.62);letter-spacing:0.2cqh;}
+#mlb-takeover.tko-wc .tkoA-sc{font-size:13cqh;font-weight:900;color:#fff;line-height:1;}
+#mlb-takeover.tko-wc .tkoA-dash{font-size:7cqh;font-weight:700;color:rgba(255,255,255,0.35);}
+#mlb-takeover.tko-wc .tkoA-wash{position:absolute;inset:0;}
+#mlb-takeover.tko-wc .tkoA-wm{position:absolute;right:-6cqh;top:50%;transform:translateY(-50%);height:120cqh;width:auto;opacity:0.06;filter:grayscale(0.15);pointer-events:none;}
+#mlb-takeover.tko-wc .tkoA-goal-lg{font-size:22cqh;}
+#mlb-takeover.tko-wc .tkoA-logowrap{display:flex;align-items:center;justify-content:center;}
+#mlb-takeover.tko-wc .tkoA-logo{width:74%;height:74%;border-radius:0;object-fit:contain;background:none;}
+#mlb-takeover.tko-wc .tkoA-chips{display:flex;flex-wrap:nowrap;gap:1.2cqh;margin-top:1.6cqh;}
+#mlb-takeover.tko-wc .tkoA-chip{font-size:4.4cqh;font-weight:900;color:#fff;white-space:nowrap;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.22);border-radius:100px;padding:1cqh 2.2cqh;letter-spacing:0.05cqh;}
+@keyframes tkoLivePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.55;transform:scale(0.78)}}
+@keyframes tkopop{0%{transform:scale(0.92);opacity:0}100%{transform:scale(1);opacity:1}}
+.ctl{margin-bottom:11px}.ctl label{display:block;font-size:12px;color:#a78bfa;margin-bottom:3px;font-weight:600}
+.ctl .val{color:#7dd3fc;font-weight:700;float:right}
+input[type=range]{width:100%}select{width:100%;padding:7px;border-radius:6px;background:#141c28;color:#cde4ff;border:1px solid #2b3a4e;font-size:13px}
+button{width:100%;margin-top:8px;padding:11px;border-radius:8px;border:1px solid #2b5a7e;background:#16304a;color:#cde4ff;font-weight:700;font-size:13px;cursor:pointer}
+button:hover{background:#1d4266}.replay{background:#0d3320;border-color:#2e6b45;color:#b6f0c8;font-size:15px}
+.reset{background:#241826;border-color:#5a2b3a;color:#ffd0dc}
+pre{background:#0b1119;border:1px solid #1e2836;border-radius:8px;padding:10px;font-size:11px;overflow:auto;white-space:pre-wrap;margin-top:10px;color:#c9d6e8}
+</style></head><body>
+<h1>Breaking Entrance Studio</h1>
+<div class="sub">Faithful hero-card geometry. Dial the LIVE card's "breaking in" entrance, hit ▶ Replay to re-fire, then Copy CSS. Entrance is LIVE-only — montage replays stay calm.</div>
+<div class="wrap">
+  <div class="stagewrap">
+    <div class="stage"><div id="mlb-takeover" class="tko-wc"></div><div id="flash" class="brk-flash"></div></div>
+    <button id="replay" class="replay">\u25b6 Replay entrance</button>
+  </div>
+  <div class="panel">
+    <div class="ctl"><label>Entrance style</label>
+      <select id="style">
+        <option value="punch">Punch (scale up from small)</option>
+        <option value="slam" selected>Slam (drop in from big + settle)</option>
+        <option value="rise">Rise (slide up)</option>
+        <option value="wipe">Wipe (sweep bar crosses)</option>
+        <option value="none">None (instant)</option>
+      </select></div>
+    <div class="ctl"><label>Entrance duration <span class="val" id="v_dur">0.55</span>s</label><input type="range" id="dur" min="0.15" max="1.5" step="0.05" value="0.55"></div>
+    <div class="ctl"><label>Easing</label>
+      <select id="ease">
+        <option value="cubic-bezier(.2,1.3,.3,1)" selected>Overshoot (bouncy)</option>
+        <option value="cubic-bezier(.16,1,.3,1)">Ease-out (smooth)</option>
+        <option value="cubic-bezier(.7,0,.3,1)">Snap (fast in/out)</option>
+        <option value="linear">Linear</option>
+      </select></div>
+    <div class="ctl"><label>Flash on arrival <span class="val" id="v_flash">0.5</span></label><input type="range" id="flash_i" min="0" max="1" step="0.05" value="0.5"></div>
+    <div class="ctl"><label>Flash color</label><input type="color" id="flash_c" value="#ff2d2d" style="width:100%;height:30px;border:none;border-radius:6px;background:#141c28"></div>
+    <div class="ctl"><label>Badge punch-in delay <span class="val" id="v_bd">0.25</span>s</label><input type="range" id="bd" min="0" max="0.8" step="0.05" value="0.25"></div>
+    <button id="copy">Copy CSS</button>
+    <button id="reset" class="reset">Reset to defaults</button>
+    <pre id="out"></pre>
+  </div>
+</div>
+<style id="brkvars"></style>
+<script>
+function tkoABuild(o){
+  const ac=o.accent||'#d4af37';
+  const bg = o.flag
+    ? `<img class="tkoA-bgflag" src="${o.flag}" onerror="this.style.display='none'"><div class="tkoA-scrim"></div>`
+    : `<div class="tkoA-wash" style="background:linear-gradient(135deg,${o.wash||'rgba(11,42,94,0.95)'} 0%,rgba(9,26,56,0.98) 55%,rgba(5,10,20,1) 100%)"></div>${o.wm?`<img class="tkoA-wm" src="${o.wm}" onerror="this.style.display='none'">`:''}`;   // R43: flat diagonal wash + full-bleed team logo watermark (mockup)
+  const face = o.head
+    ? `<div class="tkoA-headwrap" style="background:linear-gradient(145deg,${ac},rgba(255,255,255,0.1))"><img src="${o.head}" onerror="this.style.opacity=0"></div>`
+    : o.logo
+    ? `<div class="tkoA-headwrap tkoA-logowrap" style="background:linear-gradient(145deg,${o.logoBg||ac},rgba(255,255,255,0.1))"><img class="tkoA-logo" src="${o.logo}" onerror="this.style.opacity=0"></div>`
+    : '';
+  const sub = o.sub ? `<div class="tkoA-scorer">${o.subIcon?`<span class="tkoA-ball">${o.subIcon}</span> `:''}<span class="tkoA-subtxt">${o.sub}</span></div>` : '';
+  const chips = (o.chips&&o.chips.length) ? `<div class="tkoA-chips">${o.chips.map(c=>`<span class="tkoA-chip">${c}</span>`).join('')}</div>` : '';
+  const band = o.band ? `<div class="tkoA-band">
+      <span class="tkoA-nm">${o.band.aAbbr||''}</span><span class="tkoA-sc${o.band.lit==='a'?' win':''}" style="${o.band.lit==='a'?`color:${ac}`:''}">${o.band.aScore}</span>
+      <span class="tkoA-dash">\u2013</span>
+      <span class="tkoA-sc${o.band.lit==='h'?' win':''}" style="${o.band.lit==='h'?`color:${ac}`:''}">${o.band.hScore}</span><span class="tkoA-nm">${o.band.hAbbr||''}</span>
+    </div>` : '';
+  /* ★ r178 — HERO PHOTO VARIANT (Mike's studio design, NYY HR card). When o.hero is a
+     player action-shot URL, the card becomes a full-bleed soft-vignette hero instead of
+     the circular-headshot layout. Values below are the exact studio-locked numbers
+     translated from vw to cqh (the card is container-sized, not viewport-sized):
+     focus 41%/13%, scale 1.1, feather→vignette, headline 5.9vw≈17cqh, HR# 4.8vw≈14cqh
+     WHITE (Mike: HR tag must match HOME RUN, never the accent), name 4.5vw≈13cqh.
+     Logo is positioned + glowed per studio. Everything else (WC goal, headshot, logo
+     variants) is unaffected — this is purely additive on the o.hero branch. */
+  /* r199: was `if (o.hero)`. A headshot is still a photo — through the same vignette it
+     looks far closer to the studio design than the old circular layout. Only a card with
+     NO player image at all takes the legacy path. */
+  if (o.hero || o.head){
+    const _heroSrc = o.hero || o.head;
+    const wr=o.wash_r??11, wg=o.wash_g??42, wb=o.wash_b??94;
+    const hrTag = o.hrNum ? `<span class="tkoH-hr">${o.hrNum}</span>` : '';
+    const logo  = o.logo ? `<img class="tkoH-logo" src="${o.logo}" onerror="this.style.display='none'"`
+                         + ` style="left:${o.logoX??1}%;top:${o.logoY??1}%;width:${o.logoSize??14}%;`
+                         + `filter:drop-shadow(0 0 ${o.logoGlow??15}px rgba(${wr},${wg},${wb},.9)) drop-shadow(0 0 ${(o.logoGlow??15)*1.6}px rgba(255,255,255,.25))">` : '';
+    return `<div class="tkoH-bg" style="background:radial-gradient(120% 100% at 78% 30%,rgba(${wr},${wg},${wb},.7),#070c16 65%)"></div>
+      <div class="tkoH-photo" style="background-image:url('${_heroSrc}');background-position:${o.focusX??41}% ${o.focusY??13}%;background-size:${o.photoFit==='contain'?'contain':'cover'};transform:scale(${o.focusScale??1.1});
+        -webkit-mask:radial-gradient(78% 92% at ${o.focusX??41}% 44%,#000 42%,transparent 80%);mask:radial-gradient(78% 92% at ${o.focusX??41}% 44%,#000 42%,transparent 80%)"></div>
+      ${o.duo?`<div class="tkoH-duo" style="background:rgb(${wr},${wg},${wb});opacity:${o.duo};-webkit-mask:radial-gradient(78% 92% at ${o.focusX??41}% 44%,#000 42%,transparent 80%);mask:radial-gradient(78% 92% at ${o.focusX??41}% 44%,#000 42%,transparent 80%)"></div>`:''}
+      <div class="tkoH-scrim"></div>${logo}
+      <div class="tkoA-accent" style="background:${ac}"></div><div class="tkoA-sweep"></div>
+      <div class="tkoH-txt" style="left:${o.txtX??5}%;bottom:${o.txtY??3}%">
+        ${o.live?`<div class="tkoH-live"><span class="tkoA-live-dot"></span>LIVE</div>`:''}
+        <div class="tkoH-head"><span class="tkoH-hltxt">${o.headline||''}</span>${hrTag}</div>
+        ${o.sub?`<div class="tkoH-name">${o.sub}</div>`:''}
+        ${o.statcastPill?`<div class="tkoH-statcast">${o.statcastPill}</div>`:''}
+      </div>`;
+  }
+  const centered = !face;
+  return `${bg}<div class="tkoA-accent" style="background:${ac}"></div><div class="tkoA-sweep"></div>
+    <div class="tkoA-inner">${face}
+      <div class="tkoA-txt"${centered?' style="align-items:center;width:100%;text-align:center"':''}>
+        ${o.live?`<div class="tkoA-live"><span class="tkoA-live-dot"></span>LIVE</div>`:''}
+        ${o.kicker?`<div class="tkoA-kicker" style="color:${ac}">${o.kicker}</div>`:''}
+        <div class="tkoA-goal${o.kicker?'':' tkoA-goal-lg'}">${o.headline||''}</div>
+        ${sub}${chips}
+      </div>
+    </div>${band}`;
+}
+var accent='rgb(11,42,94)';
+var opts={ accent:accent, live:true, kicker:'LIVE',
+  hero:'https://img.mlbstatic.com/mlb-photos/image/upload/w_600,q_auto/v1/people/592450/action/hero/current',
+  head:'https://img.mlbstatic.com/mlb-photos/image/upload/w_240,q_auto/v1/people/592450/headshot/67/current',
+  logo:'', headline:'HOME RUN', hrNum:'(42)', _hrNum:42, sub:'Aaron Judge', subIcon:'\u26be',
+  statcastPill:'112.4 mph \u00b7 431 ft \u00b7 26\u00b0', wash_r:11, wash_g:42, wash_b:94, focusX:41, focusY:13, focusScale:1.1 };
+
+function keyframesFor(style){
+  switch(style){
+    case 'punch': return '0%{opacity:0;transform:scale(0.86)}100%{opacity:1;transform:scale(1)}';
+    case 'slam':  return '0%{opacity:0;transform:scale(1.18)}60%{opacity:1}100%{opacity:1;transform:scale(1)}';
+    case 'rise':  return '0%{opacity:0;transform:translateY(9%)}100%{opacity:1;transform:translateY(0)}';
+    case 'wipe':  return '0%{opacity:0;clip-path:inset(0 100% 0 0)}100%{opacity:1;clip-path:inset(0 0 0 0)}';
+    default:      return '0%{opacity:1}100%{opacity:1}';
+  }
+}
+function vals(){
+  var g={ style:document.getElementById('style').value, dur:parseFloat(document.getElementById('dur').value),
+    ease:document.getElementById('ease').value, flash:parseFloat(document.getElementById('flash_i').value),
+    flashc:document.getElementById('flash_c').value, bd:parseFloat(document.getElementById('bd').value) };
+  document.getElementById('v_dur').textContent=g.dur; document.getElementById('v_flash').textContent=g.flash; document.getElementById('v_bd').textContent=g.bd;
+  return g;
+}
+function css(){
+  var g=vals();
+  var kf=keyframesFor(g.style);
+  var out='';
+  out+='/* r327 breaking entrance — LIVE card only. Applied when the takeover card is a live HR. */\n';
+  out+='#mlb-takeover.tko-wc.brk-live .tkoH-photo,#mlb-takeover.tko-wc.brk-live .tkoA-inner{animation:tkoBreakIn '+g.dur+'s '+g.ease+' both;}\n';
+  out+='@keyframes tkoBreakIn{'+kf+'}\n';
+  out+='#mlb-takeover.tko-wc.brk-live .tkoH-live,#mlb-takeover.tko-wc.brk-live .tkoA-live{animation:tkoBadgePunch 0.4s '+g.ease+' '+g.bd+'s both;}\n';
+  out+='@keyframes tkoBadgePunch{0%{opacity:0;transform:scale(0.6)}100%{opacity:1;transform:scale(1)}}\n';
+  if(g.flash>0){
+    out+='.brk-flash{position:absolute;inset:0;background:'+g.flashc+';opacity:0;pointer-events:none;z-index:9;}\n';
+    out+='.brk-flash.fire{animation:tkoBreakFlash '+g.dur+'s ease-out both;}\n';
+    out+='@keyframes tkoBreakFlash{0%{opacity:'+g.flash+'}100%{opacity:0}}\n';
+  }
+  return out;
+}
+function apply(){ var c=css(); document.getElementById('brkvars').textContent=c; document.getElementById('out').textContent=c; }
+function fire(){
+  var el=document.getElementById('mlb-takeover');
+  el.classList.remove('brk-live'); void el.offsetWidth; // reflow to restart animation
+  el.innerHTML=tkoABuild(opts);
+  el.classList.add('brk-live');
+  var g=vals(); var f=document.getElementById('flash');
+  if(g.flash>0){ f.classList.remove('fire'); void f.offsetWidth; f.classList.add('fire'); }
+}
+['style','dur','ease','flash_i','flash_c','bd'].forEach(function(id){ document.getElementById(id).addEventListener('input',function(){ apply(); fire(); }); });
+document.getElementById('replay').addEventListener('click',fire);
+document.getElementById('copy').addEventListener('click',function(){ var b=document.getElementById('copy'); navigator.clipboard.writeText(css()).then(function(){ b.textContent='\u2713 Copied CSS'; setTimeout(function(){b.textContent='Copy CSS';},1400); }).catch(function(){}); });
+document.getElementById('reset').addEventListener('click',function(){
+  document.getElementById('style').value='slam'; document.getElementById('dur').value=0.55; document.getElementById('ease').value='cubic-bezier(.2,1.3,.3,1)';
+  document.getElementById('flash_i').value=0.5; document.getElementById('flash_c').value='#ff2d2d'; document.getElementById('bd').value=0.25; apply(); fire();
+});
+apply(); fire();
+</script></body></html>
