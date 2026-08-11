@@ -11064,16 +11064,17 @@ if (new URLSearchParams(location.search).get('wws') !== '0'){
   bar.style.cssText = 'display:flex;gap:6px;align-items:center;margin:-2px 0 5px;';
   const btn = txt => { const b=document.createElement('button');
     b.textContent = txt;
-    b.style.cssText = 'background:#173;color:#8f8;border:1px solid #2a6;border-radius:4px;'
-      + 'font:10px ui-monospace,monospace;cursor:pointer;padding:1px 6px;';
+    b.style.cssText = 'background:#0d1725;color:#8ea2bd;border:1px solid #2a3a4d;border-radius:4px;'   /* r339: match the standard CC button (was bright green) */
+      + 'font:calc(var(--fs) - 3px) ui-monospace,Menlo,monospace;cursor:pointer;padding:2px 8px;opacity:.75;';
     return b; };
   const tgl  = btn('▼');           // collapse / expand
-  const copy = btn('COPY');        // copy the HUD text
+  const copy = btn('copy');        // copy the HUD text
   bar.appendChild(tgl); bar.appendChild(copy);
   el.appendChild(bar);
 
   const body = document.createElement('div');   // everything the 1s refresh writes
-  body.style.whiteSpace = 'pre';
+  body.style.whiteSpace = 'pre-wrap';           /* r339: wrap like the other panes, don't overflow */
+  body.style.font = 'calc(var(--fs) - 2px)/1.5 ui-monospace,Menlo,monospace';   /* r339: match Now font size */
   el.appendChild(body);
 
   let collapsed = false;
@@ -11084,8 +11085,8 @@ if (new URLSearchParams(location.search).get('wws') !== '0'){
   };
   copy.onclick = () => {
     const txt = body.textContent || '';
-    try { navigator.clipboard.writeText(txt); copy.textContent = '✓'; setTimeout(()=>copy.textContent='COPY', 1200); }
-    catch(_){ copy.textContent = 'ERR'; setTimeout(()=>copy.textContent='COPY', 1200); }
+    try { navigator.clipboard.writeText(txt); copy.textContent = '✓ copied'; setTimeout(()=>copy.textContent='copy', 1200); }
+    catch(_){ copy.textContent = 'err'; setTimeout(()=>copy.textContent='copy', 1200); }
   };
   const t0 = Date.now();
   const age = ts => ts ? Math.round((Date.now() - ts) / 1000) + 's' : '—';
@@ -11730,7 +11731,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r338-debug-fold-now';
+const BUILD_MARKER = 'r339-debug-style-match';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
