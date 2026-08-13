@@ -1,0 +1,73 @@
+ [night 08:42:33] sys.init Object
+ [roster] Yankees: 24 players
+ [roster] Mets: 26 players
+ [night 08:42:34] gameref.resolve Object
+ [night 08:44:10] gameref.resolve Object
+ [night 08:44:34] recap.pick Object
+/favicon.ico:1  Failed to load resource: the server responded with a status of 404 ()
+i.ytimg.com/vi/v-sMkQe20QU/oardefault.jpg:1  Failed to load resource: the server responded with a status of 404 ()
+i.ytimg.com/vi/s2-cjMkkb4w/oardefault.jpg:1  Failed to load resource: the server responded with a status of 404 ()
+ [night 08:55:34] recap.pick Object
+i.ytimg.com/vi/8Bop9wVLeNM/oardefault.jpg:1  Failed to load resource: the server responded with a status of 404 ()
+i.ytimg.com/vi/a9yZ3ZZPxtg/oardefault.jpg:1  Failed to load resource: the server responded with a status of 404 ()
+i.ytimg.com/vi/Cucr1PtY6TM/oardefault.jpg:1  Failed to load resource: the server responded with a status of 404 ()
+ [night 09:21:58] recap.pick Object
+ [night 09:32:58] recap.pick Object
+sports/?nightlog=1:1 Access to fetch at 'https://www.youtube.com/feeds/videos.xml?channel_id=UCyeer4UbTK9pzZL9_hhCimA' from origin 'https://mikeylegs.github.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+www.youtube.com/feeds/videos.xml?channel_id=UCyeer4UbTK9pzZL9_hhCimA:1  Failed to load resource: net::ERR_FAILED
+ [recap] RSS ok: 15 videos from cbsgolf
+ [recap] no video found for golf-fill
+sports/?nightlog=1:1797 [night 09:40:18] sys.warn Object
+sports/?nightlog=1:1797 [night 09:44:10] recap.pick Object
+sports/?nightlog=1:1797 [night 09:55:10] recap.pick Object
+sports/?nightlog=1:1 Access to fetch at 'https://www.youtube.com/feeds/videos.xml?channel_id=UCWJ2lWNubArHWmf3FIHbfcQ' from origin 'https://mikeylegs.github.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+www.youtube.com/feeds/videos.xml?channel_id=UCWJ2lWNubArHWmf3FIHbfcQ:1  Failed to load resource: net::ERR_FAILED
+sports/?nightlog=1:7372 [recap] RSS ok: 15 videos from NBA
+sports/?nightlog=1:1797 [night 10:08:22] recap.pick Object
+sports/?nightlog=1:1797 [night 10:19:22] recap.pick Object
+sports/?nightlog=1:1797 [night 10:45:46] recap.pick Object
+sports/?nightlog=1:1797 [night 10:56:46] recap.pick Object
+sports/?nightlog=1:1 Access to fetch at 'https://www.youtube.com/feeds/videos.xml?channel_id=UCyeer4UbTK9pzZL9_hhCimA' from origin 'https://mikeylegs.github.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+www.youtube.com/feeds/videos.xml?channel_id=UCyeer4UbTK9pzZL9_hhCimA:1  Failed to load resource: net::ERR_FAILED
+sports/?nightlog=1:7372 [recap] RSS ok: 15 videos from cbsgolf
+sports/?nightlog=1:1757 [recap] no video found for golf-fill
+console.warn @ sports/?nightlog=1:1757
+findRecap @ sports/?nightlog=1:7904
+sports/?nightlog=1:1797 [night 11:04:03] sys.warn Object
+sports/?nightlog=1:1797 [night 11:07:58] recap.pick Object
+sports/?nightlog=1:1797 [night 11:18:58] recap.pick Object
+sports/?nightlog=1:1 Access to fetch at 'https://www.youtube.com/feeds/videos.xml?channel_id=UCWJ2lWNubArHWmf3FIHbfcQ' from origin 'https://mikeylegs.github.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+www.youtube.com/feeds/videos.xml?channel_id=UCWJ2lWNubArHWmf3FIHbfcQ:1  Failed to load resource: net::ERR_FAILED
+sports/?nightlog=1:7372 [recap] RSS ok: 15 videos from NBA
+sports/?nightlog=1:1797 [night 11:32:10] recap.none Object
+sports/?nightlog=1:1 Access to fetch at 'https://www.youtube.com/feeds/videos.xml?channel_id=UCoLrcjPV5PbUrUyXq5mjc_A' from origin 'https://mikeylegs.github.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+www.youtube.com/feeds/videos.xml?channel_id=UCoLrcjPV5PbUrUyXq5mjc_A:1  Failed to load resource: net::ERR_FAILED
+sports/?nightlog=1:7372 [recap] RSS ok: 15 videos from MLB
+i.ytimg.com/vi/hFADYPr8qjs/oardefault.jpg:1  Failed to load resource: the server responded with a status of 404 ()
+sports/?nightlog=1:1797 [night 11:44:10] recap.pick Object
+sports/?nightlog=1:1797 [night 12:10:34] recap.pick Object
+sports/?nightlog=1:1797 [night 12:21:34] recap.pick Object
+sports/?nightlog=1:1 Access to fetch at 'https://www.youtube.com/feeds/videos.xml?channel_id=UCyeer4UbTK9pzZL9_hhCimA' from origin 'https://mikeylegs.github.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+www.youtube.com/feeds/videos.xml?channel_id=UCyeer4UbTK9pzZL9_hhCimA:1  Failed to load resource: net::ERR_FAILED
+sports/?nightlog=1:7372 [recap] RSS ok: 15 videos from cbsgolf
+sports/?nightlog=1:1757 [recap] no video found for golf-fill
+console.warn @ sports/?nightlog=1:1757
+findRecap @ sports/?nightlog=1:7904
+sports/?nightlog=1:1797 [night 12:28:48] sys.warn Object
+sports/?nightlog=1:1797 [night 12:32:46] recap.pick Object
+sports/?nightlog=1:1797 [night 12:43:46] recap.pick Object
+sports/?nightlog=1:1 Access to fetch at 'https://www.youtube.com/feeds/videos.xml?channel_id=UCWJ2lWNubArHWmf3FIHbfcQ' from origin 'https://mikeylegs.github.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+www.youtube.com/feeds/videos.xml?channel_id=UCWJ2lWNubArHWmf3FIHbfcQ:1  Failed to load resource: net::ERR_FAILED
+sports/?nightlog=1:7372 [recap] RSS ok: 15 videos from NBA
+sports/?nightlog=1:1797 [night 12:56:58] recap.pick Object
+sports/?nightlog=1:1797 [night 13:07:58] recap.pick Object
+sports/?nightlog=1:1797 [night 13:14:04] score.change Object
+sports/?nightlog=1:1797 [night 13:16:34] score.change Object
+sports/?nightlog=1:1797 [night 13:23:36] score.change Object
+sports/?nightlog=1:1797 [night 13:34:36] recap.none Object
+sports/?nightlog=1:1 Access to fetch at 'https://www.youtube.com/feeds/videos.xml?channel_id=UCoLrcjPV5PbUrUyXq5mjc_A' from origin 'https://mikeylegs.github.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+www.youtube.com/feeds/videos.xml?channel_id=UCoLrcjPV5PbUrUyXq5mjc_A:1  Failed to load resource: net::ERR_FAILED
+sports/?nightlog=1:7372 [recap] RSS ok: 15 videos from MLB
+i.ytimg.com/vi/L9naHlTNv1w/oardefault.jpg:1  Failed to load resource: the server responded with a status of 404 ()
+sports/?nightlog=1:1797 [night 13:45:36] score.change Objectdelta: 1fav: falsegame: "CIN@CWS"likelyHR: trueteam: "CWS"[[Prototype]]: Object
+sports/?nightlog=1:1797 [night 13:47:06] score.change Objectdelta: 2fav: falsegame: "CIN@CWS"likelyHR: trueteam: "CWS"[[Prototype]]: Object
