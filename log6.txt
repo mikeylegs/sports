@@ -1,0 +1,47 @@
+
+Michael Legra <michael.legra@gmail.com>
+1:54 PM (0 minutes ago)
+to Michael
+
+nightReport()
+sports/?nightlog=1:1862 ── NIGHT REPORT · session booted 08:42:33 · 33 events ──
+08:42:33  sys.init {"navType":"navigate","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64"}
+08:42:34  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":147,"gamePk":823511,"gameDate":"2026-08-12","daysOld":1,"teams":"SEA@NYY"}
+08:44:10  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":121,"gamePk":824883,"gameDate":"2026-08-12","daysOld":1,"teams":"NYM@ATL"}
+08:44:34  recap.pick {"team":"NYY","gamePk":823511,"viaKnownPk":false,"title":"Trent Grisham crushes two homers in Yankees' 10-5 win"}
+08:55:34  recap.pick {"team":"NYM","gamePk":824883,"viaKnownPk":true,"title":"Back-to-back homers fuel Braves'  6-3 win"}
+09:21:58  recap.pick {"team":"NYY","gamePk":823511,"viaKnownPk":false,"title":"Trent Grisham crushes two homers in Yankees' 10-5 win"}
+09:32:58  recap.pick {"team":"NYM","gamePk":824883,"viaKnownPk":true,"title":"Back-to-back homers fuel Braves'  6-3 win"}
+09:40:18  sys.warn {"m":"[recap] no video found for golf-fill"}
+09:44:10  recap.pick {"team":"NYY","gamePk":823511,"viaKnownPk":false,"title":"Trent Grisham crushes two homers in Yankees' 10-5 win"}
+09:55:10  recap.pick {"team":"NYM","gamePk":824883,"viaKnownPk":true,"title":"Back-to-back homers fuel Braves'  6-3 win"}
+10:08:22  recap.pick {"team":"NYY","gamePk":823511,"viaKnownPk":false,"title":"Trent Grisham crushes two homers in Yankees' 10-5 win"}
+10:19:22  recap.pick {"team":"NYM","gamePk":824883,"viaKnownPk":true,"title":"Back-to-back homers fuel Braves'  6-3 win"}
+10:45:46  recap.pick {"team":"NYY","gamePk":823511,"viaKnownPk":false,"title":"Trent Grisham crushes two homers in Yankees' 10-5 win"}
+10:56:46  recap.pick {"team":"NYM","gamePk":824883,"viaKnownPk":true,"title":"Back-to-back homers fuel Braves'  6-3 win"}
+11:04:03  sys.warn {"m":"[recap] no video found for golf-fill"}
+11:07:58  recap.pick {"team":"NYY","gamePk":823511,"viaKnownPk":false,"title":"Trent Grisham crushes two homers in Yankees' 10-5 win"}
+11:18:58  recap.pick {"team":"NYM","gamePk":824883,"viaKnownPk":true,"title":"Back-to-back homers fuel Braves'  6-3 win"}
+11:32:10  recap.none {"team":"NYY","gamePk":823511,"why":"no real recap in 0 items"}
+11:44:10  recap.pick {"team":"NYM","gamePk":824883,"viaKnownPk":true,"title":"Back-to-back homers fuel Braves'  6-3 win"}
+12:10:34  recap.pick {"team":"NYY","gamePk":823511,"viaKnownPk":false,"title":"Trent Grisham crushes two homers in Yankees' 10-5 win"}
+12:21:34  recap.pick {"team":"NYM","gamePk":824883,"viaKnownPk":true,"title":"Back-to-back homers fuel Braves'  6-3 win"}
+12:28:48  sys.warn {"m":"[recap] no video found for golf-fill"}
+12:32:46  recap.pick {"team":"NYY","gamePk":823511,"viaKnownPk":false,"title":"Trent Grisham crushes two homers in Yankees' 10-5 win"}
+12:43:46  recap.pick {"team":"NYM","gamePk":824883,"viaKnownPk":true,"title":"Back-to-back homers fuel Braves'  6-3 win"}
+12:56:58  recap.pick {"team":"NYY","gamePk":823511,"viaKnownPk":false,"title":"Trent Grisham crushes two homers in Yankees' 10-5 win"}
+13:07:58  recap.pick {"team":"NYM","gamePk":824883,"viaKnownPk":true,"title":"Back-to-back homers fuel Braves'  6-3 win"}
+13:14:04  score.change {"game":"CIN@CWS","team":"CIN","delta":1,"fav":false,"likelyHR":true}
+13:16:34  score.change {"game":"CIN@CWS","team":"CIN","delta":2,"fav":false,"likelyHR":true}
+13:23:36  score.change {"game":"CIN@CWS","team":"CWS","delta":1,"fav":false,"likelyHR":true}
+13:34:36  recap.none {"team":"NYY","why":"no gamePk"}
+13:45:36  score.change {"game":"CIN@CWS","team":"CWS","delta":1,"fav":false,"likelyHR":true}
+13:47:06  score.change {"game":"CIN@CWS","team":"CWS","delta":2,"fav":false,"likelyHR":true}
+13:53:19  score.change {"game":"CLE@DET","team":"DET","delta":1,"fav":false,"likelyHR":true}
+── ASSERTIONS (2 flagged) ──
+⚠ BAD RECAP 11:32:10 (no real recap existed)
+⚠ BAD RECAP 13:34:36 (no real recap existed)
+'(33 events, 2 flags — copied)'
+sports/?nightlog=1:1863 Uncaught (in promise) NotAllowedError: Failed to execute 'writeText' on 'Clipboard': Document is not focused.
+    at window.nightReport (sports/?nightlog=1:1863:30)
+    at <anonymous>:1:1
