@@ -1,7 +1,98 @@
 {
   "v": 1,
-  "updated": "2026-08-13T12:51:13.519Z",
-  "events": [],
+  "updated": "2026-08-13T12:51:26.211Z",
+  "events": [
+    {
+      "league": "golf/pga",
+      "label": "Golf (PGA)",
+      "espnId": "401811962",
+      "title": "FedEx St. Jude Championship",
+      "showFrom": "20260813",
+      "showUntil": "20260813",
+      "rank": 1
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816511",
+      "title": "Cleveland Guardians @ Detroit Tigers",
+      "showFrom": "20260813",
+      "showUntil": "20260813",
+      "rank": 2
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816512",
+      "title": "Pittsburgh Pirates @ Miami Marlins",
+      "showFrom": "20260813",
+      "showUntil": "20260813",
+      "rank": 3
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816513",
+      "title": "Seattle Mariners @ New York Yankees",
+      "showFrom": "20260813",
+      "showUntil": "20260813",
+      "rank": 4
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816516",
+      "title": "Texas Rangers @ Los Angeles Angels",
+      "showFrom": "20260813",
+      "showUntil": "20260813",
+      "rank": 5
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816515",
+      "title": "Milwaukee Brewers @ Los Angeles Dodgers",
+      "showFrom": "20260813",
+      "showUntil": "20260813",
+      "rank": 6
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816514",
+      "title": "Cincinnati Reds @ Chicago White Sox",
+      "showFrom": "20260813",
+      "showUntil": "20260813",
+      "rank": 7
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816509",
+      "title": "Boston Red Sox @ Toronto Blue Jays",
+      "showFrom": "20260813",
+      "showUntil": "20260813",
+      "rank": 8
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816510",
+      "title": "Chicago Cubs @ Washington Nationals",
+      "showFrom": "20260813",
+      "showUntil": "20260813",
+      "rank": 9
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816525",
+      "title": "Philadelphia Phillies @ Minnesota Twins",
+      "showFrom": "20260813",
+      "showUntil": "20260813",
+      "rank": 10
+    }
+  ],
   "watch": {
     "teams": []
   }
