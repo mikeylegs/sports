@@ -1,0 +1,3467 @@
+── NIGHT REPORT · session booted 17:07:03 · 2333 events ──
+17:07:03  sys.init {"navType":"reload","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64"}
+17:07:03  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":147,"gamePk":823508,"gameDate":"2026-08-13","daysOld":0,"teams":"SEA@NYY"}
+17:07:51  wws.advance {"from":"wws","to":"wws","pool":10}
+17:07:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:08:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:08:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:08:27  wws.stuck {"on":"wws","waiting":9}
+17:08:39  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":121,"gamePk":824883,"gameDate":"2026-08-12","daysOld":1,"teams":"NYM@ATL"}
+17:08:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:08:45  wws.stuck {"on":"wws","waiting":9}
+17:08:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:08:57  wws.stuck {"on":"wws","waiting":9}
+17:09:03  recap.none {"team":"NYY","gamePk":823508,"why":"no real recap in 32 items"}
+17:09:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:09:15  wws.stuck {"on":"wws","waiting":9}
+17:09:18  sys.warn {"m":"[recap] no video found for hoh-nyy"}
+17:09:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:09:27  wws.stuck {"on":"wws","waiting":9}
+17:09:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:09:45  wws.stuck {"on":"wws","waiting":9}
+17:09:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:09:57  wws.stuck {"on":"wws","waiting":9}
+17:11:05  screen.show {}
+17:11:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:11:15  wws.stuck {"on":"wws","waiting":9}
+17:11:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:11:27  wws.stuck {"on":"wws","waiting":9}
+17:11:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:11:45  wws.stuck {"on":"wws","waiting":9}
+17:11:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:11:57  wws.stuck {"on":"wws","waiting":9}
+17:12:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:12:15  wws.stuck {"on":"wws","waiting":9}
+17:12:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:12:27  wws.stuck {"on":"wws","waiting":9}
+17:12:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:12:45  wws.stuck {"on":"wws","waiting":9}
+17:12:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:12:57  wws.stuck {"on":"wws","waiting":9}
+17:13:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:13:15  wws.stuck {"on":"wws","waiting":9}
+17:13:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:13:27  wws.stuck {"on":"wws","waiting":9}
+17:14:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:14:15  wws.stuck {"on":"wws","waiting":9}
+17:14:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:14:15  wws.stuck {"on":"wws","waiting":9}
+17:14:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:14:27  wws.stuck {"on":"wws","waiting":9}
+17:14:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:14:45  wws.stuck {"on":"wws","waiting":9}
+17:14:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:14:57  wws.stuck {"on":"wws","waiting":9}
+17:15:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:15:15  wws.stuck {"on":"wws","waiting":9}
+17:15:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:15:27  wws.stuck {"on":"wws","waiting":9}
+17:15:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:15:45  wws.stuck {"on":"wws","waiting":9}
+17:15:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:15:57  wws.stuck {"on":"wws","waiting":9}
+17:16:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:16:15  wws.stuck {"on":"wws","waiting":9}
+17:16:51  recap.pick {"team":"NYM","gamePk":824883,"viaKnownPk":true,"title":"Back-to-back homers fuel Braves'  6-3 win"}
+17:16:53  screen.show {"what":"rotation","source":"hoh-nym","title":"Back-to-back homers fuel Braves'  6-3 win","gamePk":824883,"url":"-csvm-diamondgcp-asset_1280x720_59_4000K.mp4"}
+17:17:03  wws.advance {"from":"wws","to":"wws","pool":10}
+17:17:03  wws.stuck {"on":"wws","waiting":9}
+17:17:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:17:15  wws.stuck {"on":"wws","waiting":9}
+17:17:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:17:27  wws.stuck {"on":"wws","waiting":9}
+17:17:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:17:45  wws.stuck {"on":"wws","waiting":9}
+17:17:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:17:57  wws.stuck {"on":"wws","waiting":9}
+17:18:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:18:15  wws.stuck {"on":"wws","waiting":9}
+17:18:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:18:27  wws.stuck {"on":"wws","waiting":9}
+17:18:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:18:45  wws.stuck {"on":"wws","waiting":9}
+17:18:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:18:57  wws.stuck {"on":"wws","waiting":9}
+17:19:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:19:15  wws.stuck {"on":"wws","waiting":9}
+17:20:03  wws.advance {"from":"wws","to":"wws","pool":10}
+17:20:03  wws.stuck {"on":"wws","waiting":9}
+17:20:03  score.change {"game":"CHC@WSH","team":"WSH","delta":1,"fav":false,"likelyHR":true}
+17:20:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:20:15  wws.stuck {"on":"wws","waiting":9}
+17:20:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:20:27  wws.stuck {"on":"wws","waiting":9}
+17:20:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:20:45  wws.stuck {"on":"wws","waiting":9}
+17:20:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:20:57  wws.stuck {"on":"wws","waiting":9}
+17:21:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:21:15  wws.stuck {"on":"wws","waiting":9}
+17:21:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:21:27  wws.stuck {"on":"wws","waiting":9}
+17:21:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:21:45  wws.stuck {"on":"wws","waiting":9}
+17:21:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:21:57  wws.stuck {"on":"wws","waiting":9}
+17:22:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:22:15  wws.stuck {"on":"wws","waiting":9}
+17:22:33  score.change {"game":"BOS@TOR","team":"BOS","delta":1,"fav":false,"likelyHR":true}
+17:22:33  score.change {"game":"CHC@WSH","team":"WSH","delta":3,"fav":false,"likelyHR":true}
+17:23:03  wws.advance {"from":"wws","to":"wws","pool":10}
+17:23:03  wws.stuck {"on":"wws","waiting":9}
+17:23:13  companion.play {"for":"Abimelec Ortiz","hr":"4","url":"8ef8f46b-dfd6-4287-8779-bdd348bb5ed5.mp4"}
+17:23:14  screen.show {"what":"companion","title":"Kevin Gausman In play, run(s) to Abimelec Ortiz","source":"mlb-companion","gamePk":822696,"url":"com/8ef8f46b-dfd6-4287-8779-bdd348bb5ed5.mp4"}
+17:23:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:23:15  wws.stuck {"on":"wws","waiting":9}
+17:23:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:23:27  wws.stuck {"on":"wws","waiting":9}
+17:23:34  clip.ended {"title":"Kevin Gausman In play, run(s) to Abimele"}
+17:23:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:23:45  wws.stuck {"on":"wws","waiting":9}
+17:23:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:23:57  wws.stuck {"on":"wws","waiting":9}
+17:24:03  score.change {"game":"BOS@TOR","team":"BOS","delta":1,"fav":false,"likelyHR":true}
+17:24:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:24:15  wws.stuck {"on":"wws","waiting":9}
+17:24:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:24:27  wws.stuck {"on":"wws","waiting":9}
+17:24:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:24:45  wws.stuck {"on":"wws","waiting":9}
+17:24:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:24:57  wws.stuck {"on":"wws","waiting":9}
+17:25:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:25:15  wws.stuck {"on":"wws","waiting":9}
+17:26:03  wws.advance {"from":"wws","to":"wws","pool":10}
+17:26:03  wws.stuck {"on":"wws","waiting":9}
+17:26:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:26:15  wws.stuck {"on":"wws","waiting":9}
+17:26:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:26:27  wws.stuck {"on":"wws","waiting":9}
+17:26:33  score.change {"game":"CHC@WSH","team":"WSH","delta":1,"fav":false,"likelyHR":true}
+17:26:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:26:45  wws.stuck {"on":"wws","waiting":9}
+17:26:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:26:57  wws.stuck {"on":"wws","waiting":9}
+17:27:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:27:15  wws.stuck {"on":"wws","waiting":9}
+17:27:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:27:27  wws.stuck {"on":"wws","waiting":9}
+17:27:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:27:45  wws.stuck {"on":"wws","waiting":9}
+17:27:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:27:57  wws.stuck {"on":"wws","waiting":9}
+17:28:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:28:15  wws.stuck {"on":"wws","waiting":9}
+17:29:03  wws.advance {"from":"wws","to":"wws","pool":10}
+17:29:03  wws.stuck {"on":"wws","waiting":9}
+17:29:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:29:15  wws.stuck {"on":"wws","waiting":9}
+17:29:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:29:27  wws.stuck {"on":"wws","waiting":9}
+17:29:27  recap.none {"team":"NYY","gamePk":823508,"why":"no real recap in 32 items"}
+17:29:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:29:45  wws.stuck {"on":"wws","waiting":9}
+17:29:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:29:57  wws.stuck {"on":"wws","waiting":9}
+17:30:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:30:15  wws.stuck {"on":"wws","waiting":9}
+17:30:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:30:27  wws.stuck {"on":"wws","waiting":9}
+17:30:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:30:45  wws.stuck {"on":"wws","waiting":9}
+17:30:48  sys.err {"m":"unhandled promise: Failed to execute 'writeText' on 'Clipboard': Document is not focused."}
+17:30:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:30:57  wws.stuck {"on":"wws","waiting":9}
+17:31:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:31:15  wws.stuck {"on":"wws","waiting":9}
+17:32:03  wws.advance {"from":"wws","to":"wws","pool":10}
+17:32:03  wws.stuck {"on":"wws","waiting":9}
+17:32:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:32:15  wws.stuck {"on":"wws","waiting":9}
+17:32:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:32:27  wws.stuck {"on":"wws","waiting":9}
+17:32:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:32:45  wws.stuck {"on":"wws","waiting":9}
+17:32:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:32:57  wws.stuck {"on":"wws","waiting":9}
+17:33:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:33:15  wws.stuck {"on":"wws","waiting":9}
+17:33:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:33:27  wws.stuck {"on":"wws","waiting":9}
+17:33:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:33:45  wws.stuck {"on":"wws","waiting":9}
+17:33:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:33:57  wws.stuck {"on":"wws","waiting":9}
+17:34:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:34:15  wws.stuck {"on":"wws","waiting":9}
+17:34:33  game.final_inferred {"teams":"BOS@TOR","score":"7-0","walkoff":false,"espnSaid":"End 9th"}
+17:35:10  wws.advance {"from":"wws","to":"wws","pool":10}
+17:35:10  wws.stuck {"on":"wws","waiting":9}
+17:35:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:35:15  wws.stuck {"on":"wws","waiting":9}
+17:35:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:35:27  wws.stuck {"on":"wws","waiting":9}
+17:35:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:35:45  wws.stuck {"on":"wws","waiting":9}
+17:35:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:35:57  wws.stuck {"on":"wws","waiting":9}
+17:36:16  wws.advance {"from":"wws","to":"wws","pool":10}
+17:36:16  wws.stuck {"on":"wws","waiting":9}
+17:36:28  wws.advance {"from":"wws","to":"wws","pool":10}
+17:36:28  wws.stuck {"on":"wws","waiting":9}
+17:36:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:36:45  wws.stuck {"on":"wws","waiting":9}
+17:36:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:36:57  wws.stuck {"on":"wws","waiting":9}
+17:37:15  recap.pick {"team":"NYM","gamePk":824883,"viaKnownPk":true,"title":"Back-to-back homers fuel Braves'  6-3 win"}
+17:37:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:37:15  wws.stuck {"on":"wws","waiting":9}
+17:37:17  screen.show {"what":"rotation","source":"hoh-nym","title":"Back-to-back homers fuel Braves'  6-3 win","gamePk":824883,"url":"-csvm-diamondgcp-asset_1280x720_59_4000K.mp4"}
+17:38:03  wws.advance {"from":"wws","to":"wws","pool":10}
+17:38:03  wws.stuck {"on":"wws","waiting":9}
+17:38:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:38:15  wws.stuck {"on":"wws","waiting":9}
+17:38:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:38:27  wws.stuck {"on":"wws","waiting":9}
+17:38:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:38:45  wws.stuck {"on":"wws","waiting":9}
+17:38:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:38:57  wws.stuck {"on":"wws","waiting":9}
+17:39:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:39:15  wws.stuck {"on":"wws","waiting":9}
+17:39:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:39:27  wws.stuck {"on":"wws","waiting":9}
+17:39:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:39:45  wws.stuck {"on":"wws","waiting":9}
+17:39:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:39:57  wws.stuck {"on":"wws","waiting":9}
+17:40:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:40:15  wws.stuck {"on":"wws","waiting":9}
+17:41:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:41:27  wws.stuck {"on":"wws","waiting":9}
+17:41:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:41:45  wws.stuck {"on":"wws","waiting":9}
+17:41:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:41:57  wws.stuck {"on":"wws","waiting":9}
+17:42:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:42:15  wws.stuck {"on":"wws","waiting":9}
+17:42:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:42:27  wws.stuck {"on":"wws","waiting":9}
+17:42:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:42:45  wws.stuck {"on":"wws","waiting":9}
+17:42:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:42:57  wws.stuck {"on":"wws","waiting":9}
+17:43:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:43:15  wws.stuck {"on":"wws","waiting":9}
+17:43:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:43:27  wws.stuck {"on":"wws","waiting":9}
+17:43:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:43:45  wws.stuck {"on":"wws","waiting":9}
+17:44:33  wws.advance {"from":"wws","to":"wws","pool":10}
+17:44:33  wws.stuck {"on":"wws","waiting":9}
+17:44:33  sys.warn {"m":"[recap] no video found for golf-fill"}
+17:44:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:44:45  wws.stuck {"on":"wws","waiting":9}
+17:44:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:44:57  wws.stuck {"on":"wws","waiting":9}
+17:45:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:45:15  wws.stuck {"on":"wws","waiting":9}
+17:45:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:45:27  wws.stuck {"on":"wws","waiting":9}
+17:45:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:45:45  wws.stuck {"on":"wws","waiting":9}
+17:45:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:45:57  wws.stuck {"on":"wws","waiting":9}
+17:46:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:46:15  wws.stuck {"on":"wws","waiting":9}
+17:46:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:46:27  wws.stuck {"on":"wws","waiting":9}
+17:46:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:46:45  wws.stuck {"on":"wws","waiting":9}
+17:47:51  wws.advance {"from":"wws","to":"wws","pool":10}
+17:47:51  wws.stuck {"on":"wws","waiting":9}
+17:47:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:47:57  wws.stuck {"on":"wws","waiting":9}
+17:48:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:48:15  wws.stuck {"on":"wws","waiting":9}
+17:48:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:48:27  wws.stuck {"on":"wws","waiting":9}
+17:48:27  recap.none {"team":"NYY","gamePk":823508,"why":"no real recap in 32 items"}
+17:48:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:48:45  wws.stuck {"on":"wws","waiting":9}
+17:48:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:48:57  wws.stuck {"on":"wws","waiting":9}
+17:49:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:49:15  wws.stuck {"on":"wws","waiting":9}
+17:49:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:49:27  wws.stuck {"on":"wws","waiting":9}
+17:49:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:49:45  wws.stuck {"on":"wws","waiting":9}
+17:49:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:49:57  wws.stuck {"on":"wws","waiting":9}
+17:50:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:50:45  wws.stuck {"on":"wws","waiting":9}
+17:50:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:50:45  wws.stuck {"on":"wws","waiting":9}
+17:50:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:50:57  wws.stuck {"on":"wws","waiting":9}
+17:51:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:51:15  wws.stuck {"on":"wws","waiting":9}
+17:51:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:51:27  wws.stuck {"on":"wws","waiting":9}
+17:51:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:51:45  wws.stuck {"on":"wws","waiting":9}
+17:51:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:51:57  wws.stuck {"on":"wws","waiting":9}
+17:52:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:52:15  wws.stuck {"on":"wws","waiting":9}
+17:52:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:52:27  wws.stuck {"on":"wws","waiting":9}
+17:52:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:52:45  wws.stuck {"on":"wws","waiting":9}
+17:53:33  wws.advance {"from":"wws","to":"wws","pool":10}
+17:53:33  wws.stuck {"on":"wws","waiting":9}
+17:53:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:53:45  wws.stuck {"on":"wws","waiting":9}
+17:53:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:53:57  wws.stuck {"on":"wws","waiting":9}
+17:54:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:54:15  wws.stuck {"on":"wws","waiting":9}
+17:54:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:54:27  wws.stuck {"on":"wws","waiting":9}
+17:54:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:54:45  wws.stuck {"on":"wws","waiting":9}
+17:54:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:54:57  wws.stuck {"on":"wws","waiting":9}
+17:55:16  wws.advance {"from":"wws","to":"wws","pool":10}
+17:55:16  wws.stuck {"on":"wws","waiting":9}
+17:55:28  wws.advance {"from":"wws","to":"wws","pool":10}
+17:55:28  wws.stuck {"on":"wws","waiting":9}
+17:55:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:55:45  wws.stuck {"on":"wws","waiting":9}
+17:56:15  recap.pick {"team":"NYM","gamePk":824883,"viaKnownPk":true,"title":"Back-to-back homers fuel Braves'  6-3 win"}
+17:56:33  wws.advance {"from":"wws","to":"wws","pool":10}
+17:56:33  wws.stuck {"on":"wws","waiting":9}
+17:56:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:56:45  wws.stuck {"on":"wws","waiting":9}
+17:56:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:56:57  wws.stuck {"on":"wws","waiting":9}
+17:57:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:57:15  wws.stuck {"on":"wws","waiting":9}
+17:57:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:57:27  wws.stuck {"on":"wws","waiting":9}
+17:57:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:57:45  wws.stuck {"on":"wws","waiting":9}
+17:57:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:57:57  wws.stuck {"on":"wws","waiting":9}
+17:58:15  wws.advance {"from":"wws","to":"wws","pool":10}
+17:58:15  wws.stuck {"on":"wws","waiting":9}
+17:58:27  wws.advance {"from":"wws","to":"wws","pool":10}
+17:58:27  wws.stuck {"on":"wws","waiting":9}
+17:58:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:58:45  wws.stuck {"on":"wws","waiting":9}
+17:59:33  wws.advance {"from":"wws","to":"wws","pool":10}
+17:59:33  wws.stuck {"on":"wws","waiting":9}
+17:59:45  wws.advance {"from":"wws","to":"wws","pool":10}
+17:59:45  wws.stuck {"on":"wws","waiting":9}
+17:59:57  wws.advance {"from":"wws","to":"wws","pool":10}
+17:59:57  wws.stuck {"on":"wws","waiting":9}
+18:00:17  wws.advance {"from":"wws","to":"wws","pool":10}
+18:00:17  wws.stuck {"on":"wws","waiting":9}
+18:00:29  wws.advance {"from":"wws","to":"wws","pool":10}
+18:00:29  wws.stuck {"on":"wws","waiting":9}
+18:00:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:00:47  wws.stuck {"on":"wws","waiting":9}
+18:00:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:00:59  wws.stuck {"on":"wws","waiting":9}
+18:01:18  wws.advance {"from":"wws","to":"wws","pool":10}
+18:01:18  wws.stuck {"on":"wws","waiting":9}
+18:01:30  wws.advance {"from":"wws","to":"wws","pool":10}
+18:01:30  wws.stuck {"on":"wws","waiting":9}
+18:01:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:01:47  wws.stuck {"on":"wws","waiting":9}
+18:02:51  wws.advance {"from":"wws","to":"wws","pool":10}
+18:02:51  wws.stuck {"on":"wws","waiting":9}
+18:02:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:02:59  wws.stuck {"on":"wws","waiting":9}
+18:03:17  wws.advance {"from":"wws","to":"wws","pool":10}
+18:03:17  wws.stuck {"on":"wws","waiting":9}
+18:03:29  wws.advance {"from":"wws","to":"wws","pool":10}
+18:03:29  wws.stuck {"on":"wws","waiting":9}
+18:03:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:03:47  wws.stuck {"on":"wws","waiting":9}
+18:03:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:03:59  wws.stuck {"on":"wws","waiting":9}
+18:04:17  wws.advance {"from":"wws","to":"wws","pool":10}
+18:04:17  wws.stuck {"on":"wws","waiting":9}
+18:04:29  wws.advance {"from":"wws","to":"wws","pool":10}
+18:04:29  wws.stuck {"on":"wws","waiting":9}
+18:04:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:04:47  wws.stuck {"on":"wws","waiting":9}
+18:04:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:04:59  wws.stuck {"on":"wws","waiting":9}
+18:05:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:05:47  wws.stuck {"on":"wws","waiting":9}
+18:05:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:05:47  wws.stuck {"on":"wws","waiting":9}
+18:05:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:05:59  wws.stuck {"on":"wws","waiting":9}
+18:06:17  wws.advance {"from":"wws","to":"wws","pool":10}
+18:06:17  wws.stuck {"on":"wws","waiting":9}
+18:06:29  wws.advance {"from":"wws","to":"wws","pool":10}
+18:06:29  wws.stuck {"on":"wws","waiting":9}
+18:06:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:06:47  wws.stuck {"on":"wws","waiting":9}
+18:06:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:06:59  wws.stuck {"on":"wws","waiting":9}
+18:07:17  wws.advance {"from":"wws","to":"wws","pool":10}
+18:07:17  wws.stuck {"on":"wws","waiting":9}
+18:07:29  wws.advance {"from":"wws","to":"wws","pool":10}
+18:07:29  wws.stuck {"on":"wws","waiting":9}
+18:07:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:07:47  wws.stuck {"on":"wws","waiting":9}
+18:08:35  wws.advance {"from":"wws","to":"wws","pool":10}
+18:08:35  wws.stuck {"on":"wws","waiting":9}
+18:08:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:08:47  wws.stuck {"on":"wws","waiting":9}
+18:08:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:08:59  wws.stuck {"on":"wws","waiting":9}
+18:09:17  wws.advance {"from":"wws","to":"wws","pool":10}
+18:09:17  wws.stuck {"on":"wws","waiting":9}
+18:09:27  recap.none {"team":"NYY","gamePk":823508,"why":"no real recap in 33 items"}
+18:09:29  wws.advance {"from":"wws","to":"wws","pool":10}
+18:09:29  wws.stuck {"on":"wws","waiting":9}
+18:09:33  sys.warn {"m":"[recap] no video found for hoh-nyy"}
+18:09:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:09:47  wws.stuck {"on":"wws","waiting":9}
+18:09:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:09:59  wws.stuck {"on":"wws","waiting":9}
+18:10:17  wws.advance {"from":"wws","to":"wws","pool":10}
+18:10:17  wws.stuck {"on":"wws","waiting":9}
+18:10:29  wws.advance {"from":"wws","to":"wws","pool":10}
+18:10:29  wws.stuck {"on":"wws","waiting":9}
+18:10:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:10:47  wws.stuck {"on":"wws","waiting":9}
+18:11:35  wws.advance {"from":"wws","to":"wws","pool":10}
+18:11:35  wws.stuck {"on":"wws","waiting":9}
+18:11:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:11:47  wws.stuck {"on":"wws","waiting":9}
+18:11:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:11:59  wws.stuck {"on":"wws","waiting":9}
+18:12:17  wws.advance {"from":"wws","to":"wws","pool":10}
+18:12:17  wws.stuck {"on":"wws","waiting":9}
+18:12:29  wws.advance {"from":"wws","to":"wws","pool":10}
+18:12:29  wws.stuck {"on":"wws","waiting":9}
+18:12:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:12:47  wws.stuck {"on":"wws","waiting":9}
+18:12:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:12:59  wws.stuck {"on":"wws","waiting":9}
+18:13:17  wws.advance {"from":"wws","to":"wws","pool":10}
+18:13:17  wws.stuck {"on":"wws","waiting":9}
+18:13:29  wws.advance {"from":"wws","to":"wws","pool":10}
+18:13:29  wws.stuck {"on":"wws","waiting":9}
+18:13:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:13:47  wws.stuck {"on":"wws","waiting":9}
+18:14:35  wws.advance {"from":"wws","to":"wws","pool":10}
+18:14:35  wws.stuck {"on":"wws","waiting":9}
+18:14:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:14:47  wws.stuck {"on":"wws","waiting":9}
+18:14:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:14:59  wws.stuck {"on":"wws","waiting":9}
+18:15:17  wws.advance {"from":"wws","to":"wws","pool":10}
+18:15:17  wws.stuck {"on":"wws","waiting":9}
+18:15:29  wws.advance {"from":"wws","to":"wws","pool":10}
+18:15:29  wws.stuck {"on":"wws","waiting":9}
+18:15:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:15:47  wws.stuck {"on":"wws","waiting":9}
+18:15:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:15:59  wws.stuck {"on":"wws","waiting":9}
+18:16:17  wws.advance {"from":"wws","to":"wws","pool":10}
+18:16:17  wws.stuck {"on":"wws","waiting":9}
+18:16:29  wws.advance {"from":"wws","to":"wws","pool":10}
+18:16:29  wws.stuck {"on":"wws","waiting":9}
+18:16:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:16:47  wws.stuck {"on":"wws","waiting":9}
+18:17:15  recap.pick {"team":"NYM","gamePk":824883,"viaKnownPk":true,"title":"Back-to-back homers fuel Braves'  6-3 win"}
+18:17:35  wws.advance {"from":"wws","to":"wws","pool":10}
+18:17:35  wws.stuck {"on":"wws","waiting":9}
+18:17:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:17:47  wws.stuck {"on":"wws","waiting":9}
+18:17:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:17:59  wws.stuck {"on":"wws","waiting":9}
+18:18:17  wws.advance {"from":"wws","to":"wws","pool":10}
+18:18:17  wws.stuck {"on":"wws","waiting":9}
+18:18:29  wws.advance {"from":"wws","to":"wws","pool":10}
+18:18:29  wws.stuck {"on":"wws","waiting":9}
+18:18:35  score.change {"game":"CHC@WSH","team":"WSH","delta":1,"fav":false,"likelyHR":true}
+18:18:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:18:47  wws.stuck {"on":"wws","waiting":9}
+18:18:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:18:59  wws.stuck {"on":"wws","waiting":9}
+18:19:17  wws.advance {"from":"wws","to":"wws","pool":10}
+18:19:17  wws.stuck {"on":"wws","waiting":9}
+18:19:29  wws.advance {"from":"wws","to":"wws","pool":10}
+18:19:29  wws.stuck {"on":"wws","waiting":9}
+18:19:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:19:47  wws.stuck {"on":"wws","waiting":9}
+18:20:35  wws.advance {"from":"wws","to":"wws","pool":10}
+18:20:35  wws.stuck {"on":"wws","waiting":9}
+18:20:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:20:47  wws.stuck {"on":"wws","waiting":9}
+18:20:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:20:59  wws.stuck {"on":"wws","waiting":9}
+18:21:17  wws.advance {"from":"wws","to":"wws","pool":10}
+18:21:17  wws.stuck {"on":"wws","waiting":9}
+18:21:29  wws.advance {"from":"wws","to":"wws","pool":10}
+18:21:29  wws.stuck {"on":"wws","waiting":9}
+18:21:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:21:47  wws.stuck {"on":"wws","waiting":9}
+18:21:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:21:59  wws.stuck {"on":"wws","waiting":9}
+18:22:17  wws.advance {"from":"wws","to":"wws","pool":10}
+18:22:17  wws.stuck {"on":"wws","waiting":9}
+18:22:29  wws.advance {"from":"wws","to":"wws","pool":10}
+18:22:29  wws.stuck {"on":"wws","waiting":9}
+18:22:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:22:47  wws.stuck {"on":"wws","waiting":9}
+18:23:35  wws.advance {"from":"wws","to":"wws","pool":10}
+18:23:35  wws.stuck {"on":"wws","waiting":9}
+18:23:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:23:47  wws.stuck {"on":"wws","waiting":9}
+18:23:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:23:59  wws.stuck {"on":"wws","waiting":9}
+18:24:17  wws.advance {"from":"wws","to":"wws","pool":10}
+18:24:17  wws.stuck {"on":"wws","waiting":9}
+18:24:29  wws.advance {"from":"wws","to":"wws","pool":10}
+18:24:29  wws.stuck {"on":"wws","waiting":9}
+18:24:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:24:47  wws.stuck {"on":"wws","waiting":9}
+18:24:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:24:59  wws.stuck {"on":"wws","waiting":9}
+18:25:17  wws.advance {"from":"wws","to":"wws","pool":10}
+18:25:17  wws.stuck {"on":"wws","waiting":9}
+18:25:29  wws.advance {"from":"wws","to":"wws","pool":10}
+18:25:29  wws.stuck {"on":"wws","waiting":9}
+18:25:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:25:47  wws.stuck {"on":"wws","waiting":9}
+18:26:35  wws.advance {"from":"wws","to":"wws","pool":10}
+18:26:35  wws.stuck {"on":"wws","waiting":9}
+18:26:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:26:47  wws.stuck {"on":"wws","waiting":9}
+18:26:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:26:59  wws.stuck {"on":"wws","waiting":9}
+18:27:17  wws.advance {"from":"wws","to":"wws","pool":10}
+18:27:17  wws.stuck {"on":"wws","waiting":9}
+18:27:29  wws.advance {"from":"wws","to":"wws","pool":10}
+18:27:29  wws.stuck {"on":"wws","waiting":9}
+18:27:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:27:47  wws.stuck {"on":"wws","waiting":9}
+18:27:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:27:59  wws.stuck {"on":"wws","waiting":9}
+18:28:17  wws.advance {"from":"wws","to":"wws","pool":10}
+18:28:17  wws.stuck {"on":"wws","waiting":9}
+18:28:29  wws.advance {"from":"wws","to":"wws","pool":10}
+18:28:29  wws.stuck {"on":"wws","waiting":9}
+18:28:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:28:47  wws.stuck {"on":"wws","waiting":9}
+18:29:35  wws.advance {"from":"wws","to":"wws","pool":10}
+18:29:35  wws.stuck {"on":"wws","waiting":9}
+18:29:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:29:47  wws.stuck {"on":"wws","waiting":9}
+18:29:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:29:59  wws.stuck {"on":"wws","waiting":9}
+18:30:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:30:11  wws.stuck {"on":"wws","waiting":9}
+18:30:23  wws.advance {"from":"wws","to":"wws","pool":10}
+18:30:23  wws.stuck {"on":"wws","waiting":9}
+18:30:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:30:47  wws.stuck {"on":"wws","waiting":9}
+18:30:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:30:59  wws.stuck {"on":"wws","waiting":9}
+18:31:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:31:11  wws.stuck {"on":"wws","waiting":9}
+18:31:23  wws.advance {"from":"wws","to":"wws","pool":10}
+18:31:23  wws.stuck {"on":"wws","waiting":9}
+18:31:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:31:47  wws.stuck {"on":"wws","waiting":9}
+18:32:35  wws.advance {"from":"wws","to":"wws","pool":10}
+18:32:35  wws.stuck {"on":"wws","waiting":9}
+18:32:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:32:47  wws.stuck {"on":"wws","waiting":9}
+18:32:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:32:59  wws.stuck {"on":"wws","waiting":9}
+18:33:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:33:11  wws.stuck {"on":"wws","waiting":9}
+18:33:23  wws.advance {"from":"wws","to":"wws","pool":10}
+18:33:23  wws.stuck {"on":"wws","waiting":9}
+18:33:35  wws.advance {"from":"wws","to":"wws","pool":10}
+18:33:35  wws.stuck {"on":"wws","waiting":9}
+18:33:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:33:47  wws.stuck {"on":"wws","waiting":9}
+18:33:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:33:59  wws.stuck {"on":"wws","waiting":9}
+18:34:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:34:11  wws.stuck {"on":"wws","waiting":9}
+18:34:23  wws.advance {"from":"wws","to":"wws","pool":10}
+18:34:23  wws.stuck {"on":"wws","waiting":9}
+18:35:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:35:11  wws.stuck {"on":"wws","waiting":9}
+18:35:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:35:11  wws.stuck {"on":"wws","waiting":9}
+18:35:23  wws.advance {"from":"wws","to":"wws","pool":10}
+18:35:23  wws.stuck {"on":"wws","waiting":9}
+18:35:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:35:47  wws.stuck {"on":"wws","waiting":9}
+18:35:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:35:59  wws.stuck {"on":"wws","waiting":9}
+18:36:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:36:11  wws.stuck {"on":"wws","waiting":9}
+18:36:23  wws.advance {"from":"wws","to":"wws","pool":10}
+18:36:23  wws.stuck {"on":"wws","waiting":9}
+18:36:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:36:47  wws.stuck {"on":"wws","waiting":9}
+18:36:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:36:59  wws.stuck {"on":"wws","waiting":9}
+18:37:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:37:11  wws.stuck {"on":"wws","waiting":9}
+18:37:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:37:59  wws.stuck {"on":"wws","waiting":9}
+18:37:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:37:59  wws.stuck {"on":"wws","waiting":9}
+18:38:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:38:11  wws.stuck {"on":"wws","waiting":9}
+18:38:23  wws.advance {"from":"wws","to":"wws","pool":10}
+18:38:23  wws.stuck {"on":"wws","waiting":9}
+18:38:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:38:47  wws.stuck {"on":"wws","waiting":9}
+18:38:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:38:59  wws.stuck {"on":"wws","waiting":9}
+18:39:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:39:11  wws.stuck {"on":"wws","waiting":9}
+18:39:23  wws.advance {"from":"wws","to":"wws","pool":10}
+18:39:23  wws.stuck {"on":"wws","waiting":9}
+18:39:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:39:47  wws.stuck {"on":"wws","waiting":9}
+18:39:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:39:59  wws.stuck {"on":"wws","waiting":9}
+18:40:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:40:47  wws.stuck {"on":"wws","waiting":9}
+18:40:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:40:47  wws.stuck {"on":"wws","waiting":9}
+18:40:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:40:59  wws.stuck {"on":"wws","waiting":9}
+18:41:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:41:11  wws.stuck {"on":"wws","waiting":9}
+18:41:23  wws.advance {"from":"wws","to":"wws","pool":10}
+18:41:23  wws.stuck {"on":"wws","waiting":9}
+18:41:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:41:47  wws.stuck {"on":"wws","waiting":9}
+18:41:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:41:59  wws.stuck {"on":"wws","waiting":9}
+18:42:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:42:11  wws.stuck {"on":"wws","waiting":9}
+18:42:23  wws.advance {"from":"wws","to":"wws","pool":10}
+18:42:23  wws.stuck {"on":"wws","waiting":9}
+18:42:35  wws.advance {"from":"wws","to":"wws","pool":10}
+18:42:35  wws.stuck {"on":"wws","waiting":9}
+18:43:23  wws.advance {"from":"wws","to":"wws","pool":10}
+18:43:23  wws.stuck {"on":"wws","waiting":9}
+18:43:23  wws.advance {"from":"wws","to":"wws","pool":10}
+18:43:23  wws.stuck {"on":"wws","waiting":9}
+18:43:39  recap.pick {"team":"NYY","gamePk":823508,"viaKnownPk":true,"title":"Logan Gilbert dominates in the Mariners' shutout win"}
+18:43:41  screen.show {"what":"rotation","source":"hoh-nyy","title":"Logan Gilbert dominates in the Mariners' shutout w","gamePk":823508,"url":"-csvm-diamondgcp-asset_1280x720_59_4000K.mp4"}
+18:43:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:43:47  wws.stuck {"on":"wws","waiting":9}
+18:43:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:43:59  wws.stuck {"on":"wws","waiting":9}
+18:44:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:44:11  wws.stuck {"on":"wws","waiting":9}
+18:44:23  wws.advance {"from":"wws","to":"wws","pool":10}
+18:44:23  wws.stuck {"on":"wws","waiting":9}
+18:44:35  wws.advance {"from":"wws","to":"wws","pool":10}
+18:44:35  wws.stuck {"on":"wws","waiting":9}
+18:44:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:44:47  wws.stuck {"on":"wws","waiting":9}
+18:44:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:44:59  wws.stuck {"on":"wws","waiting":9}
+18:45:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:45:11  wws.stuck {"on":"wws","waiting":9}
+18:45:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:45:59  wws.stuck {"on":"wws","waiting":9}
+18:45:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:45:59  wws.stuck {"on":"wws","waiting":9}
+18:46:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:46:11  wws.stuck {"on":"wws","waiting":9}
+18:46:23  wws.advance {"from":"wws","to":"wws","pool":10}
+18:46:23  wws.stuck {"on":"wws","waiting":9}
+18:46:35  wws.advance {"from":"wws","to":"wws","pool":10}
+18:46:35  wws.stuck {"on":"wws","waiting":9}
+18:46:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:46:47  wws.stuck {"on":"wws","waiting":9}
+18:46:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:46:59  wws.stuck {"on":"wws","waiting":9}
+18:47:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:47:11  wws.stuck {"on":"wws","waiting":9}
+18:47:23  wws.advance {"from":"wws","to":"wws","pool":10}
+18:47:23  wws.stuck {"on":"wws","waiting":9}
+18:47:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:47:47  wws.stuck {"on":"wws","waiting":9}
+18:48:35  wws.advance {"from":"wws","to":"wws","pool":10}
+18:48:35  wws.stuck {"on":"wws","waiting":9}
+18:48:35  wws.advance {"from":"wws","to":"wws","pool":10}
+18:48:35  wws.stuck {"on":"wws","waiting":9}
+18:48:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:48:47  wws.stuck {"on":"wws","waiting":9}
+18:48:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:48:59  wws.stuck {"on":"wws","waiting":9}
+18:49:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:49:11  wws.stuck {"on":"wws","waiting":9}
+18:49:23  wws.advance {"from":"wws","to":"wws","pool":10}
+18:49:23  wws.stuck {"on":"wws","waiting":9}
+18:49:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:49:47  wws.stuck {"on":"wws","waiting":9}
+18:49:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:49:59  wws.stuck {"on":"wws","waiting":9}
+18:50:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:50:11  wws.stuck {"on":"wws","waiting":9}
+18:50:23  wws.advance {"from":"wws","to":"wws","pool":10}
+18:50:23  wws.stuck {"on":"wws","waiting":9}
+18:51:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:51:11  wws.stuck {"on":"wws","waiting":9}
+18:51:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:51:11  wws.stuck {"on":"wws","waiting":9}
+18:51:23  wws.advance {"from":"wws","to":"wws","pool":10}
+18:51:23  wws.stuck {"on":"wws","waiting":9}
+18:51:35  wws.advance {"from":"wws","to":"wws","pool":10}
+18:51:35  wws.stuck {"on":"wws","waiting":9}
+18:51:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:51:47  wws.stuck {"on":"wws","waiting":9}
+18:51:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:51:59  wws.stuck {"on":"wws","waiting":9}
+18:52:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:52:11  wws.stuck {"on":"wws","waiting":9}
+18:52:23  wws.advance {"from":"wws","to":"wws","pool":10}
+18:52:23  wws.stuck {"on":"wws","waiting":9}
+18:52:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:52:47  wws.stuck {"on":"wws","waiting":9}
+18:52:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:52:59  wws.stuck {"on":"wws","waiting":9}
+18:53:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:53:47  wws.stuck {"on":"wws","waiting":9}
+18:53:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:53:47  wws.stuck {"on":"wws","waiting":9}
+18:53:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:53:59  wws.stuck {"on":"wws","waiting":9}
+18:54:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:54:11  wws.stuck {"on":"wws","waiting":9}
+18:54:23  wws.advance {"from":"wws","to":"wws","pool":10}
+18:54:23  wws.stuck {"on":"wws","waiting":9}
+18:54:35  wws.advance {"from":"wws","to":"wws","pool":10}
+18:54:35  wws.stuck {"on":"wws","waiting":9}
+18:54:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:54:47  wws.stuck {"on":"wws","waiting":9}
+18:54:51  recap.pick {"team":"NYM","gamePk":824883,"viaKnownPk":true,"title":"Back-to-back homers fuel Braves'  6-3 win"}
+18:54:53  screen.show {"what":"rotation","source":"hoh-nym","title":"Back-to-back homers fuel Braves'  6-3 win","gamePk":824883,"url":"-csvm-diamondgcp-asset_1280x720_59_4000K.mp4"}
+18:54:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:54:59  wws.stuck {"on":"wws","waiting":9}
+18:55:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:55:11  wws.stuck {"on":"wws","waiting":9}
+18:55:23  wws.advance {"from":"wws","to":"wws","pool":10}
+18:55:23  wws.stuck {"on":"wws","waiting":9}
+18:56:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:56:11  wws.stuck {"on":"wws","waiting":9}
+18:56:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:56:11  wws.stuck {"on":"wws","waiting":9}
+18:56:23  wws.advance {"from":"wws","to":"wws","pool":10}
+18:56:23  wws.stuck {"on":"wws","waiting":9}
+18:56:35  wws.advance {"from":"wws","to":"wws","pool":10}
+18:56:35  wws.stuck {"on":"wws","waiting":9}
+18:56:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:56:47  wws.stuck {"on":"wws","waiting":9}
+18:56:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:56:59  wws.stuck {"on":"wws","waiting":9}
+18:57:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:57:11  wws.stuck {"on":"wws","waiting":9}
+18:57:23  wws.advance {"from":"wws","to":"wws","pool":10}
+18:57:23  wws.stuck {"on":"wws","waiting":9}
+18:57:35  wws.advance {"from":"wws","to":"wws","pool":10}
+18:57:35  wws.stuck {"on":"wws","waiting":9}
+18:57:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:57:47  wws.stuck {"on":"wws","waiting":9}
+18:58:35  wws.advance {"from":"wws","to":"wws","pool":10}
+18:58:35  wws.stuck {"on":"wws","waiting":9}
+18:58:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:58:47  wws.stuck {"on":"wws","waiting":9}
+18:58:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:58:59  wws.stuck {"on":"wws","waiting":9}
+18:59:11  wws.advance {"from":"wws","to":"wws","pool":10}
+18:59:11  wws.stuck {"on":"wws","waiting":9}
+18:59:23  wws.advance {"from":"wws","to":"wws","pool":10}
+18:59:23  wws.stuck {"on":"wws","waiting":9}
+18:59:47  wws.advance {"from":"wws","to":"wws","pool":10}
+18:59:47  wws.stuck {"on":"wws","waiting":9}
+18:59:59  wws.advance {"from":"wws","to":"wws","pool":10}
+18:59:59  wws.stuck {"on":"wws","waiting":9}
+19:00:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:00:11  wws.stuck {"on":"wws","waiting":9}
+19:00:23  wws.advance {"from":"wws","to":"wws","pool":10}
+19:00:23  wws.stuck {"on":"wws","waiting":9}
+19:00:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:00:47  wws.stuck {"on":"wws","waiting":9}
+19:01:35  wws.advance {"from":"wws","to":"wws","pool":10}
+19:01:35  wws.stuck {"on":"wws","waiting":9}
+19:01:35  wws.advance {"from":"wws","to":"wws","pool":10}
+19:01:35  wws.stuck {"on":"wws","waiting":9}
+19:01:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:01:47  wws.stuck {"on":"wws","waiting":9}
+19:01:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:01:59  wws.stuck {"on":"wws","waiting":9}
+19:02:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:02:11  wws.stuck {"on":"wws","waiting":9}
+19:02:18  sys.warn {"m":"[recap] no video found for golf-fill"}
+19:02:23  wws.advance {"from":"wws","to":"wws","pool":10}
+19:02:23  wws.stuck {"on":"wws","waiting":9}
+19:02:35  wws.advance {"from":"wws","to":"wws","pool":10}
+19:02:35  wws.stuck {"on":"wws","waiting":9}
+19:02:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:02:47  wws.stuck {"on":"wws","waiting":9}
+19:02:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:02:59  wws.stuck {"on":"wws","waiting":9}
+19:03:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:03:11  wws.stuck {"on":"wws","waiting":9}
+19:03:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:03:59  wws.stuck {"on":"wws","waiting":9}
+19:03:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:03:59  wws.stuck {"on":"wws","waiting":9}
+19:04:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:04:11  wws.stuck {"on":"wws","waiting":9}
+19:04:23  wws.advance {"from":"wws","to":"wws","pool":10}
+19:04:23  wws.stuck {"on":"wws","waiting":9}
+19:04:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:04:47  wws.stuck {"on":"wws","waiting":9}
+19:04:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:04:59  wws.stuck {"on":"wws","waiting":9}
+19:05:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:05:11  wws.stuck {"on":"wws","waiting":9}
+19:05:23  wws.advance {"from":"wws","to":"wws","pool":10}
+19:05:23  wws.stuck {"on":"wws","waiting":9}
+19:05:35  wws.advance {"from":"wws","to":"wws","pool":10}
+19:05:35  wws.stuck {"on":"wws","waiting":9}
+19:05:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:05:47  wws.stuck {"on":"wws","waiting":9}
+19:06:03  recap.pick {"team":"NYY","gamePk":823508,"viaKnownPk":true,"title":"Logan Gilbert dominates in the Mariners' shutout win"}
+19:06:05  screen.show {"what":"rotation","source":"hoh-nyy","title":"Logan Gilbert dominates in the Mariners' shutout w","gamePk":823508,"url":"-csvm-diamondgcp-asset_1280x720_59_4000K.mp4"}
+19:06:35  wws.advance {"from":"wws","to":"wws","pool":10}
+19:06:35  wws.stuck {"on":"wws","waiting":9}
+19:06:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:06:47  wws.stuck {"on":"wws","waiting":9}
+19:06:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:06:59  wws.stuck {"on":"wws","waiting":9}
+19:07:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:07:11  wws.stuck {"on":"wws","waiting":9}
+19:07:23  wws.advance {"from":"wws","to":"wws","pool":10}
+19:07:23  wws.stuck {"on":"wws","waiting":9}
+19:07:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:07:47  wws.stuck {"on":"wws","waiting":9}
+19:07:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:07:59  wws.stuck {"on":"wws","waiting":9}
+19:08:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:08:11  wws.stuck {"on":"wws","waiting":9}
+19:08:23  wws.advance {"from":"wws","to":"wws","pool":10}
+19:08:23  wws.stuck {"on":"wws","waiting":9}
+19:08:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:08:47  wws.stuck {"on":"wws","waiting":9}
+19:09:35  wws.advance {"from":"wws","to":"wws","pool":10}
+19:09:35  wws.stuck {"on":"wws","waiting":9}
+19:09:35  wws.advance {"from":"wws","to":"wws","pool":10}
+19:09:35  wws.stuck {"on":"wws","waiting":9}
+19:09:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:09:47  wws.stuck {"on":"wws","waiting":9}
+19:09:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:09:59  wws.stuck {"on":"wws","waiting":9}
+19:10:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:10:11  wws.stuck {"on":"wws","waiting":9}
+19:10:23  wws.advance {"from":"wws","to":"wws","pool":10}
+19:10:23  wws.stuck {"on":"wws","waiting":9}
+19:10:35  wws.advance {"from":"wws","to":"wws","pool":10}
+19:10:35  wws.stuck {"on":"wws","waiting":9}
+19:10:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:10:47  wws.stuck {"on":"wws","waiting":9}
+19:10:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:10:59  wws.stuck {"on":"wws","waiting":9}
+19:11:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:11:11  wws.stuck {"on":"wws","waiting":9}
+19:11:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:11:59  wws.stuck {"on":"wws","waiting":9}
+19:11:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:11:59  wws.stuck {"on":"wws","waiting":9}
+19:12:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:12:11  wws.stuck {"on":"wws","waiting":9}
+19:12:23  wws.advance {"from":"wws","to":"wws","pool":10}
+19:12:23  wws.stuck {"on":"wws","waiting":9}
+19:12:35  wws.advance {"from":"wws","to":"wws","pool":10}
+19:12:35  wws.stuck {"on":"wws","waiting":9}
+19:12:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:12:47  wws.stuck {"on":"wws","waiting":9}
+19:12:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:12:59  wws.stuck {"on":"wws","waiting":9}
+19:13:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:13:11  wws.stuck {"on":"wws","waiting":9}
+19:13:23  wws.advance {"from":"wws","to":"wws","pool":10}
+19:13:23  wws.stuck {"on":"wws","waiting":9}
+19:13:35  wws.advance {"from":"wws","to":"wws","pool":10}
+19:13:35  wws.stuck {"on":"wws","waiting":9}
+19:14:23  wws.advance {"from":"wws","to":"wws","pool":10}
+19:14:23  wws.stuck {"on":"wws","waiting":9}
+19:14:23  wws.advance {"from":"wws","to":"wws","pool":10}
+19:14:23  wws.stuck {"on":"wws","waiting":9}
+19:14:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:14:47  wws.stuck {"on":"wws","waiting":9}
+19:14:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:14:59  wws.stuck {"on":"wws","waiting":9}
+19:15:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:15:11  wws.stuck {"on":"wws","waiting":9}
+19:15:23  wws.advance {"from":"wws","to":"wws","pool":10}
+19:15:23  wws.stuck {"on":"wws","waiting":9}
+19:15:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:15:47  wws.stuck {"on":"wws","waiting":9}
+19:15:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:15:59  wws.stuck {"on":"wws","waiting":9}
+19:16:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:16:11  wws.stuck {"on":"wws","waiting":9}
+19:16:23  wws.advance {"from":"wws","to":"wws","pool":10}
+19:16:23  wws.stuck {"on":"wws","waiting":9}
+19:17:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:17:11  wws.stuck {"on":"wws","waiting":9}
+19:17:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:17:11  wws.stuck {"on":"wws","waiting":9}
+19:17:15  recap.pick {"team":"NYM","gamePk":824883,"viaKnownPk":true,"title":"Back-to-back homers fuel Braves'  6-3 win"}
+19:17:17  screen.show {"what":"rotation","source":"hoh-nym","title":"Back-to-back homers fuel Braves'  6-3 win","gamePk":824883,"url":"-csvm-diamondgcp-asset_1280x720_59_4000K.mp4"}
+19:17:23  wws.advance {"from":"wws","to":"wws","pool":10}
+19:17:23  wws.stuck {"on":"wws","waiting":9}
+19:17:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:17:47  wws.stuck {"on":"wws","waiting":9}
+19:17:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:17:59  wws.stuck {"on":"wws","waiting":9}
+19:18:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:18:11  wws.stuck {"on":"wws","waiting":9}
+19:18:23  wws.advance {"from":"wws","to":"wws","pool":10}
+19:18:23  wws.stuck {"on":"wws","waiting":9}
+19:18:35  wws.advance {"from":"wws","to":"wws","pool":10}
+19:18:35  wws.stuck {"on":"wws","waiting":9}
+19:18:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:18:47  wws.stuck {"on":"wws","waiting":9}
+19:18:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:18:59  wws.stuck {"on":"wws","waiting":9}
+19:19:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:19:47  wws.stuck {"on":"wws","waiting":9}
+19:19:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:19:47  wws.stuck {"on":"wws","waiting":9}
+19:19:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:19:59  wws.stuck {"on":"wws","waiting":9}
+19:20:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:20:11  wws.stuck {"on":"wws","waiting":9}
+19:20:23  wws.advance {"from":"wws","to":"wws","pool":10}
+19:20:23  wws.stuck {"on":"wws","waiting":9}
+19:20:35  wws.advance {"from":"wws","to":"wws","pool":10}
+19:20:35  wws.stuck {"on":"wws","waiting":9}
+19:20:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:20:47  wws.stuck {"on":"wws","waiting":9}
+19:20:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:20:59  wws.stuck {"on":"wws","waiting":9}
+19:21:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:21:11  wws.stuck {"on":"wws","waiting":9}
+19:21:23  wws.advance {"from":"wws","to":"wws","pool":10}
+19:21:23  wws.stuck {"on":"wws","waiting":9}
+19:22:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:22:11  wws.stuck {"on":"wws","waiting":9}
+19:22:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:22:11  wws.stuck {"on":"wws","waiting":9}
+19:22:23  wws.advance {"from":"wws","to":"wws","pool":10}
+19:22:23  wws.stuck {"on":"wws","waiting":9}
+19:22:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:22:47  wws.stuck {"on":"wws","waiting":9}
+19:22:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:22:59  wws.stuck {"on":"wws","waiting":9}
+19:23:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:23:11  wws.stuck {"on":"wws","waiting":9}
+19:23:23  wws.advance {"from":"wws","to":"wws","pool":10}
+19:23:23  wws.stuck {"on":"wws","waiting":9}
+19:23:35  wws.advance {"from":"wws","to":"wws","pool":10}
+19:23:35  wws.stuck {"on":"wws","waiting":9}
+19:23:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:23:47  wws.stuck {"on":"wws","waiting":9}
+19:23:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:23:59  wws.stuck {"on":"wws","waiting":9}
+19:24:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:24:47  wws.stuck {"on":"wws","waiting":9}
+19:24:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:24:47  wws.stuck {"on":"wws","waiting":9}
+19:24:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:24:59  wws.stuck {"on":"wws","waiting":9}
+19:25:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:25:11  wws.stuck {"on":"wws","waiting":9}
+19:25:23  wws.advance {"from":"wws","to":"wws","pool":10}
+19:25:23  wws.stuck {"on":"wws","waiting":9}
+19:25:35  wws.advance {"from":"wws","to":"wws","pool":10}
+19:25:35  wws.stuck {"on":"wws","waiting":9}
+19:25:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:25:47  wws.stuck {"on":"wws","waiting":9}
+19:25:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:25:59  wws.stuck {"on":"wws","waiting":9}
+19:26:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:26:11  wws.stuck {"on":"wws","waiting":9}
+19:26:23  wws.advance {"from":"wws","to":"wws","pool":10}
+19:26:23  wws.stuck {"on":"wws","waiting":9}
+19:27:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:27:11  wws.stuck {"on":"wws","waiting":9}
+19:27:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:27:11  wws.stuck {"on":"wws","waiting":9}
+19:27:23  wws.advance {"from":"wws","to":"wws","pool":10}
+19:27:23  wws.stuck {"on":"wws","waiting":9}
+19:27:35  wws.advance {"from":"wws","to":"wws","pool":10}
+19:27:35  wws.stuck {"on":"wws","waiting":9}
+19:27:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:27:47  wws.stuck {"on":"wws","waiting":9}
+19:27:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:27:59  wws.stuck {"on":"wws","waiting":9}
+19:28:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:28:11  wws.stuck {"on":"wws","waiting":9}
+19:28:23  wws.advance {"from":"wws","to":"wws","pool":10}
+19:28:23  wws.stuck {"on":"wws","waiting":9}
+19:28:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:28:47  wws.stuck {"on":"wws","waiting":9}
+19:28:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:28:59  wws.stuck {"on":"wws","waiting":9}
+19:29:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:29:47  wws.stuck {"on":"wws","waiting":9}
+19:29:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:29:47  wws.stuck {"on":"wws","waiting":9}
+19:29:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:29:59  wws.stuck {"on":"wws","waiting":9}
+19:30:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:30:11  wws.stuck {"on":"wws","waiting":9}
+19:30:23  wws.advance {"from":"wws","to":"wws","pool":10}
+19:30:23  wws.stuck {"on":"wws","waiting":9}
+19:30:27  recap.pick {"team":"NYY","gamePk":823508,"viaKnownPk":true,"title":"Logan Gilbert dominates in the Mariners' shutout win"}
+19:30:29  screen.show {"what":"rotation","source":"hoh-nyy","title":"Logan Gilbert dominates in the Mariners' shutout w","gamePk":823508,"url":"-csvm-diamondgcp-asset_1280x720_59_4000K.mp4"}
+19:30:35  wws.advance {"from":"wws","to":"wws","pool":10}
+19:30:35  wws.stuck {"on":"wws","waiting":9}
+19:30:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:30:47  wws.stuck {"on":"wws","waiting":9}
+19:30:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:30:59  wws.stuck {"on":"wws","waiting":9}
+19:31:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:31:11  wws.stuck {"on":"wws","waiting":9}
+19:31:23  wws.advance {"from":"wws","to":"wws","pool":10}
+19:31:23  wws.stuck {"on":"wws","waiting":9}
+19:32:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:32:11  wws.stuck {"on":"wws","waiting":9}
+19:32:12  wws.advance {"from":"wws","to":"wws","pool":10}
+19:32:12  wws.stuck {"on":"wws","waiting":9}
+19:32:24  wws.advance {"from":"wws","to":"wws","pool":10}
+19:32:24  wws.stuck {"on":"wws","waiting":9}
+19:32:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:32:47  wws.stuck {"on":"wws","waiting":9}
+19:32:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:32:59  wws.stuck {"on":"wws","waiting":9}
+19:33:11  wws.advance {"from":"wws","to":"wws","pool":10}
+19:33:11  wws.stuck {"on":"wws","waiting":9}
+19:33:23  wws.advance {"from":"wws","to":"wws","pool":10}
+19:33:23  wws.stuck {"on":"wws","waiting":9}
+19:33:35  wws.advance {"from":"wws","to":"wws","pool":10}
+19:33:35  wws.stuck {"on":"wws","waiting":9}
+19:33:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:33:47  wws.stuck {"on":"wws","waiting":9}
+19:33:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:33:59  wws.stuck {"on":"wws","waiting":9}
+19:34:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:34:47  wws.stuck {"on":"wws","waiting":9}
+19:34:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:34:47  wws.stuck {"on":"wws","waiting":9}
+19:34:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:34:59  wws.stuck {"on":"wws","waiting":9}
+19:35:05  score.change {"game":"PHI@MIN","team":"PHI","delta":1,"fav":false,"likelyHR":true}
+19:35:17  wws.advance {"from":"wws","to":"wws","pool":10}
+19:35:17  wws.stuck {"on":"wws","waiting":9}
+19:35:29  wws.advance {"from":"wws","to":"wws","pool":10}
+19:35:29  wws.stuck {"on":"wws","waiting":9}
+19:35:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:35:47  wws.stuck {"on":"wws","waiting":9}
+19:35:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:35:59  wws.stuck {"on":"wws","waiting":9}
+19:36:17  wws.advance {"from":"wws","to":"wws","pool":10}
+19:36:17  wws.stuck {"on":"wws","waiting":9}
+19:36:29  wws.advance {"from":"wws","to":"wws","pool":10}
+19:36:29  wws.stuck {"on":"wws","waiting":9}
+19:36:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:36:47  wws.stuck {"on":"wws","waiting":9}
+19:37:35  wws.advance {"from":"wws","to":"wws","pool":10}
+19:37:35  wws.stuck {"on":"wws","waiting":9}
+19:37:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:37:47  wws.stuck {"on":"wws","waiting":9}
+19:37:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:37:59  wws.stuck {"on":"wws","waiting":9}
+19:38:17  wws.advance {"from":"wws","to":"wws","pool":10}
+19:38:17  wws.stuck {"on":"wws","waiting":9}
+19:38:29  wws.advance {"from":"wws","to":"wws","pool":10}
+19:38:29  wws.stuck {"on":"wws","waiting":9}
+19:38:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:38:47  wws.stuck {"on":"wws","waiting":9}
+19:38:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:38:59  wws.stuck {"on":"wws","waiting":9}
+19:39:17  wws.advance {"from":"wws","to":"wws","pool":10}
+19:39:17  wws.stuck {"on":"wws","waiting":9}
+19:39:29  wws.advance {"from":"wws","to":"wws","pool":10}
+19:39:29  wws.stuck {"on":"wws","waiting":9}
+19:39:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:39:47  wws.stuck {"on":"wws","waiting":9}
+19:40:35  wws.advance {"from":"wws","to":"wws","pool":10}
+19:40:35  wws.stuck {"on":"wws","waiting":9}
+19:40:35  score.change {"game":"PHI@MIN","team":"PHI","delta":1,"fav":false,"likelyHR":true}
+19:40:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:40:47  wws.stuck {"on":"wws","waiting":9}
+19:40:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:40:59  wws.stuck {"on":"wws","waiting":9}
+19:41:17  wws.advance {"from":"wws","to":"wws","pool":10}
+19:41:17  wws.stuck {"on":"wws","waiting":9}
+19:41:29  wws.advance {"from":"wws","to":"wws","pool":10}
+19:41:29  wws.stuck {"on":"wws","waiting":9}
+19:41:39  recap.pick {"team":"NYM","gamePk":824883,"viaKnownPk":true,"title":"Back-to-back homers fuel Braves'  6-3 win"}
+19:41:41  screen.show {"what":"rotation","source":"hoh-nym","title":"Back-to-back homers fuel Braves'  6-3 win","gamePk":824883,"url":"-csvm-diamondgcp-asset_1280x720_59_4000K.mp4"}
+19:41:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:41:47  wws.stuck {"on":"wws","waiting":9}
+19:41:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:41:59  wws.stuck {"on":"wws","waiting":9}
+19:42:17  wws.advance {"from":"wws","to":"wws","pool":10}
+19:42:17  wws.stuck {"on":"wws","waiting":9}
+19:42:29  wws.advance {"from":"wws","to":"wws","pool":10}
+19:42:29  wws.stuck {"on":"wws","waiting":9}
+19:42:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:42:47  wws.stuck {"on":"wws","waiting":9}
+19:43:35  wws.advance {"from":"wws","to":"wws","pool":10}
+19:43:35  wws.stuck {"on":"wws","waiting":9}
+19:43:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:43:47  wws.stuck {"on":"wws","waiting":9}
+19:43:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:43:59  wws.stuck {"on":"wws","waiting":9}
+19:44:17  wws.advance {"from":"wws","to":"wws","pool":10}
+19:44:17  wws.stuck {"on":"wws","waiting":9}
+19:44:29  wws.advance {"from":"wws","to":"wws","pool":10}
+19:44:29  wws.stuck {"on":"wws","waiting":9}
+19:44:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:44:47  wws.stuck {"on":"wws","waiting":9}
+19:44:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:44:59  wws.stuck {"on":"wws","waiting":9}
+19:45:17  wws.advance {"from":"wws","to":"wws","pool":10}
+19:45:17  wws.stuck {"on":"wws","waiting":9}
+19:45:29  wws.advance {"from":"wws","to":"wws","pool":10}
+19:45:29  wws.stuck {"on":"wws","waiting":9}
+19:45:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:45:47  wws.stuck {"on":"wws","waiting":9}
+19:46:35  wws.advance {"from":"wws","to":"wws","pool":10}
+19:46:35  wws.stuck {"on":"wws","waiting":9}
+19:46:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:46:47  wws.stuck {"on":"wws","waiting":9}
+19:46:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:46:59  wws.stuck {"on":"wws","waiting":9}
+19:47:17  wws.advance {"from":"wws","to":"wws","pool":10}
+19:47:17  wws.stuck {"on":"wws","waiting":9}
+19:47:29  wws.advance {"from":"wws","to":"wws","pool":10}
+19:47:29  wws.stuck {"on":"wws","waiting":9}
+19:47:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:47:47  wws.stuck {"on":"wws","waiting":9}
+19:47:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:47:59  wws.stuck {"on":"wws","waiting":9}
+19:48:17  wws.advance {"from":"wws","to":"wws","pool":10}
+19:48:17  wws.stuck {"on":"wws","waiting":9}
+19:48:29  wws.advance {"from":"wws","to":"wws","pool":10}
+19:48:29  wws.stuck {"on":"wws","waiting":9}
+19:48:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:48:47  wws.stuck {"on":"wws","waiting":9}
+19:49:35  wws.advance {"from":"wws","to":"wws","pool":10}
+19:49:35  wws.stuck {"on":"wws","waiting":9}
+19:49:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:49:47  wws.stuck {"on":"wws","waiting":9}
+19:49:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:49:59  wws.stuck {"on":"wws","waiting":9}
+19:50:17  wws.advance {"from":"wws","to":"wws","pool":10}
+19:50:17  wws.stuck {"on":"wws","waiting":9}
+19:50:29  wws.advance {"from":"wws","to":"wws","pool":10}
+19:50:29  wws.stuck {"on":"wws","waiting":9}
+19:50:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:50:47  wws.stuck {"on":"wws","waiting":9}
+19:50:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:50:59  wws.stuck {"on":"wws","waiting":9}
+19:51:17  wws.advance {"from":"wws","to":"wws","pool":10}
+19:51:17  wws.stuck {"on":"wws","waiting":9}
+19:51:29  wws.advance {"from":"wws","to":"wws","pool":10}
+19:51:29  wws.stuck {"on":"wws","waiting":9}
+19:51:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:51:47  wws.stuck {"on":"wws","waiting":9}
+19:52:35  wws.advance {"from":"wws","to":"wws","pool":10}
+19:52:35  wws.stuck {"on":"wws","waiting":9}
+19:52:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:52:47  wws.stuck {"on":"wws","waiting":9}
+19:52:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:52:59  wws.stuck {"on":"wws","waiting":9}
+19:53:17  wws.advance {"from":"wws","to":"wws","pool":10}
+19:53:17  wws.stuck {"on":"wws","waiting":9}
+19:53:29  wws.advance {"from":"wws","to":"wws","pool":10}
+19:53:29  wws.stuck {"on":"wws","waiting":9}
+19:53:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:53:47  wws.stuck {"on":"wws","waiting":9}
+19:53:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:53:59  wws.stuck {"on":"wws","waiting":9}
+19:54:17  wws.advance {"from":"wws","to":"wws","pool":10}
+19:54:17  wws.stuck {"on":"wws","waiting":9}
+19:54:29  wws.advance {"from":"wws","to":"wws","pool":10}
+19:54:29  wws.stuck {"on":"wws","waiting":9}
+19:54:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:54:47  wws.stuck {"on":"wws","waiting":9}
+19:55:35  wws.advance {"from":"wws","to":"wws","pool":10}
+19:55:35  wws.stuck {"on":"wws","waiting":9}
+19:55:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:55:47  wws.stuck {"on":"wws","waiting":9}
+19:55:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:55:59  wws.stuck {"on":"wws","waiting":9}
+19:56:17  wws.advance {"from":"wws","to":"wws","pool":10}
+19:56:17  wws.stuck {"on":"wws","waiting":9}
+19:56:29  wws.advance {"from":"wws","to":"wws","pool":10}
+19:56:29  wws.stuck {"on":"wws","waiting":9}
+19:56:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:56:47  wws.stuck {"on":"wws","waiting":9}
+19:56:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:56:59  wws.stuck {"on":"wws","waiting":9}
+19:57:17  wws.advance {"from":"wws","to":"wws","pool":10}
+19:57:17  wws.stuck {"on":"wws","waiting":9}
+19:57:29  wws.advance {"from":"wws","to":"wws","pool":10}
+19:57:29  wws.stuck {"on":"wws","waiting":9}
+19:57:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:57:47  wws.stuck {"on":"wws","waiting":9}
+19:58:35  wws.advance {"from":"wws","to":"wws","pool":10}
+19:58:35  wws.stuck {"on":"wws","waiting":9}
+19:58:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:58:47  wws.stuck {"on":"wws","waiting":9}
+19:58:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:58:59  wws.stuck {"on":"wws","waiting":9}
+19:59:17  wws.advance {"from":"wws","to":"wws","pool":10}
+19:59:17  wws.stuck {"on":"wws","waiting":9}
+19:59:29  wws.advance {"from":"wws","to":"wws","pool":10}
+19:59:29  wws.stuck {"on":"wws","waiting":9}
+19:59:47  wws.advance {"from":"wws","to":"wws","pool":10}
+19:59:47  wws.stuck {"on":"wws","waiting":9}
+19:59:59  wws.advance {"from":"wws","to":"wws","pool":10}
+19:59:59  wws.stuck {"on":"wws","waiting":9}
+20:00:17  wws.advance {"from":"wws","to":"wws","pool":10}
+20:00:17  wws.stuck {"on":"wws","waiting":9}
+20:00:29  wws.advance {"from":"wws","to":"wws","pool":10}
+20:00:29  wws.stuck {"on":"wws","waiting":9}
+20:00:47  wws.advance {"from":"wws","to":"wws","pool":10}
+20:00:47  wws.stuck {"on":"wws","waiting":9}
+20:01:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:01:35  wws.stuck {"on":"wws","waiting":9}
+20:01:47  wws.advance {"from":"wws","to":"wws","pool":10}
+20:01:47  wws.stuck {"on":"wws","waiting":9}
+20:01:59  wws.advance {"from":"wws","to":"wws","pool":10}
+20:01:59  wws.stuck {"on":"wws","waiting":9}
+20:02:17  wws.advance {"from":"wws","to":"wws","pool":10}
+20:02:17  wws.stuck {"on":"wws","waiting":9}
+20:02:29  wws.advance {"from":"wws","to":"wws","pool":10}
+20:02:29  wws.stuck {"on":"wws","waiting":9}
+20:02:47  wws.advance {"from":"wws","to":"wws","pool":10}
+20:02:47  wws.stuck {"on":"wws","waiting":9}
+20:02:59  wws.advance {"from":"wws","to":"wws","pool":10}
+20:02:59  wws.stuck {"on":"wws","waiting":9}
+20:03:17  wws.advance {"from":"wws","to":"wws","pool":10}
+20:03:17  wws.stuck {"on":"wws","waiting":9}
+20:03:29  wws.advance {"from":"wws","to":"wws","pool":10}
+20:03:29  wws.stuck {"on":"wws","waiting":9}
+20:03:47  wws.advance {"from":"wws","to":"wws","pool":10}
+20:03:47  wws.stuck {"on":"wws","waiting":9}
+20:04:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:04:35  wws.stuck {"on":"wws","waiting":9}
+20:04:47  wws.advance {"from":"wws","to":"wws","pool":10}
+20:04:47  wws.stuck {"on":"wws","waiting":9}
+20:04:59  wws.advance {"from":"wws","to":"wws","pool":10}
+20:04:59  wws.stuck {"on":"wws","waiting":9}
+20:05:17  wws.advance {"from":"wws","to":"wws","pool":10}
+20:05:17  wws.stuck {"on":"wws","waiting":9}
+20:05:29  wws.advance {"from":"wws","to":"wws","pool":10}
+20:05:29  wws.stuck {"on":"wws","waiting":9}
+20:05:47  wws.advance {"from":"wws","to":"wws","pool":10}
+20:05:47  wws.stuck {"on":"wws","waiting":9}
+20:05:59  wws.advance {"from":"wws","to":"wws","pool":10}
+20:05:59  wws.stuck {"on":"wws","waiting":9}
+20:06:17  wws.advance {"from":"wws","to":"wws","pool":10}
+20:06:17  wws.stuck {"on":"wws","waiting":9}
+20:06:29  wws.advance {"from":"wws","to":"wws","pool":10}
+20:06:29  wws.stuck {"on":"wws","waiting":9}
+20:06:47  wws.advance {"from":"wws","to":"wws","pool":10}
+20:06:47  wws.stuck {"on":"wws","waiting":9}
+20:07:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:07:35  wws.stuck {"on":"wws","waiting":9}
+20:07:47  wws.advance {"from":"wws","to":"wws","pool":10}
+20:07:47  wws.stuck {"on":"wws","waiting":9}
+20:07:59  wws.advance {"from":"wws","to":"wws","pool":10}
+20:07:59  wws.stuck {"on":"wws","waiting":9}
+20:08:03  recap.pick {"team":"NYY","gamePk":823508,"viaKnownPk":true,"title":"Logan Gilbert dominates in the Mariners' shutout win"}
+20:08:05  screen.show {"what":"rotation","source":"hoh-nyy","title":"Logan Gilbert dominates in the Mariners' shutout w","gamePk":823508,"url":"-csvm-diamondgcp-asset_1280x720_59_4000K.mp4"}
+20:08:17  wws.advance {"from":"wws","to":"wws","pool":10}
+20:08:17  wws.stuck {"on":"wws","waiting":9}
+20:08:29  wws.advance {"from":"wws","to":"wws","pool":10}
+20:08:29  wws.stuck {"on":"wws","waiting":9}
+20:08:47  wws.advance {"from":"wws","to":"wws","pool":10}
+20:08:47  wws.stuck {"on":"wws","waiting":9}
+20:08:59  wws.advance {"from":"wws","to":"wws","pool":10}
+20:08:59  wws.stuck {"on":"wws","waiting":9}
+20:09:17  wws.advance {"from":"wws","to":"wws","pool":10}
+20:09:17  wws.stuck {"on":"wws","waiting":9}
+20:09:29  wws.advance {"from":"wws","to":"wws","pool":10}
+20:09:29  wws.stuck {"on":"wws","waiting":9}
+20:09:47  wws.advance {"from":"wws","to":"wws","pool":10}
+20:09:47  wws.stuck {"on":"wws","waiting":9}
+20:10:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:10:35  wws.stuck {"on":"wws","waiting":9}
+20:10:47  wws.advance {"from":"wws","to":"wws","pool":10}
+20:10:47  wws.stuck {"on":"wws","waiting":9}
+20:10:59  wws.advance {"from":"wws","to":"wws","pool":10}
+20:10:59  wws.stuck {"on":"wws","waiting":9}
+20:11:05  score.change {"game":"PHI@MIN","team":"MIN","delta":1,"fav":false,"likelyHR":true}
+20:11:17  wws.advance {"from":"wws","to":"wws","pool":10}
+20:11:17  wws.stuck {"on":"wws","waiting":9}
+20:11:29  wws.advance {"from":"wws","to":"wws","pool":10}
+20:11:29  wws.stuck {"on":"wws","waiting":9}
+20:11:47  wws.advance {"from":"wws","to":"wws","pool":10}
+20:11:47  wws.stuck {"on":"wws","waiting":9}
+20:11:59  wws.advance {"from":"wws","to":"wws","pool":10}
+20:11:59  wws.stuck {"on":"wws","waiting":9}
+20:12:17  wws.advance {"from":"wws","to":"wws","pool":10}
+20:12:17  wws.stuck {"on":"wws","waiting":9}
+20:12:29  wws.advance {"from":"wws","to":"wws","pool":10}
+20:12:29  wws.stuck {"on":"wws","waiting":9}
+20:12:47  wws.advance {"from":"wws","to":"wws","pool":10}
+20:12:47  wws.stuck {"on":"wws","waiting":9}
+20:13:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:13:35  wws.stuck {"on":"wws","waiting":9}
+20:13:48  wws.advance {"from":"wws","to":"wws","pool":10}
+20:13:48  wws.stuck {"on":"wws","waiting":9}
+20:14:00  wws.advance {"from":"wws","to":"wws","pool":10}
+20:14:00  wws.stuck {"on":"wws","waiting":9}
+20:14:17  wws.advance {"from":"wws","to":"wws","pool":10}
+20:14:17  wws.stuck {"on":"wws","waiting":9}
+20:14:29  wws.advance {"from":"wws","to":"wws","pool":10}
+20:14:29  wws.stuck {"on":"wws","waiting":9}
+20:14:47  wws.advance {"from":"wws","to":"wws","pool":10}
+20:14:47  wws.stuck {"on":"wws","waiting":9}
+20:14:59  wws.advance {"from":"wws","to":"wws","pool":10}
+20:14:59  wws.stuck {"on":"wws","waiting":9}
+20:15:17  wws.advance {"from":"wws","to":"wws","pool":10}
+20:15:17  wws.stuck {"on":"wws","waiting":9}
+20:15:29  wws.advance {"from":"wws","to":"wws","pool":10}
+20:15:29  wws.stuck {"on":"wws","waiting":9}
+20:15:47  wws.advance {"from":"wws","to":"wws","pool":10}
+20:15:47  wws.stuck {"on":"wws","waiting":9}
+20:16:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:16:35  wws.stuck {"on":"wws","waiting":9}
+20:16:47  wws.advance {"from":"wws","to":"wws","pool":10}
+20:16:47  wws.stuck {"on":"wws","waiting":9}
+20:16:59  wws.advance {"from":"wws","to":"wws","pool":10}
+20:16:59  wws.stuck {"on":"wws","waiting":9}
+20:17:17  wws.advance {"from":"wws","to":"wws","pool":10}
+20:17:17  wws.stuck {"on":"wws","waiting":9}
+20:17:29  wws.advance {"from":"wws","to":"wws","pool":10}
+20:17:29  wws.stuck {"on":"wws","waiting":9}
+20:17:47  wws.advance {"from":"wws","to":"wws","pool":10}
+20:17:47  wws.stuck {"on":"wws","waiting":9}
+20:17:59  wws.advance {"from":"wws","to":"wws","pool":10}
+20:17:59  wws.stuck {"on":"wws","waiting":9}
+20:18:17  wws.advance {"from":"wws","to":"wws","pool":10}
+20:18:17  wws.stuck {"on":"wws","waiting":9}
+20:18:29  wws.advance {"from":"wws","to":"wws","pool":10}
+20:18:29  wws.stuck {"on":"wws","waiting":9}
+20:18:47  wws.advance {"from":"wws","to":"wws","pool":10}
+20:18:47  wws.stuck {"on":"wws","waiting":9}
+20:19:27  recap.pick {"team":"NYM","gamePk":824883,"viaKnownPk":true,"title":"Back-to-back homers fuel Braves'  6-3 win"}
+20:19:29  screen.show {"what":"rotation","source":"hoh-nym","title":"Back-to-back homers fuel Braves'  6-3 win","gamePk":824883,"url":"-csvm-diamondgcp-asset_1280x720_59_4000K.mp4"}
+20:19:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:19:35  wws.stuck {"on":"wws","waiting":9}
+20:19:47  wws.advance {"from":"wws","to":"wws","pool":10}
+20:19:47  wws.stuck {"on":"wws","waiting":9}
+20:19:59  wws.advance {"from":"wws","to":"wws","pool":10}
+20:19:59  wws.stuck {"on":"wws","waiting":9}
+20:20:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:20:23  wws.stuck {"on":"wws","waiting":9}
+20:20:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:20:35  wws.stuck {"on":"wws","waiting":9}
+20:20:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:20:53  wws.stuck {"on":"wws","waiting":9}
+20:21:05  wws.advance {"from":"wws","to":"wws","pool":10}
+20:21:05  wws.stuck {"on":"wws","waiting":9}
+20:21:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:21:23  wws.stuck {"on":"wws","waiting":9}
+20:21:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:21:35  wws.stuck {"on":"wws","waiting":9}
+20:21:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:21:53  wws.stuck {"on":"wws","waiting":9}
+20:22:41  wws.advance {"from":"wws","to":"wws","pool":10}
+20:22:41  wws.stuck {"on":"wws","waiting":9}
+20:22:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:22:53  wws.stuck {"on":"wws","waiting":9}
+20:23:05  wws.advance {"from":"wws","to":"wws","pool":10}
+20:23:05  wws.stuck {"on":"wws","waiting":9}
+20:23:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:23:23  wws.stuck {"on":"wws","waiting":9}
+20:23:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:23:35  wws.stuck {"on":"wws","waiting":9}
+20:23:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:23:53  wws.stuck {"on":"wws","waiting":9}
+20:24:05  wws.advance {"from":"wws","to":"wws","pool":10}
+20:24:05  wws.stuck {"on":"wws","waiting":9}
+20:24:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:24:23  wws.stuck {"on":"wws","waiting":9}
+20:24:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:24:35  wws.stuck {"on":"wws","waiting":9}
+20:24:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:24:53  wws.stuck {"on":"wws","waiting":9}
+20:25:41  wws.advance {"from":"wws","to":"wws","pool":10}
+20:25:41  wws.stuck {"on":"wws","waiting":9}
+20:25:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:25:53  wws.stuck {"on":"wws","waiting":9}
+20:26:05  wws.advance {"from":"wws","to":"wws","pool":10}
+20:26:05  wws.stuck {"on":"wws","waiting":9}
+20:26:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:26:23  wws.stuck {"on":"wws","waiting":9}
+20:26:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:26:35  wws.stuck {"on":"wws","waiting":9}
+20:26:48  sys.warn {"m":"[recap] no video found for golf-fill"}
+20:26:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:26:53  wws.stuck {"on":"wws","waiting":9}
+20:27:05  wws.advance {"from":"wws","to":"wws","pool":10}
+20:27:05  wws.stuck {"on":"wws","waiting":9}
+20:27:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:27:23  wws.stuck {"on":"wws","waiting":9}
+20:27:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:27:35  wws.stuck {"on":"wws","waiting":9}
+20:27:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:27:53  wws.stuck {"on":"wws","waiting":9}
+20:28:41  wws.advance {"from":"wws","to":"wws","pool":10}
+20:28:41  wws.stuck {"on":"wws","waiting":9}
+20:28:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:28:53  wws.stuck {"on":"wws","waiting":9}
+20:29:05  wws.advance {"from":"wws","to":"wws","pool":10}
+20:29:05  wws.stuck {"on":"wws","waiting":9}
+20:29:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:29:23  wws.stuck {"on":"wws","waiting":9}
+20:29:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:29:35  wws.stuck {"on":"wws","waiting":9}
+20:29:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:29:53  wws.stuck {"on":"wws","waiting":9}
+20:30:05  wws.advance {"from":"wws","to":"wws","pool":10}
+20:30:05  wws.stuck {"on":"wws","waiting":9}
+20:30:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:30:23  wws.stuck {"on":"wws","waiting":9}
+20:30:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:30:35  wws.stuck {"on":"wws","waiting":9}
+20:30:39  recap.pick {"team":"NYY","gamePk":823508,"viaKnownPk":true,"title":"Logan Gilbert dominates in the Mariners' shutout win"}
+20:30:41  screen.show {"what":"rotation","source":"hoh-nyy","title":"Logan Gilbert dominates in the Mariners' shutout w","gamePk":823508,"url":"-csvm-diamondgcp-asset_1280x720_59_4000K.mp4"}
+20:30:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:30:53  wws.stuck {"on":"wws","waiting":9}
+20:31:41  wws.advance {"from":"wws","to":"wws","pool":10}
+20:31:41  wws.stuck {"on":"wws","waiting":9}
+20:31:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:31:53  wws.stuck {"on":"wws","waiting":9}
+20:32:05  wws.advance {"from":"wws","to":"wws","pool":10}
+20:32:05  wws.stuck {"on":"wws","waiting":9}
+20:32:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:32:23  wws.stuck {"on":"wws","waiting":9}
+20:32:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:32:35  wws.stuck {"on":"wws","waiting":9}
+20:32:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:32:53  wws.stuck {"on":"wws","waiting":9}
+20:33:05  wws.advance {"from":"wws","to":"wws","pool":10}
+20:33:05  wws.stuck {"on":"wws","waiting":9}
+20:33:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:33:23  wws.stuck {"on":"wws","waiting":9}
+20:33:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:33:35  wws.stuck {"on":"wws","waiting":9}
+20:33:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:33:53  wws.stuck {"on":"wws","waiting":9}
+20:34:41  wws.advance {"from":"wws","to":"wws","pool":10}
+20:34:41  wws.stuck {"on":"wws","waiting":9}
+20:34:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:34:53  wws.stuck {"on":"wws","waiting":9}
+20:35:05  wws.advance {"from":"wws","to":"wws","pool":10}
+20:35:05  wws.stuck {"on":"wws","waiting":9}
+20:35:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:35:23  wws.stuck {"on":"wws","waiting":9}
+20:35:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:35:35  wws.stuck {"on":"wws","waiting":9}
+20:35:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:35:53  wws.stuck {"on":"wws","waiting":9}
+20:36:05  wws.advance {"from":"wws","to":"wws","pool":10}
+20:36:05  wws.stuck {"on":"wws","waiting":9}
+20:36:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:36:23  wws.stuck {"on":"wws","waiting":9}
+20:36:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:36:35  wws.stuck {"on":"wws","waiting":9}
+20:36:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:36:53  wws.stuck {"on":"wws","waiting":9}
+20:37:41  wws.advance {"from":"wws","to":"wws","pool":10}
+20:37:41  wws.stuck {"on":"wws","waiting":9}
+20:37:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:37:53  wws.stuck {"on":"wws","waiting":9}
+20:38:05  wws.advance {"from":"wws","to":"wws","pool":10}
+20:38:05  wws.stuck {"on":"wws","waiting":9}
+20:38:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:38:23  wws.stuck {"on":"wws","waiting":9}
+20:38:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:38:35  wws.stuck {"on":"wws","waiting":9}
+20:38:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:38:53  wws.stuck {"on":"wws","waiting":9}
+20:39:05  wws.advance {"from":"wws","to":"wws","pool":10}
+20:39:05  wws.stuck {"on":"wws","waiting":9}
+20:39:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:39:23  wws.stuck {"on":"wws","waiting":9}
+20:39:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:39:35  wws.stuck {"on":"wws","waiting":9}
+20:39:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:39:53  wws.stuck {"on":"wws","waiting":9}
+20:40:41  wws.advance {"from":"wws","to":"wws","pool":10}
+20:40:41  wws.stuck {"on":"wws","waiting":9}
+20:40:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:40:53  wws.stuck {"on":"wws","waiting":9}
+20:41:05  wws.advance {"from":"wws","to":"wws","pool":10}
+20:41:05  wws.stuck {"on":"wws","waiting":9}
+20:41:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:41:23  wws.stuck {"on":"wws","waiting":9}
+20:41:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:41:35  wws.stuck {"on":"wws","waiting":9}
+20:41:51  recap.pick {"team":"NYM","gamePk":824883,"viaKnownPk":true,"title":"Back-to-back homers fuel Braves'  6-3 win"}
+20:41:53  screen.show {"what":"rotation","source":"hoh-nym","title":"Back-to-back homers fuel Braves'  6-3 win","gamePk":824883,"url":"-csvm-diamondgcp-asset_1280x720_59_4000K.mp4"}
+20:41:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:41:53  wws.stuck {"on":"wws","waiting":9}
+20:42:05  wws.advance {"from":"wws","to":"wws","pool":10}
+20:42:05  wws.stuck {"on":"wws","waiting":9}
+20:42:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:42:23  wws.stuck {"on":"wws","waiting":9}
+20:42:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:42:35  wws.stuck {"on":"wws","waiting":9}
+20:42:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:42:53  wws.stuck {"on":"wws","waiting":9}
+20:43:41  wws.advance {"from":"wws","to":"wws","pool":10}
+20:43:41  wws.stuck {"on":"wws","waiting":9}
+20:43:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:43:53  wws.stuck {"on":"wws","waiting":9}
+20:44:05  wws.advance {"from":"wws","to":"wws","pool":10}
+20:44:05  wws.stuck {"on":"wws","waiting":9}
+20:44:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:44:23  wws.stuck {"on":"wws","waiting":9}
+20:44:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:44:35  wws.stuck {"on":"wws","waiting":9}
+20:44:41  score.change {"game":"PHI@MIN","team":"PHI","delta":2,"fav":false,"likelyHR":true}
+20:44:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:44:53  wws.stuck {"on":"wws","waiting":9}
+20:45:05  wws.advance {"from":"wws","to":"wws","pool":10}
+20:45:05  wws.stuck {"on":"wws","waiting":9}
+20:45:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:45:23  wws.stuck {"on":"wws","waiting":9}
+20:45:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:45:35  wws.stuck {"on":"wws","waiting":9}
+20:45:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:45:53  wws.stuck {"on":"wws","waiting":9}
+20:46:11  score.change {"game":"PHI@MIN","team":"PHI","delta":1,"fav":false,"likelyHR":true}
+20:46:41  wws.advance {"from":"wws","to":"wws","pool":10}
+20:46:41  wws.stuck {"on":"wws","waiting":9}
+20:46:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:46:53  wws.stuck {"on":"wws","waiting":9}
+20:47:05  wws.advance {"from":"wws","to":"wws","pool":10}
+20:47:05  wws.stuck {"on":"wws","waiting":9}
+20:47:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:47:23  wws.stuck {"on":"wws","waiting":9}
+20:47:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:47:35  wws.stuck {"on":"wws","waiting":9}
+20:47:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:47:53  wws.stuck {"on":"wws","waiting":9}
+20:48:05  wws.advance {"from":"wws","to":"wws","pool":10}
+20:48:05  wws.stuck {"on":"wws","waiting":9}
+20:48:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:48:23  wws.stuck {"on":"wws","waiting":9}
+20:48:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:48:35  wws.stuck {"on":"wws","waiting":9}
+20:48:47  companion.play {"for":"Kyle Schwarber","hr":"37","url":"3d213b27-b6e7-4a52-9e9c-1b29a9f41e38.mp4"}
+20:48:47  screen.show {"what":"companion","title":"Kyle Schwarber's SECOND homer of the game (37)","source":"mlb-companion","gamePk":823669,"url":"com/3d213b27-b6e7-4a52-9e9c-1b29a9f41e38.mp4"}
+20:48:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:48:53  wws.stuck {"on":"wws","waiting":9}
+20:49:17  clip.ended {"title":"Kyle Schwarber's SECOND homer of the gam"}
+20:49:41  wws.advance {"from":"wws","to":"wws","pool":10}
+20:49:41  wws.stuck {"on":"wws","waiting":9}
+20:49:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:49:53  wws.stuck {"on":"wws","waiting":9}
+20:50:05  wws.advance {"from":"wws","to":"wws","pool":10}
+20:50:05  wws.stuck {"on":"wws","waiting":9}
+20:50:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:50:23  wws.stuck {"on":"wws","waiting":9}
+20:50:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:50:35  wws.stuck {"on":"wws","waiting":9}
+20:50:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:50:53  wws.stuck {"on":"wws","waiting":9}
+20:51:05  wws.advance {"from":"wws","to":"wws","pool":10}
+20:51:05  wws.stuck {"on":"wws","waiting":9}
+20:51:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:51:23  wws.stuck {"on":"wws","waiting":9}
+20:51:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:51:35  wws.stuck {"on":"wws","waiting":9}
+20:51:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:51:53  wws.stuck {"on":"wws","waiting":9}
+20:52:41  wws.advance {"from":"wws","to":"wws","pool":10}
+20:52:41  wws.stuck {"on":"wws","waiting":9}
+20:52:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:52:53  wws.stuck {"on":"wws","waiting":9}
+20:53:05  wws.advance {"from":"wws","to":"wws","pool":10}
+20:53:05  wws.stuck {"on":"wws","waiting":9}
+20:53:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:53:23  wws.stuck {"on":"wws","waiting":9}
+20:53:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:53:35  wws.stuck {"on":"wws","waiting":9}
+20:53:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:53:53  wws.stuck {"on":"wws","waiting":9}
+20:54:05  wws.advance {"from":"wws","to":"wws","pool":10}
+20:54:05  wws.stuck {"on":"wws","waiting":9}
+20:54:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:54:23  wws.stuck {"on":"wws","waiting":9}
+20:54:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:54:35  wws.stuck {"on":"wws","waiting":9}
+20:54:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:54:53  wws.stuck {"on":"wws","waiting":9}
+20:55:39  recap.pick {"team":"NYY","gamePk":823508,"viaKnownPk":true,"title":"Logan Gilbert dominates in the Mariners' shutout win"}
+20:55:41  wws.advance {"from":"wws","to":"wws","pool":10}
+20:55:41  wws.stuck {"on":"wws","waiting":9}
+20:55:41  screen.show {"what":"rotation","source":"hoh-nyy","title":"Logan Gilbert dominates in the Mariners' shutout w","gamePk":823508,"url":"-csvm-diamondgcp-asset_1280x720_59_4000K.mp4"}
+20:55:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:55:53  wws.stuck {"on":"wws","waiting":9}
+20:56:05  wws.advance {"from":"wws","to":"wws","pool":10}
+20:56:05  wws.stuck {"on":"wws","waiting":9}
+20:56:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:56:23  wws.stuck {"on":"wws","waiting":9}
+20:56:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:56:35  wws.stuck {"on":"wws","waiting":9}
+20:56:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:56:53  wws.stuck {"on":"wws","waiting":9}
+20:57:05  wws.advance {"from":"wws","to":"wws","pool":10}
+20:57:05  wws.stuck {"on":"wws","waiting":9}
+20:57:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:57:23  wws.stuck {"on":"wws","waiting":9}
+20:57:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:57:35  wws.stuck {"on":"wws","waiting":9}
+20:57:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:57:53  wws.stuck {"on":"wws","waiting":9}
+20:58:41  wws.advance {"from":"wws","to":"wws","pool":10}
+20:58:41  wws.stuck {"on":"wws","waiting":9}
+20:58:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:58:53  wws.stuck {"on":"wws","waiting":9}
+20:59:05  wws.advance {"from":"wws","to":"wws","pool":10}
+20:59:05  wws.stuck {"on":"wws","waiting":9}
+20:59:23  wws.advance {"from":"wws","to":"wws","pool":10}
+20:59:23  wws.stuck {"on":"wws","waiting":9}
+20:59:35  wws.advance {"from":"wws","to":"wws","pool":10}
+20:59:35  wws.stuck {"on":"wws","waiting":9}
+20:59:53  wws.advance {"from":"wws","to":"wws","pool":10}
+20:59:53  wws.stuck {"on":"wws","waiting":9}
+21:00:05  wws.advance {"from":"wws","to":"wws","pool":10}
+21:00:05  wws.stuck {"on":"wws","waiting":9}
+21:00:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:00:25  wws.stuck {"on":"wws","waiting":9}
+21:00:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:00:37  wws.stuck {"on":"wws","waiting":9}
+21:00:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:00:55  wws.stuck {"on":"wws","waiting":9}
+21:01:43  wws.advance {"from":"wws","to":"wws","pool":10}
+21:01:43  wws.stuck {"on":"wws","waiting":9}
+21:01:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:01:55  wws.stuck {"on":"wws","waiting":9}
+21:02:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:02:07  wws.stuck {"on":"wws","waiting":9}
+21:02:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:02:25  wws.stuck {"on":"wws","waiting":9}
+21:02:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:02:37  wws.stuck {"on":"wws","waiting":9}
+21:02:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:02:55  wws.stuck {"on":"wws","waiting":9}
+21:03:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:03:07  wws.stuck {"on":"wws","waiting":9}
+21:03:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:03:25  wws.stuck {"on":"wws","waiting":9}
+21:03:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:03:37  wws.stuck {"on":"wws","waiting":9}
+21:03:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:03:55  wws.stuck {"on":"wws","waiting":9}
+21:04:43  wws.advance {"from":"wws","to":"wws","pool":10}
+21:04:43  wws.stuck {"on":"wws","waiting":9}
+21:04:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:04:55  wws.stuck {"on":"wws","waiting":9}
+21:05:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:05:07  wws.stuck {"on":"wws","waiting":9}
+21:05:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:05:25  wws.stuck {"on":"wws","waiting":9}
+21:05:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:05:37  wws.stuck {"on":"wws","waiting":9}
+21:05:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:05:55  wws.stuck {"on":"wws","waiting":9}
+21:06:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:06:07  wws.stuck {"on":"wws","waiting":9}
+21:06:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:06:25  wws.stuck {"on":"wws","waiting":9}
+21:06:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:06:37  wws.stuck {"on":"wws","waiting":9}
+21:06:51  recap.pick {"team":"NYM","gamePk":824883,"viaKnownPk":true,"title":"Back-to-back homers fuel Braves'  6-3 win"}
+21:06:53  screen.show {"what":"rotation","source":"hoh-nym","title":"Back-to-back homers fuel Braves'  6-3 win","gamePk":824883,"url":"-csvm-diamondgcp-asset_1280x720_59_4000K.mp4"}
+21:06:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:06:55  wws.stuck {"on":"wws","waiting":9}
+21:07:43  wws.advance {"from":"wws","to":"wws","pool":10}
+21:07:43  wws.stuck {"on":"wws","waiting":9}
+21:07:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:07:55  wws.stuck {"on":"wws","waiting":9}
+21:08:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:08:07  wws.stuck {"on":"wws","waiting":9}
+21:08:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:08:25  wws.stuck {"on":"wws","waiting":9}
+21:08:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:08:37  wws.stuck {"on":"wws","waiting":9}
+21:08:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:08:55  wws.stuck {"on":"wws","waiting":9}
+21:09:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:09:07  wws.stuck {"on":"wws","waiting":9}
+21:09:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:09:25  wws.stuck {"on":"wws","waiting":9}
+21:09:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:09:37  wws.stuck {"on":"wws","waiting":9}
+21:09:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:09:55  wws.stuck {"on":"wws","waiting":9}
+21:10:43  wws.advance {"from":"wws","to":"wws","pool":10}
+21:10:43  wws.stuck {"on":"wws","waiting":9}
+21:10:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:10:55  wws.stuck {"on":"wws","waiting":9}
+21:11:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:11:07  wws.stuck {"on":"wws","waiting":9}
+21:11:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:11:25  wws.stuck {"on":"wws","waiting":9}
+21:11:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:11:37  wws.stuck {"on":"wws","waiting":9}
+21:11:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:11:55  wws.stuck {"on":"wws","waiting":9}
+21:12:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:12:07  wws.stuck {"on":"wws","waiting":9}
+21:12:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:12:25  wws.stuck {"on":"wws","waiting":9}
+21:12:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:12:37  wws.stuck {"on":"wws","waiting":9}
+21:12:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:12:55  wws.stuck {"on":"wws","waiting":9}
+21:13:43  wws.advance {"from":"wws","to":"wws","pool":10}
+21:13:43  wws.stuck {"on":"wws","waiting":9}
+21:13:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:13:55  wws.stuck {"on":"wws","waiting":9}
+21:14:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:14:07  wws.stuck {"on":"wws","waiting":9}
+21:14:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:14:25  wws.stuck {"on":"wws","waiting":9}
+21:14:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:14:37  wws.stuck {"on":"wws","waiting":9}
+21:14:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:14:55  wws.stuck {"on":"wws","waiting":9}
+21:15:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:15:07  wws.stuck {"on":"wws","waiting":9}
+21:15:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:15:25  wws.stuck {"on":"wws","waiting":9}
+21:15:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:15:37  wws.stuck {"on":"wws","waiting":9}
+21:15:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:15:55  wws.stuck {"on":"wws","waiting":9}
+21:16:43  wws.advance {"from":"wws","to":"wws","pool":10}
+21:16:43  wws.stuck {"on":"wws","waiting":9}
+21:16:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:16:55  wws.stuck {"on":"wws","waiting":9}
+21:17:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:17:07  wws.stuck {"on":"wws","waiting":9}
+21:17:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:17:25  wws.stuck {"on":"wws","waiting":9}
+21:17:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:17:37  wws.stuck {"on":"wws","waiting":9}
+21:17:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:17:55  wws.stuck {"on":"wws","waiting":9}
+21:18:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:18:07  wws.stuck {"on":"wws","waiting":9}
+21:18:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:18:25  wws.stuck {"on":"wws","waiting":9}
+21:18:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:18:37  wws.stuck {"on":"wws","waiting":9}
+21:18:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:18:55  wws.stuck {"on":"wws","waiting":9}
+21:19:43  wws.advance {"from":"wws","to":"wws","pool":10}
+21:19:43  wws.stuck {"on":"wws","waiting":9}
+21:19:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:19:55  wws.stuck {"on":"wws","waiting":9}
+21:20:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:20:07  wws.stuck {"on":"wws","waiting":9}
+21:20:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:20:25  wws.stuck {"on":"wws","waiting":9}
+21:20:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:20:37  wws.stuck {"on":"wws","waiting":9}
+21:20:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:20:55  wws.stuck {"on":"wws","waiting":9}
+21:21:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:21:07  wws.stuck {"on":"wws","waiting":9}
+21:21:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:21:25  wws.stuck {"on":"wws","waiting":9}
+21:21:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:21:37  wws.stuck {"on":"wws","waiting":9}
+21:21:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:21:55  wws.stuck {"on":"wws","waiting":9}
+21:22:43  wws.advance {"from":"wws","to":"wws","pool":10}
+21:22:43  wws.stuck {"on":"wws","waiting":9}
+21:22:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:22:55  wws.stuck {"on":"wws","waiting":9}
+21:23:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:23:07  wws.stuck {"on":"wws","waiting":9}
+21:23:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:23:25  wws.stuck {"on":"wws","waiting":9}
+21:23:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:23:37  wws.stuck {"on":"wws","waiting":9}
+21:23:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:23:55  wws.stuck {"on":"wws","waiting":9}
+21:24:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:24:07  wws.stuck {"on":"wws","waiting":9}
+21:24:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:24:25  wws.stuck {"on":"wws","waiting":9}
+21:24:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:24:37  wws.stuck {"on":"wws","waiting":9}
+21:24:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:24:55  wws.stuck {"on":"wws","waiting":9}
+21:25:43  wws.advance {"from":"wws","to":"wws","pool":10}
+21:25:43  wws.stuck {"on":"wws","waiting":9}
+21:25:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:25:55  wws.stuck {"on":"wws","waiting":9}
+21:26:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:26:07  wws.stuck {"on":"wws","waiting":9}
+21:26:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:26:25  wws.stuck {"on":"wws","waiting":9}
+21:26:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:26:37  wws.stuck {"on":"wws","waiting":9}
+21:26:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:26:55  wws.stuck {"on":"wws","waiting":9}
+21:27:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:27:07  wws.stuck {"on":"wws","waiting":9}
+21:27:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:27:25  wws.stuck {"on":"wws","waiting":9}
+21:27:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:27:37  wws.stuck {"on":"wws","waiting":9}
+21:27:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:27:55  wws.stuck {"on":"wws","waiting":9}
+21:28:43  wws.advance {"from":"wws","to":"wws","pool":10}
+21:28:43  wws.stuck {"on":"wws","waiting":9}
+21:28:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:28:55  wws.stuck {"on":"wws","waiting":9}
+21:29:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:29:07  wws.stuck {"on":"wws","waiting":9}
+21:29:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:29:25  wws.stuck {"on":"wws","waiting":9}
+21:29:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:29:37  wws.stuck {"on":"wws","waiting":9}
+21:29:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:29:55  wws.stuck {"on":"wws","waiting":9}
+21:30:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:30:07  wws.stuck {"on":"wws","waiting":9}
+21:30:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:30:25  wws.stuck {"on":"wws","waiting":9}
+21:30:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:30:37  wws.stuck {"on":"wws","waiting":9}
+21:30:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:30:55  wws.stuck {"on":"wws","waiting":9}
+21:31:43  wws.advance {"from":"wws","to":"wws","pool":10}
+21:31:43  wws.stuck {"on":"wws","waiting":9}
+21:31:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:31:55  wws.stuck {"on":"wws","waiting":9}
+21:32:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:32:07  wws.stuck {"on":"wws","waiting":9}
+21:32:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:32:25  wws.stuck {"on":"wws","waiting":9}
+21:32:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:32:37  wws.stuck {"on":"wws","waiting":9}
+21:32:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:32:55  wws.stuck {"on":"wws","waiting":9}
+21:33:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:33:07  wws.stuck {"on":"wws","waiting":9}
+21:33:15  recap.pick {"team":"NYY","gamePk":823508,"viaKnownPk":true,"title":"Logan Gilbert dominates in the Mariners' shutout win"}
+21:33:17  screen.show {"what":"rotation","source":"hoh-nyy","title":"Logan Gilbert dominates in the Mariners' shutout w","gamePk":823508,"url":"-csvm-diamondgcp-asset_1280x720_59_4000K.mp4"}
+21:33:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:33:25  wws.stuck {"on":"wws","waiting":9}
+21:33:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:33:37  wws.stuck {"on":"wws","waiting":9}
+21:33:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:33:55  wws.stuck {"on":"wws","waiting":9}
+21:34:43  wws.advance {"from":"wws","to":"wws","pool":10}
+21:34:43  wws.stuck {"on":"wws","waiting":9}
+21:34:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:34:55  wws.stuck {"on":"wws","waiting":9}
+21:35:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:35:07  wws.stuck {"on":"wws","waiting":9}
+21:35:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:35:25  wws.stuck {"on":"wws","waiting":9}
+21:35:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:35:37  wws.stuck {"on":"wws","waiting":9}
+21:35:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:35:55  wws.stuck {"on":"wws","waiting":9}
+21:36:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:36:07  wws.stuck {"on":"wws","waiting":9}
+21:36:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:36:25  wws.stuck {"on":"wws","waiting":9}
+21:36:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:36:37  wws.stuck {"on":"wws","waiting":9}
+21:36:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:36:55  wws.stuck {"on":"wws","waiting":9}
+21:37:43  wws.advance {"from":"wws","to":"wws","pool":10}
+21:37:43  wws.stuck {"on":"wws","waiting":9}
+21:37:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:37:55  wws.stuck {"on":"wws","waiting":9}
+21:38:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:38:07  wws.stuck {"on":"wws","waiting":9}
+21:38:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:38:25  wws.stuck {"on":"wws","waiting":9}
+21:38:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:38:37  wws.stuck {"on":"wws","waiting":9}
+21:38:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:38:55  wws.stuck {"on":"wws","waiting":9}
+21:39:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:39:07  wws.stuck {"on":"wws","waiting":9}
+21:39:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:39:25  wws.stuck {"on":"wws","waiting":9}
+21:39:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:39:37  wws.stuck {"on":"wws","waiting":9}
+21:39:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:39:55  wws.stuck {"on":"wws","waiting":9}
+21:40:43  wws.advance {"from":"wws","to":"wws","pool":10}
+21:40:43  wws.stuck {"on":"wws","waiting":9}
+21:40:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:40:55  wws.stuck {"on":"wws","waiting":9}
+21:41:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:41:07  wws.stuck {"on":"wws","waiting":9}
+21:41:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:41:25  wws.stuck {"on":"wws","waiting":9}
+21:41:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:41:37  wws.stuck {"on":"wws","waiting":9}
+21:41:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:41:55  wws.stuck {"on":"wws","waiting":9}
+21:42:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:42:07  wws.stuck {"on":"wws","waiting":9}
+21:42:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:42:25  wws.stuck {"on":"wws","waiting":9}
+21:42:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:42:37  wws.stuck {"on":"wws","waiting":9}
+21:42:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:42:55  wws.stuck {"on":"wws","waiting":9}
+21:43:43  wws.advance {"from":"wws","to":"wws","pool":10}
+21:43:43  wws.stuck {"on":"wws","waiting":9}
+21:43:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:43:55  wws.stuck {"on":"wws","waiting":9}
+21:44:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:44:07  wws.stuck {"on":"wws","waiting":9}
+21:44:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:44:25  wws.stuck {"on":"wws","waiting":9}
+21:44:27  recap.pick {"team":"NYM","gamePk":824883,"viaKnownPk":true,"title":"Back-to-back homers fuel Braves'  6-3 win"}
+21:44:29  screen.show {"what":"rotation","source":"hoh-nym","title":"Back-to-back homers fuel Braves'  6-3 win","gamePk":824883,"url":"-csvm-diamondgcp-asset_1280x720_59_4000K.mp4"}
+21:44:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:44:37  wws.stuck {"on":"wws","waiting":9}
+21:44:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:44:55  wws.stuck {"on":"wws","waiting":9}
+21:45:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:45:07  wws.stuck {"on":"wws","waiting":9}
+21:45:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:45:25  wws.stuck {"on":"wws","waiting":9}
+21:45:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:45:37  wws.stuck {"on":"wws","waiting":9}
+21:45:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:45:55  wws.stuck {"on":"wws","waiting":9}
+21:46:43  wws.advance {"from":"wws","to":"wws","pool":10}
+21:46:43  wws.stuck {"on":"wws","waiting":9}
+21:46:43  score.change {"game":"PHI@MIN","team":"PHI","delta":2,"fav":false,"likelyHR":true}
+21:46:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:46:55  wws.stuck {"on":"wws","waiting":9}
+21:47:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:47:07  wws.stuck {"on":"wws","waiting":9}
+21:47:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:47:25  wws.stuck {"on":"wws","waiting":9}
+21:47:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:47:37  wws.stuck {"on":"wws","waiting":9}
+21:47:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:47:55  wws.stuck {"on":"wws","waiting":9}
+21:48:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:48:07  wws.stuck {"on":"wws","waiting":9}
+21:48:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:48:25  wws.stuck {"on":"wws","waiting":9}
+21:48:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:48:37  wws.stuck {"on":"wws","waiting":9}
+21:48:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:48:55  wws.stuck {"on":"wws","waiting":9}
+21:49:13  companion.play {"for":"Brandon Marsh","hr":"17","url":"7027f534-3ecd-46ac-a638-80b2a4b1de82.mp4"}
+21:49:13  screen.show {"what":"companion","title":"Brandon Marsh's two-run home run (17)","source":"mlb-companion","gamePk":823669,"url":"com/7027f534-3ecd-46ac-a638-80b2a4b1de82.mp4"}
+21:49:38  clip.ended {"title":"Brandon Marsh's two-run home run (17)"}
+21:49:43  wws.advance {"from":"wws","to":"wws","pool":10}
+21:49:43  wws.stuck {"on":"wws","waiting":9}
+21:49:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:49:55  wws.stuck {"on":"wws","waiting":9}
+21:50:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:50:07  wws.stuck {"on":"wws","waiting":9}
+21:50:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:50:25  wws.stuck {"on":"wws","waiting":9}
+21:50:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:50:37  wws.stuck {"on":"wws","waiting":9}
+21:50:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:50:55  wws.stuck {"on":"wws","waiting":9}
+21:51:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:51:07  wws.stuck {"on":"wws","waiting":9}
+21:51:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:51:25  wws.stuck {"on":"wws","waiting":9}
+21:51:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:51:37  wws.stuck {"on":"wws","waiting":9}
+21:51:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:51:55  wws.stuck {"on":"wws","waiting":9}
+21:52:43  wws.advance {"from":"wws","to":"wws","pool":10}
+21:52:43  wws.stuck {"on":"wws","waiting":9}
+21:52:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:52:55  wws.stuck {"on":"wws","waiting":9}
+21:53:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:53:07  wws.stuck {"on":"wws","waiting":9}
+21:53:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:53:25  wws.stuck {"on":"wws","waiting":9}
+21:53:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:53:37  wws.stuck {"on":"wws","waiting":9}
+21:53:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:53:55  wws.stuck {"on":"wws","waiting":9}
+21:54:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:54:07  wws.stuck {"on":"wws","waiting":9}
+21:54:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:54:25  wws.stuck {"on":"wws","waiting":9}
+21:54:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:54:37  wws.stuck {"on":"wws","waiting":9}
+21:54:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:54:55  wws.stuck {"on":"wws","waiting":9}
+21:55:43  wws.advance {"from":"wws","to":"wws","pool":10}
+21:55:43  wws.stuck {"on":"wws","waiting":9}
+21:55:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:55:55  wws.stuck {"on":"wws","waiting":9}
+21:56:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:56:07  wws.stuck {"on":"wws","waiting":9}
+21:56:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:56:25  wws.stuck {"on":"wws","waiting":9}
+21:56:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:56:37  wws.stuck {"on":"wws","waiting":9}
+21:56:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:56:55  wws.stuck {"on":"wws","waiting":9}
+21:57:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:57:07  wws.stuck {"on":"wws","waiting":9}
+21:57:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:57:25  wws.stuck {"on":"wws","waiting":9}
+21:57:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:57:37  wws.stuck {"on":"wws","waiting":9}
+21:57:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:57:55  wws.stuck {"on":"wws","waiting":9}
+21:58:43  wws.advance {"from":"wws","to":"wws","pool":10}
+21:58:43  wws.stuck {"on":"wws","waiting":9}
+21:58:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:58:55  wws.stuck {"on":"wws","waiting":9}
+21:59:07  wws.advance {"from":"wws","to":"wws","pool":10}
+21:59:07  wws.stuck {"on":"wws","waiting":9}
+21:59:25  wws.advance {"from":"wws","to":"wws","pool":10}
+21:59:25  wws.stuck {"on":"wws","waiting":9}
+21:59:37  wws.advance {"from":"wws","to":"wws","pool":10}
+21:59:37  wws.stuck {"on":"wws","waiting":9}
+21:59:55  wws.advance {"from":"wws","to":"wws","pool":10}
+21:59:55  wws.stuck {"on":"wws","waiting":9}
+22:00:07  wws.advance {"from":"wws","to":"wws","pool":10}
+22:00:07  wws.stuck {"on":"wws","waiting":9}
+22:00:25  wws.advance {"from":"wws","to":"wws","pool":10}
+22:00:25  wws.stuck {"on":"wws","waiting":9}
+22:00:37  wws.advance {"from":"wws","to":"wws","pool":10}
+22:00:37  wws.stuck {"on":"wws","waiting":9}
+22:00:55  wws.advance {"from":"wws","to":"wws","pool":10}
+22:00:55  wws.stuck {"on":"wws","waiting":9}
+22:01:43  wws.advance {"from":"wws","to":"wws","pool":10}
+22:01:43  wws.stuck {"on":"wws","waiting":9}
+22:01:55  wws.advance {"from":"wws","to":"wws","pool":10}
+22:01:55  wws.stuck {"on":"wws","waiting":9}
+22:02:07  wws.advance {"from":"wws","to":"wws","pool":10}
+22:02:07  wws.stuck {"on":"wws","waiting":9}
+22:02:25  wws.advance {"from":"wws","to":"wws","pool":10}
+22:02:25  wws.stuck {"on":"wws","waiting":9}
+22:02:37  wws.advance {"from":"wws","to":"wws","pool":10}
+22:02:37  wws.stuck {"on":"wws","waiting":9}
+22:02:55  wws.advance {"from":"wws","to":"wws","pool":10}
+22:02:55  wws.stuck {"on":"wws","waiting":9}
+22:03:07  wws.advance {"from":"wws","to":"wws","pool":10}
+22:03:07  wws.stuck {"on":"wws","waiting":9}
+22:03:25  wws.advance {"from":"wws","to":"wws","pool":10}
+22:03:25  wws.stuck {"on":"wws","waiting":9}
+22:03:37  wws.advance {"from":"wws","to":"wws","pool":10}
+22:03:37  wws.stuck {"on":"wws","waiting":9}
+22:03:55  wws.advance {"from":"wws","to":"wws","pool":10}
+22:03:55  wws.stuck {"on":"wws","waiting":9}
+22:04:43  wws.advance {"from":"wws","to":"wws","pool":10}
+22:04:43  wws.stuck {"on":"wws","waiting":9}
+22:04:55  wws.advance {"from":"wws","to":"wws","pool":10}
+22:04:55  wws.stuck {"on":"wws","waiting":9}
+22:05:07  wws.advance {"from":"wws","to":"wws","pool":10}
+22:05:07  wws.stuck {"on":"wws","waiting":9}
+22:05:25  wws.advance {"from":"wws","to":"wws","pool":10}
+22:05:25  wws.stuck {"on":"wws","waiting":9}
+22:05:37  wws.advance {"from":"wws","to":"wws","pool":10}
+22:05:37  wws.stuck {"on":"wws","waiting":9}
+22:05:55  wws.advance {"from":"wws","to":"wws","pool":10}
+22:05:55  wws.stuck {"on":"wws","waiting":9}
+22:06:07  wws.advance {"from":"wws","to":"wws","pool":10}
+22:06:07  wws.stuck {"on":"wws","waiting":9}
+22:06:25  wws.advance {"from":"wws","to":"wws","pool":10}
+22:06:25  wws.stuck {"on":"wws","waiting":9}
+22:06:37  wws.advance {"from":"wws","to":"wws","pool":10}
+22:06:37  wws.stuck {"on":"wws","waiting":9}
+22:06:55  wws.advance {"from":"wws","to":"wws","pool":10}
+22:06:55  wws.stuck {"on":"wws","waiting":9}
+22:07:43  wws.advance {"from":"wws","to":"wws","pool":10}
+22:07:43  wws.stuck {"on":"wws","waiting":9}
+22:07:55  wws.advance {"from":"wws","to":"wws","pool":10}
+22:07:55  wws.stuck {"on":"wws","waiting":9}
+22:08:03  recap.pick {"team":"NYY","gamePk":823508,"viaKnownPk":true,"title":"Logan Gilbert dominates in the Mariners' shutout win"}
+22:08:05  screen.show {"what":"rotation","source":"hoh-nyy","title":"Logan Gilbert dominates in the Mariners' shutout w","gamePk":823508,"url":"-csvm-diamondgcp-asset_1280x720_59_4000K.mp4"}
+22:08:07  wws.advance {"from":"wws","to":"wws","pool":10}
+22:08:07  wws.stuck {"on":"wws","waiting":9}
+22:08:25  wws.advance {"from":"wws","to":"wws","pool":10}
+22:08:25  wws.stuck {"on":"wws","waiting":9}
+22:08:37  wws.advance {"from":"wws","to":"wws","pool":10}
+22:08:37  wws.stuck {"on":"wws","waiting":9}
+22:08:55  wws.advance {"from":"wws","to":"wws","pool":10}
+22:08:55  wws.stuck {"on":"wws","waiting":9}
+22:09:07  wws.advance {"from":"wws","to":"wws","pool":10}
+22:09:07  wws.stuck {"on":"wws","waiting":9}
+22:09:25  wws.advance {"from":"wws","to":"wws","pool":10}
+22:09:25  wws.stuck {"on":"wws","waiting":9}
+22:09:37  wws.advance {"from":"wws","to":"wws","pool":10}
+22:09:37  wws.stuck {"on":"wws","waiting":9}
+22:09:55  wws.advance {"from":"wws","to":"wws","pool":10}
+22:09:55  wws.stuck {"on":"wws","waiting":9}
+22:10:43  wws.advance {"from":"wws","to":"wws","pool":10}
+22:10:43  wws.stuck {"on":"wws","waiting":9}
+22:10:55  wws.advance {"from":"wws","to":"wws","pool":10}
+22:10:55  wws.stuck {"on":"wws","waiting":9}
+22:11:07  wws.advance {"from":"wws","to":"wws","pool":10}
+22:11:07  wws.stuck {"on":"wws","waiting":9}
+22:11:25  wws.advance {"from":"wws","to":"wws","pool":10}
+22:11:25  wws.stuck {"on":"wws","waiting":9}
+22:11:37  wws.advance {"from":"wws","to":"wws","pool":10}
+22:11:37  wws.stuck {"on":"wws","waiting":9}
+22:11:55  wws.advance {"from":"wws","to":"wws","pool":10}
+22:11:55  wws.stuck {"on":"wws","waiting":9}
+22:12:07  wws.advance {"from":"wws","to":"wws","pool":10}
+22:12:07  wws.stuck {"on":"wws","waiting":9}
+22:12:25  wws.advance {"from":"wws","to":"wws","pool":10}
+22:12:25  wws.stuck {"on":"wws","waiting":9}
+22:12:37  wws.advance {"from":"wws","to":"wws","pool":10}
+22:12:37  wws.stuck {"on":"wws","waiting":9}
+22:12:55  wws.advance {"from":"wws","to":"wws","pool":10}
+22:12:55  wws.stuck {"on":"wws","waiting":9}
+22:13:43  wws.advance {"from":"wws","to":"wws","pool":10}
+22:13:43  wws.stuck {"on":"wws","waiting":9}
+22:13:55  wws.advance {"from":"wws","to":"wws","pool":10}
+22:13:55  wws.stuck {"on":"wws","waiting":9}
+22:14:07  wws.advance {"from":"wws","to":"wws","pool":10}
+22:14:07  wws.stuck {"on":"wws","waiting":9}
+22:14:25  wws.advance {"from":"wws","to":"wws","pool":10}
+22:14:25  wws.stuck {"on":"wws","waiting":9}
+22:14:37  wws.advance {"from":"wws","to":"wws","pool":10}
+22:14:37  wws.stuck {"on":"wws","waiting":9}
+22:14:55  wws.advance {"from":"wws","to":"wws","pool":10}
+22:14:55  wws.stuck {"on":"wws","waiting":9}
+22:15:07  wws.advance {"from":"wws","to":"wws","pool":10}
+22:15:07  wws.stuck {"on":"wws","waiting":9}
+22:15:25  wws.advance {"from":"wws","to":"wws","pool":10}
+22:15:25  wws.stuck {"on":"wws","waiting":9}
+22:15:37  wws.advance {"from":"wws","to":"wws","pool":10}
+22:15:37  wws.stuck {"on":"wws","waiting":9}
+22:15:55  wws.advance {"from":"wws","to":"wws","pool":10}
+22:15:55  wws.stuck {"on":"wws","waiting":9}
+22:16:43  wws.advance {"from":"wws","to":"wws","pool":10}
+22:16:43  wws.stuck {"on":"wws","waiting":9}
+22:16:55  wws.advance {"from":"wws","to":"wws","pool":10}
+22:16:55  wws.stuck {"on":"wws","waiting":9}
+22:17:07  wws.advance {"from":"wws","to":"wws","pool":10}
+22:17:07  wws.stuck {"on":"wws","waiting":9}
+22:17:25  wws.advance {"from":"wws","to":"wws","pool":10}
+22:17:25  wws.stuck {"on":"wws","waiting":9}
+22:17:37  wws.advance {"from":"wws","to":"wws","pool":10}
+22:17:37  wws.stuck {"on":"wws","waiting":9}
+22:17:55  wws.advance {"from":"wws","to":"wws","pool":10}
+22:17:55  wws.stuck {"on":"wws","waiting":9}
+22:18:07  wws.advance {"from":"wws","to":"wws","pool":10}
+22:18:07  wws.stuck {"on":"wws","waiting":9}
+22:18:25  wws.advance {"from":"wws","to":"wws","pool":10}
+22:18:25  wws.stuck {"on":"wws","waiting":9}
+22:18:37  wws.advance {"from":"wws","to":"wws","pool":10}
+22:18:37  wws.stuck {"on":"wws","waiting":9}
+22:18:55  wws.advance {"from":"wws","to":"wws","pool":10}
+22:18:55  wws.stuck {"on":"wws","waiting":9}
+22:19:15  recap.pick {"team":"NYM","gamePk":824883,"viaKnownPk":true,"title":"Back-to-back homers fuel Braves'  6-3 win"}
+22:19:17  screen.show {"what":"rotation","source":"hoh-nym","title":"Back-to-back homers fuel Braves'  6-3 win","gamePk":824883,"url":"-csvm-diamondgcp-asset_1280x720_59_4000K.mp4"}
+22:19:43  wws.advance {"from":"wws","to":"wws","pool":10}
+22:19:43  wws.stuck {"on":"wws","waiting":9}
+22:19:55  wws.advance {"from":"wws","to":"wws","pool":10}
+22:19:55  wws.stuck {"on":"wws","waiting":9}
+22:20:07  wws.advance {"from":"wws","to":"wws","pool":10}
+22:20:07  wws.stuck {"on":"wws","waiting":9}
+22:20:25  wws.advance {"from":"wws","to":"wws","pool":10}
+22:20:25  wws.stuck {"on":"wws","waiting":9}
+22:20:37  wws.advance {"from":"wws","to":"wws","pool":10}
+22:20:37  wws.stuck {"on":"wws","waiting":9}
+22:20:55  wws.advance {"from":"wws","to":"wws","pool":10}
+22:20:55  wws.stuck {"on":"wws","waiting":9}
+22:21:07  wws.advance {"from":"wws","to":"wws","pool":10}
+22:21:07  wws.stuck {"on":"wws","waiting":9}
+22:21:25  wws.advance {"from":"wws","to":"wws","pool":10}
+22:21:25  wws.stuck {"on":"wws","waiting":9}
+22:21:37  wws.advance {"from":"wws","to":"wws","pool":10}
+22:21:37  wws.stuck {"on":"wws","waiting":9}
+22:21:55  wws.advance {"from":"wws","to":"wws","pool":10}
+22:21:55  wws.stuck {"on":"wws","waiting":9}
+22:22:43  wws.advance {"from":"wws","to":"wws","pool":10}
+22:22:43  wws.stuck {"on":"wws","waiting":9}
+22:22:55  wws.advance {"from":"wws","to":"wws","pool":10}
+22:22:55  wws.stuck {"on":"wws","waiting":9}
+22:23:07  wws.advance {"from":"wws","to":"wws","pool":10}
+22:23:07  wws.stuck {"on":"wws","waiting":9}
+22:23:25  wws.advance {"from":"wws","to":"wws","pool":10}
+22:23:25  wws.stuck {"on":"wws","waiting":9}
+22:23:37  wws.advance {"from":"wws","to":"wws","pool":10}
+22:23:37  wws.stuck {"on":"wws","waiting":9}
+22:23:57  wws.advance {"from":"wws","to":"wws","pool":10}
+22:23:57  wws.stuck {"on":"wws","waiting":9}
+22:24:09  wws.advance {"from":"wws","to":"wws","pool":10}
+22:24:09  wws.stuck {"on":"wws","waiting":9}
+22:24:27  wws.advance {"from":"wws","to":"wws","pool":10}
+22:24:27  wws.stuck {"on":"wws","waiting":9}
+22:24:39  wws.advance {"from":"wws","to":"wws","pool":10}
+22:24:39  wws.stuck {"on":"wws","waiting":9}
+22:24:57  wws.advance {"from":"wws","to":"wws","pool":10}
+22:24:57  wws.stuck {"on":"wws","waiting":9}
+22:25:45  wws.advance {"from":"wws","to":"wws","pool":10}
+22:25:45  wws.stuck {"on":"wws","waiting":9}
+22:25:57  wws.advance {"from":"wws","to":"wws","pool":10}
+22:25:57  wws.stuck {"on":"wws","waiting":9}
+22:26:09  wws.advance {"from":"wws","to":"wws","pool":10}
+22:26:09  wws.stuck {"on":"wws","waiting":9}
+22:26:27  wws.advance {"from":"wws","to":"wws","pool":10}
+22:26:27  wws.stuck {"on":"wws","waiting":9}
+22:26:39  wws.advance {"from":"wws","to":"wws","pool":10}
+22:26:39  wws.stuck {"on":"wws","waiting":9}
+22:26:57  wws.advance {"from":"wws","to":"wws","pool":10}
+22:26:57  wws.stuck {"on":"wws","waiting":9}
+22:27:09  wws.advance {"from":"wws","to":"wws","pool":10}
+22:27:09  wws.stuck {"on":"wws","waiting":9}
+22:27:27  wws.advance {"from":"wws","to":"wws","pool":10}
+22:27:27  wws.stuck {"on":"wws","waiting":9}
+22:27:39  wws.advance {"from":"wws","to":"wws","pool":10}
+22:27:39  wws.stuck {"on":"wws","waiting":9}
+22:27:57  wws.advance {"from":"wws","to":"wws","pool":10}
+22:27:57  wws.stuck {"on":"wws","waiting":9}
+22:28:45  wws.advance {"from":"wws","to":"wws","pool":10}
+22:28:45  wws.stuck {"on":"wws","waiting":9}
+22:28:57  wws.advance {"from":"wws","to":"wws","pool":10}
+22:28:57  wws.stuck {"on":"wws","waiting":9}
+22:29:09  wws.advance {"from":"wws","to":"wws","pool":10}
+22:29:09  wws.stuck {"on":"wws","waiting":9}
+22:29:27  wws.advance {"from":"wws","to":"wws","pool":10}
+22:29:27  wws.stuck {"on":"wws","waiting":9}
+22:29:39  wws.advance {"from":"wws","to":"wws","pool":10}
+22:29:39  wws.stuck {"on":"wws","waiting":9}
+22:29:57  wws.advance {"from":"wws","to":"wws","pool":10}
+22:29:57  wws.stuck {"on":"wws","waiting":9}
+22:30:09  wws.advance {"from":"wws","to":"wws","pool":10}
+22:30:09  wws.stuck {"on":"wws","waiting":9}
+22:30:27  wws.advance {"from":"wws","to":"wws","pool":10}
+22:30:27  wws.stuck {"on":"wws","waiting":9}
+22:30:39  wws.advance {"from":"wws","to":"wws","pool":10}
+22:30:39  wws.stuck {"on":"wws","waiting":9}
+22:30:57  wws.advance {"from":"wws","to":"wws","pool":10}
+22:30:57  wws.stuck {"on":"wws","waiting":9}
+22:31:45  wws.advance {"from":"wws","to":"wws","pool":10}
+22:31:45  wws.stuck {"on":"wws","waiting":9}
+22:31:57  wws.advance {"from":"wws","to":"wws","pool":10}
+22:31:57  wws.stuck {"on":"wws","waiting":9}
+22:32:09  wws.advance {"from":"wws","to":"wws","pool":10}
+22:32:09  wws.stuck {"on":"wws","waiting":9}
+22:32:27  wws.advance {"from":"wws","to":"wws","pool":10}
+22:32:27  wws.stuck {"on":"wws","waiting":9}
+22:32:30  recap.pick {"team":"NYY","gamePk":823508,"viaKnownPk":true,"title":"Logan Gilbert dominates in the Mariners' shutout win"}
+22:32:31  screen.show {"what":"rotation","source":"hoh-nyy","title":"Logan Gilbert dominates in the Mariners' shutout w","gamePk":823508,"url":"-csvm-diamondgcp-asset_1280x720_59_4000K.mp4"}
+22:32:39  wws.advance {"from":"wws","to":"wws","pool":10}
+22:32:39  wws.stuck {"on":"wws","waiting":9}
+22:32:58  wws.advance {"from":"wws","to":"wws","pool":10}
+22:32:58  wws.stuck {"on":"wws","waiting":9}
+22:33:10  wws.advance {"from":"wws","to":"wws","pool":10}
+22:33:10  wws.stuck {"on":"wws","waiting":9}
+22:33:28  wws.advance {"from":"wws","to":"wws","pool":10}
+22:33:28  wws.stuck {"on":"wws","waiting":9}
+22:33:40  wws.advance {"from":"wws","to":"wws","pool":10}
+22:33:40  wws.stuck {"on":"wws","waiting":9}
+22:33:57  wws.advance {"from":"wws","to":"wws","pool":10}
+22:33:57  wws.stuck {"on":"wws","waiting":9}
+22:34:45  wws.advance {"from":"wws","to":"wws","pool":10}
+22:34:45  wws.stuck {"on":"wws","waiting":9}
+22:34:57  wws.advance {"from":"wws","to":"wws","pool":10}
+22:34:57  wws.stuck {"on":"wws","waiting":9}
+22:35:09  wws.advance {"from":"wws","to":"wws","pool":10}
+22:35:09  wws.stuck {"on":"wws","waiting":9}
+22:35:28  wws.advance {"from":"wws","to":"wws","pool":10}
+22:35:28  wws.stuck {"on":"wws","waiting":9}
+22:35:40  wws.advance {"from":"wws","to":"wws","pool":10}
+22:35:40  wws.stuck {"on":"wws","waiting":9}
+22:35:57  wws.advance {"from":"wws","to":"wws","pool":10}
+22:35:57  wws.stuck {"on":"wws","waiting":9}
+22:36:09  wws.advance {"from":"wws","to":"wws","pool":10}
+22:36:09  wws.stuck {"on":"wws","waiting":9}
+22:36:27  wws.advance {"from":"wws","to":"wws","pool":10}
+22:36:27  wws.stuck {"on":"wws","waiting":9}
+22:36:39  wws.advance {"from":"wws","to":"wws","pool":10}
+22:36:39  wws.stuck {"on":"wws","waiting":9}
+22:36:57  wws.advance {"from":"wws","to":"wws","pool":10}
+22:36:57  wws.stuck {"on":"wws","waiting":9}
+── ASSERTIONS (1132 flagged) ──
+⚠ BAD RECAP 17:09:03 (no real recap existed) 
+⚠ BAD RECAP 17:29:27 (no real recap existed) 
+⚠ BAD RECAP 17:48:27 (no real recap existed) 
+⚠ BAD RECAP 18:09:27 (no real recap existed) 
+ℹ 1 inferred finals (ESPN lag) — see game.final_inferred lines
+⚠ WWS STUCK 17:08:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:08:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:08:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:09:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:09:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:09:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:09:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:11:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:11:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:11:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:11:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:12:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:12:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:12:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:12:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:13:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:13:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:14:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:14:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:14:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:14:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:14:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:15:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:15:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:15:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:15:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:16:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:17:03 on wws (9 others waiting)
+⚠ WWS STUCK 17:17:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:17:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:17:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:17:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:18:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:18:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:18:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:18:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:19:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:20:03 on wws (9 others waiting)
+⚠ WWS STUCK 17:20:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:20:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:20:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:20:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:21:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:21:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:21:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:21:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:22:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:23:03 on wws (9 others waiting)
+⚠ WWS STUCK 17:23:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:23:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:23:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:23:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:24:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:24:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:24:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:24:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:25:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:26:03 on wws (9 others waiting)
+⚠ WWS STUCK 17:26:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:26:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:26:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:26:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:27:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:27:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:27:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:27:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:28:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:29:03 on wws (9 others waiting)
+⚠ WWS STUCK 17:29:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:29:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:29:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:29:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:30:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:30:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:30:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:30:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:31:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:32:03 on wws (9 others waiting)
+⚠ WWS STUCK 17:32:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:32:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:32:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:32:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:33:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:33:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:33:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:33:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:34:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:35:10 on wws (9 others waiting)
+⚠ WWS STUCK 17:35:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:35:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:35:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:35:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:36:16 on wws (9 others waiting)
+⚠ WWS STUCK 17:36:28 on wws (9 others waiting)
+⚠ WWS STUCK 17:36:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:36:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:37:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:38:03 on wws (9 others waiting)
+⚠ WWS STUCK 17:38:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:38:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:38:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:38:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:39:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:39:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:39:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:39:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:40:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:41:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:41:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:41:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:42:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:42:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:42:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:42:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:43:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:43:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:43:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:44:33 on wws (9 others waiting)
+⚠ WWS STUCK 17:44:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:44:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:45:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:45:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:45:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:45:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:46:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:46:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:46:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:47:51 on wws (9 others waiting)
+⚠ WWS STUCK 17:47:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:48:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:48:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:48:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:48:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:49:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:49:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:49:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:49:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:50:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:50:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:50:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:51:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:51:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:51:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:51:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:52:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:52:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:52:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:53:33 on wws (9 others waiting)
+⚠ WWS STUCK 17:53:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:53:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:54:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:54:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:54:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:54:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:55:16 on wws (9 others waiting)
+⚠ WWS STUCK 17:55:28 on wws (9 others waiting)
+⚠ WWS STUCK 17:55:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:56:33 on wws (9 others waiting)
+⚠ WWS STUCK 17:56:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:56:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:57:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:57:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:57:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:57:57 on wws (9 others waiting)
+⚠ WWS STUCK 17:58:15 on wws (9 others waiting)
+⚠ WWS STUCK 17:58:27 on wws (9 others waiting)
+⚠ WWS STUCK 17:58:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:59:33 on wws (9 others waiting)
+⚠ WWS STUCK 17:59:45 on wws (9 others waiting)
+⚠ WWS STUCK 17:59:57 on wws (9 others waiting)
+⚠ WWS STUCK 18:00:17 on wws (9 others waiting)
+⚠ WWS STUCK 18:00:29 on wws (9 others waiting)
+⚠ WWS STUCK 18:00:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:00:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:01:18 on wws (9 others waiting)
+⚠ WWS STUCK 18:01:30 on wws (9 others waiting)
+⚠ WWS STUCK 18:01:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:02:51 on wws (9 others waiting)
+⚠ WWS STUCK 18:02:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:03:17 on wws (9 others waiting)
+⚠ WWS STUCK 18:03:29 on wws (9 others waiting)
+⚠ WWS STUCK 18:03:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:03:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:04:17 on wws (9 others waiting)
+⚠ WWS STUCK 18:04:29 on wws (9 others waiting)
+⚠ WWS STUCK 18:04:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:04:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:05:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:05:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:05:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:06:17 on wws (9 others waiting)
+⚠ WWS STUCK 18:06:29 on wws (9 others waiting)
+⚠ WWS STUCK 18:06:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:06:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:07:17 on wws (9 others waiting)
+⚠ WWS STUCK 18:07:29 on wws (9 others waiting)
+⚠ WWS STUCK 18:07:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:08:35 on wws (9 others waiting)
+⚠ WWS STUCK 18:08:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:08:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:09:17 on wws (9 others waiting)
+⚠ WWS STUCK 18:09:29 on wws (9 others waiting)
+⚠ WWS STUCK 18:09:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:09:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:10:17 on wws (9 others waiting)
+⚠ WWS STUCK 18:10:29 on wws (9 others waiting)
+⚠ WWS STUCK 18:10:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:11:35 on wws (9 others waiting)
+⚠ WWS STUCK 18:11:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:11:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:12:17 on wws (9 others waiting)
+⚠ WWS STUCK 18:12:29 on wws (9 others waiting)
+⚠ WWS STUCK 18:12:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:12:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:13:17 on wws (9 others waiting)
+⚠ WWS STUCK 18:13:29 on wws (9 others waiting)
+⚠ WWS STUCK 18:13:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:14:35 on wws (9 others waiting)
+⚠ WWS STUCK 18:14:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:14:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:15:17 on wws (9 others waiting)
+⚠ WWS STUCK 18:15:29 on wws (9 others waiting)
+⚠ WWS STUCK 18:15:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:15:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:16:17 on wws (9 others waiting)
+⚠ WWS STUCK 18:16:29 on wws (9 others waiting)
+⚠ WWS STUCK 18:16:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:17:35 on wws (9 others waiting)
+⚠ WWS STUCK 18:17:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:17:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:18:17 on wws (9 others waiting)
+⚠ WWS STUCK 18:18:29 on wws (9 others waiting)
+⚠ WWS STUCK 18:18:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:18:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:19:17 on wws (9 others waiting)
+⚠ WWS STUCK 18:19:29 on wws (9 others waiting)
+⚠ WWS STUCK 18:19:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:20:35 on wws (9 others waiting)
+⚠ WWS STUCK 18:20:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:20:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:21:17 on wws (9 others waiting)
+⚠ WWS STUCK 18:21:29 on wws (9 others waiting)
+⚠ WWS STUCK 18:21:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:21:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:22:17 on wws (9 others waiting)
+⚠ WWS STUCK 18:22:29 on wws (9 others waiting)
+⚠ WWS STUCK 18:22:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:23:35 on wws (9 others waiting)
+⚠ WWS STUCK 18:23:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:23:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:24:17 on wws (9 others waiting)
+⚠ WWS STUCK 18:24:29 on wws (9 others waiting)
+⚠ WWS STUCK 18:24:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:24:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:25:17 on wws (9 others waiting)
+⚠ WWS STUCK 18:25:29 on wws (9 others waiting)
+⚠ WWS STUCK 18:25:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:26:35 on wws (9 others waiting)
+⚠ WWS STUCK 18:26:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:26:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:27:17 on wws (9 others waiting)
+⚠ WWS STUCK 18:27:29 on wws (9 others waiting)
+⚠ WWS STUCK 18:27:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:27:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:28:17 on wws (9 others waiting)
+⚠ WWS STUCK 18:28:29 on wws (9 others waiting)
+⚠ WWS STUCK 18:28:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:29:35 on wws (9 others waiting)
+⚠ WWS STUCK 18:29:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:29:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:30:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:30:23 on wws (9 others waiting)
+⚠ WWS STUCK 18:30:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:30:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:31:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:31:23 on wws (9 others waiting)
+⚠ WWS STUCK 18:31:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:32:35 on wws (9 others waiting)
+⚠ WWS STUCK 18:32:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:32:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:33:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:33:23 on wws (9 others waiting)
+⚠ WWS STUCK 18:33:35 on wws (9 others waiting)
+⚠ WWS STUCK 18:33:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:33:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:34:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:34:23 on wws (9 others waiting)
+⚠ WWS STUCK 18:35:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:35:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:35:23 on wws (9 others waiting)
+⚠ WWS STUCK 18:35:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:35:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:36:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:36:23 on wws (9 others waiting)
+⚠ WWS STUCK 18:36:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:36:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:37:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:37:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:37:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:38:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:38:23 on wws (9 others waiting)
+⚠ WWS STUCK 18:38:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:38:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:39:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:39:23 on wws (9 others waiting)
+⚠ WWS STUCK 18:39:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:39:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:40:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:40:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:40:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:41:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:41:23 on wws (9 others waiting)
+⚠ WWS STUCK 18:41:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:41:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:42:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:42:23 on wws (9 others waiting)
+⚠ WWS STUCK 18:42:35 on wws (9 others waiting)
+⚠ WWS STUCK 18:43:23 on wws (9 others waiting)
+⚠ WWS STUCK 18:43:23 on wws (9 others waiting)
+⚠ WWS STUCK 18:43:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:43:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:44:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:44:23 on wws (9 others waiting)
+⚠ WWS STUCK 18:44:35 on wws (9 others waiting)
+⚠ WWS STUCK 18:44:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:44:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:45:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:45:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:45:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:46:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:46:23 on wws (9 others waiting)
+⚠ WWS STUCK 18:46:35 on wws (9 others waiting)
+⚠ WWS STUCK 18:46:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:46:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:47:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:47:23 on wws (9 others waiting)
+⚠ WWS STUCK 18:47:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:48:35 on wws (9 others waiting)
+⚠ WWS STUCK 18:48:35 on wws (9 others waiting)
+⚠ WWS STUCK 18:48:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:48:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:49:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:49:23 on wws (9 others waiting)
+⚠ WWS STUCK 18:49:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:49:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:50:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:50:23 on wws (9 others waiting)
+⚠ WWS STUCK 18:51:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:51:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:51:23 on wws (9 others waiting)
+⚠ WWS STUCK 18:51:35 on wws (9 others waiting)
+⚠ WWS STUCK 18:51:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:51:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:52:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:52:23 on wws (9 others waiting)
+⚠ WWS STUCK 18:52:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:52:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:53:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:53:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:53:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:54:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:54:23 on wws (9 others waiting)
+⚠ WWS STUCK 18:54:35 on wws (9 others waiting)
+⚠ WWS STUCK 18:54:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:54:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:55:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:55:23 on wws (9 others waiting)
+⚠ WWS STUCK 18:56:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:56:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:56:23 on wws (9 others waiting)
+⚠ WWS STUCK 18:56:35 on wws (9 others waiting)
+⚠ WWS STUCK 18:56:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:56:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:57:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:57:23 on wws (9 others waiting)
+⚠ WWS STUCK 18:57:35 on wws (9 others waiting)
+⚠ WWS STUCK 18:57:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:58:35 on wws (9 others waiting)
+⚠ WWS STUCK 18:58:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:58:59 on wws (9 others waiting)
+⚠ WWS STUCK 18:59:11 on wws (9 others waiting)
+⚠ WWS STUCK 18:59:23 on wws (9 others waiting)
+⚠ WWS STUCK 18:59:47 on wws (9 others waiting)
+⚠ WWS STUCK 18:59:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:00:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:00:23 on wws (9 others waiting)
+⚠ WWS STUCK 19:00:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:01:35 on wws (9 others waiting)
+⚠ WWS STUCK 19:01:35 on wws (9 others waiting)
+⚠ WWS STUCK 19:01:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:01:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:02:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:02:23 on wws (9 others waiting)
+⚠ WWS STUCK 19:02:35 on wws (9 others waiting)
+⚠ WWS STUCK 19:02:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:02:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:03:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:03:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:03:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:04:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:04:23 on wws (9 others waiting)
+⚠ WWS STUCK 19:04:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:04:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:05:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:05:23 on wws (9 others waiting)
+⚠ WWS STUCK 19:05:35 on wws (9 others waiting)
+⚠ WWS STUCK 19:05:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:06:35 on wws (9 others waiting)
+⚠ WWS STUCK 19:06:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:06:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:07:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:07:23 on wws (9 others waiting)
+⚠ WWS STUCK 19:07:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:07:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:08:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:08:23 on wws (9 others waiting)
+⚠ WWS STUCK 19:08:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:09:35 on wws (9 others waiting)
+⚠ WWS STUCK 19:09:35 on wws (9 others waiting)
+⚠ WWS STUCK 19:09:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:09:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:10:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:10:23 on wws (9 others waiting)
+⚠ WWS STUCK 19:10:35 on wws (9 others waiting)
+⚠ WWS STUCK 19:10:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:10:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:11:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:11:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:11:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:12:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:12:23 on wws (9 others waiting)
+⚠ WWS STUCK 19:12:35 on wws (9 others waiting)
+⚠ WWS STUCK 19:12:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:12:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:13:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:13:23 on wws (9 others waiting)
+⚠ WWS STUCK 19:13:35 on wws (9 others waiting)
+⚠ WWS STUCK 19:14:23 on wws (9 others waiting)
+⚠ WWS STUCK 19:14:23 on wws (9 others waiting)
+⚠ WWS STUCK 19:14:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:14:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:15:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:15:23 on wws (9 others waiting)
+⚠ WWS STUCK 19:15:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:15:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:16:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:16:23 on wws (9 others waiting)
+⚠ WWS STUCK 19:17:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:17:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:17:23 on wws (9 others waiting)
+⚠ WWS STUCK 19:17:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:17:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:18:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:18:23 on wws (9 others waiting)
+⚠ WWS STUCK 19:18:35 on wws (9 others waiting)
+⚠ WWS STUCK 19:18:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:18:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:19:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:19:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:19:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:20:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:20:23 on wws (9 others waiting)
+⚠ WWS STUCK 19:20:35 on wws (9 others waiting)
+⚠ WWS STUCK 19:20:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:20:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:21:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:21:23 on wws (9 others waiting)
+⚠ WWS STUCK 19:22:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:22:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:22:23 on wws (9 others waiting)
+⚠ WWS STUCK 19:22:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:22:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:23:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:23:23 on wws (9 others waiting)
+⚠ WWS STUCK 19:23:35 on wws (9 others waiting)
+⚠ WWS STUCK 19:23:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:23:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:24:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:24:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:24:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:25:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:25:23 on wws (9 others waiting)
+⚠ WWS STUCK 19:25:35 on wws (9 others waiting)
+⚠ WWS STUCK 19:25:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:25:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:26:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:26:23 on wws (9 others waiting)
+⚠ WWS STUCK 19:27:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:27:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:27:23 on wws (9 others waiting)
+⚠ WWS STUCK 19:27:35 on wws (9 others waiting)
+⚠ WWS STUCK 19:27:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:27:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:28:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:28:23 on wws (9 others waiting)
+⚠ WWS STUCK 19:28:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:28:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:29:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:29:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:29:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:30:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:30:23 on wws (9 others waiting)
+⚠ WWS STUCK 19:30:35 on wws (9 others waiting)
+⚠ WWS STUCK 19:30:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:30:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:31:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:31:23 on wws (9 others waiting)
+⚠ WWS STUCK 19:32:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:32:12 on wws (9 others waiting)
+⚠ WWS STUCK 19:32:24 on wws (9 others waiting)
+⚠ WWS STUCK 19:32:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:32:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:33:11 on wws (9 others waiting)
+⚠ WWS STUCK 19:33:23 on wws (9 others waiting)
+⚠ WWS STUCK 19:33:35 on wws (9 others waiting)
+⚠ WWS STUCK 19:33:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:33:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:34:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:34:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:34:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:35:17 on wws (9 others waiting)
+⚠ WWS STUCK 19:35:29 on wws (9 others waiting)
+⚠ WWS STUCK 19:35:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:35:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:36:17 on wws (9 others waiting)
+⚠ WWS STUCK 19:36:29 on wws (9 others waiting)
+⚠ WWS STUCK 19:36:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:37:35 on wws (9 others waiting)
+⚠ WWS STUCK 19:37:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:37:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:38:17 on wws (9 others waiting)
+⚠ WWS STUCK 19:38:29 on wws (9 others waiting)
+⚠ WWS STUCK 19:38:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:38:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:39:17 on wws (9 others waiting)
+⚠ WWS STUCK 19:39:29 on wws (9 others waiting)
+⚠ WWS STUCK 19:39:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:40:35 on wws (9 others waiting)
+⚠ WWS STUCK 19:40:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:40:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:41:17 on wws (9 others waiting)
+⚠ WWS STUCK 19:41:29 on wws (9 others waiting)
+⚠ WWS STUCK 19:41:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:41:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:42:17 on wws (9 others waiting)
+⚠ WWS STUCK 19:42:29 on wws (9 others waiting)
+⚠ WWS STUCK 19:42:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:43:35 on wws (9 others waiting)
+⚠ WWS STUCK 19:43:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:43:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:44:17 on wws (9 others waiting)
+⚠ WWS STUCK 19:44:29 on wws (9 others waiting)
+⚠ WWS STUCK 19:44:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:44:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:45:17 on wws (9 others waiting)
+⚠ WWS STUCK 19:45:29 on wws (9 others waiting)
+⚠ WWS STUCK 19:45:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:46:35 on wws (9 others waiting)
+⚠ WWS STUCK 19:46:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:46:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:47:17 on wws (9 others waiting)
+⚠ WWS STUCK 19:47:29 on wws (9 others waiting)
+⚠ WWS STUCK 19:47:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:47:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:48:17 on wws (9 others waiting)
+⚠ WWS STUCK 19:48:29 on wws (9 others waiting)
+⚠ WWS STUCK 19:48:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:49:35 on wws (9 others waiting)
+⚠ WWS STUCK 19:49:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:49:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:50:17 on wws (9 others waiting)
+⚠ WWS STUCK 19:50:29 on wws (9 others waiting)
+⚠ WWS STUCK 19:50:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:50:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:51:17 on wws (9 others waiting)
+⚠ WWS STUCK 19:51:29 on wws (9 others waiting)
+⚠ WWS STUCK 19:51:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:52:35 on wws (9 others waiting)
+⚠ WWS STUCK 19:52:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:52:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:53:17 on wws (9 others waiting)
+⚠ WWS STUCK 19:53:29 on wws (9 others waiting)
+⚠ WWS STUCK 19:53:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:53:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:54:17 on wws (9 others waiting)
+⚠ WWS STUCK 19:54:29 on wws (9 others waiting)
+⚠ WWS STUCK 19:54:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:55:35 on wws (9 others waiting)
+⚠ WWS STUCK 19:55:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:55:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:56:17 on wws (9 others waiting)
+⚠ WWS STUCK 19:56:29 on wws (9 others waiting)
+⚠ WWS STUCK 19:56:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:56:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:57:17 on wws (9 others waiting)
+⚠ WWS STUCK 19:57:29 on wws (9 others waiting)
+⚠ WWS STUCK 19:57:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:58:35 on wws (9 others waiting)
+⚠ WWS STUCK 19:58:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:58:59 on wws (9 others waiting)
+⚠ WWS STUCK 19:59:17 on wws (9 others waiting)
+⚠ WWS STUCK 19:59:29 on wws (9 others waiting)
+⚠ WWS STUCK 19:59:47 on wws (9 others waiting)
+⚠ WWS STUCK 19:59:59 on wws (9 others waiting)
+⚠ WWS STUCK 20:00:17 on wws (9 others waiting)
+⚠ WWS STUCK 20:00:29 on wws (9 others waiting)
+⚠ WWS STUCK 20:00:47 on wws (9 others waiting)
+⚠ WWS STUCK 20:01:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:01:47 on wws (9 others waiting)
+⚠ WWS STUCK 20:01:59 on wws (9 others waiting)
+⚠ WWS STUCK 20:02:17 on wws (9 others waiting)
+⚠ WWS STUCK 20:02:29 on wws (9 others waiting)
+⚠ WWS STUCK 20:02:47 on wws (9 others waiting)
+⚠ WWS STUCK 20:02:59 on wws (9 others waiting)
+⚠ WWS STUCK 20:03:17 on wws (9 others waiting)
+⚠ WWS STUCK 20:03:29 on wws (9 others waiting)
+⚠ WWS STUCK 20:03:47 on wws (9 others waiting)
+⚠ WWS STUCK 20:04:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:04:47 on wws (9 others waiting)
+⚠ WWS STUCK 20:04:59 on wws (9 others waiting)
+⚠ WWS STUCK 20:05:17 on wws (9 others waiting)
+⚠ WWS STUCK 20:05:29 on wws (9 others waiting)
+⚠ WWS STUCK 20:05:47 on wws (9 others waiting)
+⚠ WWS STUCK 20:05:59 on wws (9 others waiting)
+⚠ WWS STUCK 20:06:17 on wws (9 others waiting)
+⚠ WWS STUCK 20:06:29 on wws (9 others waiting)
+⚠ WWS STUCK 20:06:47 on wws (9 others waiting)
+⚠ WWS STUCK 20:07:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:07:47 on wws (9 others waiting)
+⚠ WWS STUCK 20:07:59 on wws (9 others waiting)
+⚠ WWS STUCK 20:08:17 on wws (9 others waiting)
+⚠ WWS STUCK 20:08:29 on wws (9 others waiting)
+⚠ WWS STUCK 20:08:47 on wws (9 others waiting)
+⚠ WWS STUCK 20:08:59 on wws (9 others waiting)
+⚠ WWS STUCK 20:09:17 on wws (9 others waiting)
+⚠ WWS STUCK 20:09:29 on wws (9 others waiting)
+⚠ WWS STUCK 20:09:47 on wws (9 others waiting)
+⚠ WWS STUCK 20:10:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:10:47 on wws (9 others waiting)
+⚠ WWS STUCK 20:10:59 on wws (9 others waiting)
+⚠ WWS STUCK 20:11:17 on wws (9 others waiting)
+⚠ WWS STUCK 20:11:29 on wws (9 others waiting)
+⚠ WWS STUCK 20:11:47 on wws (9 others waiting)
+⚠ WWS STUCK 20:11:59 on wws (9 others waiting)
+⚠ WWS STUCK 20:12:17 on wws (9 others waiting)
+⚠ WWS STUCK 20:12:29 on wws (9 others waiting)
+⚠ WWS STUCK 20:12:47 on wws (9 others waiting)
+⚠ WWS STUCK 20:13:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:13:48 on wws (9 others waiting)
+⚠ WWS STUCK 20:14:00 on wws (9 others waiting)
+⚠ WWS STUCK 20:14:17 on wws (9 others waiting)
+⚠ WWS STUCK 20:14:29 on wws (9 others waiting)
+⚠ WWS STUCK 20:14:47 on wws (9 others waiting)
+⚠ WWS STUCK 20:14:59 on wws (9 others waiting)
+⚠ WWS STUCK 20:15:17 on wws (9 others waiting)
+⚠ WWS STUCK 20:15:29 on wws (9 others waiting)
+⚠ WWS STUCK 20:15:47 on wws (9 others waiting)
+⚠ WWS STUCK 20:16:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:16:47 on wws (9 others waiting)
+⚠ WWS STUCK 20:16:59 on wws (9 others waiting)
+⚠ WWS STUCK 20:17:17 on wws (9 others waiting)
+⚠ WWS STUCK 20:17:29 on wws (9 others waiting)
+⚠ WWS STUCK 20:17:47 on wws (9 others waiting)
+⚠ WWS STUCK 20:17:59 on wws (9 others waiting)
+⚠ WWS STUCK 20:18:17 on wws (9 others waiting)
+⚠ WWS STUCK 20:18:29 on wws (9 others waiting)
+⚠ WWS STUCK 20:18:47 on wws (9 others waiting)
+⚠ WWS STUCK 20:19:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:19:47 on wws (9 others waiting)
+⚠ WWS STUCK 20:19:59 on wws (9 others waiting)
+⚠ WWS STUCK 20:20:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:20:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:20:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:21:05 on wws (9 others waiting)
+⚠ WWS STUCK 20:21:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:21:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:21:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:22:41 on wws (9 others waiting)
+⚠ WWS STUCK 20:22:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:23:05 on wws (9 others waiting)
+⚠ WWS STUCK 20:23:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:23:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:23:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:24:05 on wws (9 others waiting)
+⚠ WWS STUCK 20:24:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:24:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:24:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:25:41 on wws (9 others waiting)
+⚠ WWS STUCK 20:25:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:26:05 on wws (9 others waiting)
+⚠ WWS STUCK 20:26:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:26:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:26:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:27:05 on wws (9 others waiting)
+⚠ WWS STUCK 20:27:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:27:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:27:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:28:41 on wws (9 others waiting)
+⚠ WWS STUCK 20:28:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:29:05 on wws (9 others waiting)
+⚠ WWS STUCK 20:29:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:29:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:29:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:30:05 on wws (9 others waiting)
+⚠ WWS STUCK 20:30:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:30:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:30:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:31:41 on wws (9 others waiting)
+⚠ WWS STUCK 20:31:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:32:05 on wws (9 others waiting)
+⚠ WWS STUCK 20:32:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:32:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:32:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:33:05 on wws (9 others waiting)
+⚠ WWS STUCK 20:33:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:33:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:33:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:34:41 on wws (9 others waiting)
+⚠ WWS STUCK 20:34:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:35:05 on wws (9 others waiting)
+⚠ WWS STUCK 20:35:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:35:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:35:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:36:05 on wws (9 others waiting)
+⚠ WWS STUCK 20:36:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:36:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:36:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:37:41 on wws (9 others waiting)
+⚠ WWS STUCK 20:37:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:38:05 on wws (9 others waiting)
+⚠ WWS STUCK 20:38:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:38:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:38:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:39:05 on wws (9 others waiting)
+⚠ WWS STUCK 20:39:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:39:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:39:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:40:41 on wws (9 others waiting)
+⚠ WWS STUCK 20:40:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:41:05 on wws (9 others waiting)
+⚠ WWS STUCK 20:41:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:41:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:41:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:42:05 on wws (9 others waiting)
+⚠ WWS STUCK 20:42:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:42:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:42:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:43:41 on wws (9 others waiting)
+⚠ WWS STUCK 20:43:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:44:05 on wws (9 others waiting)
+⚠ WWS STUCK 20:44:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:44:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:44:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:45:05 on wws (9 others waiting)
+⚠ WWS STUCK 20:45:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:45:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:45:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:46:41 on wws (9 others waiting)
+⚠ WWS STUCK 20:46:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:47:05 on wws (9 others waiting)
+⚠ WWS STUCK 20:47:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:47:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:47:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:48:05 on wws (9 others waiting)
+⚠ WWS STUCK 20:48:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:48:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:48:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:49:41 on wws (9 others waiting)
+⚠ WWS STUCK 20:49:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:50:05 on wws (9 others waiting)
+⚠ WWS STUCK 20:50:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:50:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:50:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:51:05 on wws (9 others waiting)
+⚠ WWS STUCK 20:51:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:51:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:51:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:52:41 on wws (9 others waiting)
+⚠ WWS STUCK 20:52:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:53:05 on wws (9 others waiting)
+⚠ WWS STUCK 20:53:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:53:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:53:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:54:05 on wws (9 others waiting)
+⚠ WWS STUCK 20:54:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:54:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:54:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:55:41 on wws (9 others waiting)
+⚠ WWS STUCK 20:55:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:56:05 on wws (9 others waiting)
+⚠ WWS STUCK 20:56:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:56:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:56:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:57:05 on wws (9 others waiting)
+⚠ WWS STUCK 20:57:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:57:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:57:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:58:41 on wws (9 others waiting)
+⚠ WWS STUCK 20:58:53 on wws (9 others waiting)
+⚠ WWS STUCK 20:59:05 on wws (9 others waiting)
+⚠ WWS STUCK 20:59:23 on wws (9 others waiting)
+⚠ WWS STUCK 20:59:35 on wws (9 others waiting)
+⚠ WWS STUCK 20:59:53 on wws (9 others waiting)
+⚠ WWS STUCK 21:00:05 on wws (9 others waiting)
+⚠ WWS STUCK 21:00:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:00:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:00:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:01:43 on wws (9 others waiting)
+⚠ WWS STUCK 21:01:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:02:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:02:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:02:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:02:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:03:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:03:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:03:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:03:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:04:43 on wws (9 others waiting)
+⚠ WWS STUCK 21:04:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:05:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:05:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:05:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:05:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:06:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:06:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:06:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:06:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:07:43 on wws (9 others waiting)
+⚠ WWS STUCK 21:07:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:08:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:08:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:08:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:08:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:09:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:09:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:09:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:09:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:10:43 on wws (9 others waiting)
+⚠ WWS STUCK 21:10:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:11:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:11:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:11:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:11:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:12:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:12:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:12:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:12:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:13:43 on wws (9 others waiting)
+⚠ WWS STUCK 21:13:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:14:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:14:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:14:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:14:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:15:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:15:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:15:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:15:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:16:43 on wws (9 others waiting)
+⚠ WWS STUCK 21:16:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:17:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:17:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:17:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:17:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:18:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:18:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:18:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:18:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:19:43 on wws (9 others waiting)
+⚠ WWS STUCK 21:19:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:20:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:20:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:20:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:20:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:21:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:21:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:21:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:21:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:22:43 on wws (9 others waiting)
+⚠ WWS STUCK 21:22:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:23:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:23:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:23:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:23:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:24:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:24:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:24:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:24:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:25:43 on wws (9 others waiting)
+⚠ WWS STUCK 21:25:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:26:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:26:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:26:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:26:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:27:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:27:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:27:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:27:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:28:43 on wws (9 others waiting)
+⚠ WWS STUCK 21:28:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:29:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:29:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:29:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:29:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:30:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:30:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:30:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:30:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:31:43 on wws (9 others waiting)
+⚠ WWS STUCK 21:31:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:32:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:32:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:32:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:32:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:33:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:33:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:33:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:33:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:34:43 on wws (9 others waiting)
+⚠ WWS STUCK 21:34:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:35:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:35:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:35:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:35:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:36:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:36:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:36:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:36:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:37:43 on wws (9 others waiting)
+⚠ WWS STUCK 21:37:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:38:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:38:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:38:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:38:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:39:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:39:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:39:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:39:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:40:43 on wws (9 others waiting)
+⚠ WWS STUCK 21:40:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:41:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:41:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:41:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:41:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:42:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:42:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:42:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:42:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:43:43 on wws (9 others waiting)
+⚠ WWS STUCK 21:43:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:44:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:44:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:44:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:44:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:45:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:45:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:45:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:45:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:46:43 on wws (9 others waiting)
+⚠ WWS STUCK 21:46:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:47:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:47:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:47:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:47:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:48:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:48:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:48:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:48:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:49:43 on wws (9 others waiting)
+⚠ WWS STUCK 21:49:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:50:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:50:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:50:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:50:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:51:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:51:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:51:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:51:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:52:43 on wws (9 others waiting)
+⚠ WWS STUCK 21:52:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:53:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:53:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:53:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:53:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:54:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:54:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:54:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:54:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:55:43 on wws (9 others waiting)
+⚠ WWS STUCK 21:55:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:56:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:56:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:56:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:56:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:57:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:57:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:57:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:57:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:58:43 on wws (9 others waiting)
+⚠ WWS STUCK 21:58:55 on wws (9 others waiting)
+⚠ WWS STUCK 21:59:07 on wws (9 others waiting)
+⚠ WWS STUCK 21:59:25 on wws (9 others waiting)
+⚠ WWS STUCK 21:59:37 on wws (9 others waiting)
+⚠ WWS STUCK 21:59:55 on wws (9 others waiting)
+⚠ WWS STUCK 22:00:07 on wws (9 others waiting)
+⚠ WWS STUCK 22:00:25 on wws (9 others waiting)
+⚠ WWS STUCK 22:00:37 on wws (9 others waiting)
+⚠ WWS STUCK 22:00:55 on wws (9 others waiting)
+⚠ WWS STUCK 22:01:43 on wws (9 others waiting)
+⚠ WWS STUCK 22:01:55 on wws (9 others waiting)
+⚠ WWS STUCK 22:02:07 on wws (9 others waiting)
+⚠ WWS STUCK 22:02:25 on wws (9 others waiting)
+⚠ WWS STUCK 22:02:37 on wws (9 others waiting)
+⚠ WWS STUCK 22:02:55 on wws (9 others waiting)
+⚠ WWS STUCK 22:03:07 on wws (9 others waiting)
+⚠ WWS STUCK 22:03:25 on wws (9 others waiting)
+⚠ WWS STUCK 22:03:37 on wws (9 others waiting)
+⚠ WWS STUCK 22:03:55 on wws (9 others waiting)
+⚠ WWS STUCK 22:04:43 on wws (9 others waiting)
+⚠ WWS STUCK 22:04:55 on wws (9 others waiting)
+⚠ WWS STUCK 22:05:07 on wws (9 others waiting)
+⚠ WWS STUCK 22:05:25 on wws (9 others waiting)
+⚠ WWS STUCK 22:05:37 on wws (9 others waiting)
+⚠ WWS STUCK 22:05:55 on wws (9 others waiting)
+⚠ WWS STUCK 22:06:07 on wws (9 others waiting)
+⚠ WWS STUCK 22:06:25 on wws (9 others waiting)
+⚠ WWS STUCK 22:06:37 on wws (9 others waiting)
+⚠ WWS STUCK 22:06:55 on wws (9 others waiting)
+⚠ WWS STUCK 22:07:43 on wws (9 others waiting)
+⚠ WWS STUCK 22:07:55 on wws (9 others waiting)
+⚠ WWS STUCK 22:08:07 on wws (9 others waiting)
+⚠ WWS STUCK 22:08:25 on wws (9 others waiting)
+⚠ WWS STUCK 22:08:37 on wws (9 others waiting)
+⚠ WWS STUCK 22:08:55 on wws (9 others waiting)
+⚠ WWS STUCK 22:09:07 on wws (9 others waiting)
+⚠ WWS STUCK 22:09:25 on wws (9 others waiting)
+⚠ WWS STUCK 22:09:37 on wws (9 others waiting)
+⚠ WWS STUCK 22:09:55 on wws (9 others waiting)
+⚠ WWS STUCK 22:10:43 on wws (9 others waiting)
+⚠ WWS STUCK 22:10:55 on wws (9 others waiting)
+⚠ WWS STUCK 22:11:07 on wws (9 others waiting)
+⚠ WWS STUCK 22:11:25 on wws (9 others waiting)
+⚠ WWS STUCK 22:11:37 on wws (9 others waiting)
+⚠ WWS STUCK 22:11:55 on wws (9 others waiting)
+⚠ WWS STUCK 22:12:07 on wws (9 others waiting)
+⚠ WWS STUCK 22:12:25 on wws (9 others waiting)
+⚠ WWS STUCK 22:12:37 on wws (9 others waiting)
+⚠ WWS STUCK 22:12:55 on wws (9 others waiting)
+⚠ WWS STUCK 22:13:43 on wws (9 others waiting)
+⚠ WWS STUCK 22:13:55 on wws (9 others waiting)
+⚠ WWS STUCK 22:14:07 on wws (9 others waiting)
+⚠ WWS STUCK 22:14:25 on wws (9 others waiting)
+⚠ WWS STUCK 22:14:37 on wws (9 others waiting)
+⚠ WWS STUCK 22:14:55 on wws (9 others waiting)
+⚠ WWS STUCK 22:15:07 on wws (9 others waiting)
+⚠ WWS STUCK 22:15:25 on wws (9 others waiting)
+⚠ WWS STUCK 22:15:37 on wws (9 others waiting)
+⚠ WWS STUCK 22:15:55 on wws (9 others waiting)
+⚠ WWS STUCK 22:16:43 on wws (9 others waiting)
+⚠ WWS STUCK 22:16:55 on wws (9 others waiting)
+⚠ WWS STUCK 22:17:07 on wws (9 others waiting)
+⚠ WWS STUCK 22:17:25 on wws (9 others waiting)
+⚠ WWS STUCK 22:17:37 on wws (9 others waiting)
+⚠ WWS STUCK 22:17:55 on wws (9 others waiting)
+⚠ WWS STUCK 22:18:07 on wws (9 others waiting)
+⚠ WWS STUCK 22:18:25 on wws (9 others waiting)
+⚠ WWS STUCK 22:18:37 on wws (9 others waiting)
+⚠ WWS STUCK 22:18:55 on wws (9 others waiting)
+⚠ WWS STUCK 22:19:43 on wws (9 others waiting)
+⚠ WWS STUCK 22:19:55 on wws (9 others waiting)
+⚠ WWS STUCK 22:20:07 on wws (9 others waiting)
+⚠ WWS STUCK 22:20:25 on wws (9 others waiting)
+⚠ WWS STUCK 22:20:37 on wws (9 others waiting)
+⚠ WWS STUCK 22:20:55 on wws (9 others waiting)
+⚠ WWS STUCK 22:21:07 on wws (9 others waiting)
+⚠ WWS STUCK 22:21:25 on wws (9 others waiting)
+⚠ WWS STUCK 22:21:37 on wws (9 others waiting)
+⚠ WWS STUCK 22:21:55 on wws (9 others waiting)
+⚠ WWS STUCK 22:22:43 on wws (9 others waiting)
+⚠ WWS STUCK 22:22:55 on wws (9 others waiting)
+⚠ WWS STUCK 22:23:07 on wws (9 others waiting)
+⚠ WWS STUCK 22:23:25 on wws (9 others waiting)
+⚠ WWS STUCK 22:23:37 on wws (9 others waiting)
+⚠ WWS STUCK 22:23:57 on wws (9 others waiting)
+⚠ WWS STUCK 22:24:09 on wws (9 others waiting)
+⚠ WWS STUCK 22:24:27 on wws (9 others waiting)
+⚠ WWS STUCK 22:24:39 on wws (9 others waiting)
+⚠ WWS STUCK 22:24:57 on wws (9 others waiting)
+⚠ WWS STUCK 22:25:45 on wws (9 others waiting)
+⚠ WWS STUCK 22:25:57 on wws (9 others waiting)
+⚠ WWS STUCK 22:26:09 on wws (9 others waiting)
+⚠ WWS STUCK 22:26:27 on wws (9 others waiting)
+⚠ WWS STUCK 22:26:39 on wws (9 others waiting)
+⚠ WWS STUCK 22:26:57 on wws (9 others waiting)
+⚠ WWS STUCK 22:27:09 on wws (9 others waiting)
+⚠ WWS STUCK 22:27:27 on wws (9 others waiting)
+⚠ WWS STUCK 22:27:39 on wws (9 others waiting)
+⚠ WWS STUCK 22:27:57 on wws (9 others waiting)
+⚠ WWS STUCK 22:28:45 on wws (9 others waiting)
+⚠ WWS STUCK 22:28:57 on wws (9 others waiting)
+⚠ WWS STUCK 22:29:09 on wws (9 others waiting)
+⚠ WWS STUCK 22:29:27 on wws (9 others waiting)
+⚠ WWS STUCK 22:29:39 on wws (9 others waiting)
+⚠ WWS STUCK 22:29:57 on wws (9 others waiting)
+⚠ WWS STUCK 22:30:09 on wws (9 others waiting)
+⚠ WWS STUCK 22:30:27 on wws (9 others waiting)
+⚠ WWS STUCK 22:30:39 on wws (9 others waiting)
+⚠ WWS STUCK 22:30:57 on wws (9 others waiting)
+⚠ WWS STUCK 22:31:45 on wws (9 others waiting)
+⚠ WWS STUCK 22:31:57 on wws (9 others waiting)
+⚠ WWS STUCK 22:32:09 on wws (9 others waiting)
+⚠ WWS STUCK 22:32:27 on wws (9 others waiting)
+⚠ WWS STUCK 22:32:39 on wws (9 others waiting)
+⚠ WWS STUCK 22:32:58 on wws (9 others waiting)
+⚠ WWS STUCK 22:33:10 on wws (9 others waiting)
+⚠ WWS STUCK 22:33:28 on wws (9 others waiting)
+⚠ WWS STUCK 22:33:40 on wws (9 others waiting)
+⚠ WWS STUCK 22:33:57 on wws (9 others waiting)
+⚠ WWS STUCK 22:34:45 on wws (9 others waiting)
+⚠ WWS STUCK 22:34:57 on wws (9 others waiting)
+⚠ WWS STUCK 22:35:09 on wws (9 others waiting)
+⚠ WWS STUCK 22:35:28 on wws (9 others waiting)
+⚠ WWS STUCK 22:35:40 on wws (9 others waiting)
+⚠ WWS STUCK 22:35:57 on wws (9 others waiting)
+⚠ WWS STUCK 22:36:09 on wws (9 others waiting)
+⚠ WWS STUCK 22:36:27 on wws (9 others waiting)
+⚠ WWS STUCK 22:36:39 on wws (9 others waiting)
+⚠ WWS STUCK 22:36:57 on wws (9 others waiting)
