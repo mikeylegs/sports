@@ -1,0 +1,1010 @@
+sports/?nightlog=1:1797 [night 15:53:57] sys.init {navType: 'navigate', ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64'}
+sports/?nightlog=1:6510 [roster] Yankees: 24 players
+sports/?nightlog=1:6510 [roster] Mets: 26 players
+sports/?nightlog=1:1797 [night 15:53:57] gameref.resolve {via: 'mlbLastFinalGamePk', teamId: 147, gamePk: 823508, gameDate: '2026-08-13', daysOld: 1, …}
+sports/?nightlog=1:1797 [night 15:54:33] gameref.resolve {via: 'mlbLastFinalGamePk', teamId: 121, gamePk: 824883, gameDate: '2026-08-12', daysOld: 2, …}
+sports/?nightlog=1:1797 [night 15:55:09] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 15:55:21] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 15:55:39] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 15:55:51] wws.advance {from: '#401816527 MLB LIVE', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 15:55:57] recap.pick {team: 'NYY', gamePk: 823508, viaKnownPk: false, title: "Logan Gilbert dominates in the Mariners' shutout win"}
+sports/?nightlog=1:1797 [night 15:55:59] screen.show {what: 'rotation', source: 'hoh-nyy', title: "Logan Gilbert dominates in the Mariners' shutout w", gamePk: 823508, url: '-csvm-diamondgcp-asset_1280x720_59_4000K.mp4'}
+favicon.ico:1  GET https://mikeylegs.github.io/favicon.ico 404 (Not Found)
+sports/?nightlog=1:1797 [night 15:56:09] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 15:56:21] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 15:56:39] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 15:56:51] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 15:56:57] score.change {game: 'STL@CHC', team: 'CHC', delta: 3, fav: false, likelyHR: true}
+sports/?nightlog=1:1797 [night 15:57:09] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 15:57:21] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 15:57:39] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 15:57:51] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 15:58:09] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 15:58:21] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 15:58:39] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 15:59:26] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 15:59:39] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 15:59:51] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:00:12] wws.advance {from: '#401816527 MLB LIVE', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:00:24] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:00:42] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:00:54] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:01:12] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:01:24] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+oardefault.jpg:1  GET https://i.ytimg.com/vi/s2-cjMkkb4w/oardefault.jpg 404 (Not Found)
+oardefault.jpg:1  GET https://i.ytimg.com/vi/v-sMkQe20QU/oardefault.jpg 404 (Not Found)
+oardefault.jpg:1  GET https://i.ytimg.com/vi/1AUoyEokS8Y/oardefault.jpg 404 (Not Found)
+maxresdefault.jpg:1  GET https://i.ytimg.com/vi/1AUoyEokS8Y/maxresdefault.jpg 404 (Not Found)
+Image
+(anonymous) @ sports/?nightlog=1:8283
+_seamPortrait @ sports/?nightlog=1:8230
+img.onload @ sports/?nightlog=1:8213
+sports/?nightlog=1:1797 [night 16:01:42] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:01:54] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:02:12] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:02:24] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:02:42] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:02:54] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:03:41] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:03:43] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:03:55] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:04:13] wws.advance {from: '#401816527 MLB LIVE', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:04:25] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:04:43] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:04:55] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:05:13] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:05:25] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:05:43] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:05:55] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:06:13] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:06:25] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:06:43] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:06:55] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:08:13] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:08:25] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:08:43] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+oardefault.jpg:1  GET https://i.ytimg.com/vi/a9yZ3ZZPxtg/oardefault.jpg 404 (Not Found)
+oardefault.jpg:1  GET https://i.ytimg.com/vi/8Bop9wVLeNM/oardefault.jpg 404 (Not Found)
+oardefault.jpg:1  GET https://i.ytimg.com/vi/HMqnZii3PDM/oardefault.jpg 404 (Not Found)
+maxresdefault.jpg:1  GET https://i.ytimg.com/vi/HMqnZii3PDM/maxresdefault.jpg 404 (Not Found)
+Image
+(anonymous) @ sports/?nightlog=1:8283
+_seamPortrait @ sports/?nightlog=1:8230
+img.onload @ sports/?nightlog=1:8213
+sports/?nightlog=1:1797 [night 16:08:55] wws.advance {from: '#401816527 MLB LIVE', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:09:13] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:09:25] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:09:43] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:09:55] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:10:13] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:10:25] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:10:43] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:10:55] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:11:13] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:11:25] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:11:43] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:12:30] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:12:43] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:12:55] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:13:13] wws.advance {from: '#401816527 MLB LIVE', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:13:25] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:13:43] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:13:55] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:14:13] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:14:25] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:14:43] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:14:55] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:15:13] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:15:25] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:15:43] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:15:55] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:16:42] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:16:44] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:16:56] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:17:14] wws.advance {from: '#401816527 MLB LIVE', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:17:26] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:17:44] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:17:56] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:18:14] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:18:26] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:18:44] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:18:56] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:19:14] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:19:26] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:19:44] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:19:56] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:20:43] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:20:44] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:20:56] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:21:14] wws.advance {from: '#401816527 MLB LIVE', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:21:26] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:21:44] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:21:56] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:22:14] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:22:26] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:22:44] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:22:56] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:23:14] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:23:26] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:23:44] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:23:56] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:24:44] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:24:56] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:25:14] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:25:26] wws.advance {from: '#401816527 MLB LIVE', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:25:44] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:25:56] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:26:14] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:26:26] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:26:44] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:26:56] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:27:14] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:27:26] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:27:44] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:27:56] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:28:14] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:29:04] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:29:14] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:29:26] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:29:44] wws.advance {from: '#401816527 MLB LIVE', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:29:56] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:29:57] recap.pick {team: 'NYY', gamePk: 823508, viaKnownPk: false, title: "Logan Gilbert dominates in the Mariners' shutout win"}
+sports/?nightlog=1:1797 [night 16:30:14] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:30:26] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:30:44] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:30:56] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:31:14] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:31:26] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:31:44] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:31:56] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:32:14] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:32:26] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:33:44] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:33:56] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:34:14] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:34:26] wws.advance {from: '#401816527 MLB LIVE', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:34:44] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:34:56] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:35:14] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:35:26] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:35:44] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:35:58] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:36:16] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:36:28] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:36:46] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:36:58] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:37:16] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:38:06] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:38:16] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:38:28] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:38:46] wws.advance {from: '#401816527 MLB LIVE', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:38:58] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:39:16] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:39:28] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:39:46] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:39:58] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:40:16] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:40:28] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:40:46] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:40:58] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:41:16] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:41:28] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:42:16] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:42:16] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:42:28] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1 Access to fetch at 'https://www.youtube.com/feeds/videos.xml?channel_id=UCQl18L5vfX9hCSclV_F6XpQ' from origin 'https://mikeylegs.github.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+sports/?nightlog=1:2112  GET https://www.youtube.com/feeds/videos.xml?channel_id=UCQl18L5vfX9hCSclV_F6XpQ net::ERR_FAILED 404 (Not Found)
+fetchWithTimeout @ sports/?nightlog=1:2112
+proxyFetchText @ sports/?nightlog=1:2119
+fetchChannelRSS @ sports/?nightlog=1:7298
+findRecap @ sports/?nightlog=1:7389
+await in findRecap
+resolveVideo @ sports/?nightlog=1:9168
+playRecap @ sports/?nightlog=1:9209
+recapDirectorTick @ sports/?nightlog=1:7211
+(anonymous) @ sports/?nightlog=1:11566
+sports/?nightlog=1:2112  GET https://sports.michael-legra.workers.dev/?url=https%3A%2F%2Fwww.youtube.com%2Ffeeds%2Fvideos.xml%3Fchannel_id%3DUCQl18L5vfX9hCSclV_F6XpQ 404 (Not Found)
+fetchWithTimeout @ sports/?nightlog=1:2112
+proxyFetchText @ sports/?nightlog=1:2122
+await in proxyFetchText
+fetchChannelRSS @ sports/?nightlog=1:7298
+findRecap @ sports/?nightlog=1:7389
+await in findRecap
+resolveVideo @ sports/?nightlog=1:9168
+playRecap @ sports/?nightlog=1:9209
+recapDirectorTick @ sports/?nightlog=1:7211
+(anonymous) @ sports/?nightlog=1:11566
+sports/?nightlog=1:7391 [recap] RSS empty/blocked for pgatour
+sports/?nightlog=1:1797 [night 16:42:46] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:42:58] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:43:16] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:43:28] wws.advance {from: '#401816527 MLB LIVE', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:43:46] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:43:58] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:44:16] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:44:28] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:44:46] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:44:58] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:45:16] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:45:28] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:45:46] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:45:58] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:46:16] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1 Access to fetch at 'https://www.youtube.com/feeds/videos.xml?channel_id=UCyeer4UbTK9pzZL9_hhCimA' from origin 'https://mikeylegs.github.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+sports/?nightlog=1:2112  GET https://www.youtube.com/feeds/videos.xml?channel_id=UCyeer4UbTK9pzZL9_hhCimA net::ERR_FAILED 200 (OK)
+fetchWithTimeout @ sports/?nightlog=1:2112
+proxyFetchText @ sports/?nightlog=1:2119
+fetchChannelRSS @ sports/?nightlog=1:7298
+findRecap @ sports/?nightlog=1:7389
+await in findRecap
+resolveVideo @ sports/?nightlog=1:9168
+playRecap @ sports/?nightlog=1:9209
+recapDirectorTick @ sports/?nightlog=1:7211
+(anonymous) @ sports/?nightlog=1:11566
+sports/?nightlog=1:7390 [recap] RSS ok: 15 videos from cbsgolf
+oardefault.jpg:1  GET https://i.ytimg.com/vi/-2oTfTC3GfI/oardefault.jpg 404 (Not Found)
+oardefault.jpg:1  GET https://i.ytimg.com/vi/TasIeiIPle4/oardefault.jpg 404 (Not Found)
+sports/?nightlog=1:1797 [night 16:47:28] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:47:46] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:47:58] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:48:16] wws.advance {from: '#401816527 MLB LIVE', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:48:28] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:48:46] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:48:58] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:49:16] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:49:28] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:49:46] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:49:58] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:50:16] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:50:28] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:50:46] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:50:47] recap.pick {team: 'NYY', gamePk: 823508, viaKnownPk: false, title: "Logan Gilbert dominates in the Mariners' shutout win"}
+sports/?nightlog=1:1797 [night 16:50:58] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:52:16] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:52:28] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:52:46] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:52:58] wws.advance {from: '#401816527 MLB LIVE', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:53:16] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:53:28] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:53:46] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:53:58] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:54:16] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:54:28] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:54:46] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:54:58] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:55:16] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:55:28] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:55:46] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:56:34] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:56:46] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:56:58] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:57:10] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:57:22] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:57:34] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:57:46] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:57:58] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:58:10] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:58:22] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:58:46] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:58:58] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:59:10] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:59:22] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 16:59:34] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:00:22] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:00:22] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:00:34] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:00:46] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:00:58] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:01:10] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:01:22] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:01:34] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:01:46] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:01:58] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:02:10] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:02:22] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:02:46] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:02:58] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:03:10] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:03:58] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:03:58] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:04:10] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:04:22] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:04:34] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:04:46] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:04:58] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:05:10] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:05:22] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1 Access to fetch at 'https://www.youtube.com/feeds/videos.xml?channel_id=UCWJ2lWNubArHWmf3FIHbfcQ' from origin 'https://mikeylegs.github.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+sports/?nightlog=1:2112  GET https://www.youtube.com/feeds/videos.xml?channel_id=UCWJ2lWNubArHWmf3FIHbfcQ net::ERR_FAILED 200 (OK)
+fetchWithTimeout @ sports/?nightlog=1:2112
+proxyFetchText @ sports/?nightlog=1:2119
+fetchChannelRSS @ sports/?nightlog=1:7298
+findRecap @ sports/?nightlog=1:7389
+await in findRecap
+resolveVideo @ sports/?nightlog=1:9168
+playRecap @ sports/?nightlog=1:9209
+recapDirectorTick @ sports/?nightlog=1:7211
+(anonymous) @ sports/?nightlog=1:11571
+sports/?nightlog=1:7390 [recap] RSS ok: 15 videos from NBA
+sports/?nightlog=1:1797 [night 17:05:46] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:05:58] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:06:10] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:06:22] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:06:46] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:06:58] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:07:46] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:07:46] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:07:58] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:08:10] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:08:22] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:08:46] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:08:58] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:09:10] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:09:22] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:09:46] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:09:58] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:10:10] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:10:22] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:10:34] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:10:46] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:11:23] recap.pick {team: 'NYY', gamePk: 823508, viaKnownPk: false, title: "Logan Gilbert dominates in the Mariners' shutout win"}
+sports/?nightlog=1:1797 [night 17:11:34] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:11:34] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:11:46] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:11:58] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:12:10] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:12:22] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:12:46] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:12:58] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:13:10] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:13:22] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:13:34] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:13:46] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:13:58] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:14:10] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:14:22] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:15:10] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:15:10] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:15:22] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:15:34] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:15:46] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:15:58] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:16:10] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:16:22] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:16:34] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:16:46] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:16:58] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:17:10] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:17:22] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:17:46] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:17:58] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:18:46] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:18:46] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:18:58] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:19:10] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:19:22] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:19:34] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:19:46] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:19:58] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:20:10] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:20:22] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:20:34] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:20:46] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:20:58] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:21:10] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:21:22] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:22:10] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:22:10] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:22:22] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:22:46] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:22:58] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:23:10] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:23:22] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:23:34] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:23:46] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:23:58] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:24:10] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:24:22] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:24:46] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:24:58] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:25:10] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:25:58] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:25:58] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:26:10] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:26:22] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:26:34] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:26:46] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:26:58] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:27:10] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:27:22] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:27:46] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:27:58] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:28:10] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:28:22] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:28:46] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:28:58] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:29:46] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:29:46] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:29:58] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:30:10] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:30:22] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:30:34] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:30:46] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:30:58] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:31:10] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:31:22] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:31:46] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:31:58] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:32:10] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:32:22] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:32:34] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:33:46] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:33:58] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:34:10] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:34:22] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:34:34] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:34:46] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:34:58] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:35:10] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:35:22] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:35:46] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:35:58] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:36:10] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:36:22] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:36:34] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:36:46] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:37:34] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:37:34] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:37:46] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:37:58] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:38:10] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:38:22] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:38:46] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:38:58] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:39:10] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:39:22] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:39:46] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:39:58] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:40:10] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:40:22] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:40:34] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:41:22] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:41:22] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:41:46] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:41:58] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:42:10] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:42:22] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:42:46] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:42:58] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:43:10] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:43:22] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:43:34] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:43:46] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:43:58] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:44:10] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:44:22] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:45:10] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:45:10] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:45:11] recap.pick {team: 'NYY', gamePk: 823508, viaKnownPk: false, title: "Logan Gilbert dominates in the Mariners' shutout win"}
+sports/?nightlog=1:1797 [night 17:45:22] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:45:46] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:45:58] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:46:10] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:46:22] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:46:46] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:46:58] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:47:10] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:47:22] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:47:34] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:47:46] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:47:58] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:48:10] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:48:58] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:48:58] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:49:10] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:49:22] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:49:46] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:49:58] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:50:10] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:50:22] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:50:34] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:50:46] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:50:58] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:51:10] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:51:22] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:51:46] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:51:58] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:53:10] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:53:22] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:53:34] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:53:46] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:53:58] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:54:10] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:54:22] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:54:34] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:54:46] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:54:58] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:55:10] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:55:22] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:55:46] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:55:58] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:56:10] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:56:58] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:56:58] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:57:10] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:57:22] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:57:46] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1 Access to fetch at 'https://www.youtube.com/feeds/videos.xml?channel_id=UCQl18L5vfX9hCSclV_F6XpQ' from origin 'https://mikeylegs.github.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+sports/?nightlog=1:2112  GET https://www.youtube.com/feeds/videos.xml?channel_id=UCQl18L5vfX9hCSclV_F6XpQ net::ERR_FAILED 404 (Not Found)
+fetchWithTimeout @ sports/?nightlog=1:2112
+proxyFetchText @ sports/?nightlog=1:2119
+fetchChannelRSS @ sports/?nightlog=1:7298
+findRecap @ sports/?nightlog=1:7389
+await in findRecap
+resolveVideo @ sports/?nightlog=1:9168
+playRecap @ sports/?nightlog=1:9209
+recapDirectorTick @ sports/?nightlog=1:7211
+(anonymous) @ sports/?nightlog=1:11566
+sports/?nightlog=1:2112  GET https://sports.michael-legra.workers.dev/?url=https%3A%2F%2Fwww.youtube.com%2Ffeeds%2Fvideos.xml%3Fchannel_id%3DUCQl18L5vfX9hCSclV_F6XpQ 404 (Not Found)
+fetchWithTimeout @ sports/?nightlog=1:2112
+proxyFetchText @ sports/?nightlog=1:2122
+await in proxyFetchText
+fetchChannelRSS @ sports/?nightlog=1:7298
+findRecap @ sports/?nightlog=1:7389
+await in findRecap
+resolveVideo @ sports/?nightlog=1:9168
+playRecap @ sports/?nightlog=1:9209
+recapDirectorTick @ sports/?nightlog=1:7211
+(anonymous) @ sports/?nightlog=1:11566
+sports/?nightlog=1:1 Access to fetch at 'https://api.allorigins.win/get?url=https%3A%2F%2Fwww.youtube.com%2Ffeeds%2Fvideos.xml%3Fchannel_id%3DUCQl18L5vfX9hCSclV_F6XpQ' from origin 'https://mikeylegs.github.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+sports/?nightlog=1:2112  GET https://api.allorigins.win/get?url=https%3A%2F%2Fwww.youtube.com%2Ffeeds%2Fvideos.xml%3Fchannel_id%3DUCQl18L5vfX9hCSclV_F6XpQ net::ERR_FAILED 500 (Internal Server Error)
+fetchWithTimeout @ sports/?nightlog=1:2112
+proxyFetchText @ sports/?nightlog=1:2122
+await in proxyFetchText
+fetchChannelRSS @ sports/?nightlog=1:7298
+findRecap @ sports/?nightlog=1:7389
+await in findRecap
+resolveVideo @ sports/?nightlog=1:9168
+playRecap @ sports/?nightlog=1:9209
+recapDirectorTick @ sports/?nightlog=1:7211
+(anonymous) @ sports/?nightlog=1:11566
+sports/?nightlog=1:1797 [night 17:57:58] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:7391 [recap] RSS empty/blocked for pgatour
+sports/?nightlog=1:1797 [night 17:58:10] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:58:22] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:58:46] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:58:58] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:59:10] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:59:22] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:59:34] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:59:46] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 17:59:58] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:00:10] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:00:22] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:00:46] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:00:58] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:01:10] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1 Access to fetch at 'https://www.youtube.com/feeds/videos.xml?channel_id=UCyeer4UbTK9pzZL9_hhCimA' from origin 'https://mikeylegs.github.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+sports/?nightlog=1:2112  GET https://www.youtube.com/feeds/videos.xml?channel_id=UCyeer4UbTK9pzZL9_hhCimA net::ERR_FAILED 200 (OK)
+fetchWithTimeout @ sports/?nightlog=1:2112
+proxyFetchText @ sports/?nightlog=1:2119
+fetchChannelRSS @ sports/?nightlog=1:7298
+findRecap @ sports/?nightlog=1:7389
+await in findRecap
+resolveVideo @ sports/?nightlog=1:9168
+playRecap @ sports/?nightlog=1:9209
+recapDirectorTick @ sports/?nightlog=1:7211
+(anonymous) @ sports/?nightlog=1:11566
+sports/?nightlog=1:7390 [recap] RSS ok: 15 videos from cbsgolf
+sports/?nightlog=1:1797 [night 18:01:58] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:01:58] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:02:10] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:02:22] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:02:34] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:02:46] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:02:58] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:03:10] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:03:22] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:03:46] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:03:58] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:04:10] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:04:22] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:04:34] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:04:46] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:05:34] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:05:46] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:05:58] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:06:10] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:06:22] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:06:46] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:06:58] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:07:10] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:07:22] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:07:34] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:07:46] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:07:58] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:08:10] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:08:22] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:08:46] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:09:34] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:09:46] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:09:58] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:10:10] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:10:22] wws.advance {from: '#401816521 MLB', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:10:34] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:10:46] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:10:58] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:11:10] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:11:22] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:11:46] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:11:58] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:12:10] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:12:22] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:12:46] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:13:34] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:13:46] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:13:58] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:14:16] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:14:28] wws.advance {from: '#401816521 MLB LIVE', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:14:46] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:14:58] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:15:16] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:15:28] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:15:46] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:15:58] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:16:16] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:16:28] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:16:46] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:16:58] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:17:46] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:17:47] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:17:47] recap.pick {team: 'NYY', gamePk: 823508, viaKnownPk: false, title: "Logan Gilbert dominates in the Mariners' shutout win"}
+sports/?nightlog=1:1797 [night 18:17:59] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:18:17] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:18:29] wws.advance {from: '#401816521 MLB LIVE', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:18:47] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:18:59] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:19:17] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:19:29] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:19:47] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:19:59] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:20:17] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:20:29] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:20:47] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:20:59] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:21:47] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:21:47] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:21:59] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:22:17] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:22:29] wws.advance {from: '#401816521 MLB LIVE', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:22:47] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:22:59] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:23:17] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:23:29] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:23:47] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:23:59] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:24:17] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:24:29] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:24:47] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:24:59] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:25:47] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:25:47] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:25:59] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:26:17] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:26:29] wws.advance {from: '#401816521 MLB LIVE', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:26:47] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:26:59] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:27:17] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:27:29] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:27:47] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:27:59] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:28:17] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:28:29] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:28:47] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:28:59] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:29:47] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:29:47] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:29:59] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:30:17] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:30:29] wws.advance {from: '#401816521 MLB LIVE', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:30:47] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:30:59] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:31:17] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:31:29] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:31:47] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:31:59] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:32:17] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1 Access to fetch at 'https://www.youtube.com/feeds/videos.xml?channel_id=UCWJ2lWNubArHWmf3FIHbfcQ' from origin 'https://mikeylegs.github.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+sports/?nightlog=1:2112  GET https://www.youtube.com/feeds/videos.xml?channel_id=UCWJ2lWNubArHWmf3FIHbfcQ net::ERR_FAILED 200 (OK)
+fetchWithTimeout @ sports/?nightlog=1:2112
+proxyFetchText @ sports/?nightlog=1:2119
+fetchChannelRSS @ sports/?nightlog=1:7298
+findRecap @ sports/?nightlog=1:7389
+await in findRecap
+resolveVideo @ sports/?nightlog=1:9168
+playRecap @ sports/?nightlog=1:9209
+recapDirectorTick @ sports/?nightlog=1:7211
+(anonymous) @ sports/?nightlog=1:11566
+sports/?nightlog=1:7390 [recap] RSS ok: 15 videos from NBA
+sports/?nightlog=1:1797 [night 18:32:29] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:32:47] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:32:59] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:33:47] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:33:47] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:33:59] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:34:17] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:34:29] wws.advance {from: '#401816521 MLB LIVE', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:34:47] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:34:59] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:35:17] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:35:29] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:35:47] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:35:59] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:36:17] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:36:29] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:36:47] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:36:59] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:37:47] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:37:47] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:37:59] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:38:17] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:38:23] recap.pick {team: 'NYY', gamePk: 823508, viaKnownPk: false, title: "Logan Gilbert dominates in the Mariners' shutout win"}
+sports/?nightlog=1:1797 [night 18:38:29] wws.advance {from: '#401816521 MLB LIVE', to: '#401816519 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:38:47] wws.advance {from: '#401816519 MLB', to: '#401816520 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:38:59] wws.advance {from: '#401816520 MLB', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:39:17] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:39:29] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:39:47] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:39:59] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:40:17] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:40:29] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:40:47] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:40:59] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:41:47] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:41:47] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:41:59] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:42:17] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:42:29] wws.advance {from: '#401816521 MLB LIVE', to: '#401816519 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:42:47] wws.advance {from: '#401816519 MLB LIVE', to: '#401816520 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:42:59] wws.advance {from: '#401816520 MLB LIVE', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:43:17] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:43:29] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:43:47] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:43:59] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:44:17] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:44:29] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:44:47] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:44:59] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:45:47] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:45:47] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:45:59] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:46:17] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:46:29] wws.advance {from: '#401816521 MLB LIVE', to: '#401816519 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:46:47] wws.advance {from: '#401816519 MLB LIVE', to: '#401816520 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:46:59] wws.advance {from: '#401816520 MLB LIVE', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:47:17] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:47:29] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:47:47] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:47:59] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:48:17] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:48:29] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:48:47] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:48:59] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:49:47] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:49:47] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:49:59] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:50:17] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:50:29] wws.advance {from: '#401816521 MLB LIVE', to: '#401816519 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:50:47] wws.advance {from: '#401816519 MLB LIVE', to: '#401816520 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:50:59] wws.advance {from: '#401816520 MLB LIVE', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:51:17] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:51:29] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:51:35] score.change {game: 'CWS@DET', team: 'CWS', delta: 1, fav: false, likelyHR: true}
+sports/?nightlog=1:1797 [night 18:51:47] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:51:59] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:52:17] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:52:29] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:52:47] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:52:59] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:53:47] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:53:47] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:53:59] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:54:17] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:54:29] wws.advance {from: '#401816521 MLB LIVE', to: '#401816519 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:54:47] wws.advance {from: '#401816519 MLB LIVE', to: '#401816520 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:54:59] wws.advance {from: '#401816520 MLB LIVE', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:55:17] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:55:29] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:55:47] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:55:59] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:56:17] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:56:29] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:56:47] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:56:59] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:57:47] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:57:47] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:57:59] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:58:17] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:58:29] wws.advance {from: '#401816521 MLB LIVE', to: '#401816519 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:58:47] wws.advance {from: '#401816519 MLB LIVE', to: '#401816520 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:58:59] wws.advance {from: '#401816520 MLB LIVE', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:59:17] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:59:29] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:59:47] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 18:59:59] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:00:18] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:00:30] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:00:48] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:01:00] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:01:48] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:01:48] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:02:00] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:02:18] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:02:30] wws.advance {from: '#401816521 MLB LIVE', to: '#401816519 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:02:48] wws.advance {from: '#401816519 MLB LIVE', to: '#401816520 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:03:00] wws.advance {from: '#401816520 MLB LIVE', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:03:18] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:03:30] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:03:48] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:04:00] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:04:18] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:04:30] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:04:48] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:05:00] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:05:48] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:05:48] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:06:00] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:06:18] wws.advance {from: '#401816527 MLB', to: '#401816521 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:06:30] wws.advance {from: '#401816521 MLB LIVE', to: '#401816519 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:06:48] wws.advance {from: '#401816519 MLB LIVE', to: '#401816520 MLB LIVE', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:07:00] wws.advance {from: '#401816520 MLB LIVE', to: '#401816518 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:07:18] wws.advance {from: '#401816518 MLB', to: '#401816523 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:07:30] wws.advance {from: '#401816523 MLB', to: '#401816524 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:07:48] wws.advance {from: '#401816524 MLB', to: '#401816517 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:08:00] wws.advance {from: '#401816517 MLB', to: '#401816522 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:08:18] wws.advance {from: '#401816522 MLB', to: '#401816526 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:08:30] wws.advance {from: '#401816526 MLB', to: '#401816529 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:08:36] score.change {game: 'BOS@PIT', team: 'PIT', delta: 1, fav: false, likelyHR: true}
+sports/?nightlog=1:1797 [night 19:08:48] wws.advance {from: '#401816529 MLB', to: '#401816531 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:09:00] wws.advance {from: '#401816531 MLB', to: '#401811962 FEDEX ST. JUDE CHAMP', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:09:47] wws.advance {from: '#401811962 FEDEX ST. JUDE CHAMP', to: '#401816530 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:09:48] wws.advance {from: '#401816530 MLB', to: '#401816528 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:09:51] companion.play {for: 'Rafael Flores Jr.', hr: '4', url: 'fc6bbaac-1f73-4b32-a809-96b865ebda8f.mp4'}
+sports/?nightlog=1:1797 [night 19:09:51] screen.show {what: 'companion', title: 'Rafael Flores Jr. homers (4) on a fly ball to righ', source: 'mlb-companion', gamePk: 823346, url: 'com/fc6bbaac-1f73-4b32-a809-96b865ebda8f.mp4'}
+sports/?nightlog=1:1797 [night 19:10:00] wws.advance {from: '#401816528 MLB', to: '#401816527 MLB', ready: 15, total: 15, gatedOut: Array(0)}
+sports/?nightlog=1:1797 [night 19:10:12] clip.ended {title: 'Rafael Flores Jr. homers (4) on a fly ba'}
+sports/?nightlog=1:1797 [night 19:12:35] recap.none {team: 'NYY', why: 'no gamePk'}
+sports/?nightlog=1:1 Access to fetch at 'https://www.youtube.com/feeds/videos.xml?channel_id=UCoLrcjPV5PbUrUyXq5mjc_A' from origin 'https://mikeylegs.github.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+sports/?nightlog=1:2112  GET https://www.youtube.com/feeds/videos.xml?channel_id=UCoLrcjPV5PbUrUyXq5mjc_A net::ERR_FAILED 200 (OK)
+fetchWithTimeout @ sports/?nightlog=1:2112
+proxyFetchText @ sports/?nightlog=1:2119
+fetchChannelRSS @ sports/?nightlog=1:7298
+findRecap @ sports/?nightlog=1:7389
+await in findRecap
+resolveVideo @ sports/?nightlog=1:9168
+await in resolveVideo
+playRecap @ sports/?nightlog=1:9209
+recapDirectorTick @ sports/?nightlog=1:7211
+(anonymous) @ sports/?nightlog=1:11571
+sports/?nightlog=1:7390 [recap] RSS ok: 15 videos from MLB
+oardefault.jpg:1  GET https://i.ytimg.com/vi/bP7uFlldmlY/oardefault.jpg 404 (Not Found)
+sports/?nightlog=1:1797 [night 19:17:36] score.change {game: 'CWS@DET', team: 'DET', delta: 2, fav: false, likelyHR: true}
+sports/?nightlog=1:1797 [night 19:18:49] companion.play {for: 'Ben Malgeri', hr: '2', url: '2b513d03-88cf-4c38-b597-5123bf26499a.mp4'}
+sports/?nightlog=1:1797 [night 19:18:49] screen.show {what: 'companion', title: 'Ben Malgeri homers (2) on a fly ball to left cente', source: 'mlb-companion', gamePk: 824237, url: 'com/2b513d03-88cf-4c38-b597-5123bf26499a.mp4'}
+sports/?nightlog=1:1797 [night 19:19:17] clip.ended {title: 'Ben Malgeri homers (2) on a fly ball to '}
+sports/?nightlog=1:1797 [night 19:24:36] score.change {game: 'ARI@ATL', team: 'ARI', delta: 1, fav: false, likelyHR: true}
+sports/?nightlog=1:1 Access to fetch at 'https://www.youtube.com/feeds/videos.xml?channel_id=UCQl18L5vfX9hCSclV_F6XpQ' from origin 'https://mikeylegs.github.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+sports/?nightlog=1:2112  GET https://www.youtube.com/feeds/videos.xml?channel_id=UCQl18L5vfX9hCSclV_F6XpQ net::ERR_FAILED 404 (Not Found)
+fetchWithTimeout @ sports/?nightlog=1:2112
+proxyFetchText @ sports/?nightlog=1:2119
+fetchChannelRSS @ sports/?nightlog=1:7298
+findRecap @ sports/?nightlog=1:7389
+await in findRecap
+resolveVideo @ sports/?nightlog=1:9168
+playRecap @ sports/?nightlog=1:9209
+recapDirectorTick @ sports/?nightlog=1:7211
+(anonymous) @ sports/?nightlog=1:11559
+sports/?nightlog=1:2112  GET https://sports.michael-legra.workers.dev/?url=https%3A%2F%2Fwww.youtube.com%2Ffeeds%2Fvideos.xml%3Fchannel_id%3DUCQl18L5vfX9hCSclV_F6XpQ 404 (Not Found)
+fetchWithTimeout @ sports/?nightlog=1:2112
+proxyFetchText @ sports/?nightlog=1:2122
+await in proxyFetchText
+fetchChannelRSS @ sports/?nightlog=1:7298
+findRecap @ sports/?nightlog=1:7389
+await in findRecap
+resolveVideo @ sports/?nightlog=1:9168
+playRecap @ sports/?nightlog=1:9209
+recapDirectorTick @ sports/?nightlog=1:7211
+(anonymous) @ sports/?nightlog=1:11559
+sports/?nightlog=1:7391 [recap] RSS empty/blocked for pgatour
+sports/?nightlog=1:1 Access to fetch at 'https://www.youtube.com/feeds/videos.xml?channel_id=UCyeer4UbTK9pzZL9_hhCimA' from origin 'https://mikeylegs.github.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+sports/?nightlog=1:2112  GET https://www.youtube.com/feeds/videos.xml?channel_id=UCyeer4UbTK9pzZL9_hhCimA net::ERR_FAILED 200 (OK)
+fetchWithTimeout @ sports/?nightlog=1:2112
+proxyFetchText @ sports/?nightlog=1:2119
+fetchChannelRSS @ sports/?nightlog=1:7298
+findRecap @ sports/?nightlog=1:7389
+await in findRecap
+resolveVideo @ sports/?nightlog=1:9168
+playRecap @ sports/?nightlog=1:9209
+recapDirectorTick @ sports/?nightlog=1:7211
+(anonymous) @ sports/?nightlog=1:11559
+sports/?nightlog=1:7390 [recap] RSS ok: 15 videos from cbsgolf
+sports/?nightlog=1:1797 [night 19:34:06] score.change {game: 'CWS@DET', team: 'DET', delta: 1, fav: false, likelyHR: true}
+sports/?nightlog=1:1797 [night 19:35:36] score.change {game: 'BAL@TB', team: 'BAL', delta: 1, fav: false, likelyHR: true}
+sports/?nightlog=1:1797 [night 19:36:36] score.change {game: 'BOS@PIT', team: 'PIT', delta: 2, fav: false, likelyHR: true}
+sports/?nightlog=1:1797 [night 19:39:36] score.change {game: 'CWS@DET', team: 'CWS', delta: 2, fav: false, likelyHR: true}
+sports/?nightlog=1:1797 [night 19:39:36] score.change {game: 'SD@CLE', team: 'CLE', delta: 1, fav: false, likelyHR: true}
+sports/?nightlog=1:1797 [night 19:40:14] companion.play {for: 'Tristan Peters', hr: '7', url: '12f83551-f61e-4a7c-870a-eecde7c56e1b.mp4'}
+sports/?nightlog=1:1797 [night 19:40:14] screen.show {what: 'companion', title: 'Jackson Jobe In play, run(s) to Tristan Peters', source: 'mlb-companion', gamePk: 824237, url: 'com/12f83551-f61e-4a7c-870a-eecde7c56e1b.mp4'}
+sports/?nightlog=1:1797 [night 19:40:34] clip.ended {title: 'Jackson Jobe In play, run(s) to Tristan '}
+sports/?nightlog=1:1797 [night 19:41:36] score.change {game: 'MIA@CIN', team: 'CIN', delta: 1, fav: false, likelyHR: true}
+sports/?nightlog=1:1797 [night 19:42:06] score.change {game: 'BOS@PIT', team: 'PIT', delta: 1, fav: false, likelyHR: true}
+sports/?nightlog=1:1797 [night 19:42:36] score.change {game: 'WSH@NYM', team: 'WSH', delta: 1, fav: false, likelyHR: true}
+sports/?nightlog=1:1797 [night 19:43:06] score.change {game: 'CWS@DET', team: 'CWS', delta: 1, fav: false, likelyHR: true}
+sports/?nightlog=1:1797 [night 19:43:49] companion.play {for: 'Munetaka Murakami', hr: '27', url: '3dfebc2d-c0d3-4745-bd64-7d1ef79734d7.mp4'}
+sports/?nightlog=1:1797 [night 19:43:49] screen.show {what: 'companion', title: 'Munetaka Murakami homers (27) on a fly ball to rig', source: 'mlb-companion', gamePk: 824237, url: 'com/3dfebc2d-c0d3-4745-bd64-7d1ef79734d7.mp4'}
+sports/?nightlog=1:1797 [night 19:44:09] clip.ended {title: 'Munetaka Murakami homers (27) on a fly b'}
+sports/?nightlog=1:1 Access to fetch at 'https://www.youtube.com/feeds/videos.xml?channel_id=UCWJ2lWNubArHWmf3FIHbfcQ' from origin 'https://mikeylegs.github.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+sports/?nightlog=1:2112  GET https://www.youtube.com/feeds/videos.xml?channel_id=UCWJ2lWNubArHWmf3FIHbfcQ net::ERR_FAILED 200 (OK)
+fetchWithTimeout @ sports/?nightlog=1:2112
+proxyFetchText @ sports/?nightlog=1:2119
+fetchChannelRSS @ sports/?nightlog=1:7298
+findRecap @ sports/?nightlog=1:7389
+await in findRecap
+resolveVideo @ sports/?nightlog=1:9168
+playRecap @ sports/?nightlog=1:9209
+recapDirectorTick @ sports/?nightlog=1:7211
+(anonymous) @ sports/?nightlog=1:11559
+sports/?nightlog=1:7390 [recap] RSS ok: 15 videos from NBA
+  ightReport() 
+VM26820:1 Uncaught ReferenceError: ightReport is not defined
+    at <anonymous>:1:3
+(anonymous) @ VM26820:1
+nightReport()
+sports/?nightlog=1:1866 ── NIGHT REPORT · session booted 15:53:57 · 769 events ──
+15:53:57  sys.init {"navType":"navigate","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64"}
+15:53:57  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":147,"gamePk":823508,"gameDate":"2026-08-13","daysOld":1,"teams":"SEA@NYY"}
+15:54:33  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":121,"gamePk":824883,"gameDate":"2026-08-12","daysOld":2,"teams":"NYM@ATL"}
+15:55:09  wws.advance {"from":"#401811962 FEDEX ST. JUDE CHAMP","to":"#401816530 MLB","ready":15,"total":15,"gatedOut":[]}
+15:55:21  wws.advance {"from":"#401816530 MLB","to":"#401816528 MLB","ready":15,"total":15,"gatedOut":[]}
+15:55:39  wws.advance {"from":"#401816528 MLB","to":"#401816527 MLB LIVE","ready":15,"total":15,"gatedOut":[]}
+15:55:51  wws.advance {"from":"#401816527 MLB LIVE","to":"#401816521 MLB","ready":15,"total":15,"gatedOut":[]}
+15:55:57  recap.pick {"team":"NYY","gamePk":823508,"viaKnownPk":false,"title":"Logan Gilbert dominates in the Mariners' shutout win"}
+15:55:59  screen.show {"what":"rotation","source":"hoh-nyy","title":"Logan Gilbert dominates in the Mariners' shutout w","gamePk":823508,"url":"-csvm-diamondgcp-asset_1280x720_59_4000K.mp4"}
+15:56:09  wws.advance {"from":"#401816521 MLB","to":"#401816519 MLB","ready":15,"total":15,"gatedOut":[]}
+15:56:21  wws.advance {"from":"#401816519 MLB","to":"#401816520 MLB","ready":15,"total":15,"gatedOut":[]}
+15:56:39  wws.advance {"from":"#401816520 MLB","to":"#401816518 MLB","ready":15,"total":15,"gatedOut":[]}
+15:56:51  wws.advance {"from":"#401816518 MLB","to":"#401816523 MLB","ready":15,"total":15,"gatedOut":[]}
+15:56:57  score.change {"game":"STL@CHC","team":"CHC","delta":3,"fav":false,"likelyHR":true}
+15:57:09  wws.advance {"from":"#401816523 MLB","to":"#401816524 MLB","ready":15,"total":15,"gatedOut":[]}
+15:57:21  wws.advance {"from":"#401816524 MLB","to":"#401816517 MLB","ready":15,"total":15,"gatedOut":[]}
+15:57:39  wws.advance {"from":"#401816517 MLB","to":"#401816522 MLB","ready":15,"total":15,"gatedOut":[]}
+15:57:51  wws.advance {"from":"#401816522 MLB","to":"#401816526 MLB","ready":15,"total":15,"gatedOut":[]}
+15:58:09  wws.advance {"from":"#401816526 MLB","to":"#401816529 MLB","ready":15,"total":15,"gatedOut":[]}
+15:58:21  wws.advance {"from":"#401816529 MLB","to":"#401816531 MLB","ready":15,"total":15,"gatedOut":[]}
+15:58:39  wws.advance {"from":"#401816531 MLB","to":"#401811962 FEDEX ST. JUDE CHAMP","ready":15,"total":15,"gatedOut":[]}
+15:59:26  wws.advance {"from":"#401811962 FEDEX ST. JUDE CHAMP","to":"#401816530 MLB","ready":15,"total":15,"gatedOut":[]}
+15:59:39  wws.advance {"from":"#401816530 MLB","to":"#401816528 MLB","ready":15,"total":15,"gatedOut":[]}
+15:59:51  wws.advance {"from":"#401816528 MLB","to":"#401816527 MLB LIVE","ready":15,"total":15,"gatedOut":[]}
+16:00:12  wws.advance {"from":"#401816527 MLB LIVE","to":"#401816521 MLB","ready":15,"total":15,"gatedOut":[]}
+16:00:24  wws.advance {"from":"#401816521 MLB","to":"#401816519 MLB","ready":15,"total":15,"gatedOut":[]}
+16:00:42  wws.advance {"from":"#401816519 MLB","to":"#401816520 MLB","ready":15,"total":15,"gatedOut":[]}
+16:00:54  wws.advance {"from":"#401816520 MLB","to":"#401816518 MLB","ready":15,"total":15,"gatedOut":[]}
+16:01:12  wws.advance {"from":"#401816518 MLB","to":"#401816523 MLB","ready":15,"total":15,"gatedOut":[]}
+16:01:24  wws.advance {"from":"#401816523 MLB","to":"#401816524 MLB","ready":15,"total":15,"gatedOut":[]}
+16:01:42  wws.advance {"from":"#401816524 MLB","to":"#401816517 MLB","ready":15,"total":15,"gatedOut":[]}
+16:01:54  wws.advance {"from":"#401816517 MLB","to":"#401816522 MLB","ready":15,"total":15,"gatedOut":[]}
+16:02:12  wws.advance {"from":"#401816522 MLB","to":"#401816526 MLB","ready":15,"total":15,"gatedOut":[]}
+16:02:24  wws.advance {"from":"#401816526 MLB","to":"#401816529 MLB","ready":15,"total":15,"gatedOut":[]}
+16:02:42  wws.advance {"from":"#401816529 MLB","to":"#401816531 MLB","ready":15,"total":15,"gatedOut":[]}
+16:02:54  wws.advance {"from":"#401816531 MLB","to":"#401811962 FEDEX ST. JUDE CHAMP","ready":15,"total":15,"gatedOut":[]}
+16:03:41  wws.advance {"from":"#401811962 FEDEX ST. JUDE CHAMP","to":"#401816530 MLB","ready":15,"total":15,"gatedOut":[]}
+16:03:43  wws.advance {"from":"#401816530 MLB","to":"#401816528 MLB","ready":15,"total":15,"gatedOut":[]}
+16:03:55  wws.advance {"from":"#401816528 MLB","to":"#401816527 MLB LIVE","ready":15,"total":15,"gatedOut":[]}
+16:04:13  wws.advance {"from":"#401816527 MLB LIVE","to":"#401816521 MLB","ready":15,"total":15,"gatedOut":[]}
+16:04:25  wws.advance {"from":"#401816521 MLB","to":"#401816519 MLB","ready":15,"total":15,"gatedOut":[]}
+16:04:43  wws.advance {"from":"#401816519 MLB","to":"#401816520 MLB","ready":15,"total":15,"gatedOut":[]}
+16:04:55  wws.advance {"from":"#401816520 MLB","to":"#401816518 MLB","ready":15,"total":15,"gatedOut":[]}
+16:05:13  wws.advance {"from":"#401816518 MLB","to":"#401816523 MLB","ready":15,"total":15,"gatedOut":[]}
+16:05:25  wws.a
+'(769 events, 2 flags — copied)'
+sports/?nightlog=1:1797 [night 19:48:36] score.change {game: 'CWS@DET', team: 'CWS', delta: 2, fav: false, likelyHR: true}
