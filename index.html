@@ -412,7 +412,7 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .wws-count-btm{order:99;align-self:center;font-size:5cqh;font-weight:800;color:rgba(255,255,255,0.8);padding-bottom:1.4cqh;letter-spacing:0.03em;}
 .wws-banner{display:flex;align-items:stretch;flex-shrink:0;min-width:0;background:rgba(255,255,255,0.05);border-radius:1.4cqh;overflow:hidden;margin:0.6cqh 0.4cqh 0;}
 .wws-banner-bar{width:1.1cqh;background:#d4af37;flex-shrink:0;}
-.wws-banner-txt{padding:0.9cqh 1.1cqh;min-width:0;flex:0 1 auto;}
+.wws-banner-txt{padding:0.9cqh 1.1cqh;min-width:0;flex:1;}
 .wws-banner-logo{height:9cqh;width:auto;align-self:center;margin:0 1.6cqh 0 auto;flex-shrink:0;object-fit:contain;}
 .wws-banner-title{font-size:min(5.7cqh,4.7cqw);font-weight:900;letter-spacing:0.15cqh;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .wws-banner-venue{font-size:min(3cqh,2.9cqw);font-weight:600;color:rgba(255,255,255,0.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -12252,7 +12252,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r382-banner-clamp-pin';
+const BUILD_MARKER = 'r384-reliable-drop';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -13974,17 +13974,26 @@ function scheduleFit(){
   clearTimeout(_fitTimer);
   _fitTimer = setTimeout(() => {
     fitText(document.getElementById('row-MLB'));
-    /* r380: universal banner logo-drop. The pinned golf slot (slot-2) uses .wws-banner markup but
-       never gets .active toggled, so the r378/r379 activation hook never fired on it → title stayed
-       clipped with the logo present (measured 276px title in 219px box). Run the drop on EVERY
-       .wws-banner after the fit, active or not. Title readability wins; logo yields only when needed. */
+    /* r384: RELIABLE logo-drop. The old scrollWidth>clientWidth check was fooled by
+       text-overflow:ellipsis — when the title is ellipsis-truncated, browsers report
+       scrollWidth===clientWidth (it "fits" by truncating), so overflow read false and the logo
+       never dropped. Fix: measure the title's TRUE rendered text width with a Range (immune to
+       ellipsis/overflow), and drop the logo when the text needs more room than the txt box has.
+       Title readability wins; logo yields only when the full name can't fit beside it. */
     try {
       document.querySelectorAll('.wws-banner').forEach(b => {
         const title = b.querySelector('.wws-banner-title');
+        const txt = b.querySelector('.wws-banner-txt');
         const logo = b.querySelector('.wws-banner-logo');
-        if (!title || !logo || title.clientWidth === 0) return;
-        if (title.scrollWidth > title.clientWidth + 1) {
-          if (logo.style.display !== 'none') { logo.style.display = 'none'; fitText(b); }
+        if (!title || !logo || !txt || txt.clientWidth === 0) return;
+        // true text width, ellipsis-proof:
+        let textW = 0;
+        try { const r = document.createRange(); r.selectNodeContents(title); textW = r.getBoundingClientRect().width; } catch(_) { textW = title.scrollWidth; }
+        const avail = txt.clientWidth - 2;   // padding already excluded (clientWidth is content box)
+        if (textW > avail) {
+          if (logo.style.display !== 'none') { logo.style.display = 'none'; }   // drop → title reclaims logo's width
+        } else {
+          if (logo.style.display === 'none') { logo.style.display = ''; }        // fits → restore logo
         }
       });
     } catch (_) {}
