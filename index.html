@@ -414,7 +414,7 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .wws-banner-bar{width:1.1cqh;background:#d4af37;flex-shrink:0;}
 .wws-banner-txt{padding:0.9cqh 1.1cqh;min-width:0;flex:1;}
 .wws-banner-logo{height:9cqh;width:auto;align-self:center;margin:0 1.6cqh 0 auto;flex-shrink:0;object-fit:contain;}
-.wws-banner-title{font-size:4.1cqw;font-weight:900;letter-spacing:0.15cqh;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.wws-banner-title{font-size:4.8cqh;font-weight:900;letter-spacing:0.15cqh;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .wws-banner-venue{font-size:3.1cqw;font-weight:600;color:rgba(255,255,255,0.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .wws-flag{width:5.2cqh;height:3.6cqh;object-fit:cover;border-radius:0.5cqh;flex-shrink:0;}
 .wws-face-fallback{display:inline-flex;align-items:center;justify-content:center;background:#1d2f54;color:#fff;font-weight:800;}
@@ -12253,7 +12253,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r386-golf-title-4-1cqw';
+const BUILD_MARKER = 'r387-fittext-truewidth';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -13956,7 +13956,13 @@ function fitText(scope){
     const maxPx = maxCqh / 100 * baseH;
     const minPx = minCqh / 100 * baseH;
     el.style.fontSize = maxPx + 'px';
-    const fits = () => el.scrollWidth <= el.clientWidth + 0.5 &&
+    /* r387: the old fits() used scrollWidth<=clientWidth, but text-overflow:ellipsis makes browsers
+       report scrollWidth===clientWidth once truncated — so a clipped title read as "fits" and never
+       shrank. Measure TRUE text width via a Range (immune to ellipsis) so the binary search actually
+       fits the title to its real box. This is screen-independent: it measures the real rendered width
+       on whatever display renders it (VNC preview or the 1920 wall), ending the fixed-unit guesswork. */
+    const trueW = () => { try { const r = document.createRange(); r.selectNodeContents(el); return r.getBoundingClientRect().width; } catch(_) { return el.scrollWidth; } };
+    const fits = () => trueW() <= el.clientWidth + 0.5 &&
                        el.scrollHeight <= el.clientHeight + 1;
     if (!fits()) {
       let lo = minPx, hi = maxPx, best = minPx;
