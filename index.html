@@ -393,7 +393,7 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .lf-wws-status{font-size:3.6cqh;font-weight:600;color:rgba(255,255,255,0.55);text-align:center;margin-top:1.6cqh;}
 .lf-wws-live{color:#34d399;font-size:0.85em;margin-left:0.8cqh;}
 .wws-full{width:100%;height:100%;}
-.wws-full .lf-slide{padding:0.8cqh 1.6cqh;box-sizing:border-box;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;}
+.wws-full .lf-slide{padding:0.7cqh 1.6cqh;box-sizing:border-box;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;}
 /*R48*/.wws-full .lf-slide:has(.wws-soc-row){justify-content:flex-start;}
 /* soccer: banner top (flex:0), row auto-margins to center in the middle, countdown order:99 stays bottom */
 .wws-full .lf-slide:has(.wws-soc-row) .wws-banner{flex:0 0 auto;}
@@ -410,11 +410,11 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 /*R49*/.wws-soc-net .net-logo{height:7.8cqh;}
 .wws-count{font-size:3.2cqh;font-weight:700;letter-spacing:0.04em;color:rgba(255,255,255,0.55);text-transform:uppercase;}
 .wws-count-btm{order:99;align-self:center;font-size:5cqh;font-weight:800;color:rgba(255,255,255,0.8);padding-bottom:1.4cqh;letter-spacing:0.03em;}
-.wws-banner{display:flex;align-items:stretch;flex-shrink:0;min-width:0;background:rgba(255,255,255,0.05);border-radius:1.4cqh;overflow:hidden;margin:0.6cqh 0.4cqh 0;}
+.wws-banner{display:flex;align-items:stretch;flex-shrink:0;min-width:0;background:rgba(255,255,255,0.05);border-radius:1.4cqh;overflow:hidden;margin:0.6cqh 0.2cqh 0;}
 .wws-banner-bar{width:1.1cqh;background:#d4af37;flex-shrink:0;}
-.wws-banner-txt{padding:0.9cqh 1cqh;min-width:0;flex:1;}
+.wws-banner-txt{padding:0.9cqh 1.1cqh;min-width:0;flex:1;}
 .wws-banner-logo{height:9cqh;width:auto;align-self:center;margin:0 1.6cqh 0 0.8cqh;flex-shrink:0;object-fit:contain;}
-.wws-banner-title{font-size:3.9cqh;font-weight:900;letter-spacing:0.15cqh;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.wws-banner-title{font-size:4.2cqh;font-weight:900;letter-spacing:0.15cqh;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .wws-banner-venue{font-size:3.6cqh;font-weight:600;color:rgba(255,255,255,0.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .wws-flag{width:5.2cqh;height:3.6cqh;object-fit:cover;border-radius:0.5cqh;flex-shrink:0;}
 .wws-face-fallback{display:inline-flex;align-items:center;justify-content:center;background:#1d2f54;color:#fff;font-weight:800;}
@@ -12252,7 +12252,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r380-banner-universal';
+const BUILD_MARKER = 'r381-golf-title-dialed';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
