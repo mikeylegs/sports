@@ -414,8 +414,8 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .wws-banner-bar{width:1.1cqh;background:#d4af37;flex-shrink:0;}
 .wws-banner-txt{padding:0.9cqh 1.1cqh;min-width:0;flex:1;}
 .wws-banner-logo{height:9cqh;width:auto;align-self:center;margin:0 1.6cqh 0 auto;flex-shrink:0;object-fit:contain;}
-.wws-banner-title{font-size:min(5.7cqh,4.7cqw);font-weight:900;letter-spacing:0.15cqh;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.wws-banner-venue{font-size:min(3cqh,2.9cqw);font-weight:600;color:rgba(255,255,255,0.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.wws-banner-title{font-size:4.1cqw;font-weight:900;letter-spacing:0.15cqh;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.wws-banner-venue{font-size:3.1cqw;font-weight:600;color:rgba(255,255,255,0.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .wws-flag{width:5.2cqh;height:3.6cqh;object-fit:cover;border-radius:0.5cqh;flex-shrink:0;}
 .wws-face-fallback{display:inline-flex;align-items:center;justify-content:center;background:#1d2f54;color:#fff;font-weight:800;}
 .wws-tn-rows{display:flex;flex-direction:column;gap:2cqh;padding:2.4cqh 2cqh 0;}
@@ -11005,8 +11005,9 @@ async function wwsPollEvents(){
 function wwsBanner(d){
   // R73: real Wimbledon/PGA logos now hosted on GitHub Pages (siblings of the deployed
   // page) → reference by relative URL instead of base64 assets. Cleaner + no file bloat.
-  const logoSrc = d.kind === 'golf' ? 'PGA.svg'
-    : (d.kind === 'tennis' && /wimbledon/i.test(d.label||'')) ? 'logo-wimbledon.svg' : '';
+  // r385: golf title owns the full banner width — no logo — so a long tournament name can never
+  // clip (ends 20+ builds of trying to fit title + logo in 292px). Tennis/Wimbledon keeps its logo.
+  const logoSrc = (d.kind === 'tennis' && /wimbledon/i.test(d.label||'')) ? 'logo-wimbledon.svg' : '';
   const name = (d.label || 'Featured Event').replace(/^\s*MLB\s*[·\-|:]\s*/i,'').toUpperCase();
   // R73/r377: MEASUREMENT-DRIVEN logo rule. Previously a name.length>18 guess dropped the logo
   // (and clipped anyway at times). Now: ALWAYS render the logo + LIVE badge, let fitText shrink
@@ -12252,7 +12253,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r384-reliable-drop';
+const BUILD_MARKER = 'r386-golf-title-4-1cqw';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -13974,29 +13975,6 @@ function scheduleFit(){
   clearTimeout(_fitTimer);
   _fitTimer = setTimeout(() => {
     fitText(document.getElementById('row-MLB'));
-    /* r384: RELIABLE logo-drop. The old scrollWidth>clientWidth check was fooled by
-       text-overflow:ellipsis — when the title is ellipsis-truncated, browsers report
-       scrollWidth===clientWidth (it "fits" by truncating), so overflow read false and the logo
-       never dropped. Fix: measure the title's TRUE rendered text width with a Range (immune to
-       ellipsis/overflow), and drop the logo when the text needs more room than the txt box has.
-       Title readability wins; logo yields only when the full name can't fit beside it. */
-    try {
-      document.querySelectorAll('.wws-banner').forEach(b => {
-        const title = b.querySelector('.wws-banner-title');
-        const txt = b.querySelector('.wws-banner-txt');
-        const logo = b.querySelector('.wws-banner-logo');
-        if (!title || !logo || !txt || txt.clientWidth === 0) return;
-        // true text width, ellipsis-proof:
-        let textW = 0;
-        try { const r = document.createRange(); r.selectNodeContents(title); textW = r.getBoundingClientRect().width; } catch(_) { textW = title.scrollWidth; }
-        const avail = txt.clientWidth - 2;   // padding already excluded (clientWidth is content box)
-        if (textW > avail) {
-          if (logo.style.display !== 'none') { logo.style.display = 'none'; }   // drop → title reclaims logo's width
-        } else {
-          if (logo.style.display === 'none') { logo.style.display = ''; }        // fits → restore logo
-        }
-      });
-    } catch (_) {}
   }, 80);
 }
 (function initAutofit(){
