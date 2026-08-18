@@ -1,15 +1,141 @@
 {
   "v": 1,
-  "updated": "2026-08-18T11:36:00.465Z",
+  "updated": "2026-08-18T11:36:28.106Z",
   "events": [
     {
-      "league": "golf/pga",
-      "label": "Golf (PGA)",
-      "espnId": "401811963",
-      "title": "BMW Championship",
-      "showFrom": "20260820",
-      "showUntil": "20260823",
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816574",
+      "title": "New York Yankees @ Baltimore Orioles",
+      "showFrom": "20260818",
+      "showUntil": "20260818",
       "rank": 1
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816572",
+      "title": "Detroit Tigers @ Pittsburgh Pirates",
+      "showFrom": "20260818",
+      "showUntil": "20260818",
+      "rank": 2
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816573",
+      "title": "Miami Marlins @ Philadelphia Phillies",
+      "showFrom": "20260818",
+      "showUntil": "20260818",
+      "rank": 3
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816576",
+      "title": "San Francisco Giants @ Cleveland Guardians",
+      "showFrom": "20260818",
+      "showUntil": "20260818",
+      "rank": 4
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816577",
+      "title": "St. Louis Cardinals @ Cincinnati Reds",
+      "showFrom": "20260818",
+      "showUntil": "20260818",
+      "rank": 5
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816578",
+      "title": "Toronto Blue Jays @ Tampa Bay Rays",
+      "showFrom": "20260818",
+      "showUntil": "20260818",
+      "rank": 6
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816571",
+      "title": "Arizona Diamondbacks @ Boston Red Sox",
+      "showFrom": "20260818",
+      "showUntil": "20260818",
+      "rank": 7
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816575",
+      "title": "San Diego Padres @ New York Mets",
+      "showFrom": "20260818",
+      "showUntil": "20260818",
+      "rank": 8
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816580",
+      "title": "Athletics @ Kansas City Royals",
+      "showFrom": "20260818",
+      "showUntil": "20260818",
+      "rank": 9
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816583",
+      "title": "Seattle Mariners @ Milwaukee Brewers",
+      "showFrom": "20260818",
+      "showUntil": "20260818",
+      "rank": 10
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816596",
+      "title": "Atlanta Braves @ Minnesota Twins",
+      "showFrom": "20260818",
+      "showUntil": "20260818",
+      "rank": 11
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816582",
+      "title": "Chicago White Sox @ Chicago Cubs",
+      "showFrom": "20260818",
+      "showUntil": "20260818",
+      "rank": 12
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816584",
+      "title": "Washington Nationals @ Texas Rangers",
+      "showFrom": "20260818",
+      "showUntil": "20260818",
+      "rank": 13
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816579",
+      "title": "Los Angeles Angels @ Houston Astros",
+      "showFrom": "20260818",
+      "showUntil": "20260818",
+      "rank": 14
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816585",
+      "title": "Los Angeles Dodgers @ Colorado Rockies",
+      "showFrom": "20260818",
+      "showUntil": "20260818",
+      "rank": 15
     }
   ],
   "watch": {
