@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-08-18T11:36:28.106Z",
+  "updated": "2026-08-18T18:09:17.291Z",
   "events": [
     {
       "league": "baseball/mlb",
@@ -136,6 +136,24 @@
       "showFrom": "20260818",
       "showUntil": "20260818",
       "rank": 15
+    },
+    {
+      "league": "football/nfl",
+      "label": "NFL",
+      "espnId": "401873285",
+      "title": "San Francisco 49ers @ Los Angeles Chargers",
+      "showFrom": "20260820",
+      "showUntil": "20260820",
+      "rank": 16
+    },
+    {
+      "league": "football/nfl",
+      "label": "NFL",
+      "espnId": "401873286",
+      "title": "Las Vegas Raiders @ Houston Texans",
+      "showFrom": "20260820",
+      "showUntil": "20260820",
+      "rank": 17
     }
   ],
   "watch": {
