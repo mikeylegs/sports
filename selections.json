@@ -1,7 +1,17 @@
 {
   "v": 1,
-  "updated": "2026-08-18T11:35:46.480Z",
-  "events": [],
+  "updated": "2026-08-18T11:36:00.465Z",
+  "events": [
+    {
+      "league": "golf/pga",
+      "label": "Golf (PGA)",
+      "espnId": "401811963",
+      "title": "BMW Championship",
+      "showFrom": "20260820",
+      "showUntil": "20260823",
+      "rank": 1
+    }
+  ],
   "watch": {
     "teams": []
   }
