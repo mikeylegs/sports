@@ -1,0 +1,107 @@
+18:32:48  wws.advance {"from":"#401816598 MAJOR LEAGUE BASEBAL","to":"#401816599 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+18:33:00  wws.advance {"from":"#401816599 MAJOR LEAGUE BASEBAL","to":"#401816594 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+18:33:18  wws.advance {"from":"#401816594 MAJOR LEAGUE BASEBAL","to":"#401816600 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+18:33:30  wws.advance {"from":"#401816600 MAJOR LEAGUE BASEBAL","to":"#401873285 NATIONAL FOOTBALL LE","ready":18,"total":18,"gatedOut":[]}
+18:33:40  director.dispatch {"reason":"DISPATCH nhl-fill","mode":"shadow"}
+18:33:48  wws.advance {"from":"#401873285 NATIONAL FOOTBALL LE","to":"#401873286 NATIONAL FOOTBALL LE","ready":18,"total":18,"gatedOut":[]}
+18:34:00  wws.advance {"from":"#401873286 NATIONAL FOOTBALL LE","to":"#401816607 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+18:34:18  wws.advance {"from":"#401816607 MAJOR LEAGUE BASEBAL","to":"#401816590 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+18:34:30  wws.advance {"from":"#401816590 MAJOR LEAGUE BASEBAL","to":"#401811963 BMW CHAMPIONSHIP","ready":18,"total":18,"gatedOut":[]}
+18:34:48  wws.advance {"from":"#401811963 BMW CHAMPIONSHIP","to":"#401816587 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+18:35:00  wws.advance {"from":"#401816587 MAJOR LEAGUE BASEBAL","to":"#401816597 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+18:35:18  wws.advance {"from":"#401816597 MAJOR LEAGUE BASEBAL","to":"#401816586 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+18:35:30  wws.advance {"from":"#401816586 MAJOR LEAGUE BASEBAL","to":"#401816588 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+18:35:40  director.dispatch {"reason":"DISPATCH nba-fill","mode":"shadow"}
+18:35:48  wws.advance {"from":"#401816588 MAJOR LEAGUE BASEBAL","to":"#401816589 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+18:36:00  wws.advance {"from":"#401816589 MAJOR LEAGUE BASEBAL","to":"#401816591 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+18:36:18  wws.advance {"from":"#401816591 MAJOR LEAGUE BASEBAL","to":"#401816592 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+18:36:30  wws.advance {"from":"#401816592 MAJOR LEAGUE BASEBAL","to":"#401816593 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+18:37:06  score.change {"game":"MIA@PHI","team":"PHI","delta":1,"fav":false,"likelyHR":true}
+18:37:40  director.dispatch {"reason":"DISPATCH nfl-fill","mode":"shadow"}
+18:39:40  director.dispatch {"reason":"DISPATCH tennis-fill","mode":"shadow"}
+18:41:40  director.dispatch {"reason":"DISPATCH mlb-daily","mode":"shadow"}
+18:43:40  director.dispatch {"reason":"DISPATCH mlb-allgames","mode":"shadow"}
+18:54:36  score.change {"game":"TOR@TB","team":"TB","delta":2,"fav":false,"likelyHR":true}
+18:55:06  score.change {"game":"MIA@PHI","team":"PHI","delta":2,"fav":false,"likelyHR":true}
+18:56:44  companion.play {"for":"Luis Arraez","hr":"6","url":"e6dcfb14-b1ef-4d80-ad61-95ae4992823f.mp4"}
+18:56:44  screen.show {"what":"companion","title":"Luis Arraez homers (6) on a fly ball to right cent","source":"mlb-companion","gamePk":823424,"url":"com/e6dcfb14-b1ef-4d80-ad61-95ae4992823f.mp4"}
+18:57:12  clip.ended {"title":"Luis Arraez homers (6) on a fly ball to "}
+18:59:04  director.dispatch {"reason":"DISPATCH fifa-fill","mode":"shadow"}
+19:01:04  director.dispatch {"reason":"DISPATCH foxsoccer-fill","mode":"shadow"}
+19:03:04  director.dispatch {"reason":"DISPATCH mlb-daily","mode":"shadow"}
+19:04:36  score.change {"game":"NYY@BAL","team":"NYY","delta":1,"fav":true,"likelyHR":true}
+19:05:04  director.dispatch {"reason":"DISPATCH pga-golf","mode":"shadow"}
+19:06:06  score.change {"game":"NYY@BAL","team":"NYY","delta":1,"fav":true,"likelyHR":true}
+19:07:16  director.dispatch {"reason":"DISPATCH mlb-season","mode":"shadow"}
+19:09:16  director.dispatch {"reason":"DISPATCH golf-fill","mode":"shadow"}
+19:15:09  sys.init {"navType":"reload","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64"}
+19:15:39  wws.heartbeat {"activeSec":30,"dwellSec":14,"recapActive":false}
+19:15:39  wws.advance {"from":"#401816607 MAJOR LEAGUE BASEBAL","to":"#401816590 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+19:16:09  wws.heartbeat {"activeSec":30,"dwellSec":14,"recapActive":false}
+19:16:09  wws.advance {"from":"#401816590 MAJOR LEAGUE BASEBAL","to":"#401811963 BMW CHAMPIONSHIP","ready":18,"total":18,"gatedOut":[]}
+19:16:39  wws.heartbeat {"activeSec":30,"dwellSec":14,"recapActive":false}
+19:16:39  wws.advance {"from":"#401811963 BMW CHAMPIONSHIP","to":"#401816587 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+19:17:09  wws.heartbeat {"activeSec":30,"dwellSec":14,"recapActive":false}
+19:17:09  wws.advance {"from":"#401816587 MAJOR LEAGUE BASEBAL","to":"#401816597 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+19:17:39  wws.heartbeat {"activeSec":30,"dwellSec":14,"recapActive":false}
+19:17:39  wws.advance {"from":"#401816597 MAJOR LEAGUE BASEBAL","to":"#401816586 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+19:18:09  wws.heartbeat {"activeSec":30,"dwellSec":14,"recapActive":false}
+19:18:09  wws.advance {"from":"#401816586 MAJOR LEAGUE BASEBAL","to":"#401816588 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+19:18:09  score.change {"game":"ARI@BOS","team":"ARI","delta":1,"fav":false,"likelyHR":true}
+19:18:39  wws.heartbeat {"activeSec":30,"dwellSec":14,"recapActive":false}
+19:18:39  wws.advance {"from":"#401816588 MAJOR LEAGUE BASEBAL","to":"#401816589 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+19:19:09  wws.heartbeat {"activeSec":30,"dwellSec":14,"recapActive":false}
+19:19:09  wws.advance {"from":"#401816589 MAJOR LEAGUE BASEBAL","to":"#401816591 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+19:19:39  wws.heartbeat {"activeSec":30,"dwellSec":14,"recapActive":false}
+19:19:39  wws.advance {"from":"#401816591 MAJOR LEAGUE BASEBAL","to":"#401816592 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+19:20:09  wws.heartbeat {"activeSec":30,"dwellSec":14,"recapActive":false}
+19:20:09  wws.advance {"from":"#401816592 MAJOR LEAGUE BASEBAL","to":"#401816593 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+19:20:39  wws.heartbeat {"activeSec":30,"dwellSec":14,"recapActive":false}
+19:20:39  wws.advance {"from":"#401816593 MAJOR LEAGUE BASEBAL","to":"#401816595 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+19:21:09  wws.heartbeat {"activeSec":30,"dwellSec":14,"recapActive":false}
+19:21:09  wws.advance {"from":"#401816595 MAJOR LEAGUE BASEBAL","to":"#401816598 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+19:21:39  wws.heartbeat {"activeSec":30,"dwellSec":14,"recapActive":false}
+19:21:39  wws.advance {"from":"#401816598 MAJOR LEAGUE BASEBAL","to":"#401816599 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+19:22:09  wws.heartbeat {"activeSec":30,"dwellSec":14,"recapActive":false}
+19:22:09  wws.advance {"from":"#401816599 MAJOR LEAGUE BASEBAL","to":"#401816594 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+19:22:39  wws.heartbeat {"activeSec":30,"dwellSec":14,"recapActive":false}
+19:22:39  wws.advance {"from":"#401816594 MAJOR LEAGUE BASEBAL","to":"#401816600 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+19:23:09  wws.heartbeat {"activeSec":30,"dwellSec":14,"recapActive":false}
+19:23:09  wws.advance {"from":"#401816600 MAJOR LEAGUE BASEBAL","to":"#401873285 NATIONAL FOOTBALL LE","ready":18,"total":18,"gatedOut":[]}
+19:23:39  wws.heartbeat {"activeSec":30,"dwellSec":14,"recapActive":false}
+19:23:39  wws.advance {"from":"#401873285 NATIONAL FOOTBALL LE","to":"#401873286 NATIONAL FOOTBALL LE","ready":18,"total":18,"gatedOut":[]}
+19:24:09  wws.heartbeat {"activeSec":30,"dwellSec":14,"recapActive":false}
+19:24:09  wws.advance {"from":"#401873286 NATIONAL FOOTBALL LE","to":"#401816607 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+19:24:39  wws.heartbeat {"activeSec":30,"dwellSec":14,"recapActive":false}
+19:24:39  wws.advance {"from":"#401816607 MAJOR LEAGUE BASEBAL","to":"#401816590 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+19:24:39  score.change {"game":"NYY@BAL","team":"NYY","delta":1,"fav":true,"likelyHR":true}
+19:25:09  wws.heartbeat {"activeSec":30,"dwellSec":14,"recapActive":false}
+19:25:09  wws.advance {"from":"#401816590 MAJOR LEAGUE BASEBAL","to":"#401811963 BMW CHAMPIONSHIP","ready":18,"total":18,"gatedOut":[]}
+19:25:39  wws.heartbeat {"activeSec":30,"dwellSec":14,"recapActive":false}
+19:25:39  wws.advance {"from":"#401811963 BMW CHAMPIONSHIP","to":"#401816587 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+19:25:39  score.change {"game":"ARI@BOS","team":"ARI","delta":1,"fav":false,"likelyHR":true}
+19:25:39  score.change {"game":"SF@CLE","team":"SF","delta":1,"fav":false,"likelyHR":true}
+19:26:09  wws.heartbeat {"activeSec":30,"dwellSec":14,"recapActive":false}
+19:26:09  wws.advance {"from":"#401816587 MAJOR LEAGUE BASEBAL","to":"#401816597 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+19:26:15  companion.play {"for":"Ben Rice","hr":"34","url":"648d468b-1fe3-4bb9-8481-a7140aabf341.mp4"}
+19:26:15  screen.show {"what":"companion","title":"Ben Rice's solo home run (34)","source":"mlb-companion","gamePk":824801,"url":"com/648d468b-1fe3-4bb9-8481-a7140aabf341.mp4"}
+19:26:35  clip.ended {"title":"Ben Rice's solo home run (34)"}
+19:26:39  wws.heartbeat {"activeSec":30,"dwellSec":14,"recapActive":false}
+19:26:39  wws.advance {"from":"#401816597 MAJOR LEAGUE BASEBAL","to":"#401816586 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+── ASSERTIONS (16 flagged) ──
+⚠ BAD RECAP 12:47:51 (no real recap existed) 
+⚠ BAD RECAP 16:03:16 (no real recap existed) 
+⚠ BAD RECAP 16:34:04 (no real recap existed) 
+⚠ BAD RECAP 17:02:52 (no real recap existed) 
+⚠ BAD RECAP 17:24:16 (no real recap existed) 
+⚠ BAD RECAP 17:56:40 (no real recap existed) 
+⚠ BAD RECAP 18:11:52 (no real recap existed) 
+⚠ BAD RECAP 18:27:16 (no real recap existed) 
+ℹ 1 inferred finals (ESPN lag) — see game.final_inferred lines
+⚠ POSSIBLE MISSED HR 14:13:33 NYM scored (+2) no takeover fired
+⚠ POSSIBLE MISSED HR 15:39:36 NYM scored (+1) no takeover fired
+⚠ POSSIBLE MISSED HR 15:45:36 NYM scored (+1) no takeover fired
+⚠ POSSIBLE MISSED HR 19:04:36 NYY scored (+1) no takeover fired
+⚠ POSSIBLE MISSED HR 19:06:06 NYY scored (+1) no takeover fired
+⚠ POSSIBLE MISSED HR 19:24:39 NYY scored (+1) no takeover fired
+🎬 DIRECTOR [shadow] — 158 dispatch, 0 watchdog, 0 rotation-paused, 0 cycle-exhauste
