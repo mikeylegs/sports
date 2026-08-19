@@ -1,14 +1,14 @@
 {
   "v": 1,
-  "updated": "2026-08-19T19:52:03.201Z",
+  "updated": "2026-08-19T19:59:22.295Z",
   "events": [
     {
-      "league": "golf/pga",
-      "label": "Golf (PGA)",
-      "espnId": "401811963",
-      "title": "BMW Championship",
-      "showFrom": "20260820",
-      "showUntil": "20260820",
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816607",
+      "title": "Atlanta Braves @ Minnesota Twins",
+      "showFrom": "20260819",
+      "showUntil": "20260819",
       "rank": 1
     },
     {
@@ -21,12 +21,12 @@
       "rank": 2
     },
     {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816607",
-      "title": "Atlanta Braves @ Minnesota Twins",
-      "showFrom": "20260819",
-      "showUntil": "20260819",
+      "league": "golf/pga",
+      "label": "Golf (PGA)",
+      "espnId": "401811963",
+      "title": "BMW Championship",
+      "showFrom": "20260820",
+      "showUntil": "20260820",
       "rank": 3
     },
     {
