@@ -1,0 +1,232 @@
+── NIGHT REPORT · session booted 16:00:00 · 228 events ──
+11:13:15  sys.init {"navType":"navigate","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64"}
+11:13:16  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":147,"gamePk":824803,"gameDate":"2026-08-18","daysOld":1,"teams":"NYY@BAL"}
+11:13:27  wws.advance {"from":"#401816585 MAJOR LEAGUE BASEBAL","to":"#401873286 NATIONAL FOOTBALL LE","ready":3,"total":3,"gatedOut":[]}
+11:13:40  wws.advance {"from":"#401873286 NATIONAL FOOTBALL LE","to":"#401873285 NATIONAL FOOTBALL LE","ready":3,"total":3,"gatedOut":[]}
+11:13:52  wws.advance {"from":"#401873285 NATIONAL FOOTBALL LE","to":"#401816585 MAJOR LEAGUE BASEBAL","ready":3,"total":3,"gatedOut":[]}
+11:14:04  wws.advance {"from":"#401816585 MAJOR LEAGUE BASEBAL","to":"#401873286 NATIONAL FOOTBALL LE","ready":3,"total":3,"gatedOut":[]}
+11:14:16  wws.advance {"from":"#401873286 NATIONAL FOOTBALL LE","to":"#401873285 NATIONAL FOOTBALL LE","ready":3,"total":3,"gatedOut":[]}
+11:14:29  wws.advance {"from":"#401873285 NATIONAL FOOTBALL LE","to":"#401816585 MAJOR LEAGUE BASEBAL","ready":3,"total":3,"gatedOut":[]}
+11:14:41  wws.advance {"from":"#401816585 MAJOR LEAGUE BASEBAL","to":"#401873286 NATIONAL FOOTBALL LE","ready":3,"total":3,"gatedOut":[]}
+11:14:53  wws.advance {"from":"#401873286 NATIONAL FOOTBALL LE","to":"#401873285 NATIONAL FOOTBALL LE","ready":3,"total":3,"gatedOut":[]}
+11:15:05  wws.advance {"from":"#401873285 NATIONAL FOOTBALL LE","to":"#401816585 MAJOR LEAGUE BASEBAL","ready":3,"total":3,"gatedOut":[]}
+11:15:17  wws.advance {"from":"#401816585 MAJOR LEAGUE BASEBAL","to":"#401873286 NATIONAL FOOTBALL LE","ready":3,"total":3,"gatedOut":[]}
+11:15:29  wws.advance {"from":"#401873286 NATIONAL FOOTBALL LE","to":"#401873285 NATIONAL FOOTBALL LE","ready":3,"total":3,"gatedOut":[]}
+11:16:08  wws.advance {"from":"#401873285 NATIONAL FOOTBALL LE","to":"#401816585 MAJOR LEAGUE BASEBAL","ready":3,"total":3,"gatedOut":[]}
+11:16:56  wws.advance {"from":"#401816585 MAJOR LEAGUE BASEBAL","to":"#401873286 NATIONAL FOOTBALL LE","ready":3,"total":3,"gatedOut":[]}
+11:16:56  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":121,"gamePk":823586,"gameDate":"2026-08-18","daysOld":1,"teams":"SD@NYM"}
+11:17:03  director.dispatch {"reason":"DISPATCH hoh-nyy","mode":"shadow"}
+11:17:04  recap.pick {"team":"NYY","gamePk":824803,"viaKnownPk":true,"title":"Trent Grisham's multi-hit game powers Yankees to win"}
+11:17:04  wws.advance {"from":"#401873286 NATIONAL FOOTBALL LE","to":"#401873285 NATIONAL FOOTBALL LE","ready":3,"total":3,"gatedOut":[]}
+11:17:05  screen.show {"what":"rotation","source":"hoh-nyy","title":"Trent Grisham's multi-hit game powers Yankees to w","gamePk":824803,"url":"-csvm-diamondgcp-asset_1280x720_59_4000K.mp4"}
+11:17:09  sys.init {"navType":"reload","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64"}
+11:17:10  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":147,"gamePk":824803,"gameDate":"2026-08-18","daysOld":1,"teams":"NYY@BAL"}
+11:17:21  wws.advance {"from":"#401816585 MAJOR LEAGUE BASEBAL","to":"#401873286 NATIONAL FOOTBALL LE","ready":3,"total":3,"gatedOut":[]}
+11:17:34  wws.advance {"from":"#401873286 NATIONAL FOOTBALL LE","to":"#401873285 NATIONAL FOOTBALL LE","ready":3,"total":3,"gatedOut":[]}
+11:17:46  wws.advance {"from":"#401873285 NATIONAL FOOTBALL LE","to":"#401816585 MAJOR LEAGUE BASEBAL","ready":3,"total":3,"gatedOut":[]}
+11:17:58  wws.advance {"from":"#401816585 MAJOR LEAGUE BASEBAL","to":"#401873286 NATIONAL FOOTBALL LE","ready":3,"total":3,"gatedOut":[]}
+11:18:10  wws.advance {"from":"#401873286 NATIONAL FOOTBALL LE","to":"#401873285 NATIONAL FOOTBALL LE","ready":3,"total":3,"gatedOut":[]}
+11:18:23  wws.advance {"from":"#401873285 NATIONAL FOOTBALL LE","to":"#401873286 NATIONAL FOOTBALL LE","ready":2,"total":18,"gatedOut":["401816590","401816607","401816587","401816597","401816586","401816588","401816589","401816591"]}
+11:18:35  wws.advance {"from":"#401873286 NATIONAL FOOTBALL LE","to":"#401873285 NATIONAL FOOTBALL LE","ready":2,"total":18,"gatedOut":["401816590","401816607","401816587","401816597","401816586","401816588","401816589","401816591"]}
+11:18:47  wws.advance {"from":"#401873285 NATIONAL FOOTBALL LE","to":"#401873286 NATIONAL FOOTBALL LE","ready":2,"total":18,"gatedOut":["401816590","401816607","401816587","401816597","401816586","401816588","401816589","401816591"]}
+11:18:59  wws.advance {"from":"#401873286 NATIONAL FOOTBALL LE","to":"#401873285 NATIONAL FOOTBALL LE","ready":2,"total":18,"gatedOut":["401816590","401816607","401816587","401816597","401816586","401816588","401816589","401816591"]}
+11:19:11  wws.advance {"from":"#401873285 NATIONAL FOOTBALL LE","to":"#401873286 NATIONAL FOOTBALL LE","ready":18,"total":18,"gatedOut":[]}
+11:19:23  wws.advance {"from":"#401873286 NATIONAL FOOTBALL LE","to":"#401816590 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+11:19:26  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":121,"gamePk":823586,"gameDate":"2026-08-18","daysOld":1,"teams":"SD@NYM"}
+11:19:34  wws.advance {"from":"#401816590 MAJOR LEAGUE BASEBAL","to":"#401816607 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+11:19:46  director.dispatch {"reason":"DISPATCH hoh-nyy","mode":"shadow"}
+11:19:46  recap.pick {"team":"NYY","gamePk":824803,"viaKnownPk":true,"title":"Trent Grisham's multi-hit game powers Yankees to win"}
+11:19:46  wws.advance {"from":"#401816607 MAJOR LEAGUE BASEBAL","to":"#401816587 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+11:19:49  sys.init {"navType":"reload","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64"}
+11:19:50  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":147,"gamePk":824803,"gameDate":"2026-08-18","daysOld":1,"teams":"NYY@BAL"}
+11:20:01  wws.advance {"from":"#401816590 MAJOR LEAGUE BASEBAL","to":"#401816607 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+11:20:14  wws.advance {"from":"#401816607 MAJOR LEAGUE BASEBAL","to":"#401816587 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+11:20:26  wws.advance {"from":"#401816587 MAJOR LEAGUE BASEBAL","to":"#401816597 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+11:20:37  wws.advance {"from":"#401816597 MAJOR LEAGUE BASEBAL","to":"#401816586 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+11:20:49  wws.advance {"from":"#401816586 MAJOR LEAGUE BASEBAL","to":"#401816588 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+11:20:59  sys.init {"navType":"navigate","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64"}
+11:20:59  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":147,"gamePk":824803,"gameDate":"2026-08-18","daysOld":1,"teams":"NYY@BAL"}
+11:21:11  wws.advance {"from":"#401816590 MAJOR LEAGUE BASEBAL","to":"#401816607 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+11:21:23  wws.advance {"from":"#401816607 MAJOR LEAGUE BASEBAL","to":"#401816587 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+11:21:35  wws.advance {"from":"#401816587 MAJOR LEAGUE BASEBAL","to":"#401816597 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+11:21:35  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":121,"gamePk":823586,"gameDate":"2026-08-18","daysOld":1,"teams":"SD@NYM"}
+11:21:47  wws.advance {"from":"#401816597 MAJOR LEAGUE BASEBAL","to":"#401816586 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+11:21:59  wws.advance {"from":"#401816586 MAJOR LEAGUE BASEBAL","to":"#401816588 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+11:22:12  wws.advance {"from":"#401816588 MAJOR LEAGUE BASEBAL","to":"#401816589 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+11:22:24  wws.advance {"from":"#401816589 MAJOR LEAGUE BASEBAL","to":"#401816591 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+11:22:36  wws.advance {"from":"#401816591 MAJOR LEAGUE BASEBAL","to":"#401816592 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+11:22:48  wws.advance {"from":"#401816592 MAJOR LEAGUE BASEBAL","to":"#401816593 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+11:22:59  director.dispatch {"reason":"DISPATCH hoh-nyy","mode":"shadow"}
+11:22:59  recap.pick {"team":"NYY","gamePk":824803,"viaKnownPk":true,"title":"Trent Grisham's multi-hit game powers Yankees to win"}
+11:23:11  wws.advance {"from":"#401816593 MAJOR LEAGUE BASEBAL","to":"#401816595 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+11:23:23  wws.advance {"from":"#401816595 MAJOR LEAGUE BASEBAL","to":"#401816598 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+11:23:36  wws.advance {"from":"#401816598 MAJOR LEAGUE BASEBAL","to":"#401816599 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+11:23:47  wws.advance {"from":"#401816599 MAJOR LEAGUE BASEBAL","to":"#401816594 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+11:23:59  wws.advance {"from":"#401816594 MAJOR LEAGUE BASEBAL","to":"#401816600 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+11:24:12  wws.advance {"from":"#401816600 MAJOR LEAGUE BASEBAL","to":"#401873286 NATIONAL FOOTBALL LE","ready":18,"total":18,"gatedOut":[]}
+11:24:24  wws.advance {"from":"#401873286 NATIONAL FOOTBALL LE","to":"#401811963 BMW CHAMPIONSHIP","ready":18,"total":18,"gatedOut":[]}
+11:24:36  wws.advance {"from":"#401811963 BMW CHAMPIONSHIP","to":"#401873285 NATIONAL FOOTBALL LE","ready":18,"total":18,"gatedOut":[]}
+11:24:48  wws.advance {"from":"#401873285 NATIONAL FOOTBALL LE","to":"#401816590 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+11:25:00  wws.advance {"from":"#401816590 MAJOR LEAGUE BASEBAL","to":"#401816607 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+11:27:48  director.dispatch {"reason":"DISPATCH mlb-daily","mode":"shadow"}
+11:28:00  sys.warn {"m":"[recap] no video found for mlb-daily"}
+11:35:08  director.dispatch {"reason":"DISPATCH hoh-nym","mode":"shadow"}
+11:35:08  recap.pick {"team":"NYM","gamePk":823586,"viaKnownPk":false,"title":"Fernando Tatis Jr. hits two home runs in Padres' win"}
+11:38:07  screen.show {"what":"rotation","source":"hoh-nym","title":"Fernando Tatis Jr. hits two home runs in Padres' w","gamePk":823586,"url":"-csvm-diamondgcp-asset_1280x720_59_4000K.mp4"}
+11:38:09  sys.init {"navType":"reload","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64"}
+11:38:09  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":147,"gamePk":824803,"gameDate":"2026-08-18","daysOld":1,"teams":"NYY@BAL"}
+11:40:46  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":121,"gamePk":823586,"gameDate":"2026-08-18","daysOld":1,"teams":"SD@NYM"}
+11:41:10  director.dispatch {"reason":"DISPATCH hoh-nyy","mode":"shadow"}
+11:41:10  recap.pick {"team":"NYY","gamePk":824803,"viaKnownPk":true,"title":"Trent Grisham's multi-hit game powers Yankees to win"}
+11:41:36  screen.show {"what":"rotation","source":"hoh-nyy","title":"Trent Grisham's multi-hit game powers Yankees to w","gamePk":824803,"url":"-csvm-diamondgcp-asset_1280x720_59_4000K.mp4"}
+11:41:39  sys.init {"navType":"reload","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64"}
+11:41:39  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":147,"gamePk":824803,"gameDate":"2026-08-18","daysOld":1,"teams":"NYY@BAL"}
+11:42:23  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":121,"gamePk":823586,"gameDate":"2026-08-18","daysOld":1,"teams":"SD@NYM"}
+11:43:40  director.dispatch {"reason":"DISPATCH hoh-nyy","mode":"shadow"}
+11:43:40  recap.pick {"team":"NYY","gamePk":824803,"viaKnownPk":true,"title":"Trent Grisham's multi-hit game powers Yankees to win"}
+11:45:23  sys.init {"navType":"reload","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64"}
+11:45:23  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":147,"gamePk":824803,"gameDate":"2026-08-18","daysOld":1,"teams":"NYY@BAL"}
+11:48:04  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":121,"gamePk":823586,"gameDate":"2026-08-18","daysOld":1,"teams":"SD@NYM"}
+11:48:12  director.dispatch {"reason":"DISPATCH hoh-nyy","mode":"shadow"}
+11:48:12  recap.pick {"team":"NYY","gamePk":824803,"viaKnownPk":true,"title":"Trent Grisham's multi-hit game powers Yankees to win"}
+11:49:17  sys.init {"navType":"reload","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64"}
+11:49:17  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":147,"gamePk":824803,"gameDate":"2026-08-18","daysOld":1,"teams":"NYY@BAL"}
+11:54:08  director.dispatch {"reason":"DISPATCH hoh-nyy","mode":"shadow"}
+11:54:08  recap.pick {"team":"NYY","gamePk":824803,"viaKnownPk":true,"title":"Trent Grisham's multi-hit game powers Yankees to win"}
+11:54:47  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":121,"gamePk":823586,"gameDate":"2026-08-18","daysOld":1,"teams":"SD@NYM"}
+12:14:28  sys.init {"navType":"navigate","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64"}
+12:14:29  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":147,"gamePk":824803,"gameDate":"2026-08-18","daysOld":1,"teams":"NYY@BAL"}
+12:15:39  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":121,"gamePk":823586,"gameDate":"2026-08-18","daysOld":1,"teams":"SD@NYM"}
+12:16:29  director.dispatch {"reason":"DISPATCH hoh-nyy","mode":"shadow"}
+12:16:29  recap.pick {"team":"NYY","gamePk":824803,"viaKnownPk":true,"title":"Trent Grisham's multi-hit game powers Yankees to win"}
+12:52:41  sys.init {"navType":"navigate","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64"}
+12:52:42  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":147,"gamePk":824803,"gameDate":"2026-08-18","daysOld":1,"teams":"NYY@BAL"}
+12:54:45  director.dispatch {"reason":"DISPATCH hoh-nyy","mode":"shadow"}
+12:54:45  recap.pick {"team":"NYY","gamePk":824803,"viaKnownPk":false,"title":"Trent Grisham's multi-hit game powers Yankees to win"}
+12:59:08  director.watchdog {"reason":"WATCHDOG — _recapActive wedged 263s with no player; force-releasing","mode":"shadow"}
+13:02:08  score.change {"game":"DET@PIT","team":"PIT","delta":1,"fav":false,"likelyHR":true}
+13:05:26  sys.init {"navType":"navigate","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64"}
+13:05:26  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":147,"gamePk":824803,"gameDate":"2026-08-18","daysOld":1,"teams":"NYY@BAL"}
+13:07:26  director.dispatch {"reason":"DISPATCH hoh-nyy","mode":"shadow"}
+13:07:26  recap.pick {"team":"NYY","gamePk":824803,"viaKnownPk":false,"title":"Trent Grisham's multi-hit game powers Yankees to win"}
+13:07:29  sys.init {"navType":"navigate","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64"}
+13:07:30  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":147,"gamePk":824803,"gameDate":"2026-08-18","daysOld":1,"teams":"NYY@BAL"}
+13:09:30  director.dispatch {"reason":"DISPATCH hoh-nyy","mode":"shadow"}
+13:09:30  recap.pick {"team":"NYY","gamePk":824803,"viaKnownPk":false,"title":"Trent Grisham's multi-hit game powers Yankees to win"}
+15:52:11  sys.init {"navType":"navigate","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64"}
+15:52:12  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":147,"gamePk":824803,"gameDate":"2026-08-18","daysOld":1,"teams":"NYY@BAL"}
+15:54:12  director.dispatch {"reason":"DISPATCH hoh-nyy","mode":"shadow"}
+15:54:12  recap.pick {"team":"NYY","gamePk":824803,"viaKnownPk":false,"title":"Trent Grisham's multi-hit game powers Yankees to win"}
+15:58:33  sys.init {"navType":"reload","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64"}
+15:58:33  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":147,"gamePk":824803,"gameDate":"2026-08-18","daysOld":1,"teams":"NYY@BAL"}
+15:58:51  sys.init {"navType":"navigate","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64"}
+15:58:51  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":147,"gamePk":824803,"gameDate":"2026-08-18","daysOld":1,"teams":"NYY@BAL"}
+16:00:00  sys.init {"navType":"reload","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64"}
+16:00:00  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":147,"gamePk":824803,"gameDate":"2026-08-18","daysOld":1,"teams":"NYY@BAL"}
+16:00:36  gameref.resolve {"via":"mlbLastFinalGamePk","teamId":121,"gamePk":823587,"gameDate":"2026-08-19","daysOld":0,"teams":"SD@NYM"}
+16:01:25  companion.play {"for":null,"hr":null,"url":"a50866d0-ff32-4049-b185-633e2b9fa704.mp4"}
+16:01:26  screen.show {"what":"companion","title":"Kodai Senga In play, out(s) to Austin Hays","source":"mlb-companion","gamePk":823587,"url":"com/a50866d0-ff32-4049-b185-633e2b9fa704.mp4"}
+16:01:39  clip.ended {"title":"Kodai Senga In play, out(s) to Austin Ha"}
+16:01:42  wws.advance {"from":"#401811963 BMW CHAMPIONSHIP","to":"#401816587 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:01:54  wws.advance {"from":"#401816587 MAJOR LEAGUE BASEBAL","to":"#401816597 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:02:00  score.change {"game":"ATL@MIN","team":"MIN","delta":1,"fav":false,"likelyHR":true}
+16:02:13  wws.advance {"from":"#401816597 MAJOR LEAGUE BASEBAL","to":"#401816586 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:02:13  director.dispatch {"reason":"DISPATCH hoh-nyy","mode":"shadow"}
+16:02:13  recap.pick {"team":"NYY","gamePk":824803,"viaKnownPk":false,"title":"Trent Grisham's multi-hit game powers Yankees to win"}
+16:02:25  wws.advance {"from":"#401816586 MAJOR LEAGUE BASEBAL","to":"#401816588 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:02:44  wws.advance {"from":"#401816588 MAJOR LEAGUE BASEBAL","to":"#401816589 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:02:56  wws.advance {"from":"#401816589 MAJOR LEAGUE BASEBAL","to":"#401816591 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:03:14  wws.advance {"from":"#401816591 MAJOR LEAGUE BASEBAL","to":"#401816592 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:03:26  wws.advance {"from":"#401816592 MAJOR LEAGUE BASEBAL","to":"#401816593 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:03:38  wws.advance {"from":"#401816593 MAJOR LEAGUE BASEBAL","to":"#401816595 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:03:50  wws.advance {"from":"#401816595 MAJOR LEAGUE BASEBAL","to":"#401816598 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:04:02  wws.advance {"from":"#401816598 MAJOR LEAGUE BASEBAL","to":"#401816599 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:04:10  screen.show {"what":"rotation","source":"hoh-nyy","title":"Trent Grisham's multi-hit game powers Yankees to w","gamePk":824803,"url":"-csvm-diamondgcp-asset_1280x720_59_4000K.mp4"}
+16:04:13  wws.advance {"from":"#401816599 MAJOR LEAGUE BASEBAL","to":"#401816594 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:04:25  wws.advance {"from":"#401816594 MAJOR LEAGUE BASEBAL","to":"#401816600 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:04:39  wws.advance {"from":"#401816600 MAJOR LEAGUE BASEBAL","to":"#401873285 NATIONAL FOOTBALL LE","ready":18,"total":18,"gatedOut":[]}
+16:04:51  wws.advance {"from":"#401873285 NATIONAL FOOTBALL LE","to":"#401873286 NATIONAL FOOTBALL LE","ready":18,"total":18,"gatedOut":[]}
+16:05:09  wws.advance {"from":"#401873286 NATIONAL FOOTBALL LE","to":"#401816607 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:05:21  wws.advance {"from":"#401816607 MAJOR LEAGUE BASEBAL","to":"#401816590 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:05:27  score.change {"game":"ATL@MIN","team":"MIN","delta":1,"fav":false,"likelyHR":true}
+16:05:39  wws.advance {"from":"#401816590 MAJOR LEAGUE BASEBAL","to":"#401811963 BMW CHAMPIONSHIP","ready":18,"total":18,"gatedOut":[]}
+16:05:51  wws.advance {"from":"#401811963 BMW CHAMPIONSHIP","to":"#401816587 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:06:10  wws.advance {"from":"#401816587 MAJOR LEAGUE BASEBAL","to":"#401816597 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:06:22  wws.advance {"from":"#401816597 MAJOR LEAGUE BASEBAL","to":"#401816586 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:06:41  wws.advance {"from":"#401816586 MAJOR LEAGUE BASEBAL","to":"#401816588 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:06:53  wws.advance {"from":"#401816588 MAJOR LEAGUE BASEBAL","to":"#401816589 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:07:05  wws.advance {"from":"#401816589 MAJOR LEAGUE BASEBAL","to":"#401816591 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:07:17  wws.advance {"from":"#401816591 MAJOR LEAGUE BASEBAL","to":"#401816592 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:07:29  wws.advance {"from":"#401816592 MAJOR LEAGUE BASEBAL","to":"#401816593 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:07:41  wws.advance {"from":"#401816593 MAJOR LEAGUE BASEBAL","to":"#401816595 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:08:08  wws.advance {"from":"#401816595 MAJOR LEAGUE BASEBAL","to":"#401816598 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:09:08  wws.advance {"from":"#401816598 MAJOR LEAGUE BASEBAL","to":"#401816599 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:10:08  wws.advance {"from":"#401816599 MAJOR LEAGUE BASEBAL","to":"#401816594 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:11:08  wws.advance {"from":"#401816594 MAJOR LEAGUE BASEBAL","to":"#401816600 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:12:08  wws.advance {"from":"#401816600 MAJOR LEAGUE BASEBAL","to":"#401873285 NATIONAL FOOTBALL LE","ready":18,"total":18,"gatedOut":[]}
+16:13:08  wws.advance {"from":"#401873285 NATIONAL FOOTBALL LE","to":"#401873286 NATIONAL FOOTBALL LE","ready":18,"total":18,"gatedOut":[]}
+16:14:08  wws.advance {"from":"#401873286 NATIONAL FOOTBALL LE","to":"#401816607 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:15:08  wws.advance {"from":"#401816607 MAJOR LEAGUE BASEBAL","to":"#401816590 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:16:08  wws.advance {"from":"#401816590 MAJOR LEAGUE BASEBAL","to":"#401811963 BMW CHAMPIONSHIP","ready":18,"total":18,"gatedOut":[]}
+16:17:08  director.dispatch {"reason":"DISPATCH mlb-daily","mode":"shadow"}
+16:17:08  wws.advance {"from":"#401811963 BMW CHAMPIONSHIP","to":"#401816587 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:18:08  sys.warn {"m":"[recap] no video found for mlb-daily"}
+16:18:08  wws.advance {"from":"#401816587 MAJOR LEAGUE BASEBAL","to":"#401816597 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:19:08  wws.advance {"from":"#401816597 MAJOR LEAGUE BASEBAL","to":"#401816586 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:20:08  wws.advance {"from":"#401816586 MAJOR LEAGUE BASEBAL","to":"#401816588 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:21:08  wws.advance {"from":"#401816588 MAJOR LEAGUE BASEBAL","to":"#401816589 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:22:08  wws.advance {"from":"#401816589 MAJOR LEAGUE BASEBAL","to":"#401816591 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:23:08  wws.advance {"from":"#401816591 MAJOR LEAGUE BASEBAL","to":"#401816592 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:24:08  wws.advance {"from":"#401816592 MAJOR LEAGUE BASEBAL","to":"#401816593 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:25:08  wws.advance {"from":"#401816593 MAJOR LEAGUE BASEBAL","to":"#401816595 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:26:08  wws.advance {"from":"#401816595 MAJOR LEAGUE BASEBAL","to":"#401816598 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:27:08  director.dispatch {"reason":"DISPATCH hoh-nym","mode":"shadow"}
+16:27:08  wws.advance {"from":"#401816598 MAJOR LEAGUE BASEBAL","to":"#401816599 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:27:08  recap.none {"team":"NYM","gamePk":823587,"why":"no real recap in 36 items"}
+16:28:08  wws.advance {"from":"#401816599 MAJOR LEAGUE BASEBAL","to":"#401816594 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:29:08  wws.advance {"from":"#401816594 MAJOR LEAGUE BASEBAL","to":"#401816600 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:30:08  wws.advance {"from":"#401816600 MAJOR LEAGUE BASEBAL","to":"#401873285 NATIONAL FOOTBALL LE","ready":18,"total":18,"gatedOut":[]}
+16:31:08  director.watchdog {"reason":"WATCHDOG — _recapActive wedged 240s with no player; force-releasing","mode":"shadow"}
+16:31:08  wws.advance {"from":"#401873285 NATIONAL FOOTBALL LE","to":"#401873286 NATIONAL FOOTBALL LE","ready":18,"total":18,"gatedOut":[]}
+16:32:08  wws.advance {"from":"#401873286 NATIONAL FOOTBALL LE","to":"#401816607 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:33:08  wws.advance {"from":"#401816607 MAJOR LEAGUE BASEBAL","to":"#401816590 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:33:08  score.change {"game":"CWS@CHC","team":"CWS","delta":2,"fav":false,"likelyHR":true}
+16:33:21  wws.advance {"from":"#401816590 MAJOR LEAGUE BASEBAL","to":"#401811963 BMW CHAMPIONSHIP","ready":18,"total":18,"gatedOut":[]}
+16:33:33  wws.advance {"from":"#401811963 BMW CHAMPIONSHIP","to":"#401816587 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:33:45  wws.advance {"from":"#401816587 MAJOR LEAGUE BASEBAL","to":"#401816597 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:33:57  wws.advance {"from":"#401816597 MAJOR LEAGUE BASEBAL","to":"#401816586 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:34:09  wws.advance {"from":"#401816586 MAJOR LEAGUE BASEBAL","to":"#401816588 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:34:21  wws.advance {"from":"#401816588 MAJOR LEAGUE BASEBAL","to":"#401816589 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:35:08  wws.advance {"from":"#401816589 MAJOR LEAGUE BASEBAL","to":"#401816591 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:36:08  wws.advance {"from":"#401816591 MAJOR LEAGUE BASEBAL","to":"#401816592 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:37:08  wws.advance {"from":"#401816592 MAJOR LEAGUE BASEBAL","to":"#401816593 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:38:08  wws.advance {"from":"#401816593 MAJOR LEAGUE BASEBAL","to":"#401816595 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:39:08  wws.advance {"from":"#401816595 MAJOR LEAGUE BASEBAL","to":"#401816598 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:40:08  wws.advance {"from":"#401816598 MAJOR LEAGUE BASEBAL","to":"#401816599 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:40:44  wws.advance {"from":"#401816599 MAJOR LEAGUE BASEBAL","to":"#401816594 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:40:44  director.dispatch {"reason":"DISPATCH mlb-allgames","mode":"shadow"}
+16:40:44  wws.advance {"from":"#401816594 MAJOR LEAGUE BASEBAL","to":"#401816600 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:40:56  wws.advance {"from":"#401816600 MAJOR LEAGUE BASEBAL","to":"#401873285 NATIONAL FOOTBALL LE","ready":18,"total":18,"gatedOut":[]}
+16:41:00  sys.warn {"m":"The YouTube player is not attached to the DOM. API calls should be made after the onReady event. See more: https://developers.google.com/youtube/iframe_api_reference#Events"}
+16:41:00  sys.warn {"m":"The YouTube player is not attached to the DOM. API calls should be made after the onReady event. See more: https://developers.google.com/youtube/iframe_api_reference#Events"}
+16:41:00  sys.warn {"m":"The YouTube player is not attached to the DOM. API calls should be made after the onReady event. See more: https://developers.google.com/youtube/iframe_api_reference#Events"}
+16:41:17  wws.advance {"from":"#401873285 NATIONAL FOOTBALL LE","to":"#401873286 NATIONAL FOOTBALL LE","ready":18,"total":18,"gatedOut":[]}
+16:41:29  wws.advance {"from":"#401873286 NATIONAL FOOTBALL LE","to":"#401816607 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:41:48  wws.advance {"from":"#401816607 MAJOR LEAGUE BASEBAL","to":"#401816590 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:42:00  wws.advance {"from":"#401816590 MAJOR LEAGUE BASEBAL","to":"#401811963 BMW CHAMPIONSHIP","ready":18,"total":18,"gatedOut":[]}
+16:42:21  wws.advance {"from":"#401811963 BMW CHAMPIONSHIP","to":"#401816587 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:42:33  wws.advance {"from":"#401816587 MAJOR LEAGUE BASEBAL","to":"#401816597 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:42:45  wws.advance {"from":"#401816597 MAJOR LEAGUE BASEBAL","to":"#401816586 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:42:57  wws.advance {"from":"#401816586 MAJOR LEAGUE BASEBAL","to":"#401816588 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:43:21  wws.advance {"from":"#401816588 MAJOR LEAGUE BASEBAL","to":"#401816589 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:43:33  wws.advance {"from":"#401816589 MAJOR LEAGUE BASEBAL","to":"#401816591 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:43:45  wws.advance {"from":"#401816591 MAJOR LEAGUE BASEBAL","to":"#401816592 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:43:57  wws.advance {"from":"#401816592 MAJOR LEAGUE BASEBAL","to":"#401816593 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:44:09  wws.advance {"from":"#401816593 MAJOR LEAGUE BASEBAL","to":"#401816595 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:44:21  wws.advance {"from":"#401816595 MAJOR LEAGUE BASEBAL","to":"#401816598 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:45:08  wws.advance {"from":"#401816598 MAJOR LEAGUE BASEBAL","to":"#401816599 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:45:55  wws.advance {"from":"#401816599 MAJOR LEAGUE BASEBAL","to":"#401816594 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+16:45:56  wws.advance {"from":"#401816594 MAJOR LEAGUE BASEBAL","to":"#401816600 MAJOR LEAGUE BASEBAL","ready":18,"total":18,"gatedOut":[]}
+── ASSERTIONS (2 flagged) ──
+⚠ BAD RECAP 16:27:08 (no real recap existed) 
+🎬 DIRECTOR [shadow] — 18 dispatch, 2 watchdog, 0 rotation-paused, 0 cycle-exhausted ⚠ 2 watchdog force-release(s) — inspect these
