@@ -1,7 +1,16 @@
 {
   "v": 1,
-  "updated": "2026-08-20T16:29:39.422Z",
+  "updated": "2026-08-20T20:44:55.852Z",
   "events": [
+    {
+      "league": "golf/pga",
+      "label": "Golf (PGA)",
+      "espnId": "401811963",
+      "title": "BMW Championship",
+      "showFrom": "20260820",
+      "showUntil": "20260823",
+      "rank": 1
+    },
     {
       "league": "baseball/mlb",
       "label": "MLB",
@@ -9,7 +18,7 @@
       "title": "San Francisco Giants @ Cleveland Guardians",
       "showFrom": "20260820",
       "showUntil": "20260820",
-      "rank": 1
+      "rank": 2
     },
     {
       "league": "football/nfl",
@@ -18,7 +27,7 @@
       "title": "San Francisco 49ers @ Los Angeles Chargers",
       "showFrom": "20260820",
       "showUntil": "20260820",
-      "rank": 2
+      "rank": 3
     },
     {
       "league": "baseball/mlb",
@@ -27,7 +36,7 @@
       "title": "Toronto Blue Jays @ Tampa Bay Rays",
       "showFrom": "20260820",
       "showUntil": "20260820",
-      "rank": 3
+      "rank": 4
     },
     {
       "league": "baseball/mlb",
@@ -36,7 +45,7 @@
       "title": "St. Louis Cardinals @ Cincinnati Reds",
       "showFrom": "20260820",
       "showUntil": "20260820",
-      "rank": 4
+      "rank": 5
     },
     {
       "league": "baseball/mlb",
@@ -45,7 +54,7 @@
       "title": "Athletics @ Kansas City Royals",
       "showFrom": "20260820",
       "showUntil": "20260820",
-      "rank": 5
+      "rank": 6
     },
     {
       "league": "baseball/mlb",
@@ -54,7 +63,7 @@
       "title": "Seattle Mariners @ Milwaukee Brewers",
       "showFrom": "20260820",
       "showUntil": "20260820",
-      "rank": 6
+      "rank": 7
     },
     {
       "league": "baseball/mlb",
@@ -63,7 +72,7 @@
       "title": "Atlanta Braves @ Chicago White Sox",
       "showFrom": "20260820",
       "showUntil": "20260820",
-      "rank": 7
+      "rank": 8
     },
     {
       "league": "baseball/mlb",
@@ -72,7 +81,7 @@
       "title": "New York Yankees @ Baltimore Orioles",
       "showFrom": "20260820",
       "showUntil": "20260820",
-      "rank": 8
+      "rank": 9
     },
     {
       "league": "baseball/mlb",
@@ -81,7 +90,7 @@
       "title": "Washington Nationals @ Texas Rangers",
       "showFrom": "20260820",
       "showUntil": "20260820",
-      "rank": 9
+      "rank": 10
     },
     {
       "league": "baseball/mlb",
@@ -90,7 +99,7 @@
       "title": "Los Angeles Angels @ Houston Astros",
       "showFrom": "20260820",
       "showUntil": "20260820",
-      "rank": 10
+      "rank": 11
     },
     {
       "league": "football/nfl",
@@ -99,15 +108,6 @@
       "title": "Las Vegas Raiders @ Houston Texans",
       "showFrom": "20260820",
       "showUntil": "20260820",
-      "rank": 11
-    },
-    {
-      "league": "golf/pga",
-      "label": "Golf (PGA)",
-      "espnId": "401811963",
-      "title": "BMW Championship",
-      "showFrom": "20260820",
-      "showUntil": "20260823",
       "rank": 12
     }
   ],
