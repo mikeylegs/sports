@@ -1,21 +1,21 @@
 {
   "v": 1,
-  "updated": "2026-08-20T15:45:07.981Z",
+  "updated": "2026-08-20T16:29:39.422Z",
   "events": [
-    {
-      "league": "golf/pga",
-      "label": "Golf (PGA)",
-      "espnId": "401811963",
-      "title": "BMW Championship",
-      "showFrom": "20260820",
-      "showUntil": "20260823",
-      "rank": 1
-    },
     {
       "league": "baseball/mlb",
       "label": "MLB",
       "espnId": "401816602",
       "title": "San Francisco Giants @ Cleveland Guardians",
+      "showFrom": "20260820",
+      "showUntil": "20260820",
+      "rank": 1
+    },
+    {
+      "league": "football/nfl",
+      "label": "NFL",
+      "espnId": "401873285",
+      "title": "San Francisco 49ers @ Los Angeles Chargers",
       "showFrom": "20260820",
       "showUntil": "20260820",
       "rank": 2
@@ -95,19 +95,19 @@
     {
       "league": "football/nfl",
       "label": "NFL",
-      "espnId": "401873285",
-      "title": "San Francisco 49ers @ Los Angeles Chargers",
+      "espnId": "401873286",
+      "title": "Las Vegas Raiders @ Houston Texans",
       "showFrom": "20260820",
       "showUntil": "20260820",
       "rank": 11
     },
     {
-      "league": "football/nfl",
-      "label": "NFL",
-      "espnId": "401873286",
-      "title": "Las Vegas Raiders @ Houston Texans",
+      "league": "golf/pga",
+      "label": "Golf (PGA)",
+      "espnId": "401811963",
+      "title": "BMW Championship",
       "showFrom": "20260820",
-      "showUntil": "20260820",
+      "showUntil": "20260823",
       "rank": 12
     }
   ],
