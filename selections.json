@@ -1,7 +1,161 @@
 {
   "v": 1,
-  "updated": "2026-08-23T12:02:39.687Z",
-  "events": [],
+  "updated": "2026-08-23T12:02:55.281Z",
+  "events": [
+    {
+      "league": "golf/pga",
+      "label": "Golf (PGA)",
+      "espnId": "401811963",
+      "title": "BMW Championship",
+      "showFrom": "20260823",
+      "showUntil": "20260823",
+      "rank": 1
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816641",
+      "title": "St. Louis Cardinals @ Philadelphia Phillies",
+      "showFrom": "20260823",
+      "showUntil": "20260823",
+      "rank": 2
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816642",
+      "title": "Tampa Bay Rays @ Baltimore Orioles",
+      "showFrom": "20260823",
+      "showUntil": "20260823",
+      "rank": 3
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816643",
+      "title": "Toronto Blue Jays @ New York Yankees",
+      "showFrom": "20260823",
+      "showUntil": "20260823",
+      "rank": 4
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816644",
+      "title": "Washington Nationals @ Miami Marlins",
+      "showFrom": "20260823",
+      "showUntil": "20260823",
+      "rank": 5
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816646",
+      "title": "Athletics @ Houston Astros",
+      "showFrom": "20260823",
+      "showUntil": "20260823",
+      "rank": 6
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816648",
+      "title": "Detroit Tigers @ Kansas City Royals",
+      "showFrom": "20260823",
+      "showUntil": "20260823",
+      "rank": 7
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816649",
+      "title": "New York Mets @ Chicago White Sox",
+      "showFrom": "20260823",
+      "showUntil": "20260823",
+      "rank": 8
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816645",
+      "title": "Los Angeles Angels @ Texas Rangers",
+      "showFrom": "20260823",
+      "showUntil": "20260823",
+      "rank": 9
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816650",
+      "title": "Cleveland Guardians @ Colorado Rockies",
+      "showFrom": "20260823",
+      "showUntil": "20260823",
+      "rank": 10
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816640",
+      "title": "San Francisco Giants @ Boston Red Sox",
+      "showFrom": "20260823",
+      "showUntil": "20260823",
+      "rank": 11
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816651",
+      "title": "Chicago Cubs @ Seattle Mariners",
+      "showFrom": "20260823",
+      "showUntil": "20260823",
+      "rank": 12
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816653",
+      "title": "Minnesota Twins @ San Diego Padres",
+      "showFrom": "20260823",
+      "showUntil": "20260823",
+      "rank": 13
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816654",
+      "title": "Pittsburgh Pirates @ Los Angeles Dodgers",
+      "showFrom": "20260823",
+      "showUntil": "20260823",
+      "rank": 14
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816652",
+      "title": "Cincinnati Reds @ Arizona Diamondbacks",
+      "showFrom": "20260823",
+      "showUntil": "20260823",
+      "rank": 15
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816647",
+      "title": "Atlanta Braves @ Milwaukee Brewers",
+      "showFrom": "20260823",
+      "showUntil": "20260823",
+      "rank": 16
+    },
+    {
+      "league": "football/nfl",
+      "label": "NFL",
+      "espnId": "401873297",
+      "title": "Seattle Seahawks @ Tennessee Titans",
+      "showFrom": "20260823",
+      "showUntil": "20260823",
+      "rank": 17
+    }
+  ],
   "watch": {
     "teams": []
   }
