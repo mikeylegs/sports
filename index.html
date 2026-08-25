@@ -2924,12 +2924,20 @@ function _montageHealthCheck(){
   if(!MONTAGE.on) return;
   if(MONTAGE._advancing) return;                       // a fade/advance is legitimately in flight
   if(MONTAGE._healT) return;                           // already scheduled a heal
-  let mp4=false, cardShown=false, recapActive=false;
+  let mp4=false, cardShown=false, recapShowing=false;
   try{ mp4=!!window._recapMp4; }catch(_){}
   try{ const t=document.getElementById('mlb-takeover'); cardShown=!!(t && t.className.indexOf('show')>=0); }catch(_){}
-  try{ recapActive=(_recapActive===true); }catch(_){}
+  // r430b: was `_recapActive===true` alone — but _recapActive is claimed synchronously the
+  // MOMENT a recap/companion starts, before it's actually visible (_recapRevealed is the
+  // separate flag that flips once a frame really paints, same signal the r148 recap watchdog
+  // uses). A wedged recap (claimed, never revealed — the exact black-screen bug r430 fixed the
+  // CLEANUP for) left recapActive true for up to 90s+ before that watchdog fired, and THIS
+  // check treated that as "healthy" the whole time — so montage's own much faster self-heal
+  // (1.5s poll, 4s idle threshold) was blocked from ever stepping in on a wedge it otherwise
+  // would have caught in single-digit seconds. Now requires an ACTUAL reveal, not just a claim.
+  try{ recapShowing=(_recapActive===true && _recapRevealed===true); }catch(_){}
   // nothing is playing and no card is up: the beat has no visible output
-  if(mp4 || cardShown || recapActive) return;          // something is on screen — healthy
+  if(mp4 || cardShown || recapShowing) return;          // something is on screen — healthy
   const idle = MONTAGE._clipAt ? (Date.now()-MONTAGE._clipAt) : 0;
   if(idle < 4000) return;                              // give a real clip time to load/propagate
   // stuck: on, not advancing, nothing playing, clip gone >4s → force the next beat
@@ -6829,6 +6837,23 @@ if (!window._gestureHook){ window._gestureHook = true;
   ['pointerdown','keydown','touchstart'].forEach(ev =>
     window.addEventListener(ev, () => { window._userGestured = true; }, { once:true, capture:true }));
 }
+
+/* r431: tab visibility/focus/fullscreen transition log — untracked before this build. A
+   backgrounded/unfocused tab explains several incident symptoms at once (Chrome throttles
+   rAF/timers/video decode when hidden → frozen video; audio isn't throttled the same way →
+   "audio present" while black; input can miss the page entirely while unfocused → "tap
+   doesn't mute" isn't necessarily a bug). Small ring buffer, cap 20, read by the incident
+   snapshot below — pure observation, no behaviour change. */
+if (!window._visHook){ window._visHook = true;
+  window._visLog = [];
+  const _visPush = (type, extra) => { try{
+    window._visLog.push(Object.assign({ t: Date.now(), type }, extra||{}));
+    if (window._visLog.length > 20) window._visLog.shift();
+  }catch(_){} };
+  document.addEventListener('visibilitychange', () => _visPush('visibilitychange', { hidden: document.hidden }));
+  window.addEventListener('blur', () => _visPush('blur'));
+  window.addEventListener('focus', () => _visPush('focus'));
+}
 const RECAP = {
   apiKey: 'AIzaSyDWheICh0zUFL-bkr5P8BLu3O_PtU-gaAs',  // restrict to YouTube Data API v3 in Cloud Console; rotate if shared
   ttlMs: 60 * 60 * 1000,           // re-search a source at most once/hour
@@ -9215,12 +9240,18 @@ function playCompanionClip(clip, callback){
        every time" (needs a user-gesture unlock) from "we are setting muted somewhere"
        (a real regression). No behaviour change — pure observation. */
     const _audiolog = (() => { try { return new URLSearchParams(location.search).get('audiolog')==='1'; } catch(_){ return false; } })();
-    const _alog = (tag) => { if(!_audiolog) return;
+    if (!window._audioLogBuf) window._audioLogBuf = [];
+    const _alog = (tag) => {
       try {
         const line = '[audiolog] ' + tag + ' muted=' + v.muted + ' vol=' + v.volume
           + ' autoplayGesture=' + (window._userGestured===true)
           + ' clip=' + String(clip.title||'').slice(0,30);
-        console.log(line);
+        /* r431: always record into a ring buffer (same split YTLT already uses — record
+           unconditionally, flag only gates the console echo) so the incident snapshot has
+           audio-path data even on a clean URL, without requiring ?audiolog=1 set in advance. */
+        window._audioLogBuf.push({ t: Date.now(), line });
+        if (window._audioLogBuf.length > 40) window._audioLogBuf.shift();
+        if (_audiolog) console.log(line);
         /* r246 #3: no longer push AUDIO-STATE rows into the takeover timeline — audio is
            sorted, so these just spammed the Takeover tab. ?audiolog=1 still logs to console. */
         if (false && typeof tkoLogStart==='function'){ tkoLogStart({ team:'AUDIO', type:'AUDIO-STATE',
@@ -9390,6 +9421,106 @@ function ytltCopy(){
   } catch(_){}
 }
 window.ytltDump = () => { try{navigator.clipboard.writeText(JSON.stringify(YTLT.log,null,2));}catch(_){}; return YTLT.log; };
+
+/* r431 — INCIDENT SNAPSHOT. One button, one copyable blob, works on a clean URL (no flags
+   required — see r431 audiolog buffer fix above). Assembles everything a live-incident
+   diagnosis has needed this project: recap/montage state + computed durations (not raw
+   timestamps), audio/gesture state, the actual <video>/YT player state (readyState/
+   networkState/error — the one thing that could confirm or kill the GPU-decode-stall
+   theory), tab visibility/focus/fullscreen history (untracked before this build — a
+   backgrounded tab is a plausible alternate root cause), the audiolog ring buffer, a YTLT
+   tail, and the night-report tail (already carries Black Box sys.err/warn). Pure read/export
+   — touches no control flow. */
+window._incidentSnapshotText = function(){
+  const lines = [];
+  const now = Date.now();
+  const etNow = new Date(now).toLocaleString('en-US',{timeZone:'America/New_York',hour12:false});
+  const etClock = t => { try{ return new Date(t).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour12:false}); }catch(_){ return String(t); } };
+  lines.push('── INCIDENT SNAPSHOT · ' + (typeof BUILD_MARKER!=='undefined'?BUILD_MARKER:'?') + ' · ' + etNow + ' ──');
+
+  try{
+    const qs = new URLSearchParams(location.search);
+    const on = k => qs.get(k)==='1';
+    lines.push('URL flags: montage=' + (typeof MONTAGE!=='undefined' && MONTAGE.on ? 'ON':'off')
+      + ' audiolog=' + (on('audiolog')?'ON':'off') + ' ytlog=' + (on('ytlog')?'ON':'off') + ' debug=' + (on('debug')?'ON':'off'));
+  }catch(e){ lines.push('URL flags: read error — ' + (e&&e.message)); }
+
+  try{
+    const stuckMs = window._recapActiveSince ? (now - window._recapActiveSince) : 0;
+    lines.push('RECAP: active=' + _recapActive + ' revealed=' + _recapRevealed + ' suspended=' + (window._recapSuspended===true)
+      + (_recapActive ? ' · stuck ' + Math.round(stuckMs/1000) + 's' : ''));
+  }catch(e){ lines.push('RECAP: read error — ' + (e&&e.message)); }
+
+  try{
+    const idleMs = (typeof MONTAGE!=='undefined' && MONTAGE._clipAt) ? (now - MONTAGE._clipAt) : 0;
+    const tko = document.getElementById('mlb-takeover');
+    const tkoShown = !!(tko && tko.className.indexOf('show')>=0);
+    lines.push('MONTAGE: on=' + (typeof MONTAGE!=='undefined' && MONTAGE.on) + ' advancing=' + (typeof MONTAGE!=='undefined' && !!MONTAGE._advancing)
+      + ' healScheduled=' + (typeof MONTAGE!=='undefined' && !!MONTAGE._healT)
+      + (typeof MONTAGE!=='undefined' && MONTAGE.on ? ' · idle ' + Math.round(idleMs/1000) + 's' : '')
+      + ' · takeoverCardShown=' + tkoShown);
+  }catch(e){ lines.push('MONTAGE: read error — ' + (e&&e.message)); }
+
+  try{
+    lines.push('AUDIO: userMuted=' + (window._userMuted===true) + ' userGestured=' + (window._userGestured===true)
+      + ' audioBlocked=' + (typeof _recapAudioBlocked!=='undefined' ? _recapAudioBlocked : '?')
+      + ' capTimerActive=' + (!!window._recapCapT));
+  }catch(e){ lines.push('AUDIO: read error — ' + (e&&e.message)); }
+
+  try{
+    const v = window._recapMp4;
+    if (v){
+      lines.push('VIDEO(mp4): src=…' + String(v.currentSrc||'').slice(-60) + ' readyState=' + v.readyState + ' networkState=' + v.networkState
+        + ' paused=' + v.paused + ' ended=' + v.ended + ' currentTime=' + v.currentTime.toFixed(1) + ' muted=' + v.muted + ' volume=' + v.volume
+        + ' error=' + (v.error ? ('code ' + v.error.code) : 'none'));
+    } else lines.push('VIDEO(mp4): none active');
+  }catch(e){ lines.push('VIDEO(mp4): read error — ' + (e&&e.message)); }
+
+  try{
+    if (typeof _recapPlayer !== 'undefined' && _recapPlayer && typeof _recapPlayer.getPlayerState === 'function'){
+      const stateMap = { '-1':'UNSTARTED', '0':'ENDED', '1':'PLAYING', '2':'PAUSED', '3':'BUFFERING', '5':'CUED' };
+      const st = _recapPlayer.getPlayerState();
+      lines.push('VIDEO(YT): state=' + (stateMap[st] || st));
+    } else lines.push('VIDEO(YT): none active');
+  }catch(e){ lines.push('VIDEO(YT): read error — ' + (e&&e.message)); }
+
+  try{
+    lines.push('TAB: hidden=' + document.hidden + ' visibilityState=' + document.visibilityState + ' fullscreen=' + (!!document.fullscreenElement));
+    const vl = window._visLog || [];
+    if (vl.length){
+      lines.push('  recent visibility/focus transitions:');
+      vl.slice(-10).forEach(e => lines.push('    ' + etClock(e.t) + ' ' + e.type + (e.hidden!==undefined ? (' hidden=' + e.hidden) : '')));
+    } else lines.push('  no visibility/focus transitions recorded this session');
+  }catch(e){ lines.push('TAB: read error — ' + (e&&e.message)); }
+
+  try{
+    const buf = window._audioLogBuf || [];
+    lines.push('── AUDIO LOG (last ' + Math.min(buf.length,20) + ' of ' + buf.length + ') ──');
+    if (!buf.length) lines.push('  (empty — no companion/recap play() attempts recorded yet)');
+    buf.slice(-20).forEach(e => lines.push('  ' + etClock(e.t) + ' ' + e.line));
+  }catch(e){ lines.push('AUDIO LOG: read error — ' + (e&&e.message)); }
+
+  try{
+    const yl = (typeof YTLT!=='undefined' && YTLT && YTLT.log) ? YTLT.log : [];
+    lines.push('── YTLT (last ' + Math.min(yl.length,20) + ' of ' + yl.length + ') ──');
+    yl.slice(-20).forEach(e => lines.push('  ' + JSON.stringify(e)));
+  }catch(e){ lines.push('YTLT: read error — ' + (e&&e.message)); }
+
+  try{
+    const nr = (typeof _nightReportText==='function') ? _nightReportText() : '';
+    const nrLines = nr.split('\n');
+    lines.push('── NIGHT REPORT TAIL (last 30 of ' + nrLines.length + ' lines) ──');
+    nrLines.slice(-30).forEach(l => lines.push(l));
+  }catch(e){ lines.push('NIGHT REPORT: read error — ' + (e&&e.message)); }
+
+  return lines.join('\n');
+};
+window.incidentSnapshot = function(){
+  const out = window._incidentSnapshotText();
+  try{ const _w = navigator.clipboard && navigator.clipboard.writeText(out); if (_w && _w.catch) _w.catch(()=>{}); }catch(_){}
+  console.log(out);
+  return '(copied, ' + out.length + ' chars)';
+};
 
 /* Play one recap source. opts.onEnd fires after dissolve (for sequencing).
    Returns true if a video started, false if nothing was found / errored. */
@@ -12611,7 +12742,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r430-watchdog-full-teardown';
+const BUILD_MARKER = 'r431-incident-snapshot';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -14806,6 +14937,7 @@ window.CC = (function(){
           '<div style="display:flex;gap:8px;margin-bottom:10px">'
           + '<button id="nrSave" style="padding:6px 12px;border-radius:6px;border:1px solid #2e6b45;background:#0d3320;color:#b6f0c8;font-weight:700;font-size:12px;cursor:pointer">⤓ Save Report</button>'
           + '<button id="nrCopy" style="padding:6px 12px;border-radius:6px;border:1px solid #2b3a4e;background:#16202e;color:#9fb0c6;font-weight:700;font-size:12px;cursor:pointer">Copy</button>'
+          + '<button id="nrSnap" style="padding:6px 12px;border-radius:6px;border:1px solid #5a3a1a;background:#2a1c0d;color:#f5c98a;font-weight:700;font-size:12px;cursor:pointer">📸 Incident Snapshot</button>'
           + '<button id="nrRefresh" style="padding:6px 12px;border-radius:6px;border:1px solid #3a3050;background:#1a1428;color:#c9b6f5;font-weight:700;font-size:12px;cursor:pointer">↻ Refresh</button>'
           + '<button id="nrClear" style="padding:6px 12px;border-radius:6px;border:1px solid #6b2b2b;background:#2a1414;color:#f5b6b6;font-weight:700;font-size:12px;cursor:pointer;margin-left:auto">🗑 Clear</button>'
           + '</div>'
@@ -14813,6 +14945,10 @@ window.CC = (function(){
           + '<pre style="white-space:pre-wrap;word-break:break-word;font:11px ui-monospace,Menlo,monospace;color:#cde4ff;margin:0">'+txt.replace(/</g,'&lt;')+'</pre>';
         var sv=$('nrSave'); if(sv) sv.onclick=function(){ window._ccActionAt=Date.now(); var r=(typeof nightSave==='function')?nightSave():'n/a'; sv.textContent='⤓ '+r; setTimeout(function(){sv.textContent='⤓ Save Report';},2500); };
         var cp=$('nrCopy'); if(cp) cp.onclick=function(){ try{ var w=navigator.clipboard&&navigator.clipboard.writeText(txt); if(w&&w.catch)w.catch(function(){}); cp.textContent='Copied'; setTimeout(function(){cp.textContent='Copy';},1500);}catch(_){} };
+        /* r431: independent of the report snapshot above — pulls fresh live state at tap time
+           (recap/montage flags, video element state, visibility log, audiolog buffer, YTLT
+           tail, night-report tail) into one clipboard copy. Works on a clean URL. */
+        var sn=$('nrSnap'); if(sn) sn.onclick=function(){ window._ccActionAt=Date.now(); try{ (typeof incidentSnapshot==='function')?incidentSnapshot():null; sn.textContent='📸 Copied'; }catch(_){ sn.textContent='📸 failed'; } setTimeout(function(){sn.textContent='📸 Incident Snapshot';},1500); };
         var rf=$('nrRefresh'); if(rf) rf.onclick=function(){ window._ccActionAt=Date.now(); renderPane('report'); };
         /* r426: tap-to-arm, tap-again-to-confirm — no blocking confirm() dialog on a kiosk panel.
            First tap arms (4s window, visibly relabeled); a second tap inside that window actually
