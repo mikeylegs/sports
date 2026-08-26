@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-08-26T17:55:06.969Z",
+  "updated": "2026-08-26T21:10:27.642Z",
   "events": [
     {
       "league": "football/nfl",
@@ -40,6 +40,22 @@
     }
   ],
   "watch": {
-    "teams": []
+    "teams": [
+      {
+        "league": "baseball/mlb",
+        "abbr": "NYY",
+        "name": "New York Yankees"
+      },
+      {
+        "league": "hockey/nhl",
+        "abbr": "NYR",
+        "name": "New York Rangers"
+      },
+      {
+        "league": "basketball/nba",
+        "abbr": "NY",
+        "name": "New York Knicks"
+      }
+    ]
   }
 }
