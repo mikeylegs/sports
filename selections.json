@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-08-27T16:32:30.737Z",
+  "updated": "2026-08-27T17:00:21.156Z",
   "events": [
     {
       "league": "football/nfl",
@@ -60,6 +60,11 @@
         "league": "baseball/mlb",
         "abbr": "TOR",
         "name": "Toronto Blue Jays"
+      },
+      {
+        "league": "baseball/mlb",
+        "abbr": "DET",
+        "name": "Detroit Tigers"
       }
     ]
   }
