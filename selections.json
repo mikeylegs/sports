@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-08-27T16:12:25.259Z",
+  "updated": "2026-08-27T16:32:30.737Z",
   "events": [
     {
       "league": "football/nfl",
@@ -55,6 +55,11 @@
         "league": "basketball/nba",
         "abbr": "NY",
         "name": "New York Knicks"
+      },
+      {
+        "league": "baseball/mlb",
+        "abbr": "TOR",
+        "name": "Toronto Blue Jays"
       }
     ]
   }
