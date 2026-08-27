@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-08-27T15:43:22.748Z",
+  "updated": "2026-08-27T15:47:05.376Z",
   "events": [
     {
       "league": "football/nfl",
@@ -37,6 +37,15 @@
       "showFrom": "20260827",
       "showUntil": "20260827",
       "rank": 4
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816696",
+      "title": "Houston Astros @ New York Yankees",
+      "showFrom": "20260827",
+      "showUntil": "20260827",
+      "rank": 5
     }
   ],
   "watch": {
