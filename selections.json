@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-08-27T17:00:21.156Z",
+  "updated": "2026-08-27T17:03:33.461Z",
   "events": [
     {
       "league": "football/nfl",
@@ -65,6 +65,11 @@
         "league": "baseball/mlb",
         "abbr": "DET",
         "name": "Detroit Tigers"
+      },
+      {
+        "league": "baseball/mlb",
+        "abbr": "PIT",
+        "name": "Pittsburgh Pirates"
       }
     ]
   }
