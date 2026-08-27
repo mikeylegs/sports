@@ -1,29 +1,8 @@
 {
   "v": 1,
-  "updated": "2026-08-27T19:25:13.105Z",
+  "updated": "2026-08-27T19:34:41.557Z",
   "events": [],
   "watch": {
-    "teams": [
-      {
-        "league": "baseball/mlb",
-        "abbr": "NYY",
-        "name": "New York Yankees"
-      },
-      {
-        "league": "hockey/nhl",
-        "abbr": "NYR",
-        "name": "New York Rangers"
-      },
-      {
-        "league": "basketball/nba",
-        "abbr": "NY",
-        "name": "New York Knicks"
-      },
-      {
-        "league": "soccer/eng.1",
-        "abbr": "MCI",
-        "name": "Manchester City"
-      }
-    ]
+    "teams": []
   }
 }
