@@ -1,7 +1,35 @@
 {
   "v": 1,
-  "updated": "2026-08-27T02:55:43.030Z",
-  "events": [],
+  "updated": "2026-08-27T02:56:07.023Z",
+  "events": [
+    {
+      "league": "football/nfl",
+      "label": "NFL",
+      "espnId": "401873302",
+      "title": "Washington Commanders @ Baltimore Ravens",
+      "showFrom": "20260828",
+      "showUntil": "20260828",
+      "rank": 1
+    },
+    {
+      "league": "football/nfl",
+      "label": "NFL",
+      "espnId": "401873641",
+      "title": "San Francisco 49ers @ Las Vegas Raiders",
+      "showFrom": "20260827",
+      "showUntil": "20260827",
+      "rank": 2
+    },
+    {
+      "league": "football/nfl",
+      "label": "NFL",
+      "espnId": "401873308",
+      "title": "Detroit Lions @ Indianapolis Colts",
+      "showFrom": "20260829",
+      "showUntil": "20260829",
+      "rank": 3
+    }
+  ],
   "watch": {
     "teams": [
       {
