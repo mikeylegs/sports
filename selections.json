@@ -1,17 +1,7 @@
 {
   "v": 1,
-  "updated": "2026-08-27T19:38:52.809Z",
-  "events": [
-    {
-      "league": "soccer/eng.1",
-      "label": "Premier League",
-      "espnId": "401879294",
-      "title": "Manchester City @ Crystal Palace",
-      "showFrom": "20260828",
-      "showUntil": "20260828",
-      "rank": 1
-    }
-  ],
+  "updated": "2026-08-27T19:42:26.021Z",
+  "events": [],
   "watch": {
     "teams": [
       {
