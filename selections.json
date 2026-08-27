@@ -1,44 +1,7 @@
 {
   "v": 1,
-  "updated": "2026-08-26T21:10:27.642Z",
-  "events": [
-    {
-      "league": "football/nfl",
-      "label": "NFL",
-      "espnId": "401873300",
-      "title": "Los Angeles Rams @ Los Angeles Chargers",
-      "showFrom": "20260827",
-      "showUntil": "20260827",
-      "rank": 1
-    },
-    {
-      "league": "football/nfl",
-      "label": "NFL",
-      "espnId": "401873298",
-      "title": "Pittsburgh Steelers @ Buffalo Bills",
-      "showFrom": "20260827",
-      "showUntil": "20260827",
-      "rank": 2
-    },
-    {
-      "league": "football/nfl",
-      "label": "NFL",
-      "espnId": "401873299",
-      "title": "New England Patriots @ Cleveland Browns",
-      "showFrom": "20260827",
-      "showUntil": "20260827",
-      "rank": 3
-    },
-    {
-      "league": "football/nfl",
-      "label": "NFL",
-      "espnId": "401873641",
-      "title": "San Francisco 49ers @ Las Vegas Raiders",
-      "showFrom": "20260827",
-      "showUntil": "20260827",
-      "rank": 4
-    }
-  ],
+  "updated": "2026-08-27T02:55:43.030Z",
+  "events": [],
   "watch": {
     "teams": [
       {
