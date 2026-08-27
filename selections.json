@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-08-27T17:40:24.401Z",
+  "updated": "2026-08-27T19:24:59.346Z",
   "events": [
     {
       "league": "golf/pga",
@@ -127,6 +127,11 @@
         "league": "basketball/nba",
         "abbr": "NY",
         "name": "New York Knicks"
+      },
+      {
+        "league": "soccer/eng.1",
+        "abbr": "MCI",
+        "name": "Manchester City"
       }
     ]
   }
