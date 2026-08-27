@@ -1,44 +1,7 @@
 {
   "v": 1,
-  "updated": "2026-08-27T17:03:33.461Z",
-  "events": [
-    {
-      "league": "football/nfl",
-      "label": "NFL",
-      "espnId": "401873302",
-      "title": "Washington Commanders @ Baltimore Ravens",
-      "showFrom": "20260828",
-      "showUntil": "20260828",
-      "rank": 1
-    },
-    {
-      "league": "football/nfl",
-      "label": "NFL",
-      "espnId": "401873641",
-      "title": "San Francisco 49ers @ Las Vegas Raiders",
-      "showFrom": "20260827",
-      "showUntil": "20260827",
-      "rank": 2
-    },
-    {
-      "league": "football/nfl",
-      "label": "NFL",
-      "espnId": "401873308",
-      "title": "Detroit Lions @ Indianapolis Colts",
-      "showFrom": "20260829",
-      "showUntil": "20260829",
-      "rank": 3
-    },
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816699",
-      "title": "Milwaukee Brewers @ New York Mets",
-      "showFrom": "20260827",
-      "showUntil": "20260827",
-      "rank": 4
-    }
-  ],
+  "updated": "2026-08-27T17:39:59.663Z",
+  "events": [],
   "watch": {
     "teams": [
       {
@@ -55,21 +18,6 @@
         "league": "basketball/nba",
         "abbr": "NY",
         "name": "New York Knicks"
-      },
-      {
-        "league": "baseball/mlb",
-        "abbr": "TOR",
-        "name": "Toronto Blue Jays"
-      },
-      {
-        "league": "baseball/mlb",
-        "abbr": "DET",
-        "name": "Detroit Tigers"
-      },
-      {
-        "league": "baseball/mlb",
-        "abbr": "PIT",
-        "name": "Pittsburgh Pirates"
       }
     ]
   }
