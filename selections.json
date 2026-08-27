@@ -1,7 +1,116 @@
 {
   "v": 1,
-  "updated": "2026-08-27T17:39:59.663Z",
-  "events": [],
+  "updated": "2026-08-27T17:40:24.401Z",
+  "events": [
+    {
+      "league": "golf/pga",
+      "label": "Golf (PGA)",
+      "espnId": "401811964",
+      "title": "TOUR Championship",
+      "showFrom": "20260827",
+      "showUntil": "20260827",
+      "rank": 1
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816695",
+      "title": "Colorado Rockies @ Washington Nationals",
+      "showFrom": "20260827",
+      "showUntil": "20260827",
+      "rank": 2
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816700",
+      "title": "Baltimore Orioles @ St. Louis Cardinals",
+      "showFrom": "20260827",
+      "showUntil": "20260827",
+      "rank": 3
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816696",
+      "title": "Houston Astros @ New York Yankees",
+      "showFrom": "20260827",
+      "showUntil": "20260827",
+      "rank": 4
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816697",
+      "title": "Kansas City Royals @ Toronto Blue Jays",
+      "showFrom": "20260827",
+      "showUntil": "20260827",
+      "rank": 5
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816699",
+      "title": "Milwaukee Brewers @ New York Mets",
+      "showFrom": "20260827",
+      "showUntil": "20260827",
+      "rank": 6
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816698",
+      "title": "Los Angeles Dodgers @ Atlanta Braves",
+      "showFrom": "20260827",
+      "showUntil": "20260827",
+      "rank": 7
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816701",
+      "title": "Arizona Diamondbacks @ San Francisco Giants",
+      "showFrom": "20260827",
+      "showUntil": "20260827",
+      "rank": 8
+    },
+    {
+      "league": "football/nfl",
+      "label": "NFL",
+      "espnId": "401873300",
+      "title": "Los Angeles Rams @ Los Angeles Chargers",
+      "showFrom": "20260827",
+      "showUntil": "20260827",
+      "rank": 9
+    },
+    {
+      "league": "football/nfl",
+      "label": "NFL",
+      "espnId": "401873298",
+      "title": "Pittsburgh Steelers @ Buffalo Bills",
+      "showFrom": "20260827",
+      "showUntil": "20260827",
+      "rank": 10
+    },
+    {
+      "league": "football/nfl",
+      "label": "NFL",
+      "espnId": "401873299",
+      "title": "New England Patriots @ Cleveland Browns",
+      "showFrom": "20260827",
+      "showUntil": "20260827",
+      "rank": 11
+    },
+    {
+      "league": "football/nfl",
+      "label": "NFL",
+      "espnId": "401873641",
+      "title": "San Francisco 49ers @ Las Vegas Raiders",
+      "showFrom": "20260827",
+      "showUntil": "20260827",
+      "rank": 12
+    }
+  ],
   "watch": {
     "teams": [
       {
