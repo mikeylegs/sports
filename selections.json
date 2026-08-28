@@ -1,17 +1,12 @@
 {
   "v": 1,
-  "updated": "2026-08-27T20:46:47.215Z",
+  "updated": "2026-08-28T17:38:09.702Z",
   "events": [],
   "watch": {
     "teams": [
       {
         "league": "soccer/eng.1",
         "abbr": "MCI",
-        "name": "Manchester City"
-      },
-      {
-        "league": "soccer/eng.1",
-        "abbr": "MNC",
         "name": "Manchester City"
       }
     ]
