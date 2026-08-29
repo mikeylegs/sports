@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-08-29T00:00:58.839Z",
+  "updated": "2026-08-29T01:12:12.161Z",
   "events": [
     {
       "league": "football/nfl",
@@ -10,6 +10,15 @@
       "showFrom": "20260828",
       "showUntil": "20260828",
       "rank": 1
+    },
+    {
+      "league": "football/nfl",
+      "label": "NFL",
+      "espnId": "401873305",
+      "title": "Seattle Seahawks @ Kansas City Chiefs",
+      "showFrom": "20260828",
+      "showUntil": "20260828",
+      "rank": 2
     }
   ],
   "watch": {
