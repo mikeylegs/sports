@@ -1,17 +1,7 @@
 {
   "v": 1,
-  "updated": "2026-08-31T00:24:15.840Z",
-  "events": [
-    {
-      "league": "tennis/atp,tennis/wta",
-      "label": "Tennis · US Open",
-      "espnId": "189-2026:182675",
-      "title": "N. Djokovic (#4) v M. Navone",
-      "showFrom": "20260830",
-      "showUntil": "20260830",
-      "rank": 1
-    }
-  ],
+  "updated": "2026-08-31T00:24:31.315Z",
+  "events": [],
   "watch": {
     "teams": [
       {
