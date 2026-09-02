@@ -1,17 +1,24 @@
-name: Refresh team catalog
+name: Build dashboard
 
-# Rebuilds team-catalog.json's `aka` (squad + IL player names, for the selector's
-# player search) on a schedule, server-side — no browser console harvest needed.
+# Runs whenever the SOURCE changes. Builds index.html and commits it back.
+# You never hand-edit or hand-upload index.html again — it is a build artifact.
+#
+# r494-era deploy ritual: edit/upload dashboard.html at repo root (was:
+# rename-old/upload-new on index.html directly). This workflow resolves its
+# 18 @@ASSET_NNN@@ placeholders from assets.json and commits index.html.
 on:
-  schedule:
-    - cron: '0 10 * * *'    # 10:00 UTC daily = 6am ET (5am during DST) — before the day starts
-  workflow_dispatch:        # lets you re-run it manually from the Actions tab, any time
+  push:
+    paths:
+      - 'dashboard.html'
+      - 'assets.json'
+      - 'build.py'
+  workflow_dispatch:        # lets you re-run it manually from the Actions tab
 
 permissions:
-  contents: write           # required so the Action can commit team-catalog.json back
+  contents: write           # required so the Action can commit index.html back
 
 jobs:
-  refresh:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,20 +27,24 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Rebuild team-catalog.json
+      - name: Build index.html from dashboard.html
         run: |
-          python3 catalog.py
-          # catalog.py always exits 0 (a partial harvest is a data refresh, not a build
-          # failure) — the per-league summary above tells you if something went wrong.
+          python3 build.py
+          # build.py exits non-zero on an unresolved OR unused asset placeholder,
+          # which FAILS the Action — a broken build never reaches the panel.
 
-      - name: Commit team-catalog.json
+      - name: Show the build marker (Rule Zero, in the log)
+        run: |
+          grep -o "const BUILD_MARKER = '[^']*'" index.html || echo "NO BUILD MARKER FOUND"
+
+      - name: Commit index.html
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add team-catalog.json
+          git add index.html
           if git diff --staged --quiet; then
-            echo "team-catalog.json unchanged — nothing to commit"
+            echo "index.html unchanged — nothing to commit"
           else
-            git commit -m "catalog: refresh squad/injury data"
+            git commit -m "build: index.html from dashboard.html"
             git push
           fi
