@@ -36,7 +36,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Wide World of Sports — Day Selector <span style="font-size:12px;font-weight:400;opacity:.5;font-family:monospace">selector-r160</span></h1>
+  <h1>Wide World of Sports — Day Selector <span style="font-size:12px;font-weight:400;opacity:.5;font-family:monospace">selector-r161</span></h1>
   <p class="sub">Pick today's / this weekend's events for the panel. Output is <code>selections.json</code> — commit it to the repo root and the dashboard (phase 2) picks it up on its next poll.</p>
   <div class="bar">
     <select id="range">
@@ -51,10 +51,16 @@
   </div>
   <div style="position:relative;margin:0 0 4px">
     <input id="q" placeholder="Search events (team, player, tournament)…" oninput="filterList()"
-      style="width:100%;background:#05070d;color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:10px 34px 10px 12px;font:14px inherit">
+      style="width:100%;background:#05070d;color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:10px 46px 10px 12px;font:14px inherit">
     <!-- selector-r160: X-clear, same pattern as the team filter's #tqClear (r461) -->
-    <button id="qClear" onclick="clearEventFilter()" title="Clear search"
-      style="display:none;position:absolute;right:4px;top:50%;transform:translateY(-50%);width:26px;height:26px;padding:0;border:none;background:transparent;color:var(--mut);font-size:18px;line-height:1;cursor:pointer">×</button>
+    <!-- selector-r161: r160's × was a muted glyph on a transparent background at the box edge and
+         Mike couldn't see it at all on a phone. Now a filled circular button with real contrast and
+         a 30px tap target — visible first, tappable second, decorative never. -->
+    <button id="qClear" onclick="clearEventFilter()" title="Clear search" aria-label="Clear search"
+      style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);
+             width:30px;height:30px;padding:0;border:none;border-radius:50%;
+             background:rgba(255,255,255,0.14);color:#fff;font-size:19px;line-height:1;
+             align-items:center;justify-content:center;cursor:pointer">×</button>
   </div>
   <!-- selector-r158: says WHY a player query matched, so "messi" surfacing Genoa is explicable
        (Junior Messias) rather than looking like a bug. Empty/hidden unless a player hit lands. -->
@@ -482,6 +488,12 @@ async function scan(){
   list.innerHTML = html.join('') || (lgOn.size === 0
     ? `<p class="sub">No leagues are switched on — tap a league chip above, then press SCAN.</p>`
     : `<p class="sub">No events found in range. ${_fails} of ${lgOn.size*days} league-day fetches failed${_fails?' — likely CORS-proxy trouble; retry in a minute':''}.</p>`);
+  /* selector-r161 — THE BUG behind "I'm still not getting an easy way to select a game by player".
+     scan() rebuilds #list wholesale and previously stopped here, so every row rendered VISIBLE no
+     matter what was in the search box — the filter was working, the scan was discarding it. Typing
+     "haala" then scanning gave the entire EPL slate, forcing exactly the scroll-hunt Mike
+     described. Re-apply the active filter to the freshly-built list. */
+  filterList();
   count();
 }
 function cssId(s){ return s.replace(/[^a-z0-9]/gi,'_'); }
@@ -522,8 +534,14 @@ function filterList(){
   const hint = document.getElementById('qhint');
   if (hint){
     if (pairs.length){
+      /* selector-r161: name → club (LEAGUE). Mike: "should we add the league to the player search
+         results? i.e. Messi - Inter Miami - MLS". Yes — and it earns its place beyond labelling:
+         it's what makes the duplicate entries legible. "Haaland → Manchester City · Haaland →
+         Manchester City" looked like a rendering bug; "Manchester City (EPL)" vs "(UCL)" is
+         visibly two distinct follow targets, which is exactly what they are. */
       const shown = pairs.slice(0, 4)
-        .map(x => `<b style="font-weight:700">${x.tok}</b> → ${x.club.name}`).join('&nbsp; · &nbsp;');
+        .map(x => `<b style="font-weight:700">${x.tok}</b> → ${x.club.name} <span class="d">(${x.club.tag})</span>`)
+        .join('&nbsp; · &nbsp;');
       hint.innerHTML = shown + (pairs.length > 4 ? ` <span class="d">+${pairs.length-4} more</span>` : '');
       hint.style.display = '';
     } else { hint.style.display = 'none'; hint.innerHTML = ''; }
@@ -551,7 +569,14 @@ function filterList(){
     if (hit) _shown++;
   });
   const qc = document.getElementById('qClear');
-  if (qc) qc.style.display = raw ? 'block' : 'none';
+  if (qc) qc.style.display = raw ? 'flex' : 'none';
+  /* selector-r161: now that scan() re-applies the filter, a search that matches nothing leaves a
+     list full of hidden rows — visually just blank, with no explanation. Say so. */
+  if (hint && raw && _shown === 0 && document.querySelectorAll('#list .ev').length){
+    hint.innerHTML = (pairs.length ? hint.innerHTML + '<br>' : '')
+      + `<span class="d">No scanned games match “${raw.replace(/</g,'')}” — widen the range or SCAN more leagues.</span>`;
+    hint.style.display = '';
+  }
   // hide day/league headers with no visible rows under them
   document.querySelectorAll('#list .day, #list .lg').forEach(h=>{
     let n = h.nextElementSibling, any = false;
