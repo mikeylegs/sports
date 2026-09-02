@@ -1,0 +1,39 @@
+name: Refresh team catalog
+
+# Rebuilds team-catalog.json's `aka` (squad + IL player names, for the selector's
+# player search) on a schedule, server-side — no browser console harvest needed.
+on:
+  schedule:
+    - cron: '0 10 * * *'    # 10:00 UTC daily = 6am ET (5am during DST) — before the day starts
+  workflow_dispatch:        # lets you re-run it manually from the Actions tab, any time
+
+permissions:
+  contents: write           # required so the Action can commit team-catalog.json back
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Rebuild team-catalog.json
+        run: |
+          python3 catalog.py
+          # catalog.py always exits 0 (a partial harvest is a data refresh, not a build
+          # failure) — the per-league summary above tells you if something went wrong.
+
+      - name: Commit team-catalog.json
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add team-catalog.json
+          if git diff --staged --quiet; then
+            echo "team-catalog.json unchanged — nothing to commit"
+          else
+            git commit -m "catalog: refresh squad/injury data"
+            git push
+          fi
