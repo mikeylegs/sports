@@ -47,7 +47,11 @@ def fold(s):
     s = ''.join(c for c in s if unicodedata.category(c) != 'Mn')
     return s.lower().strip()
 
+_ERR_LOG = []   # r1: diagnostic-only, capped, printed once at the end — NOT swallowed to None blind
+_ERR_CAP = 8
+
 def getjson(url):
+    last_err = None
     for attempt in range(RETRIES + 1):
         try:
             req = urllib.request.Request(url, headers=UA)
@@ -55,10 +59,19 @@ def getjson(url):
                 if r.status != 200:
                     raise urllib.error.HTTPError(url, r.status, 'non-200', None, None)
                 return json.loads(r.read().decode('utf-8'))
+        except urllib.error.HTTPError as e:
+            last_err = f'HTTP {e.code} {e.reason}'
+            try:
+                body = e.read(300).decode('utf-8', 'replace')
+                last_err += f' | body: {body!r}'
+            except Exception:
+                pass
         except Exception as e:
-            if attempt == RETRIES:
-                return None
+            last_err = f'{type(e).__name__}: {e}'
+        if attempt < RETRIES:
             time.sleep(SLEEP * (attempt + 1))
+    if last_err and len(_ERR_LOG) < _ERR_CAP:
+        _ERR_LOG.append(f'{url} -> {last_err}')
     return None
 
 def names_from_roster(d):
@@ -210,6 +223,10 @@ def main():
         print(lg, json.dumps(s))
     no_aka = [f"{t['league']}|{t['abbr']}" for t in cat if not t.get('aka')]
     print('clubs with NO aka at all:', no_aka or '(none)')
+    if _ERR_LOG:
+        print(f'\n--- first {len(_ERR_LOG)} request failures (diagnostic) ---')
+        for line in _ERR_LOG:
+            print(' ', line)
 
     CATALOG.write_text(json.dumps(cat, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
     print(f'wrote {CATALOG.name}, {len(cat)} entries')
