@@ -1,74 +1,13 @@
 {
   "v": 1,
-  "updated": "2026-09-02T03:31:30.886Z",
-  "events": [
-    {
-      "league": "soccer/esp.1",
-      "label": "LALIGA",
-      "espnId": "401882894",
-      "title": "Real Madrid @ Real Betis",
-      "showFrom": "20260904",
-      "showUntil": "20260904",
-      "rank": 1
-    },
-    {
-      "league": "soccer/eng.1",
-      "label": "English Premier League",
-      "espnId": "401879288",
-      "title": "Liverpool @ Ipswich Town",
-      "showFrom": "20260904",
-      "showUntil": "20260904",
-      "rank": 2
-    },
-    {
-      "league": "soccer/ita.1",
-      "label": "Serie A",
-      "espnId": "401874744",
-      "title": "Como @ Genoa",
-      "showFrom": "20260904",
-      "showUntil": "20260904",
-      "rank": 3
-    },
-    {
-      "league": "soccer/usa.1",
-      "label": "MLS",
-      "espnId": "761770",
-      "title": "Nashville SC @ New York City FC",
-      "showFrom": "20260904",
-      "showUntil": "20260904",
-      "rank": 4
-    },
-    {
-      "league": "soccer/fra.1",
-      "label": "Ligue 1",
-      "espnId": "401876469",
-      "title": "AS Monaco @ Paris Saint-Germain",
-      "showFrom": "20260904",
-      "showUntil": "20260904",
-      "rank": 5
-    }
-  ],
+  "updated": "2026-09-02T16:07:13.245Z",
+  "events": [],
   "watch": {
     "teams": [
       {
-        "league": "soccer/eng.1",
-        "abbr": "MCI",
-        "name": "Manchester City"
-      },
-      {
         "league": "baseball/mlb",
-        "abbr": "NYY",
-        "name": "New York Yankees"
-      },
-      {
-        "league": "hockey/nhl",
-        "abbr": "NYR",
-        "name": "New York Rangers"
-      },
-      {
-        "league": "basketball/nba",
-        "abbr": "NY",
-        "name": "New York Knicks"
+        "abbr": "MIA",
+        "name": "Miami Marlins"
       }
     ]
   }
