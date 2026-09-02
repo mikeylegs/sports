@@ -39,7 +39,14 @@ SOCCER_LEAGUES = {'soccer/eng.1','soccer/esp.1','soccer/ita.1','soccer/ger.1',
                    'soccer/fra.1','soccer/uefa.champions','soccer/usa.1'}
 SITE = 'https://site.api.espn.com/apis/site/v2/sports'
 CORE = 'https://sports.core.api.espn.com/v2/sports'
-UA = {'User-Agent': 'sports-console-catalog-bot/1'}
+# r2: site.api.espn.com is Akamai-fronted and its bot manager 403'd every roster/injuries
+# call with "Access Denied ... Reference #18.1" — the classic Akamai edge-block signature —
+# while sports.core.api.espn.com (a different front, used for soccer id resolution) let the
+# SAME requests through fine. The giveaway: the old UA literally announced itself as a bot.
+# A real browser UA is what every working path all session has used (Mike's browser, WebFetch).
+UA = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+                     '(KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+      'Accept': 'application/json'}
 
 def fold(s):
     import unicodedata
