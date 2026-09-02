@@ -36,7 +36,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Wide World of Sports — Day Selector <span style="font-size:12px;font-weight:400;opacity:.5;font-family:monospace">selector-r159</span></h1>
+  <h1>Wide World of Sports — Day Selector <span style="font-size:12px;font-weight:400;opacity:.5;font-family:monospace">selector-r160</span></h1>
   <p class="sub">Pick today's / this weekend's events for the panel. Output is <code>selections.json</code> — commit it to the repo root and the dashboard (phase 2) picks it up on its next poll.</p>
   <div class="bar">
     <select id="range">
@@ -49,8 +49,13 @@
     <button id="starsBtn" onclick="toggleStars()">★ FOLLOW TEAMS</button>
     <button onclick="toggleSelected()">✓ SELECTED (<span id="cntSel">0</span>)</button>
   </div>
-  <input id="q" placeholder="Search events (team, player, tournament)…" oninput="filterList()"
-    style="width:100%;margin:0 0 4px;background:#05070d;color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font:14px inherit">
+  <div style="position:relative;margin:0 0 4px">
+    <input id="q" placeholder="Search events (team, player, tournament)…" oninput="filterList()"
+      style="width:100%;background:#05070d;color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:10px 34px 10px 12px;font:14px inherit">
+    <!-- selector-r160: X-clear, same pattern as the team filter's #tqClear (r461) -->
+    <button id="qClear" onclick="clearEventFilter()" title="Clear search"
+      style="display:none;position:absolute;right:4px;top:50%;transform:translateY(-50%);width:26px;height:26px;padding:0;border:none;background:transparent;color:var(--mut);font-size:18px;line-height:1;cursor:pointer">×</button>
+  </div>
   <!-- selector-r158: says WHY a player query matched, so "messi" surfacing Genoa is explicable
        (Junior Messias) rather than looking like a bug. Empty/hidden unless a player hit lands. -->
   <div id="qhint" style="display:none;margin:0 0 10px;font-size:12px;color:var(--acc)"></div>
@@ -287,6 +292,12 @@ function drawTeams(){
   html += `<div class="day" style="grid-column:1/-1;margin:${followed.length?'14px':'0'} 0 6px">All teams</div>` + _teamGroupHtml(rest, q);
   document.getElementById('teamgrid').innerHTML = html;
 }
+function clearEventFilter(){
+  const inp = document.getElementById('q');
+  inp.value = '';
+  filterList();
+  inp.focus();
+}
 function clearTeamFilter(){
   const inp = document.getElementById('tq');
   inp.value = '';
@@ -465,7 +476,12 @@ async function scan(){
       </label>`);
     }
   }
-  list.innerHTML = html.join('') || `<p class="sub">No events found in range. ${_fails} of ${lgOn.size*days} league-day fetches failed${_fails?' — likely CORS-proxy trouble; retry in a minute':''}.</p>`;
+  /* selector-r160: distinguish "nothing was even asked for" from "asked and found nothing".
+     With every chip off this printed "No events found in range. 0 of 0 league-day fetches
+     failed" — technically true, actively misleading, and it names no remedy. */
+  list.innerHTML = html.join('') || (lgOn.size === 0
+    ? `<p class="sub">No leagues are switched on — tap a league chip above, then press SCAN.</p>`
+    : `<p class="sub">No events found in range. ${_fails} of ${lgOn.size*days} league-day fetches failed${_fails?' — likely CORS-proxy trouble; retry in a minute':''}.</p>`);
   count();
 }
 function cssId(s){ return s.replace(/[^a-z0-9]/gi,'_'); }
@@ -517,15 +533,25 @@ function filterList(){
      lower on screen and it makes it tough to go back and forth." Hiding it while filtering puts
      results immediately under the search bar; clearing the box restores them. Purely visual, and
      the chips' own on/off state (lgOn) is untouched, so scan scope is unaffected. */
+  /* selector-r160: only collapse when the search actually HAS results to make room for.
+     r159 hid the chips on any keystroke — including when the list was empty, which hid the one
+     control that fixes an empty list. Mike hit exactly that: every chip was toggled off
+     (lgOn.size === 0, so nothing was ever fetched), and with "Messi" typed the chips were
+     invisible, so the remedy was unreachable. Chips now stay put unless hiding them buys
+     something. */
   const chips = document.getElementById('lgchips');
-  if (chips) chips.style.display = raw ? 'none' : '';
+  if (chips) chips.style.display = (raw && _shown > 0) ? 'none' : '';
+  let _shown = 0;
   document.querySelectorAll('#list .ev').forEach(row=>{
     // R80: match the row's data-search (league + title + time) so "Wimb" finds Wimbledon
     // matches even though the visible row text is just player names.
     const hay = _fold(row.getAttribute('data-search') || row.textContent);
     const hit = !q || hay.includes(q) || clubTerms.some(c => hay.includes(c));
     row.style.display = hit ? '' : 'none';
+    if (hit) _shown++;
   });
+  const qc = document.getElementById('qClear');
+  if (qc) qc.style.display = raw ? 'block' : 'none';
   // hide day/league headers with no visible rows under them
   document.querySelectorAll('#list .day, #list .lg').forEach(h=>{
     let n = h.nextElementSibling, any = false;
