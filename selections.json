@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-09-02T16:07:13.245Z",
+  "updated": "2026-09-02T16:08:52.295Z",
   "events": [],
   "watch": {
     "teams": [
@@ -8,6 +8,16 @@
         "league": "baseball/mlb",
         "abbr": "MIA",
         "name": "Miami Marlins"
+      },
+      {
+        "league": "baseball/mlb",
+        "abbr": "ATH",
+        "name": "Athletics"
+      },
+      {
+        "league": "baseball/mlb",
+        "abbr": "PHI",
+        "name": "Philadelphia Phillies"
       }
     ]
   }
