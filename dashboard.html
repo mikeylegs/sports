@@ -416,7 +416,7 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 /*R47*/.wws-full .wws-soc-row{flex:0 0 auto;}
 .wws-full .wws-tn-rows{flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0;gap:1cqh;}
 /* R12b: soccer pregame — time vertically centered between flags */
-.wws-soc-row.pre{align-items:center;padding-top:0;}
+.wws-soc-row.pre{align-items:center;padding-top:0;gap:0;}   /* r504: row's own 2cqh gap (line ~639) stacked on top of the already-101% 24.5/52/24.5 crest/mid/crest lock (same lock MLB/NFL/NHL/NBA use, but they carry no row-level gap) — 2 gaps × 2cqh = 4cqh overflow, bleeding the right crest/record off the card edge. Zeroed for pregame only; live soccer's gap untouched. */
 .wws-soc-row.pre .wws-tm-mid{display:flex;align-items:center;justify-content:center;flex:0 0 52%;width:52%;}   /* r455: same percentage-lock MLB/NFL/NHL/NBA already proved (r278/r448) — without a real width ceiling, fitText's own container grows to match content instead of the reverse, so it never actually shrinks anything. Sandbox-caught: day-word rendered at max size uncapped and overflowed the card before this. */
 .wws-soc-row.pre .wws-tm-side{flex:0 0 24.5%;width:24.5%;}
 .wws-soc-prestack{display:flex;flex-direction:column;align-items:center;gap:0.8cqh;width:100%;white-space:nowrap;}   /* r455: real width so _wwsKickStack's fitText has a ceiling to measure against, same reason r448 gave .wws-mlb-kick-stack one */
@@ -13917,7 +13917,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r503-tennis-pregame-status-stack';
+const BUILD_MARKER = 'r504-soccer-pregame-row-overflow';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
