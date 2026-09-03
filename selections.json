@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-09-03T12:09:55.065Z",
+  "updated": "2026-09-03T14:42:50.424Z",
   "events": [
     {
       "league": "tennis/atp,tennis/wta",
@@ -12,13 +12,22 @@
       "rank": 1
     },
     {
+      "league": "soccer/usa.1",
+      "label": "MLS",
+      "espnId": "761777",
+      "title": "Atlanta United FC @ Inter Miami CF",
+      "showFrom": "20260905",
+      "showUntil": "20260905",
+      "rank": 2
+    },
+    {
       "league": "soccer/eng.1",
       "label": "English Premier League",
       "espnId": "401879287",
       "title": "Coventry City @ Manchester City",
       "showFrom": "20260905",
       "showUntil": "20260905",
-      "rank": 2
+      "rank": 3
     },
     {
       "league": "soccer/eng.1",
@@ -27,7 +36,7 @@
       "title": "Manchester United @ Everton",
       "showFrom": "20260906",
       "showUntil": "20260906",
-      "rank": 3
+      "rank": 4
     },
     {
       "league": "soccer/eng.1",
@@ -36,15 +45,6 @@
       "title": "Chelsea @ Arsenal",
       "showFrom": "20260906",
       "showUntil": "20260906",
-      "rank": 4
-    },
-    {
-      "league": "soccer/usa.1",
-      "label": "MLS",
-      "espnId": "761777",
-      "title": "Atlanta United FC @ Inter Miami CF",
-      "showFrom": "20260905",
-      "showUntil": "20260905",
       "rank": 5
     },
     {
@@ -127,9 +127,19 @@
       "showFrom": "20260903",
       "showUntil": "20260903",
       "rank": 14
+    },
+    {
+      "league": "tennis/atp,tennis/wta",
+      "label": "Tennis · US Open",
+      "espnId": "189-2026:182745",
+      "title": "D. Shapovalov v B. Shelton (#8)",
+      "showFrom": "20260904",
+      "showUntil": "20260904",
+      "rank": 15
     }
   ],
   "watch": {
-    "teams": []
+    "teams": [],
+    "players": []
   }
 }
