@@ -12389,7 +12389,27 @@ function wwsTennisInner(d){
       const dt = isTeaser
         ? new Date(+d.date.slice(0,4), +d.date.slice(4,6)-1, +d.date.slice(6,8))
         : new Date(d.date);
-      if (!isNaN(dt.getTime())) wd = dt.toLocaleDateString('en-US',{weekday:'long'}).toUpperCase();
+      if (!isNaN(dt.getTime())){
+        // r497: TODAY/TONIGHT/TOMORROW/<weekday> instead of always spelling out the weekday.
+        // ET-anchored, matching _wwsTodayTonight's convention elsewhere in this file. Teaser
+        // dates (YYYYMMDD, no time) are already ET-keyed by _wwsPlusDays, so dt's local Y/M/D
+        // IS the ET calendar day as-is; full-ISO dates need converting to ET first.
+        const dtET = isTeaser ? dt : new Date(dt.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+        const nowETd = nowET();
+        const tomorrowET = new Date(nowETd); tomorrowET.setDate(nowETd.getDate() + 1);
+        if (dtET.toDateString() === nowETd.toDateString()){
+          let hour = dtET.getHours();
+          if (isTeaser && d.kickoff){
+            const hm = String(d.kickoff).match(/(\d{1,2}):(\d{2})\s*([AP]M)/i);
+            if (hm) hour = (parseInt(hm[1],10)%12) + (/pm/i.test(hm[3])?12:0);
+          }
+          wd = hour >= 17 ? 'TONIGHT' : 'TODAY';
+        } else if (dtET.toDateString() === tomorrowET.toDateString()){
+          wd = 'TOMORROW';
+        } else {
+          wd = dt.toLocaleDateString('en-US',{weekday:'long'});
+        }
+      }
     }
     const rnd = (d.status||'').split('·').map(x=>x.trim()).find(x=>/final|round|semi|quarter/i.test(x)) || '';
     const parts = [wd, d.kickoff, rnd].filter(Boolean);
@@ -13886,7 +13906,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r496-tennis-match-date-fix';
+const BUILD_MARKER = 'r498-weekday-titlecase';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
