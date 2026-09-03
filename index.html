@@ -450,6 +450,10 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 /* r480: name + serve-dot now share one wrapper so the dot hugs the visible name text
    instead of trailing a flex:1 name span. */
 .wws-tn-name-wrap{display:flex;align-items:center;gap:0.9cqh;flex:1 1 auto;min-width:0;}   /* r500 */
+/* r505: rank/seed — between flag & name, dialed in tennis-studio.html. Shown in both live
+   and pregame (identity info, not a "no score yet" filler). Fixed-width slot so an
+   unseeded player's empty prefix still keeps both rows' flags/names aligned. */
+.wws-tn-rank{font-size:4.4cqh;font-weight:900;color:rgba(255,255,255,0.6);min-width:2.6cqh;text-align:right;flex-shrink:0;}
 .wws-tn-name{font-size:5.4cqh;font-weight:900;color:rgba(255,255,255,0.8);flex:0 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}   /* r500: font-size is the pre-fitText fallback — data-fit governs the real max/floor per mode */
 .wws-tn-name.w{color:#fff;}
 .wws-serve{width:2.5cqh;height:2.5cqh;border-radius:50%;background:#34d399;flex-shrink:0;}   /* r500: live-only */
@@ -12167,6 +12171,12 @@ async function wwsPollEvents(){
           headshot: (c.athlete && c.athlete.headshot && (c.athlete.headshot.href || c.athlete.headshot)) || '',
           headshotIds: e.league.startsWith('tennis')
             ? [c.athlete && c.athlete.id, c.id].filter(Boolean).map(String) : [],
+          // r505: world rank/seed. Same extraction wws-selector.html's tennis scan already
+          // uses live (curatedRank.current, then seed, then a flat rank field — ESPN exposes
+          // these inconsistently across events, first-match-wins, omit silently if none).
+          rank: e.league.startsWith('tennis')
+            ? ((c.curatedRank && c.curatedRank.current) || c.seed || (c.athlete && c.athlete.rank) || null)
+            : null,
           score: c.score != null ? String(c.score) : '',
           sets: (c.linescores || []).map(l => ({   // r480: {v,tb} — was a bare value string; tiebreak now captured too
             v: l.value != null ? String(Math.round(l.value)) : '',
@@ -12383,6 +12393,7 @@ function wwsTennisInner(d){
   // data-layer change needed here.
   const rows = d.sides.map(x => `<div class="wws-tn-row">
     ${x.flag ? `<img class="wws-flag wws-tn-flag" src="${x.flag}" alt="" onerror="this.style.opacity=0">` : ''}
+    ${x.rank ? `<span class="wws-tn-rank">${x.rank}</span>` : ''}
     <div class="wws-tn-name-wrap"><span class="wws-tn-name${x.winner?' w':''}" data-fit="${d.pre?5.3:5.4}" data-fit-min="${d.pre?5.1:5.4}">${x.name}</span>${x.serving && d.live ? '<span class="wws-serve"></span>' : ''}</div>
     <span class="wws-tn-sets">${x.sets.map((s,i) =>
       `<span class="wws-tn-set${i===nSets-1&&d.live?' hot':''}${(+s.v>=6)?' won':''}">${s.v}${s.tb?`<sup class="wws-tn-tb">${s.tb}</sup>`:''}</span>`).join('')}</span>
@@ -13917,7 +13928,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r504-soccer-pregame-row-overflow';
+const BUILD_MARKER = 'r505-tennis-rank';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
