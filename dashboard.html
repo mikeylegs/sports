@@ -11831,7 +11831,10 @@ function _selPollLine(){
 // them and renderWwsSlot can order them LAST (curated events always win slot-2).
 async function wwsPollWatch(){
   const teams = (WWS.watch && WWS.watch.teams) || [];
-  if (!teams.length){ WWS.sel = WWS.sel.filter(e => !e.__watch); return; }
+  // r170: __watch now covers TWO independent producers (this function's team-follows, and
+  // wwsPollWatchPlayers' player-follows below) — must only clear entries THIS function owns,
+  // or the two would stomp each other every 30s poll regardless of which ran more recently.
+  if (!teams.length){ WWS.sel = WWS.sel.filter(e => !e.__watch || e.__watchPlayer); return; }
   const byLeague = {};
   teams.forEach(t => (byLeague[t.league] = byLeague[t.league] || []).push(t.abbr));
   const found = [];
@@ -11930,8 +11933,84 @@ async function wwsPollWatch(){
   const mlbWatchLive = found.some(f => f.league === 'baseball/mlb' && f.__live);
   const keptWatch = found.filter(f => f.league !== 'baseball/mlb' || f.__live || !mlbWatchLive);
 
-  WWS.sel = WWS.sel.filter(e => !e.__watch)
+  // r170: same scoping as the empty-teams early-return above — only clear entries THIS
+  // function owns (plain team-follows), never wwsPollWatchPlayers' player-follow entries.
+  WWS.sel = WWS.sel.filter(e => !e.__watch || e.__watchPlayer)
     .concat(keptWatch.filter(f => !curatedIds.has(f.espnId)));
+}
+/* r170 — WWS.watch.players: follow individual PLAYERS (tennis first). Mirrors wwsPollWatch's
+   pattern (fetch, best-match-per-target, dedupe vs curated, __watch flag for r16's slot-2
+   ordering) but the MATCH itself is fundamentally different: team-follow compares a fixed
+   catalog abbr against comp.competitors[].team.abbreviation; tennis has no team concept and no
+   fixed player catalog (a draw's field changes every week — see the earlier "any reliable way
+   to extend follow to players" research), so this matches free-text player names, folded, against
+   comp.competitors[].athlete.displayName/shortName inside ev.groupings[].competitions[] — the
+   exact same shape the selector's own tennis scan() and wwsPollEvents' tennis hydration already
+   read (R16b), so a matched entry needs ZERO new render code: it's published as a normal
+   "eventId:compId" WWS.sel entry with league:'tennis/atp,tennis/wta' and flows through the
+   existing tennis card unchanged.
+   Mike's call (r170 scoping): "any tournament", not majors-only — the existing tennis-fill/scan()
+   majors filter is a deliberate content-curation choice (Mike: tennis is secondary, ATP 250s are
+   noise for BROWSING) but a player you specifically followed should surface whenever they're
+   actually playing, Slam or not. So this fetches unfiltered by tournament name.
+   ★ Confirmed live before building: ESPN's tennis scoreboard does NOT honor dates=START-END the
+   way team-sport scoreboards do (a 7-day range query returned events:[] even for a week that had
+   real matches on single-day fetches) — team-follow's one-range-fetch-per-league trick doesn't
+   carry over. This loops PER DAY like the selector's own tennis scan(), same as that code already
+   has to. Window is today+2 (3 fetched days × 2 tours = 6 calls/cycle) — enough to catch "starts
+   tomorrow" the way team-follow's pregame-preview does, without a 7-day-equivalent fetch storm
+   for a sport where matches run daily once a tournament's actually on. */
+async function wwsPollWatchPlayers(){
+  const players = (WWS.watch && WWS.watch.players) || [];
+  const found = [];
+  if (players.length){
+    const _wpFold = s => String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    const _wwsPlusDays = (n) => { const d = nowET(); d.setDate(d.getDate()+n);
+      return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`; };
+    const days = [0,1,2].map(_wwsPlusDays);
+    const best = {};   // fold(name) -> {ev, comp, rank, evDate, dk} — best match across all days scanned
+    for (const dk of days){
+      let evs = [];
+      try { evs = await _wwsFetchScoreboard('tennis/atp,tennis/wta', dk); } catch(_){ continue; }
+      for (const ev of evs){
+        for (const g of (ev.groupings || [])){
+          for (const comp of (g.competitions || [])){
+            const cs = comp.competitors || [];
+            for (const p of players){
+              if (p.sport !== 'tennis') continue;   // r170: tennis-only for now, sport field kept for golf later
+              const pf = _wpFold(p.name);
+              if (!pf) continue;
+              const hit = cs.find(c => { const a = c.athlete || {};
+                const nm = _wpFold(a.displayName || a.shortName || '');
+                return nm && (nm.includes(pf) || pf.includes(nm)); });
+              if (!hit) continue;
+              const st = (comp.status && comp.status.type) || {};
+              const rank = st.state === 'in' ? 0 : st.state === 'pre' ? 1 : 2;   // live > upcoming > final
+              const evDate = comp.date ? new Date(comp.date) : (ev.date ? new Date(ev.date) : new Date(0));
+              const cur = best[pf];
+              const better = !cur || rank < cur.rank
+                || (rank === cur.rank && (rank === 2 ? evDate > cur.evDate : evDate < cur.evDate));
+              if (better) best[pf] = { ev, comp, rank, evDate, dk };
+            }
+          }
+        }
+      }
+    }
+    const seenComp = new Set();
+    for (const key of Object.keys(best)){
+      const { ev, comp, dk } = best[key];
+      const compKey = `${ev.id}:${comp.id}`;
+      if (seenComp.has(compKey)) continue;   // two followed players in the same match -> one entry
+      seenComp.add(compKey);
+      found.push({ league: 'tennis/atp,tennis/wta', label: 'TENNIS', espnId: compKey,
+        title: ev.shortName || ev.name || '', showFrom: dk, showUntil: dk,
+        __watch: true, __watchPlayer: true,
+        __live: ((comp.status && comp.status.type && comp.status.type.state) === 'in') });
+    }
+  }
+  const curatedIds = new Set(WWS.sel.filter(e => !e.__watch).map(e => String(e.espnId)));
+  WWS.sel = WWS.sel.filter(e => !e.__watchPlayer)
+    .concat(found.filter(f => !curatedIds.has(f.espnId)));
 }
 /* r421 — golf preview card fetcher (GOLF-CARD-SPEC.md). Extends r414/r415's course-only
    _wwsGolfCourse into the full 7-field fetcher: course/location/par/yards/dateRange/networks/champ,
@@ -12943,8 +13022,8 @@ function wwsFillSlides(){
   });
 }
 if (new URLSearchParams(location.search).get('wws') !== '0'){
-  (async () => { await wwsPollSelections(); await wwsPollWatch(); await wwsPollEvents(); })();
-  setInterval(async () => { await wwsPollSelections(); await wwsPollWatch(); }, 30000);   // R84: 30s (was 5min — Mike: too slow, felt like refresh-only). Picks up selector changes in ~30s.
+  (async () => { await wwsPollSelections(); await wwsPollWatch(); await wwsPollWatchPlayers(); await wwsPollEvents(); })();
+  setInterval(async () => { await wwsPollSelections(); await wwsPollWatch(); await wwsPollWatchPlayers(); }, 30000);   // R84: 30s (was 5min — Mike: too slow, felt like refresh-only). Picks up selector changes in ~30s. r170: player-follows run same cadence as team-follows, before wwsPollEvents so a freshly-found match hydrates on the very next 60s tick rather than waiting a full cycle.
   setInterval(wwsPollEvents, 60000);
   // Round 11: 20s fast lane while any curated event is in-play (fixes the
   // slow FT flip seen live — 60s worst-case felt like a stall at match end).
@@ -13798,7 +13877,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r494-yt-quota-meter';
+const BUILD_MARKER = 'r495-follow-tennis-players';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
