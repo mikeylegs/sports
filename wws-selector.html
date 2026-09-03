@@ -1,0 +1,1076 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wide World of Sports — Day Selector</title>
+<style>
+  :root{--bg:#0b0f1a;--panel:#121a2b;--line:#22304c;--ink:#e7ecf5;--mut:#8da0c0;--acc:#34d399;--warn:#fbbf24}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,Inter,system-ui,Arial,sans-serif}
+  /* selector-r163: 860 → 1180. Mike: "can you widen this window so we don't get scroll bars in
+     both directions?" The followed-teams grid is auto-fill minmax(150px,1fr), so extra width buys
+     more COLUMNS, which shortens the list and cuts the vertical scroll too. Phones are unaffected
+     (they were never near 860 and the padding still applies). */
+  .wrap{max-width:1180px;margin:0 auto;padding:16px 14px 80px}
+  h1{font-size:19px;margin:0 0 2px}
+  .sub{color:var(--mut);font-size:12.5px;margin:0 0 12px}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  button,select{font:700 13px/1 inherit;color:#fff;border:1px solid var(--line);background:var(--panel);border-radius:9px;padding:10px 13px;cursor:pointer}
+  button.primary{background:#0e3b2b;border-color:var(--acc)}
+  button:disabled{opacity:.4;cursor:default}
+  .day{margin:18px 0 6px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--acc);font-weight:800}
+  .lg{margin:10px 0 4px;font-size:12.5px;font-weight:800;color:var(--mut)}
+  /* selector-r163: Mike — "maybe a persistent header so I know which league I'm looking at
+     halfway through the scroll?" #teamgrid is the scroll container, so sticky pins to ITS top.
+     Opaque panel background + a hairline so rows pass cleanly underneath. Scoped to #teamgrid so
+     the events list (which scrolls with the PAGE, not in a box) is untouched. */
+  #teamgrid .lgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:5px}
+  #teamgrid .lg{position:sticky;top:0;z-index:3;background:var(--panel);display:flex;
+    align-items:center;gap:8px;margin:0;padding:7px 4px;border-bottom:1px solid var(--line)}
+  #teamgrid .lgsec{margin:0 0 10px}
+  /* selector-r163: .day (★ Following / All teams) deliberately NOT sticky. Both pinned at top:0
+     means the day header simply covers the league header mid-scroll — the opposite of the ask
+     ("so I know which league I'm looking at halfway through the scroll"). One sticky layer, and
+     it's the league. */
+  #teamgrid .day{padding:6px 4px}
+  .ev{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px;margin:5px 0}
+  .ev input[type=checkbox]{width:19px;height:19px;accent-color:var(--acc);flex-shrink:0}
+  .ev .m{flex:1;min-width:0}
+  .ev .t{font-weight:700;font-size:14px}
+  .ev .d{font-size:12px;color:var(--mut)}
+  .ev select{padding:6px 8px;font-size:12px}
+  .ev.on{border-color:var(--acc)}
+  .out{position:fixed;left:0;right:0;bottom:0;background:#0d1626;border-top:1px solid var(--line);padding:10px 14px;display:flex;gap:8px;align-items:center}
+  .out .n{font-weight:800;color:var(--acc)}
+  textarea{width:100%;height:140px;background:#05070d;color:#9fd;border:1px solid var(--line);border-radius:8px;font:12px ui-monospace,Menlo,monospace;padding:8px}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;padding:16px}
+  .modal.show{display:flex}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;max-width:640px;width:100%}
+  .err{color:#f87171;font-size:12.5px}
+  .note{color:var(--warn);font-size:12px;margin:8px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Wide World of Sports — Day Selector <span style="font-size:12px;font-weight:400;opacity:.5;font-family:monospace">selector-r169</span></h1>
+  <p class="sub">Pick today's / this weekend's events for the panel. Output is <code>selections.json</code> — commit it to the repo root and the dashboard (phase 2) picks it up on its next poll.</p>
+  <div class="bar">
+    <select id="range">
+      <option value="1">Today</option>
+      <option value="2">Today + tomorrow</option>
+      <option value="4" selected>Through the weekend</option>
+    </select>
+    <button class="primary" onclick="scan()">SCAN EVENTS</button>
+    <button onclick="showOut()">REVIEW / EXPORT (<span id="cnt">0</span>)</button>
+    <!-- selector-r167: was "★ FOLLOW TEAMS". Mike: "not really accurate anymore. FAVORITE? just
+         FOLLOWED?" — the panel hasn't been about teams alone since the player search landed, and
+         every other label in this file already says "following". Now it also carries a live count,
+         the same shape as its ✓ SELECTED (n) sibling next to it, so the wall shows how many clubs
+         are armed without opening the panel. -->
+    <button id="starsBtn" onclick="toggleStars()">★ FOLLOWING (<span id="cntStar">0</span>)</button>
+    <button onclick="toggleSelected()">✓ SELECTED (<span id="cntSel">0</span>)</button>
+  </div>
+  <div style="position:relative;margin:0 0 4px">
+    <!-- selector-r165: the browser's own form-history dropdown was covering the results the
+         search is supposed to reveal (Mike: typing "H" popped a saved "hockey goal horn" over the
+         first fixture). autocomplete="off" suppresses saved-value suggestions on a text input —
+         Chrome only overrides "off" for credential/address autofill, which these aren't. The other
+         three are the same class of unwanted help: no auto-capitalising a team abbr, no red squiggle
+         under "Ipswich", no iOS autocorrect rewriting a player's name mid-type. -->
+    <input id="q" placeholder="Search events (team, player, tournament)…" oninput="filterList()"
+      autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+      style="width:100%;background:#05070d;color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:10px 46px 10px 12px;font:14px inherit">
+    <!-- selector-r160: X-clear, same pattern as the team filter's #tqClear (r461) -->
+    <!-- selector-r161: r160's × was a muted glyph on a transparent background at the box edge and
+         Mike couldn't see it at all on a phone. Now a filled circular button with real contrast and
+         a 30px tap target — visible first, tappable second, decorative never. -->
+    <button id="qClear" onclick="clearEventFilter()" title="Clear search" aria-label="Clear search"
+      style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);
+             width:30px;height:30px;padding:0;border:none;border-radius:50%;
+             background:rgba(255,255,255,0.14);color:#fff;font-size:19px;line-height:1;
+             align-items:center;justify-content:center;cursor:pointer">×</button>
+  </div>
+  <!-- selector-r158: says WHY a player query matched, so "messi" surfacing Genoa is explicable
+       (Junior Messias) rather than looking like a bug. Empty/hidden unless a player hit lands. -->
+  <div id="qhint" style="display:none;margin:0 0 10px;font-size:12px;color:var(--acc)"></div>
+  <div id="stars" style="display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin:0 0 12px">
+    <div style="font-weight:800;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+      <span>★ Following <span class="d" style="font-weight:400">— shown in Wide World of Sports whenever they play, no re-scan needed</span></span>
+      <!-- selector-r168: catalog.yml/catalog.py died to an Akamai edge block on GitHub's
+           hosted-runner IPs (site.api.espn.com 403'd every roster/injuries call; browser
+           requests never hit that block all session). This runs the SAME harvest client-side,
+           in a real browser, and commits straight to team-catalog.json via the Contents API —
+           same auth pattern PUBLISH TO PANEL already uses. One click, no Claude round trip,
+           no server-side runner to keep alive. -->
+      <button id="catRefreshBtn" onclick="refreshCatalog()" style="font-size:11px;padding:5px 10px;white-space:nowrap">🔄 Refresh Catalog</button>
+    </div>
+    <div id="catRefreshStatus" style="display:none;margin:0 0 8px;font-size:11px;color:var(--acc)"></div>
+    <div style="position:relative;margin:0 0 8px">
+      <!-- selector-r165: same suppression as #q above. -->
+      <input id="tq" placeholder="Filter by team or player…" oninput="drawTeams()"
+        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+        style="width:100%;background:#05070d;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 40px 8px 10px;font:13px inherit">
+      <!-- selector-r164: standardized on #qClear's treatment (Mike: "can we standardize these two
+           X's"). Same filled circle, same contrast, same glyph — only the diameter differs, scaled
+           to this box's smaller 13px/8px-padded input so the button doesn't crowd its own field.
+           display MUST be 'flex' (not 'block') for the centering to hold; drawTeams sets it. -->
+      <button id="tqClear" onclick="clearTeamFilter()" title="Clear filter" aria-label="Clear filter"
+        style="display:none;position:absolute;right:6px;top:50%;transform:translateY(-50%);
+               width:26px;height:26px;padding:0;border:none;border-radius:50%;
+               background:rgba(255,255,255,0.14);color:#fff;font-size:17px;line-height:1;
+               align-items:center;justify-content:center;cursor:pointer">×</button>
+    </div>
+    <!-- selector-r163: overflow-x hidden (never a horizontal bar — the grid reflows instead),
+         overflow-y auto only. Height raised now that a wider window fits more columns per row.
+         scrollbar-gutter:stable is load-bearing, not polish: MEASURED at 900px the grid still
+         overflowed by 11px — auto-fill sizes its tracks BEFORE the vertical scrollbar appears,
+         then the scrollbar eats ~11px and the last column no longer fits. overflow-x:hidden was
+         merely CLIPPING that, silently cutting each card's right edge. Reserving the gutter up
+         front makes the track maths correct instead of hiding the symptom. -->
+    <div id="teamgrid" style="max-height:380px;overflow-x:hidden;overflow-y:auto;scrollbar-gutter:stable"></div>
+  </div>
+  <div id="selected" style="display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin:0 0 12px">
+    <div style="font-weight:800;margin-bottom:8px">✓ Currently selected <span class="d" style="font-weight:400">— everything picked across all sports; tap ✕ to remove</span></div>
+    <div id="selgrid" style="display:flex;flex-direction:column;gap:4px;max-height:360px;overflow:auto"></div>
+  </div>
+  <div id="lgchips" style="display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px"></div>
+  <div id="list"><p class="sub">Press SCAN.</p></div>
+</div>
+
+<div class="out"><span class="n" id="cnt2">0</span>&nbsp;selected <span style="flex:1"></span><button class="primary" onclick="showOut()">EXPORT selections.json</button></div>
+
+<div class="modal" id="modal">
+  <div class="card">
+    <b>selections.json</b>
+    <p class="sub">Commit this file to the repo root (GitHub app → repo → Add file, or replace existing). Panel sees it within ~1 min of Pages deploy.</p>
+    <textarea id="json" readonly></textarea>
+    <div class="bar" style="margin-top:10px;align-items:center">
+      <input id="tok" type="password" placeholder="GitHub token (saved on this device)" style="flex:1;min-width:180px;background:#05070d;color:#9fd;border:1px solid var(--line);border-radius:8px;padding:9px;font:12px ui-monospace,monospace">
+    </div>
+    <div class="bar" style="margin-top:6px">
+      <button class="primary" onclick="publish()" id="pub">PUBLISH TO PANEL</button>
+      <button onclick="copyJson()">COPY</button>
+      <button onclick="dl()">DOWNLOAD</button>
+      <button onclick="document.getElementById('modal').classList.remove('show')">CLOSE</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// League menu: ESPN scoreboard endpoints. Trim/extend freely.
+const LEAGUES = [
+  ['soccer/fifa.world',      'World Cup',        '⚽'],
+  ['soccer/eng.1',           'English Premier League',   '⚽'],
+  // selector-r156: five more soccer leagues (Mike, 9/2). Browsing a league costs one fetch per
+  // scan and adds NOTHING to the wall by itself — only ticked matches are pinned — so these are
+  // safe to leave on. Unchecked chips are never scanned (see lgOn), so switching a league off
+  // per-device is the cheap escape hatch.
+  ['soccer/esp.1',           'LALIGA',                   '⚽'],
+  ['soccer/ita.1',           'Serie A',                  '⚽'],
+  ['soccer/ger.1',           'Bundesliga',               '⚽'],
+  ['soccer/fra.1',           'Ligue 1',                  '⚽'],
+  ['soccer/uefa.champions',  'Champions League',         '⚽'],
+  ['soccer/usa.1',           'MLS',                      '⚽'],
+  ['golf/pga',               'Golf (PGA)',       '⛳'],
+  // R71: unified TENNIS — fetches BOTH ATP+WTA under one chip (dual endpoint, split at
+  // fetch). Majors-only filter keeps just the Slams. Replaces separate ATP/WTA tabs
+  // (which cross-contaminated — WTA leaked into ATP).
+  ['tennis/atp,tennis/wta',  'Tennis',           '🎾'],
+  ['football/nfl',           'NFL',              '🏈'],
+  ['football/college-football','NCAA Football',  '🏈'],
+  ['hockey/nhl',             'NHL',              '🏒'],
+  ['basketball/nba',         'NBA',              '🏀'],
+  ['basketball/mens-college-basketball','NCAA Basketball','🏀'],
+  ['baseball/mlb',           'MLB',              '⚾'],
+  ['mma/ufc',                'MMA',              '🥊'],
+  ['boxing',                 'Boxing',           '🥊'],
+];
+// R70: MLB added — lets Mike PIN a specific MLB game to the WWS pane (overrides the
+// board's Game-of-the-Day pick). Off by default via league chips if not wanted.
+
+// R97 SELECTOR MEMORY (Mike: "choose 5, refresh, they disappear — need a memory state that
+// shows what's actually published and physically on the panel").
+// Two distinct states, both now tracked:
+//   sel      = what's picked right now in this selector (persisted so a refresh doesn't wipe it)
+//   published = what's actually live in selections.json (fetched on load = ground truth)
+// Divergence between them = "unpublished changes" (shown in the UI so Mike knows to hit PUBLISH).
+const SEL_KEY = 'wws-sel-v1';
+const sel = new Map(JSON.parse(localStorage.getItem(SEL_KEY) || '[]'));   // eventKey -> selection record (PERSISTED)
+function saveSel(){ try{ localStorage.setItem(SEL_KEY, JSON.stringify([...sel])); }catch(_){} }
+let publishedKeys = new Set();   // eventIds currently live in selections.json (ground truth)
+let publishedMeta = new Map();   // R99: espnId -> {espnId,title,label} so we can SHOW what's live but not picked
+// Fetch what's ACTUALLY published so the selector reflects the panel, not just local clicks.
+async function loadPublished(){
+  try {
+    const r = await fetch(`https://raw.githubusercontent.com/mikeylegs/sports/main/selections.json?t=${Date.now()}`);
+    if (!r.ok) return;
+    const j = await r.json();
+    publishedKeys = new Set((j.events||[]).map(e => e.espnId).filter(Boolean));
+    publishedMeta = new Map((j.events||[]).filter(e=>e.espnId).map(e => [e.espnId, e]));   // R99
+    drawSelected();
+  } catch(_){ /* offline / not yet published — leave empty */ }
+}
+// Is the current selection different from what's live on the panel?
+// R99 FIX: sel records are raw scan objects carrying `.id`; only the PUBLISHED json renames
+// it to `espnId` (see publish(): `espnId: r.id`). The old code read v.espnId → always undefined
+// → `cur` was always EMPTY → banner said UNPUBLISHED even when counts matched (Mike's bug).
+function _selIds(){ return new Set([...sel.values()].map(v => v.espnId || v.id).filter(Boolean)); }
+function hasUnpublishedChanges(){
+  const cur = _selIds();
+  if (cur.size !== publishedKeys.size) return true;
+  for (const k of cur) if (!publishedKeys.has(k)) return true;
+  return false;
+}
+// R99: which events are live on the PANEL but NOT in the current picks (i.e. about to be dropped)?
+function _liveNotPicked(){
+  const cur = _selIds();
+  return [...publishedMeta.values()].filter(m => !cur.has(m.espnId));
+}
+// ── ★ Followed teams (persist on device + published in selections.json) ──
+const STAR_KEY = 'wws-stars';
+const stars = new Map(JSON.parse(localStorage.getItem(STAR_KEY) || '[]'));  // "lg|ABBR" -> {league,abbr,name}
+function saveStars(){ localStorage.setItem(STAR_KEY, JSON.stringify([...stars])); }
+const TEAM_LEAGUES = [
+  ['baseball/mlb','MLB'], ['basketball/nba','NBA'],
+  ['football/nfl','NFL'], ['hockey/nhl','NHL'],
+  ['soccer/eng.1','EPL'],   // selector-r152: follow-teams extended to Premier League clubs
+  // selector-r156: NOTE the UCL entry is not redundant with the domestic ones. wwsPollWatch
+  // fetches per league and matches by abbreviation, so a club starred under soccer/esp.1 only
+  // ever surfaces its LaLiga fixtures — never its European nights. Starring Real Madrid under
+  // BOTH esp.1 and uefa.champions is the intended way to catch them in both, and the
+  // `${league}|${abbr}` star key keeps those as two clean, independent entries.
+  ['soccer/esp.1','LALIGA'], ['soccer/ita.1','SERIE A'], ['soccer/ger.1','BUNDESLIGA'],
+  ['soccer/fra.1','LIGUE 1'], ['soccer/uefa.champions','UCL'], ['soccer/usa.1','MLS'],
+];
+let _teamCatalog = null;   // [{league,abbr,name}]
+// r446: was a live fetch to ESPN's /teams endpoint on every open of ★ FOLLOW TEAMS, through
+// the same 3-proxy CORS fallback chain scan() uses (site.api.espn.com has no CORS headers for
+// browser origins). Confirmed live (Mike, DevTools): direct fetch blocked by CORS as expected,
+// AND all 3 proxies were down/blocked (codetabs 522, allorigins 520, corsproxy.io 403) —
+// _teamCatalog stayed permanently empty, so the team filter always showed "No teams match."
+// regardless of query. Team ROSTERS (name+abbr per league) don't change mid-season like scores
+// do, so there's no reason to depend on a live fetch — or a proxy chain — for this at all.
+// Now reads a static team-catalog.json committed to the repo root (same-origin, zero CORS risk,
+// zero proxy dependency). Falls back to the old live-fetch path only if that file is ever
+// missing/stale, so this degrades instead of breaking outright.
+/* selector-r158: warm the catalog on load (same-origin, cached) so player search works in the
+   EVENTS tab without the user having opened ★ FOLLOW TEAMS first. Fire-and-forget: a failure
+   just leaves player-expansion inactive, and team/tournament search is unaffected. */
+window.addEventListener('DOMContentLoaded', () => { try { loadTeams(); } catch(_){} });
+async function loadTeams(){
+  if (_teamCatalog) return _teamCatalog;
+  try {
+    const r = await fetch('./team-catalog.json');
+    if (r.ok) { const d = await r.json(); if (Array.isArray(d) && d.length) { _teamCatalog = d; return d; } }
+  } catch(_){ /* fall through to live fetch below */ }
+  const all = [];
+  await Promise.all(TEAM_LEAGUES.map(async ([lg,tag])=>{
+    const d = await j(`https://site.api.espn.com/apis/site/v2/sports/${lg}/teams`);
+    const teams = ((((d||{}).sports||[])[0]||{}).leagues||[])[0];
+    for (const t of (teams && teams.teams) || []){
+      const tm = t.team || t;
+      all.push({ league:lg, tag, abbr:tm.abbreviation, name:tm.displayName || tm.name || tm.abbreviation });
+    }
+  }));
+  all.sort((a,b)=> a.tag.localeCompare(b.tag) || a.name.localeCompare(b.name));
+  _teamCatalog = all; return all;
+}
+async function toggleStars(){
+  const box = document.getElementById('stars');
+  const show = box.style.display === 'none';
+  box.style.display = show ? 'block' : 'none';
+  document.getElementById('starsBtn').classList.toggle('primary', show);   // r460: illuminate while panel's open, same on/off treatment as league chips
+  if (show){ document.getElementById('teamgrid').innerHTML = '<span class="d">Loading teams…</span>'; await loadTeams(); drawTeams(); }
+}
+// r460: was one flat unsorted grid (144 teams in raw catalog/league-block order, no separation
+// between followed/unfollowed) — Mike: "clean up the follow screen... move checked teams to
+// top... alphabetize but keep grouped by league". Re-sorts only on panel-open and on search
+// input (both already call drawTeams()), NOT on every checkbox click — live-reordering mid-click
+// would shift rows out from under a fast run of checks/unchecks.
+// selector-r157: fold accents on BOTH sides of every comparison. Seeding `aka` with real squads
+// (r493) made this a correctness bug, not a nicety: "vinicius" typed on a plain keyboard MISSED
+// Vinícius Júnior at Real Madrid while still matching other players literally spelled "Vinicius"
+// — it returned the WRONG clubs rather than none. Same for mbappe/mbappé, alvarez, muller.
+// selector-r158: hoisted to module scope — filterList() (events tab) now needs it too.
+const _fold = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+/* selector-r158: show WHICH squad name matched. Mike: "the Messi search just blindly brings up
+   his team matches. No indication that it's hitting on the correct player name at all." Now a
+   player-driven hit prints the matched token(s), which also makes the known substring noise
+   self-explaining — "messi" shows `Messi` under Inter Miami and `Messias` under Genoa, so a false
+   positive is obvious at a glance instead of looking like a bug. Tokens rather than full names
+   because `aka` is space-joined at harvest time and full names can't be recovered from it; see
+   the HANDOFF note about switching the harvest to a delimiter on the next refresh. */
+/* selector-r166: FULL NAMES in the hint. Mike: "how much work to get the full player name in
+   the search results instead of just last name?" — searching "fox" surfaced three clubs whose
+   hint read only "↳ Fox".
+   It was never a display bug. `aka` was a SPACE-JOINED blob of every squad name, so word
+   boundaries were gone and the only thing this function could hand back was a single token.
+   Reconstructing "Amon-Ra St. Brown" or "Keith Abney II" from that blob is guesswork, so the
+   catalog was re-harvested with names joined by ' · ' instead (r497).
+   The catalog is deliberately MIXED: the four pro leagues carry delimited names, the soccer
+   leagues still carry the legacy blob (their roster route 404s on abbr — open item). So this
+   splits on the delimiter WHEN PRESENT and falls back to the old whitespace behaviour when it
+   isn't. Coverage can only go up; nothing that worked before stops working. */
+function _akaHits(t, q){
+  if (!q || !t.aka) return [];
+  const parts = t.aka.includes(' · ') ? t.aka.split(' · ') : t.aka.split(/\s+/);
+  const seen = new Set(), out = [];
+  for (const w of parts){
+    const nm = w.trim();
+    if (nm.length < 2 || !_fold(nm).includes(q)) continue;
+    const k = _fold(nm); if (seen.has(k)) continue;
+    seen.add(k); out.push(nm);
+    if (out.length === 3) break;
+  }
+  return out;
+}
+function _teamRowHtml(t, q){
+  const key = `${t.league}|${t.abbr}`, on = stars.has(key);
+  // only show the hint when the match came from the SQUAD, not from the club's own name/abbr/tag
+  const nameHit = q && (_fold(t.name).includes(q) || _fold(t.abbr).includes(q) || _fold(t.tag).includes(q));
+  const hits = nameHit ? [] : _akaHits(t, q);
+  const hint = hits.length
+    ? `<br><span class="d" style="color:var(--acc)">↳ ${hits.join(' · ')}</span>` : '';
+  return `<label class="ev ${on?'on':''}" data-key="${key}" style="margin:0;padding:7px 9px;gap:7px">
+    <input type="checkbox" ${on?'checked':''} onchange='starToggle(${JSON.stringify(t)}, this)'>
+    <span class="m"><span class="t" style="font-size:13px">${t.name}</span><br><span class="d">${t.tag} · ${t.abbr}</span>${hint}</span>
+  </label>`;
+}
+/* selector-r163: one SECTION per league. Previously every `.lg` was a direct child of the single
+   #teamgrid grid, so making them sticky pinned them ALL at top:0 — they accumulated instead of
+   replacing each other (measured: at scrollTop 2200, five headers stacked; by the bottom it would
+   have been eleven, eating the panel). A sticky element only sticks while its own containing block
+   is in view, so giving each league its own <section> makes its header leave with its teams.
+   Each section carries its own identical grid, so column widths stay consistent across sections. */
+function _teamGroupHtml(list, q){
+  const icon = Object.fromEntries(LEAGUES.map(([p,,ico])=>[p,ico]));
+  return TEAM_LEAGUES.map(([lg,tag])=>{
+    const teams = list.filter(t=>t.league===lg).sort((a,b)=>a.name.localeCompare(b.name));
+    if (!teams.length) return '';
+    return `<section class="lgsec"><div class="lg">${icon[lg]||''} ${tag}</div>`
+      + `<div class="lgrid">${teams.map(t => _teamRowHtml(t, q)).join('')}</div></section>`;
+  }).join('');
+}
+function drawTeams(){
+  const q = _fold(document.getElementById('tq').value);
+  document.getElementById('tqClear').style.display = q ? 'flex' : 'none';   // r164: flex, not block — the circular button centers its glyph with align/justify   // r461: X-clear button, synced here (single source of truth) rather than duplicated in every caller (oninput/clear/panel-open all already route through drawTeams)
+  // selector-r156: `aka` is an optional free-text alias field on a catalog entry — squad names,
+  // nicknames, anything worth finding a club BY. Mike: "search Messi and have it populate every
+  // squad he appears for". The matching is the whole mechanism; it is deliberately UNSEEDED,
+  // because ESPN's roster endpoints sit on the same /teams path family the worker 403s, and
+  // hand-typing squads from stale knowledge is exactly the mistake that nearly had us "fix" a
+  // worker that was never broken. Entries without `aka` behave exactly as before.
+  const rows = (_teamCatalog || []).filter(t =>
+    !q || _fold(t.name).includes(q) || _fold(t.abbr).includes(q) || _fold(t.tag).includes(q)
+       || _fold(t.aka).includes(q));
+  if (!rows.length){ document.getElementById('teamgrid').innerHTML = '<span class="d">No teams match.</span>'; return; }
+  const followed = rows.filter(t => stars.has(`${t.league}|${t.abbr}`));
+  const rest = rows.filter(t => !stars.has(`${t.league}|${t.abbr}`));
+  let html = '';
+  if (followed.length) html += `<div class="day" style="margin:0 0 6px">★ Following (${followed.length})</div>` + _teamGroupHtml(followed, q);
+  html += `<div class="day" style="margin:${followed.length?'14px':'0'} 0 6px">All teams</div>` + _teamGroupHtml(rest, q);
+  document.getElementById('teamgrid').innerHTML = html;
+}
+function clearEventFilter(){
+  const inp = document.getElementById('q');
+  inp.value = '';
+  filterList();
+  inp.focus();
+}
+function clearTeamFilter(){
+  const inp = document.getElementById('tq');
+  inp.value = '';
+  drawTeams();
+  inp.focus();
+}
+function starToggle(t, box){
+  const key = `${t.league}|${t.abbr}`;
+  if (box.checked) stars.set(key, {league:t.league, abbr:t.abbr, name:t.name});
+  else stars.delete(key);
+  saveStars(); count();
+  const row = box.closest('.ev'); if (row) row.classList.toggle('on', box.checked);   // instant border feedback; full re-group waits for next open/search per note above
+}
+
+// League filter — chips persist per device; unchecked leagues are never scanned.
+const LG_KEY='wws-leagues';
+const lgOn = new Set(JSON.parse(localStorage.getItem(LG_KEY) || 'null') || LEAGUES.map(l=>l[0]).filter(p=>p!=='baseball/mlb'));   // R70/71: MLB defaults OFF (pin-only; board owns MLB). F1 removed.
+function drawChips(){
+  document.getElementById('lgchips').innerHTML = LEAGUES.map(([p,label,ico])=>
+    `<button onclick="lgToggle('${p}')" style="padding:7px 10px;font-size:12px;border-radius:16px;font-weight:700;
+      ${lgOn.has(p)?'background:#0e3b2b;border:1px solid var(--acc);color:#fff':'background:transparent;border:1px solid var(--line);color:var(--mut)'}">${ico} ${label}</button>`).join('');
+}
+function lgToggle(p){ lgOn.has(p) ? lgOn.delete(p) : lgOn.add(p); localStorage.setItem(LG_KEY, JSON.stringify([...lgOn])); drawChips(); }
+document.addEventListener('DOMContentLoaded', () => { drawChips(); loadPublished(); drawSelected(); updCounts(); });   // R97: restore persisted picks + fetch what's ACTUALLY live
+
+// Same proxy fallback chain the dashboard uses (proven on the panel).
+const PROXIES = [
+  u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+  u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+  u => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
+];
+const ft = (u,ms)=>Promise.race([fetch(u), new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),ms))]);
+async function j(u){
+  try { const r = await ft(u,8000); if (r.ok) return await r.json(); } catch(_){}
+  for (const p of PROXIES){
+    try {
+      const r = await ft(p(u),10000); if (!r.ok) continue;
+      const text = await r.text();
+      const wrap = JSON.parse(text);
+      return wrap.contents ? JSON.parse(wrap.contents) : wrap;
+    } catch(_){}
+  }
+  return null;
+}
+const pad = n => String(n).padStart(2,'0');
+const ymd = d => `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`;
+const dayLabel = d => d.toLocaleDateString(undefined,{weekday:'long', month:'short', day:'numeric'});
+
+let _fails = 0;
+async function scan(){
+  _fails = 0;
+  const days = +document.getElementById('range').value;
+  const list = document.getElementById('list');
+  list.innerHTML = '<p class="sub">Scanning…</p>';
+  const dates = [...Array(days)].map((_,i)=>{const d=new Date(); d.setDate(d.getDate()+i); return d;});
+  const html = [];
+  const _seenMatch = new Set();   // R72: global dedup for tennis matches (id appears across day-fetches + ATP/WTA merge)
+  const _seenTourney = new Set();  // R100: golf dedup — a tournament is ONE multi-day event, but ESPN
+                                   // returns it on EVERY day it's running, so the per-day scan was
+                                   // listing "Genesis Scottish Open" under Sun AND Mon (Mike's bug).
+                                   // List it once, on the earliest scanned day it appears.
+  for (const d of dates){
+    const dk = ymd(d);
+    const dayEvents = [];
+    await Promise.all(LEAGUES.filter(([p])=>lgOn.has(p)).map(async ([path,label,ico])=>{
+      // R71: a path can be comma-joined (e.g. tennis/atp,tennis/wta) → fetch each, merge events.
+      const subPaths = path.split(',');
+      let data;
+      if (subPaths.length > 1){
+        const parts = await Promise.all(subPaths.map(sp => j(`https://site.api.espn.com/apis/site/v2/sports/${sp}/scoreboard?dates=${dk}`)));
+        // R72: tag each event with which sub-endpoint it came from (debug) + log counts.
+        const evs = [];
+        parts.forEach((pp,i)=>{ const es=(pp&&pp.events)||[]; if(window._tdebug) console.log(`[tennis] ${subPaths[i]} @ ${dk}: ${es.length} events`, es.map(e=>e.name||e.shortName)); evs.push(...es); });
+        data = evs.length ? { events: evs } : null;
+      } else {
+        data = await j(`https://site.api.espn.com/apis/site/v2/sports/${path}/scoreboard?dates=${dk}`);
+      }
+      // Golf/tennis/F1: multi-day "events"; team sports: games
+      if (!data) _fails++;
+      for (const ev of (data && data.events) || []){
+        const comps = ev.competitions || [];
+        // Tennis: matches live in ev.groupings[].competitions[] (nCompetitions=0
+        // at event level). Flatten, prefer live/upcoming over completed, cap the
+        // list — a full draw is ~200+ matches. espnId = "eventId:compId".
+        if (path.startsWith('tennis') && (ev.groupings||[]).length){
+          const tourn = ev.shortName || ev.name || label;
+          // R70: MAJORS ONLY — Mike only wants the 4 Slams (tennis is secondary; the
+          // ATP 250s like Nordea Open are pure noise). Skip any non-Slam tournament.
+          // R71: majors-only — broadened to catch ESPN's naming variants. Also logs the
+          // tournament name when it's FILTERED so we can see mismatches in console.
+          const tName = `${ev.name||''} ${ev.shortName||''} ${tourn}`;
+          const isMajor = /wimbledon|championships|us open|u\.s\. open|french open|roland[- ]?garros|australian open/i.test(tName);
+          if (!isMajor){ if (window._tdebug) console.log('[tennis] skipped non-major:', tName.trim()); continue; }
+          const matches = [];
+          for (const g of ev.groupings){
+            for (const comp of (g.competitions||[])){
+              // R70: capture name + world rank/seed (ESPN exposes these inconsistently —
+              // try curatedRank.current, then seed; omit silently if absent). Mike wants
+              // rankings since he doesn't follow tennis closely — helps gauge who matters.
+              const players = (comp.competitors||[]).map(c=>{
+                const a=c.athlete||{}; const name=(a.shortName||a.displayName)||'';
+                const rk = (c.curatedRank&&c.curatedRank.current) || c.seed || (a.rank) || null;
+                const rkNum = (rk!=null && rk!==0 && rk!==99) ? Number(rk) : null;
+                return { name, rk: (rkNum && rkNum>0 && rkNum<=300) ? rkNum : null };
+              }).filter(p=>p.name);
+              const nm = players.map(p=>p.name);
+              if (nm.length !== 2) continue;
+              // R70: skip TBD bracket slots (not a real matchup yet) + doubles (name has "/").
+              if (nm.some(x => /^\s*tbd\s*$/i.test(x) || x.includes('/'))) continue;
+              const nmR = players.map(p => p.rk ? `${p.name} (#${p.rk})` : p.name);
+              const stt = (comp.status&&comp.status.type) || {};
+              const rank = stt.state==='in' ? 0 : stt.state==='pre' ? 1 : 2;   // live, upcoming, done
+              // R72: DATE-MATCH — only list this match under the day-header matching its
+              // actual date (ESPN returns the whole draw per fetch → was bleeding across days).
+              const mDate = comp.date || ev.date;
+              if (mDate){ const mk = ymd(new Date(mDate)); if (mk !== dk) continue; }
+              // R72: DEDUP — same match id can arrive via multiple day-fetches + ATP/WTA merge.
+              if (_seenMatch.has(comp.id)) continue;
+              _seenMatch.add(comp.id);
+              matches.push({ compId:comp.id, nm, nmR, rank,
+                time: (comp.date||ev.date) ? new Date(comp.date||ev.date).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}) : '',
+                note: stt.shortDetail || stt.description || '' });
+            }
+          }
+          matches.sort((a,b)=> a.rank-b.rank || a.time.localeCompare(b.time));
+          for (const m of matches.slice(0, 40)){
+            dayEvents.push({key:`${path}|${ev.id}:${m.compId}|${dk}`, path, league:label+' · '+tourn, ico,
+              id:`${ev.id}:${m.compId}`, title:`${(m.nmR||m.nm)[0]} v ${(m.nmR||m.nm)[1]}`, time:m.time, note:m.note, date:dk});
+          }
+          continue;
+        }
+        const comp = comps[0] || {};
+        // R100: GOLF — a tournament spans Thu-Sun and ESPN returns it on each day of the range,
+        // so the per-day loop created a duplicate row per day (key includes dk). Golf events also
+        // carry a meaningless 12:00 AM time, so nothing distinguished them. List each tournament
+        // ONCE (earliest scanned day). Other sports are genuinely per-day, so they're untouched.
+        if (path === 'golf/pga'){
+          if (_seenTourney.has(ev.id)) continue;
+          _seenTourney.add(ev.id);
+        }
+        // R80: prefer FULL team name (Mike: "New York Yankees" > "NYY"). ESPN team obj:
+        // displayName = "New York Yankees", shortDisplayName = "Yankees", abbreviation = "NYY".
+        // Fall back gracefully abbreviation-ward if displayName absent.
+        const teams = (comp.competitors||[]).map(c=>c.team? (c.team.displayName||c.team.shortDisplayName||c.team.abbreviation) : (c.athlete&&c.athlete.shortName)||'').filter(Boolean);
+        const title = teams.length===2 ? `${teams[1]} @ ${teams[0]}` : (ev.shortName || ev.name || label);
+        const time = ev.date ? new Date(ev.date).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}) : '';
+        const note = (ev.status&&ev.status.type&&ev.status.type.shortDetail) || '';
+        dayEvents.push({key:`${path}|${ev.id}|${dk}`, path, league:label, ico, id:ev.id, title, time, note, date:dk});
+      }
+    }));
+    if (!dayEvents.length) continue;
+    html.push(`<div class="day">${dayLabel(d)}</div>`);
+    let lastLg='';
+    dayEvents.sort((a,b)=> a.league.localeCompare(b.league) || a.time.localeCompare(b.time));
+    for (const e of dayEvents){
+      if (e.league!==lastLg){
+        // #12a (r151): per-league Select-All/None toggle. data-lg groups the day's league
+        // events so lgSelectAll() can flip them all via the SAME toggle path as single rows.
+        var _lgId = cssId(e.league+'|'+e.date);
+        html.push(`<div class="lg" style="display:flex;align-items:center;gap:8px">${e.ico} ${e.league}`
+          + `<button onclick="lgSelectAll('${_lgId}')" style="margin-left:auto;background:#0f1a2a;border:1px solid var(--line);color:var(--acc);border-radius:5px;font:inherit;font-size:11px;padding:2px 9px;cursor:pointer">all / none</button></div>`);
+        lastLg=e.league;
+      }
+      e._lgId = cssId(e.league+'|'+e.date);   // stamp each event with its league-day group
+      const on = sel.has(e.key);
+      const cid = cssId(e.key); _evReg.set(cid, e);
+      const esc = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+      const _srch = `${e.league} ${e.title} ${e.time} ${e.note||''}`.toLowerCase();
+      html.push(`<label class="ev ${on?'on':''}" id="ev-${cid}" data-lg="${e._lgId}" data-cid="${cid}" data-search="${_srch.replace(/"/g,'')}">
+        <input type="checkbox" ${on?'checked':''} onchange="toggle('${cid}', this)">
+        <span class="m"><span class="t">${esc(e.title)}</span><br><span class="d">${esc(e.time)}${e.note?' · '+esc(e.note):''}</span></span>
+        <select onchange="setWin('${cid}', this.value)" onclick="event.preventDefault()">
+          <option value="day">show that day</option>
+          <option value="weekend">show thru Sunday</option>
+        </select>
+      </label>`);
+    }
+  }
+  /* selector-r160: distinguish "nothing was even asked for" from "asked and found nothing".
+     With every chip off this printed "No events found in range. 0 of 0 league-day fetches
+     failed" — technically true, actively misleading, and it names no remedy. */
+  list.innerHTML = html.join('') || (lgOn.size === 0
+    ? `<p class="sub">No leagues are switched on — tap a league chip above, then press SCAN.</p>`
+    : `<p class="sub">No events found in range. ${_fails} of ${lgOn.size*days} league-day fetches failed${_fails?' — likely CORS-proxy trouble; retry in a minute':''}.</p>`);
+  /* selector-r161 — THE BUG behind "I'm still not getting an easy way to select a game by player".
+     scan() rebuilds #list wholesale and previously stopped here, so every row rendered VISIBLE no
+     matter what was in the search box — the filter was working, the scan was discarding it. Typing
+     "haala" then scanning gave the entire EPL slate, forcing exactly the scroll-hunt Mike
+     described. Re-apply the active filter to the freshly-built list. */
+  filterList();
+  count();
+}
+function cssId(s){ return s.replace(/[^a-z0-9]/gi,'_'); }
+const _selCid = new Map();  // R140: cssId -> eventKey for currently-SELECTED rows (incl. expired,
+                            // which _evReg lacks) so removeSel can always resolve & remove them.
+const _evReg = new Map();   // R40: cssId -> event; inline JSON in quoted attrs broke on apostrophes (O'Connell, "Men's") — handler never attached, checkbox ticked but sel/count never updated
+// Live search over the rendered rows (title + sub-line + league header context).
+/* selector-r158 — PLAYER SEARCH IN THE EVENTS TAB. Mike: "is it possible to also search in the
+   general events tab so I can add individual games by player?" Event rows only carry
+   league+title+time+note (see _srch), and titles are TEAM names — no player ever appears in them.
+   So instead of trying to put squads on every row, resolve the query through the catalog first:
+   "messi" → the clubs whose `aka` contains it → match those club names against the rows. Reuses
+   the same catalog the follow-teams panel loads, so there is no new data and no new fetch.
+   The 3-char floor keeps short queries ("de", "jr") from resolving half the league. */
+function _playerClubs(qf){
+  if (!qf || qf.length < 3 || !Array.isArray(_teamCatalog)) return [];
+  return _teamCatalog.filter(t => t.aka && _fold(t.aka).includes(qf)
+    && !(_fold(t.name).includes(qf) || _fold(t.abbr).includes(qf)));
+}
+function filterList(){
+  const raw = (document.getElementById('q').value || '').toLowerCase();
+  const q = _fold(raw);
+  const clubs = _playerClubs(q);
+  // club NAMES only, not abbrs — a 2-3 letter abbr ("LA", "NE") matches far too much row text
+  const clubTerms = clubs.map(t => _fold(t.name)).filter(Boolean);
+  /* selector-r159 — PAIR each matched name with ITS club, ranked. Mike: "any way to more
+     elegantly match the name to the game?" r158 printed two DISCONNECTED lists (tokens on one
+     line, clubs on another), so you couldn't tell which name belonged to which club — and a
+     slice(0,3) on the token list dropped "Messi" itself, showing only the three false positives.
+     Now each entry is `name → club`, ordered by how well the token matches what was typed:
+     exact first, then prefix, then by length. So "Messi" leads with Inter Miami and the
+     Messias/Messick noise sorts below it, self-evidently secondary. */
+  const rank = w => { const f = _fold(w); return (f === q ? 0 : f.startsWith(q) ? 1 : 2) * 100 + f.length; };
+  const pairs = clubs.map(t => {
+    const best = _akaHits(t, q).sort((a,b) => rank(a) - rank(b))[0] || '';
+    return { club: t, tok: best, r: best ? rank(best) : 999 };
+  }).filter(x => x.tok).sort((a,b) => a.r - b.r);
+  const hint = document.getElementById('qhint');
+  if (hint){
+    if (pairs.length){
+      /* selector-r161: name → club (LEAGUE). Mike: "should we add the league to the player search
+         results? i.e. Messi - Inter Miami - MLS". Yes — and it earns its place beyond labelling:
+         it's what makes the duplicate entries legible. "Haaland → Manchester City · Haaland →
+         Manchester City" looked like a rendering bug; "Manchester City (EPL)" vs "(UCL)" is
+         visibly two distinct follow targets, which is exactly what they are. */
+      const shown = pairs.slice(0, 4)
+        .map(x => `<b style="font-weight:700">${x.tok}</b> → ${x.club.name} <span class="d">(${x.club.tag})</span>`)
+        .join('&nbsp; · &nbsp;');
+      hint.innerHTML = shown + (pairs.length > 4 ? ` <span class="d">+${pairs.length-4} more</span>` : '');
+      hint.style.display = '';
+    } else { hint.style.display = 'none'; hint.innerHTML = ''; }
+  }
+  /* selector-r159: collapse the league chips while a search is active. On a phone the chip block
+     is five rows tall and pushed every matching fixture below the fold — Mike: "the games render
+     lower on screen and it makes it tough to go back and forth." Hiding it while filtering puts
+     results immediately under the search bar; clearing the box restores them. Purely visual, and
+     the chips' own on/off state (lgOn) is untouched, so scan scope is unaffected. */
+  /* selector-r160: only collapse when the search actually HAS results to make room for.
+     r159 hid the chips on any keystroke — including when the list was empty, which hid the one
+     control that fixes an empty list. Mike hit exactly that: every chip was toggled off
+     (lgOn.size === 0, so nothing was ever fetched), and with "Messi" typed the chips were
+     invisible, so the remedy was unreachable. Chips now stay put unless hiding them buys
+     something. */
+  let _shown = 0;
+  document.querySelectorAll('#list .ev').forEach(row=>{
+    // R80: match the row's data-search (league + title + time) so "Wimb" finds Wimbledon
+    // matches even though the visible row text is just player names.
+    const hay = _fold(row.getAttribute('data-search') || row.textContent);
+    const hit = !q || hay.includes(q) || clubTerms.some(c => hay.includes(c));
+    row.style.display = hit ? '' : 'none';
+    if (hit) _shown++;
+  });
+  const qc = document.getElementById('qClear');
+  if (qc) qc.style.display = raw ? 'flex' : 'none';
+  /* selector-r162 — MUST stay below the loop: this reads _shown, and r160 placed it ABOVE the
+     `let _shown = 0` declaration. `let` hoists into the temporal dead zone, so the read threw
+     ReferenceError and aborted filterList right after the hint was written — killing the row
+     filtering, the X-clear and the header collapse in r160 AND r161. node --check can't see it
+     (runtime, not syntax) and neither could the regex/extract-a-fragment verification I was
+     using; only executing filterList as a whole catches it, which the harness now does. */
+  const chips = document.getElementById('lgchips');
+  if (chips) chips.style.display = (raw && _shown > 0) ? 'none' : '';
+  /* selector-r161: now that scan() re-applies the filter, a search that matches nothing leaves a
+     list full of hidden rows — visually just blank, with no explanation. Say so. */
+  if (hint && raw && _shown === 0 && document.querySelectorAll('#list .ev').length){
+    hint.innerHTML = (pairs.length ? hint.innerHTML + '<br>' : '')
+      + `<span class="d">No scanned games match “${raw.replace(/</g,'')}” — widen the range or SCAN more leagues.</span>`;
+    hint.style.display = '';
+  }
+  // hide day/league headers with no visible rows under them
+  document.querySelectorAll('#list .day, #list .lg').forEach(h=>{
+    let n = h.nextElementSibling, any = false;
+    while (n && !n.classList.contains('day') && !n.classList.contains('lg')){
+      if (n.classList.contains('ev') && n.style.display !== 'none'){ any = true; break; }
+      n = n.nextElementSibling;
+    }
+    h.style.display = any ? '' : 'none';
+  });
+}
+function toggle(cid, box){
+  const e = _evReg.get(cid); if(!e) return;
+  if (box.checked) sel.set(e.key, {...e, window:'day'});
+  else sel.delete(e.key);
+  saveSel();   // R97: persist so a refresh doesn't wipe the picks
+  document.getElementById('ev-'+cid).classList.toggle('on', box.checked);
+  count();
+}
+function setWin(cid,v){ const e=_evReg.get(cid); const r=e&&sel.get(e.key); if(r) r.window=v; }
+// #12a (r151): select/deselect every event in a league-day group in one tap. Reuses the exact
+// single-row primitives (sel.set/delete + saveSel + count) so bulk can't drift from single.
+function lgSelectAll(lgId){
+  const rows = [...document.querySelectorAll('.ev[data-lg="'+lgId+'"]')];
+  if(!rows.length) return;
+  const cids = rows.map(r=>r.getAttribute('data-cid'));
+  // if ALL are currently selected → clear the group; otherwise select the whole group.
+  const allOn = cids.every(cid=>{ const e=_evReg.get(cid); return e && sel.has(e.key); });
+  cids.forEach(cid=>{
+    const e=_evReg.get(cid); if(!e) return;
+    const box=document.querySelector('#ev-'+cid+' input[type=checkbox]');
+    if(allOn){ sel.delete(e.key); if(box) box.checked=false; document.getElementById('ev-'+cid).classList.remove('on'); }
+    else    { if(!sel.has(e.key)) sel.set(e.key, {...e, window:'day'}); if(box) box.checked=true; document.getElementById('ev-'+cid).classList.add('on'); }
+  });
+  saveSel(); count();
+}
+function count(){ const n = sel.size + stars.size;
+  document.getElementById('cnt').textContent = document.getElementById('cnt2').textContent = n;
+  const cs = document.getElementById('cntSel'); if (cs) cs.textContent = sel.size;
+  const cst = document.getElementById('cntStar'); if (cst) cst.textContent = stars.size;   // r167
+  if (document.getElementById('selected').style.display !== 'none') drawSelected();
+}
+// R70: "Selected" tab — consolidated cross-sport list of current picks w/ remove buttons.
+function toggleSelected(){
+  const el = document.getElementById('selected');
+  const show = el.style.display === 'none';
+  el.style.display = show ? '' : 'none';
+  if (show) drawSelected();
+}
+// R97: keep the counters in sync (callable from startup, not just after a scan)
+function updCounts(){
+  const c1=document.getElementById('cnt'), c2=document.getElementById('cnt2'), cs=document.getElementById('cntSel');
+  if (c1) c1.textContent = sel.size;
+  if (c2) c2.textContent = sel.size;
+  if (cs) cs.textContent = sel.size;
+  // r167: updCounts is the STARTUP path (R97) — without this the new ★ FOLLOWING badge would
+  // read 0 on load until the first star toggle, i.e. exactly when the wall is being read.
+  const cst = document.getElementById('cntStar'); if (cst) cst.textContent = stars.size;
+}
+// #12b (r151): clear the entire selection. Two-tap confirm (kiosk-friendly, guards the wipe).
+let _rmArm=false, _rmT=null;
+function removeAll(){
+  const btn=document.getElementById('rmAllBtn'); if(!btn) return;
+  if(!_rmArm){
+    _rmArm=true; btn.textContent='Tap again to confirm — clears all '+sel.size;
+    btn.style.background='#7e2b3a'; btn.style.color='#fff';
+    _rmT=setTimeout(()=>{ _rmArm=false; if(document.getElementById('rmAllBtn')){ btn.textContent='Remove ALL'; btn.style.background='#2a0f14'; btn.style.color='#f8a0b0'; } }, 3000);
+    return;
+  }
+  clearTimeout(_rmT); _rmArm=false;
+  sel.clear(); saveSel(); count(); drawSelected();
+  // also clear the main list's checkmarks
+  document.querySelectorAll('.ev.on').forEach(el=>{ el.classList.remove('on'); const b=el.querySelector('input[type=checkbox]'); if(b) b.checked=false; });
+}
+function drawSelected(){
+  const grid = document.getElementById('selgrid');
+  updCounts();
+  // R97: PUBLISHED-STATE BANNER — the whole point of Mike's ask: show what's ACTUALLY
+  // live on the panel vs. what's merely picked here. Divergence = "unpublished changes".
+  const box = document.getElementById('selected');
+  if (box && sel.size){
+    let st = document.getElementById('pubstate');
+    if (!st){ st = document.createElement('div'); st.id='pubstate';
+      st.style.cssText='margin:0 0 8px;padding:6px 10px;border-radius:8px;font-size:12px;font-weight:700';
+      box.insertBefore(st, box.firstChild.nextSibling); }
+    if (hasUnpublishedChanges()){
+      const drop = _liveNotPicked();
+      const esc2 = t => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+      st.style.background='rgba(210,153,34,0.15)'; st.style.color='#d29922'; st.style.border='1px solid #d29922';
+      // R99: clearer wording (the old copy read like the SELECTOR held 5) + SHOW what's
+      // live-but-unpicked, so Mike can see exactly which events publishing will drop.
+      st.innerHTML = `⚠ NOT YET PUBLISHED — the panel is currently running <b>${publishedKeys.size}</b> event(s). `
+        + `Publish to replace with your <b>${sel.size}</b>.`
+        + (drop.length ? `<div style="font-weight:400;margin-top:5px;opacity:.9">Will be REMOVED from the panel: `
+            + drop.map(d => esc2(d.title || d.label || d.espnId)).join(' · ') + `</div>` : '');
+    } else {
+      st.style.background='rgba(52,211,153,0.12)'; st.style.color='#34d399'; st.style.border='1px solid #34d399';
+      st.innerHTML = `✓ IN SYNC — all <b>${sel.size}</b> selection(s) are live on the panel.`;
+    }
+  }
+  if (!sel.size){ grid.innerHTML = '<p class="sub" style="margin:4px 0">Nothing selected yet.</p>'; const st=document.getElementById('pubstate'); if(st) st.remove(); return; }
+  const esc = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  // R143: FLAT, RANK-ORDERED list (no league grouping — order IS the priority). Each row
+  // carries its sport emoji (e.ico) so the sport stays legible without header grouping.
+  // ≡ handle (left) drags to reorder · ✕ (right) removes. Top = rank 1 = highest priority.
+  const rows = [...sel.values()];   // sel order = priority order (NOT re-sorted)
+  const html = [
+    `<button id="rmAllBtn" onclick="removeAll()" style="width:100%;margin:0 0 8px;background:#2a0f14;border:1px solid #7e2b3a;color:#f8a0b0;border-radius:7px;font:inherit;font-weight:700;padding:9px;cursor:pointer">Remove ALL</button>`,
+    `<div class="d" style="margin:2px 0 6px;opacity:.75">≡ drag to reorder — <b>top = highest priority</b></div>`];
+  rows.forEach((e, i) => {
+    _selCid.set(cssId(e.key), e.key);   // R140: cssId→key so removeSel works for expired rows too
+    html.push(`<div class="selrow" draggable="false" data-cid="${cssId(e.key)}" data-idx="${i}"
+        style="display:flex;align-items:center;gap:6px;padding:7px 8px;margin:4px 0;background:#05070d;border:1px solid var(--line);border-radius:7px;touch-action:pan-y">
+      <span class="draghandle" style="cursor:grab;touch-action:none;user-select:none;font-size:18px;color:#5b6472;padding:2px 6px;line-height:1;flex:none">&#9776;</span>
+      <span class="rankno" style="flex:none;min-width:18px;text-align:center;font-weight:800;color:#8a93a3;font-size:12px">${i+1}</span>
+      <span style="flex:1;min-width:0"><span style="font-size:15px">${e.ico||''}</span> <span class="t">${esc(e.title)}</span> <span class="d">${esc(e.date||'')}${e.window==='weekend'?' · thru Sun':''}</span></span>
+      <button onclick="removeSel('${cssId(e.key)}')" style="flex:none;background:#3a1214;color:#ff8a8a;border:1px solid #612;border-radius:6px;padding:4px 10px;font:700 14px inherit;cursor:pointer">✕</button>
+    </div>`);
+  });
+  grid.innerHTML = html.join('');
+  wireDrag(grid);   // R143: attach pointer-events drag after render
+}
+
+// ── R143 DRAG-TO-REORDER (Pointer Events → works on iPhone Safari AND desktop Chrome) ──
+// Grab the ≡ handle, drag the row, drop → reorderSel rewrites `sel`, saveSel persists,
+// drawSelected re-renders. touch-action:none on the handle only, so the list still scrolls
+// when you touch anywhere else. Logic proven in scratch-reorder.js (11/11).
+function reorderSel(from, to){
+  const entries = [...sel];
+  if (from < 0 || from >= entries.length || to < 0 || to >= entries.length || from === to) return;
+  const [moved] = entries.splice(from, 1);
+  entries.splice(to, 0, moved);
+  sel.clear(); for (const [k,v] of entries) sel.set(k,v);
+  saveSel();          // persist new order (Map order = priority)
+  drawSelected();     // re-render with updated ranks + IN-SYNC banner recompute
+}
+
+// R149: drag-reorder via SortableJS (embedded below). Replaces 4 rounds of hand-rolled
+// pointer-drag (r143–r148) that kept failing on settle/cleanup edge cases — overlapping
+// "suspended" rows, drop-fall, stutter. SortableJS handles touch/pointer/scroll/settle
+// natively. We keep the data layer (reorderSel, rank, publish) which always tested fine;
+// Sortable just gives us the correct onEnd(from,to) indices.
+let _sortable = null;
+function wireDrag(grid){
+  if (typeof Sortable === 'undefined'){ console.warn('[selector] Sortable not loaded'); return; }
+  if (_sortable){ try { _sortable.destroy(); } catch(_){} _sortable = null; }
+  _sortable = Sortable.create(grid, {
+    handle: '.draghandle',       // only the ≡ grip starts a drag (taps elsewhere scroll)
+    draggable: '.selrow',        // r150 FIX: only rows are sortable. Without this, Sortable's
+                                 // default '>*' counted the "≡ drag to reorder" HINT DIV as
+                                 // index 0 — every reported index was OFF BY ONE vs `sel`,
+                                 // and drops to the bottom hit reorderSel's bounds guard and
+                                 // silently bailed. THAT was the r149 "order reverts" bug.
+    animation: 180,              // native-feel slide of siblings
+    easing: 'cubic-bezier(0.22,0.61,0.36,1)',
+    forceFallback: true,         // use Sortable's own drag (consistent across iOS Safari)
+    fallbackTolerance: 4,        // ignore micro-jitter so a tap isn't a drag
+    delay: 80, delayOnTouchOnly: true,   // tiny hold so scrolling the list doesn't grab a row
+    ghostClass: 'sortable-ghost',
+    chosenClass: 'sortable-chosen',
+    dragClass: 'sortable-drag',
+    onEnd: (evt) => {
+      // r150: use *DraggableIndex — counts ONLY .selrow elements, so indices line up 1:1
+      // with `sel`. (evt.oldIndex/newIndex count ALL children incl. the hint div.)
+      const from = evt.oldDraggableIndex, to = evt.newDraggableIndex;
+      // r150: defer past Sortable's own drop cleanup — reorderSel→drawSelected→wireDrag
+      // destroys this Sortable instance, and destroying it from INSIDE onEnd re-enters
+      // _onDrop mid-drop. innerHTML rebuild from `sel` remains the single source of truth.
+      setTimeout(() => {
+        if (from == null || to == null || from === to){ drawSelected(); return; }
+        reorderSel(from, to);    // commit to sel + persist + re-render (re-wires Sortable)
+      }, 0);
+    },
+  });
+}
+function removeSel(cid){
+  // R140: an expired event is no longer in _evReg (the current-scan registry), so the old
+  // `_evReg.get(cid); if(!e) return;` bailed silently — the ✕ did nothing and stale/expired
+  // games were un-removable, jamming the panel with unhydratable slides. Resolve the key from
+  // _evReg if present, else from the _selCid map built by drawSelected, so ANY selected row
+  // (live, future, OR expired) can always be removed.
+  const e = _evReg.get(cid);
+  const key = e ? e.key : _selCid.get(cid);
+  console.log('[selector] removeSel cid=', cid, '→ key=', key, '| had?', key ? sel.has(key) : 'n/a');
+  if (!key){
+    // R141: last-resort — cid couldn't resolve to a key via either map. Brute-force match:
+    // find the sel entry whose cssId(key) equals this cid and delete it directly. This makes
+    // the ✕ work even if the row-registration path was somehow missed.
+    let hit=null;
+    for (const k of sel.keys()){ if (cssId(k) === cid){ hit=k; break; } }
+    if (hit){ sel.delete(hit); saveSel(); console.log('[selector] removeSel brute-forced', hit); count(); drawSelected(); return; }
+    console.warn('[selector] removeSel: NO key AND no brute-force match for', cid, '— keys:', [...sel.keys()]);
+    return;
+  }
+  sel.delete(key); saveSel();   // R97: persist
+  // sync the main-list checkbox if it's rendered
+  const box = document.querySelector(`#ev-${cid} input[type=checkbox]`);
+  if (box){ box.checked = false; const row = document.getElementById('ev-'+cid); if (row) row.classList.remove('on'); }
+  count(); drawSelected();
+}
+
+function endDate(rec){
+  if (rec.window==='weekend'){ const d=new Date(); const add=(7-d.getDay())%7; d.setDate(d.getDate()+add); return ymd(d); }
+  return rec.date;
+}
+// R141: single source of truth for the published JSON, built LIVE from `sel` every time.
+function buildSelJson(){
+  const out = {
+    v: 1,
+    updated: new Date().toISOString(),
+    events: [...sel.values()].map((r,i)=>({
+      league: r.path, label: r.league, espnId: r.id, title: r.title,
+      showFrom: r.date, showUntil: endDate(r), rank: i+1   // R143: priority rank (1 = highest)
+    })),
+    watch: { teams: [...stars.values()] }   // ★ persistent — shown whenever they play
+  };
+  return JSON.stringify(out, null, 2);
+}
+function showOut(){
+  document.getElementById('json').value = buildSelJson();
+  document.getElementById('modal').classList.add('show');
+}
+const REPO='mikeylegs/sports', FILE='selections.json';
+document.addEventListener('DOMContentLoaded',()=>{ const t=localStorage.getItem('gh-token'); if(t) document.getElementById('tok').value=t; });
+async function publish(){
+  const btn=document.getElementById('pub');
+  const tok=document.getElementById('tok').value.trim();
+  if(!tok){ btn.textContent='NEED TOKEN ↓'; setTimeout(()=>btn.textContent='PUBLISH TO PANEL',1800); return; }
+  localStorage.setItem('gh-token',tok);
+  btn.disabled=true; btn.textContent='PUBLISHING…';
+  try{
+    const H={Authorization:'Bearer '+tok, Accept:'application/vnd.github+json'};
+    let sha;
+    try{ const r=await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE}`,{headers:H});
+         if(r.ok) sha=(await r.json()).sha; }catch(_){}
+    // R141: regenerate from `sel` NOW — do not trust the textarea (a stale REVIEW/EXPORT
+    // snapshot was publishing removed games back onto the panel).
+    const _json = buildSelJson();
+    document.getElementById('json').value = _json;   // keep the textarea honest too
+    const body={message:'selections '+new Date().toISOString().slice(0,16),
+      content:btoa(unescape(encodeURIComponent(_json)))};
+    if(sha) body.sha=sha;
+    const r=await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE}`,
+      {method:'PUT',headers:H,body:JSON.stringify(body)});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    btn.textContent='✓ PUBLISHED (live in ~1 min)';
+    setTimeout(loadPublished, 1500);   // R97: re-fetch ground truth so the banner flips to IN SYNC
+  }catch(e){ btn.textContent='FAILED: '+e.message; }
+  finally{ btn.disabled=false; setTimeout(()=>btn.textContent='PUBLISH TO PANEL',4000); }
+}
+/* selector-r168: client-side catalog refresh — see comment above the button.
+   Ports catalog.py's exact logic (fold/roster-parse/replace vs merge semantics) to run here
+   instead, because THIS host was never blocked. Fetches the CURRENT team-catalog.json straight
+   from GitHub (not the cached same-origin copy) so the sha used for the PUT is the real one and
+   two concurrent refreshes can't silently clobber each other. */
+const CAT_D = ' \u00b7 ';
+function _catFold(s){
+  return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+}
+function _catNamesFromRoster(d){
+  const out=[];
+  (d && d.athletes || []).forEach(g=>{
+    const items = (g && Array.isArray(g.items)) ? g.items : [g];
+    (items||[]).forEach(a=>{ if(!a) return;
+      const n=a.fullName||a.displayName; if(n && n.trim()) out.push(n.trim()); });
+  });
+  const seen=new Set(), uniq=[];
+  out.forEach(n=>{ const k=_catFold(n); if(seen.has(k)) return; seen.add(k); uniq.push(n); });
+  return uniq;
+}
+async function _catJson(url){
+  // selector-r169: ESPN's core-API $ref links come back as literal http:// even though the
+  // teams-list endpoint itself is https. This selector runs on https://mikeylegs.github.io —
+  // fetch() to an http:// URL from an https page is mixed content and the browser silently
+  // rejects it (no useful console error). That's why every soccer league resolved
+  // ids_resolved:0 on refreshCatalog: pro leagues never hit this ($ref-free roster-by-abbr),
+  // soccer's id-resolution step follows $ref for every single team and got blocked every time.
+  const u = String(url||'').replace(/^http:\/\//i, 'https://');
+  try{ const r=await fetch(u); if(!r.ok) return null; return await r.json(); }
+  catch(_){ return null; }
+}
+function _catReplaceAka(existing, fresh){
+  if(!fresh || !fresh.length) return {aka:existing, n:0};
+  const seen=new Set(), out=[];
+  fresh.forEach(n=>{ const k=_catFold(n); if(seen.has(k)) return; seen.add(k); out.push(n); });
+  return {aka:out.join(CAT_D), n:out.length};
+}
+function _catMergeAka(existing, fresh){
+  const cur=(existing||'').split(CAT_D).map(x=>x.trim()).filter(Boolean);
+  const seen=new Set(cur.map(_catFold));
+  let added=0;
+  (fresh||[]).forEach(n=>{ const k=_catFold(n); if(seen.has(k)) return; seen.add(k); cur.push(n); added++; });
+  return {aka:cur.join(CAT_D), added};
+}
+const CAT_PRO = ['baseball/mlb','basketball/nba','football/nfl','hockey/nhl'];
+const CAT_SOCCER = ['soccer/eng.1','soccer/esp.1','soccer/ita.1','soccer/ger.1','soccer/fra.1','soccer/uefa.champions','soccer/usa.1'];
+const CAT_SITE='https://site.api.espn.com/apis/site/v2/sports';
+const CAT_CORE='https://sports.core.api.espn.com/v2/sports';
+async function _catHarvestSoccerIds(slug, setStatus){
+  const year=new Date().getUTCFullYear(), idx={};
+  for(const yr of [year, year-1]){
+    const d=await _catJson(`${CAT_CORE}/soccer/leagues/${slug}/seasons/${yr}/teams?limit=100`);
+    const items=(d&&d.items)||[];
+    if(!items.length) continue;
+    for(const it of items){
+      if(!it.$ref) continue;
+      const t=await _catJson(it.$ref);
+      if(!t) continue;
+      [t.abbreviation, t.displayName, t.shortDisplayName].forEach(k=>{ if(k) idx[_catFold(k)]=t.id; });
+    }
+    if(Object.keys(idx).length) break;
+  }
+  return idx;
+}
+async function refreshCatalog(){
+  const btn=document.getElementById('catRefreshBtn'), st=document.getElementById('catRefreshStatus');
+  const tok=(localStorage.getItem('gh-token')||'').trim();
+  if(!tok){ st.style.display='block'; st.style.color='#f88';
+    st.textContent='No GitHub token saved yet — open PUBLISH TO PANEL once, enter it there, then retry.'; return; }
+  btn.disabled=true; const origLabel=btn.textContent; btn.textContent='REFRESHING…';
+  st.style.display='block'; st.style.color='var(--acc)'; st.textContent='Fetching current catalog…';
+  try{
+    const H={Authorization:'Bearer '+tok, Accept:'application/vnd.github+json'};
+    const CFILE='team-catalog.json';
+    const r0=await fetch(`https://api.github.com/repos/${REPO}/contents/${CFILE}`,{headers:H});
+    if(!r0.ok) throw new Error('could not fetch current catalog (HTTP '+r0.status+')');
+    const meta=await r0.json();
+    const cat=JSON.parse(decodeURIComponent(escape(atob(meta.content.replace(/\n/g,'')))));
+    const sha=meta.sha;
+    const byLeague={};
+    cat.forEach(t=>{ (byLeague[t.league]=byLeague[t.league]||[]).push(t); });
+    const stats={};
+    let done=0; const total=cat.length;
+
+    for(const lg of CAT_PRO){
+      if(!byLeague[lg]) continue;
+      const s=stats[lg]={roster_ok:0, roster_fail:0, injury_added:0};
+      for(const t of byLeague[lg]){
+        st.textContent=`${lg} — roster ${t.abbr}  (${++done}/${total})`;
+        const d=await _catJson(`${CAT_SITE}/${lg}/teams/${t.abbr}/roster`);
+        const names=_catNamesFromRoster(d);
+        const {aka,n}=_catReplaceAka(t.aka, names);
+        if(n){ t.aka=aka; s.roster_ok++; } else s.roster_fail++;
+      }
+      st.textContent=`${lg} — injuries…`;
+      const inj=await _catJson(`${CAT_SITE}/${lg}/injuries`);
+      const injByTeam={};
+      ((inj&&inj.injuries)||[]).forEach(it=>{
+        const names=(it.injuries||[]).map(x=>x.athlete&&(x.athlete.fullName||x.athlete.displayName)).filter(Boolean);
+        if(names.length) injByTeam[_catFold(it.displayName||'')]=names;
+      });
+      byLeague[lg].forEach(t=>{
+        let hit=injByTeam[_catFold(t.name)];
+        if(!hit){ const k=Object.keys(injByTeam).find(k=>_catFold(t.name).includes(k)||k.includes(_catFold(t.name))); if(k) hit=injByTeam[k]; }
+        if(!hit) return;
+        const {aka,added}=_catMergeAka(t.aka, hit);
+        if(added){ t.aka=aka; s.injury_added+=added; }
+      });
+    }
+
+    for(const lg of CAT_SOCCER){
+      if(!byLeague[lg]) continue;
+      const slug=lg.split('/')[1];
+      const s=stats[lg]={ids_resolved:0, roster_ok:0, roster_fail:0};
+      st.textContent=`${lg} — resolving club ids…`;
+      const idx=await _catHarvestSoccerIds(slug);
+      for(const t of byLeague[lg]){
+        const id=idx[_catFold(t.abbr)]||idx[_catFold(t.name)];
+        st.textContent=`${lg} — roster ${t.abbr}  (${++done}/${total})`;
+        if(!id){ s.roster_fail++; continue; }
+        s.ids_resolved++;
+        const d=await _catJson(`${CAT_SITE}/${lg}/teams/${id}/roster`);
+        const names=_catNamesFromRoster(d);
+        const {aka,n}=_catReplaceAka(t.aka, names);
+        if(n){ t.aka=aka; s.roster_ok++; } else s.roster_fail++;
+      }
+    }
+
+    st.textContent='Committing…';
+    const body={message:'catalog refresh '+new Date().toISOString().slice(0,16),
+      content:btoa(unescape(encodeURIComponent(JSON.stringify(cat)))), sha};
+    const r1=await fetch(`https://api.github.com/repos/${REPO}/contents/${CFILE}`,
+      {method:'PUT',headers:H,body:JSON.stringify(body)});
+    if(!r1.ok) throw new Error('commit failed (HTTP '+r1.status+')');
+    _teamCatalog=cat;   // reflect it locally without a reload
+    const failLeagues=Object.entries(stats).filter(([,v])=>(v.roster_ok||0)===0).map(([k])=>k);
+    st.style.color = failLeagues.length ? '#fc5' : '#7dd3fc';
+    st.textContent = failLeagues.length
+      ? `✓ committed, but 0 rosters resolved for: ${failLeagues.join(', ')} — check console`
+      : `✓ Catalog refreshed and committed (live in ~1 min).`;
+    console.log('[catalog] per-league:', stats);
+  }catch(e){
+    st.style.color='#f88'; st.textContent='FAILED: '+e.message;
+    console.error('[catalog] refresh failed', e);
+  }finally{
+    btn.disabled=false; btn.textContent=origLabel;
+  }
+}
+
+function copyJson(){ navigator.clipboard.writeText(document.getElementById('json').value); }
+function dl(){
+  const b = new Blob([document.getElementById('json').value], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download='selections.json'; a.click();
+}
+</script>
+<style>
+/* R149 SortableJS drag states — native-feel lift + gap */
+.sortable-ghost { opacity: 0.35; }
+.sortable-chosen { background:#12203a !important; box-shadow:0 10px 28px rgba(0,0,0,0.6); }
+.sortable-drag { opacity: 1 !important; scale: 1.03; }
+.draghandle { cursor: grab; touch-action: none; }
+</style>
+<script>/* SortableJS 1.15.6 (MIT) — embedded so it can't fail to load from a CDN the kiosk can't reach */
+/*! Sortable 1.15.6 - MIT | git://github.com/SortableJS/Sortable.git */
+!function(t,e){"object"==typeof exports&&"undefined"!=typeof module?module.exports=e():"function"==typeof define&&define.amd?define(e):(t=t||self).Sortable=e()}(this,function(){"use strict";function e(e,t){var n,o=Object.keys(e);return Object.getOwnPropertySymbols&&(n=Object.getOwnPropertySymbols(e),t&&(n=n.filter(function(t){return Object.getOwnPropertyDescriptor(e,t).enumerable})),o.push.apply(o,n)),o}function I(o){for(var t=1;t<arguments.length;t++){var i=null!=arguments[t]?arguments[t]:{};t%2?e(Object(i),!0).forEach(function(t){var e,n;e=o,t=i[n=t],n in e?Object.defineProperty(e,n,{value:t,enumerable:!0,configurable:!0,writable:!0}):e[n]=t}):Object.getOwnPropertyDescriptors?Object.defineProperties(o,Object.getOwnPropertyDescriptors(i)):e(Object(i)).forEach(function(t){Object.defineProperty(o,t,Object.getOwnPropertyDescriptor(i,t))})}return o}function o(t){return(o="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(t){return typeof t}:function(t){return t&&"function"==typeof Symbol&&t.constructor===Symbol&&t!==Symbol.prototype?"symbol":typeof t})(t)}function a(){return(a=Object.assign||function(t){for(var e=1;e<arguments.length;e++){var n,o=arguments[e];for(n in o)Object.prototype.hasOwnProperty.call(o,n)&&(t[n]=o[n])}return t}).apply(this,arguments)}function i(t,e){if(null==t)return{};var n,o=function(t,e){if(null==t)return{};for(var n,o={},i=Object.keys(t),r=0;r<i.length;r++)n=i[r],0<=e.indexOf(n)||(o[n]=t[n]);return o}(t,e);if(Object.getOwnPropertySymbols)for(var i=Object.getOwnPropertySymbols(t),r=0;r<i.length;r++)n=i[r],0<=e.indexOf(n)||Object.prototype.propertyIsEnumerable.call(t,n)&&(o[n]=t[n]);return o}function r(t){return function(t){if(Array.isArray(t))return l(t)}(t)||function(t){if("undefined"!=typeof Symbol&&null!=t[Symbol.iterator]||null!=t["@@iterator"])return Array.from(t)}(t)||function(t,e){if(t){if("string"==typeof t)return l(t,e);var n=Object.prototype.toString.call(t).slice(8,-1);return"Map"===(n="Object"===n&&t.constructor?t.constructor.name:n)||"Set"===n?Array.from(t):"Arguments"===n||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)?l(t,e):void 0}}(t)||function(){throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}()}function l(t,e){(null==e||e>t.length)&&(e=t.length);for(var n=0,o=new Array(e);n<e;n++)o[n]=t[n];return o}function t(t){if("undefined"!=typeof window&&window.navigator)return!!navigator.userAgent.match(t)}var y=t(/(?:Trident.*rv[ :]?11\.|msie|iemobile|Windows Phone)/i),w=t(/Edge/i),s=t(/firefox/i),u=t(/safari/i)&&!t(/chrome/i)&&!t(/android/i),c=t(/iP(ad|od|hone)/i),n=t(/chrome/i)&&t(/android/i),d={capture:!1,passive:!1};function h(t,e,n){t.addEventListener(e,n,!y&&d)}function p(t,e,n){t.removeEventListener(e,n,!y&&d)}function f(t,e){if(e&&(">"===e[0]&&(e=e.substring(1)),t))try{if(t.matches)return t.matches(e);if(t.msMatchesSelector)return t.msMatchesSelector(e);if(t.webkitMatchesSelector)return t.webkitMatchesSelector(e)}catch(t){return}}function g(t){return t.host&&t!==document&&t.host.nodeType?t.host:t.parentNode}function P(t,e,n,o){if(t){n=n||document;do{if(null!=e&&(">"!==e[0]||t.parentNode===n)&&f(t,e)||o&&t===n)return t}while(t!==n&&(t=g(t)))}return null}var m,v=/\s+/g;function k(t,e,n){var o;t&&e&&(t.classList?t.classList[n?"add":"remove"](e):(o=(" "+t.className+" ").replace(v," ").replace(" "+e+" "," "),t.className=(o+(n?" "+e:"")).replace(v," ")))}function R(t,e,n){var o=t&&t.style;if(o){if(void 0===n)return document.defaultView&&document.defaultView.getComputedStyle?n=document.defaultView.getComputedStyle(t,""):t.currentStyle&&(n=t.currentStyle),void 0===e?n:n[e];o[e=!(e in o||-1!==e.indexOf("webkit"))?"-webkit-"+e:e]=n+("string"==typeof n?"":"px")}}function b(t,e){var n="";if("string"==typeof t)n=t;else do{var o=R(t,"transform")}while(o&&"none"!==o&&(n=o+" "+n),!e&&(t=t.parentNode));var i=window.DOMMatrix||window.WebKitCSSMatrix||window.CSSMatrix||window.MSCSSMatrix;return i&&new i(n)}function D(t,e,n){if(t){var o=t.getElementsByTagName(e),i=0,r=o.length;if(n)for(;i<r;i++)n(o[i],i);return o}return[]}function O(){var t=document.scrollingElement;return t||document.documentElement}function X(t,e,n,o,i){if(t.getBoundingClientRect||t===window){var r,a,l,s,c,u,d=t!==window&&t.parentNode&&t!==O()?(a=(r=t.getBoundingClientRect()).top,l=r.left,s=r.bottom,c=r.right,u=r.height,r.width):(l=a=0,s=window.innerHeight,c=window.innerWidth,u=window.innerHeight,window.innerWidth);if((e||n)&&t!==window&&(i=i||t.parentNode,!y))do{if(i&&i.getBoundingClientRect&&("none"!==R(i,"transform")||n&&"static"!==R(i,"position"))){var h=i.getBoundingClientRect();a-=h.top+parseInt(R(i,"border-top-width")),l-=h.left+parseInt(R(i,"border-left-width")),s=a+r.height,c=l+r.width;break}}while(i=i.parentNode);return o&&t!==window&&(o=(e=b(i||t))&&e.a,t=e&&e.d,e&&(s=(a/=t)+(u/=t),c=(l/=o)+(d/=o))),{top:a,left:l,bottom:s,right:c,width:d,height:u}}}function Y(t,e,n){for(var o=M(t,!0),i=X(t)[e];o;){var r=X(o)[n];if(!("top"===n||"left"===n?r<=i:i<=r))return o;if(o===O())break;o=M(o,!1)}return!1}function B(t,e,n,o){for(var i=0,r=0,a=t.children;r<a.length;){if("none"!==a[r].style.display&&a[r]!==jt.ghost&&(o||a[r]!==jt.dragged)&&P(a[r],n.draggable,t,!1)){if(i===e)return a[r];i++}r++}return null}function F(t,e){for(var n=t.lastElementChild;n&&(n===jt.ghost||"none"===R(n,"display")||e&&!f(n,e));)n=n.previousElementSibling;return n||null}function j(t,e){var n=0;if(!t||!t.parentNode)return-1;for(;t=t.previousElementSibling;)"TEMPLATE"===t.nodeName.toUpperCase()||t===jt.clone||e&&!f(t,e)||n++;return n}function E(t){var e=0,n=0,o=O();if(t)do{var i=b(t),r=i.a,i=i.d}while(e+=t.scrollLeft*r,n+=t.scrollTop*i,t!==o&&(t=t.parentNode));return[e,n]}function M(t,e){if(!t||!t.getBoundingClientRect)return O();var n=t,o=!1;do{if(n.clientWidth<n.scrollWidth||n.clientHeight<n.scrollHeight){var i=R(n);if(n.clientWidth<n.scrollWidth&&("auto"==i.overflowX||"scroll"==i.overflowX)||n.clientHeight<n.scrollHeight&&("auto"==i.overflowY||"scroll"==i.overflowY)){if(!n.getBoundingClientRect||n===document.body)return O();if(o||e)return n;o=!0}}}while(n=n.parentNode);return O()}function S(t,e){return Math.round(t.top)===Math.round(e.top)&&Math.round(t.left)===Math.round(e.left)&&Math.round(t.height)===Math.round(e.height)&&Math.round(t.width)===Math.round(e.width)}function _(e,n){return function(){var t;m||(1===(t=arguments).length?e.call(this,t[0]):e.apply(this,t),m=setTimeout(function(){m=void 0},n))}}function H(t,e,n){t.scrollLeft+=e,t.scrollTop+=n}function C(t){var e=window.Polymer,n=window.jQuery||window.Zepto;return e&&e.dom?e.dom(t).cloneNode(!0):n?n(t).clone(!0)[0]:t.cloneNode(!0)}function T(t,e){R(t,"position","absolute"),R(t,"top",e.top),R(t,"left",e.left),R(t,"width",e.width),R(t,"height",e.height)}function x(t){R(t,"position",""),R(t,"top",""),R(t,"left",""),R(t,"width",""),R(t,"height","")}function L(n,o,i){var r={};return Array.from(n.children).forEach(function(t){var e;P(t,o.draggable,n,!1)&&!t.animated&&t!==i&&(e=X(t),r.left=Math.min(null!==(t=r.left)&&void 0!==t?t:1/0,e.left),r.top=Math.min(null!==(t=r.top)&&void 0!==t?t:1/0,e.top),r.right=Math.max(null!==(t=r.right)&&void 0!==t?t:-1/0,e.right),r.bottom=Math.max(null!==(t=r.bottom)&&void 0!==t?t:-1/0,e.bottom))}),r.width=r.right-r.left,r.height=r.bottom-r.top,r.x=r.left,r.y=r.top,r}var K="Sortable"+(new Date).getTime();function A(){var e,o=[];return{captureAnimationState:function(){o=[],this.options.animation&&[].slice.call(this.el.children).forEach(function(t){var e,n;"none"!==R(t,"display")&&t!==jt.ghost&&(o.push({target:t,rect:X(t)}),e=I({},o[o.length-1].rect),!t.thisAnimationDuration||(n=b(t,!0))&&(e.top-=n.f,e.left-=n.e),t.fromRect=e)})},addAnimationState:function(t){o.push(t)},removeAnimationState:function(t){o.splice(function(t,e){for(var n in t)if(t.hasOwnProperty(n))for(var o in e)if(e.hasOwnProperty(o)&&e[o]===t[n][o])return Number(n);return-1}(o,{target:t}),1)},animateAll:function(t){var c=this;if(!this.options.animation)return clearTimeout(e),void("function"==typeof t&&t());var u=!1,d=0;o.forEach(function(t){var e=0,n=t.target,o=n.fromRect,i=X(n),r=n.prevFromRect,a=n.prevToRect,l=t.rect,s=b(n,!0);s&&(i.top-=s.f,i.left-=s.e),n.toRect=i,n.thisAnimationDuration&&S(r,i)&&!S(o,i)&&(l.top-i.top)/(l.left-i.left)==(o.top-i.top)/(o.left-i.left)&&(t=l,s=r,r=a,a=c.options,e=Math.sqrt(Math.pow(s.top-t.top,2)+Math.pow(s.left-t.left,2))/Math.sqrt(Math.pow(s.top-r.top,2)+Math.pow(s.left-r.left,2))*a.animation),S(i,o)||(n.prevFromRect=o,n.prevToRect=i,e=e||c.options.animation,c.animate(n,l,i,e)),e&&(u=!0,d=Math.max(d,e),clearTimeout(n.animationResetTimer),n.animationResetTimer=setTimeout(function(){n.animationTime=0,n.prevFromRect=null,n.fromRect=null,n.prevToRect=null,n.thisAnimationDuration=null},e),n.thisAnimationDuration=e)}),clearTimeout(e),u?e=setTimeout(function(){"function"==typeof t&&t()},d):"function"==typeof t&&t(),o=[]},animate:function(t,e,n,o){var i,r;o&&(R(t,"transition",""),R(t,"transform",""),i=(r=b(this.el))&&r.a,r=r&&r.d,i=(e.left-n.left)/(i||1),r=(e.top-n.top)/(r||1),t.animatingX=!!i,t.animatingY=!!r,R(t,"transform","translate3d("+i+"px,"+r+"px,0)"),this.forRepaintDummy=t.offsetWidth,R(t,"transition","transform "+o+"ms"+(this.options.easing?" "+this.options.easing:"")),R(t,"transform","translate3d(0,0,0)"),"number"==typeof t.animated&&clearTimeout(t.animated),t.animated=setTimeout(function(){R(t,"transition",""),R(t,"transform",""),t.animated=!1,t.animatingX=!1,t.animatingY=!1},o))}}}var N=[],W={initializeByDefault:!0},z={mount:function(e){for(var t in W)!W.hasOwnProperty(t)||t in e||(e[t]=W[t]);N.forEach(function(t){if(t.pluginName===e.pluginName)throw"Sortable: Cannot mount plugin ".concat(e.pluginName," more than once")}),N.push(e)},pluginEvent:function(e,n,o){var t=this;this.eventCanceled=!1,o.cancel=function(){t.eventCanceled=!0};var i=e+"Global";N.forEach(function(t){n[t.pluginName]&&(n[t.pluginName][i]&&n[t.pluginName][i](I({sortable:n},o)),n.options[t.pluginName]&&n[t.pluginName][e]&&n[t.pluginName][e](I({sortable:n},o)))})},initializePlugins:function(n,o,i,t){for(var e in N.forEach(function(t){var e=t.pluginName;(n.options[e]||t.initializeByDefault)&&((t=new t(n,o,n.options)).sortable=n,t.options=n.options,n[e]=t,a(i,t.defaults))}),n.options){var r;n.options.hasOwnProperty(e)&&(void 0!==(r=this.modifyOption(n,e,n.options[e]))&&(n.options[e]=r))}},getEventProperties:function(e,n){var o={};return N.forEach(function(t){"function"==typeof t.eventProperties&&a(o,t.eventProperties.call(n[t.pluginName],e))}),o},modifyOption:function(e,n,o){var i;return N.forEach(function(t){e[t.pluginName]&&t.optionListeners&&"function"==typeof t.optionListeners[n]&&(i=t.optionListeners[n].call(e[t.pluginName],o))}),i}};function G(t){var e=t.sortable,n=t.rootEl,o=t.name,i=t.targetEl,r=t.cloneEl,a=t.toEl,l=t.fromEl,s=t.oldIndex,c=t.newIndex,u=t.oldDraggableIndex,d=t.newDraggableIndex,h=t.originalEvent,p=t.putSortable,f=t.extraEventProperties;if(e=e||n&&n[K]){var g,m=e.options,t="on"+o.charAt(0).toUpperCase()+o.substr(1);!window.CustomEvent||y||w?(g=document.createEvent("Event")).initEvent(o,!0,!0):g=new CustomEvent(o,{bubbles:!0,cancelable:!0}),g.to=a||n,g.from=l||n,g.item=i||n,g.clone=r,g.oldIndex=s,g.newIndex=c,g.oldDraggableIndex=u,g.newDraggableIndex=d,g.originalEvent=h,g.pullMode=p?p.lastPutMode:void 0;var v,b=I(I({},f),z.getEventProperties(o,e));for(v in b)g[v]=b[v];n&&n.dispatchEvent(g),m[t]&&m[t].call(e,g)}}function U(t,e){var n=(o=2<arguments.length&&void 0!==arguments[2]?arguments[2]:{}).evt,o=i(o,q);z.pluginEvent.bind(jt)(t,e,I({dragEl:Z,parentEl:$,ghostEl:Q,rootEl:J,nextEl:tt,lastDownEl:et,cloneEl:nt,cloneHidden:ot,dragStarted:mt,putSortable:ct,activeSortable:jt.active,originalEvent:n,oldIndex:it,oldDraggableIndex:at,newIndex:rt,newDraggableIndex:lt,hideGhostForTarget:Xt,unhideGhostForTarget:Yt,cloneNowHidden:function(){ot=!0},cloneNowShown:function(){ot=!1},dispatchSortableEvent:function(t){V({sortable:e,name:t,originalEvent:n})}},o))}var q=["evt"];function V(t){G(I({putSortable:ct,cloneEl:nt,targetEl:Z,rootEl:J,oldIndex:it,oldDraggableIndex:at,newIndex:rt,newDraggableIndex:lt},t))}var Z,$,Q,J,tt,et,nt,ot,it,rt,at,lt,st,ct,ut,dt,ht,pt,ft,gt,mt,vt,bt,yt,wt,Dt=!1,Et=!1,St=[],_t=!1,Ct=!1,Tt=[],xt=!1,Ot=[],Mt="undefined"!=typeof document,At=c,Nt=w||y?"cssFloat":"float",It=Mt&&!n&&!c&&"draggable"in document.createElement("div"),Pt=function(){if(Mt){if(y)return!1;var t=document.createElement("x");return t.style.cssText="pointer-events:auto","auto"===t.style.pointerEvents}}(),kt=function(t,e){var n=R(t),o=parseInt(n.width)-parseInt(n.paddingLeft)-parseInt(n.paddingRight)-parseInt(n.borderLeftWidth)-parseInt(n.borderRightWidth),i=B(t,0,e),r=B(t,1,e),a=i&&R(i),l=r&&R(r),s=a&&parseInt(a.marginLeft)+parseInt(a.marginRight)+X(i).width,t=l&&parseInt(l.marginLeft)+parseInt(l.marginRight)+X(r).width;if("flex"===n.display)return"column"===n.flexDirection||"column-reverse"===n.flexDirection?"vertical":"horizontal";if("grid"===n.display)return n.gridTemplateColumns.split(" ").length<=1?"vertical":"horizontal";if(i&&a.float&&"none"!==a.float){e="left"===a.float?"left":"right";return!r||"both"!==l.clear&&l.clear!==e?"horizontal":"vertical"}return i&&("block"===a.display||"flex"===a.display||"table"===a.display||"grid"===a.display||o<=s&&"none"===n[Nt]||r&&"none"===n[Nt]&&o<s+t)?"vertical":"horizontal"},Rt=function(t){function l(r,a){return function(t,e,n,o){var i=t.options.group.name&&e.options.group.name&&t.options.group.name===e.options.group.name;if(null==r&&(a||i))return!0;if(null==r||!1===r)return!1;if(a&&"clone"===r)return r;if("function"==typeof r)return l(r(t,e,n,o),a)(t,e,n,o);e=(a?t:e).options.group.name;return!0===r||"string"==typeof r&&r===e||r.join&&-1<r.indexOf(e)}}var e={},n=t.group;n&&"object"==o(n)||(n={name:n}),e.name=n.name,e.checkPull=l(n.pull,!0),e.checkPut=l(n.put),e.revertClone=n.revertClone,t.group=e},Xt=function(){!Pt&&Q&&R(Q,"display","none")},Yt=function(){!Pt&&Q&&R(Q,"display","")};Mt&&!n&&document.addEventListener("click",function(t){if(Et)return t.preventDefault(),t.stopPropagation&&t.stopPropagation(),t.stopImmediatePropagation&&t.stopImmediatePropagation(),Et=!1},!0);function Bt(t){if(Z){t=t.touches?t.touches[0]:t;var e=(i=t.clientX,r=t.clientY,St.some(function(t){var e=t[K].options.emptyInsertThreshold;if(e&&!F(t)){var n=X(t),o=i>=n.left-e&&i<=n.right+e,e=r>=n.top-e&&r<=n.bottom+e;return o&&e?a=t:void 0}}),a);if(e){var n,o={};for(n in t)t.hasOwnProperty(n)&&(o[n]=t[n]);o.target=o.rootEl=e,o.preventDefault=void 0,o.stopPropagation=void 0,e[K]._onDragOver(o)}}var i,r,a}function Ft(t){Z&&Z.parentNode[K]._isOutsideThisEl(t.target)}function jt(t,e){if(!t||!t.nodeType||1!==t.nodeType)throw"Sortable: `el` must be an HTMLElement, not ".concat({}.toString.call(t));this.el=t,this.options=e=a({},e),t[K]=this;var n,o,i={group:null,sort:!0,disabled:!1,store:null,handle:null,draggable:/^[uo]l$/i.test(t.nodeName)?">li":">*",swapThreshold:1,invertSwap:!1,invertedSwapThreshold:null,removeCloneOnHide:!0,direction:function(){return kt(t,this.options)},ghostClass:"sortable-ghost",chosenClass:"sortable-chosen",dragClass:"sortable-drag",ignore:"a, img",filter:null,preventOnFilter:!0,animation:0,easing:null,setData:function(t,e){t.setData("Text",e.textContent)},dropBubble:!1,dragoverBubble:!1,dataIdAttr:"data-id",delay:0,delayOnTouchOnly:!1,touchStartThreshold:(Number.parseInt?Number:window).parseInt(window.devicePixelRatio,10)||1,forceFallback:!1,fallbackClass:"sortable-fallback",fallbackOnBody:!1,fallbackTolerance:0,fallbackOffset:{x:0,y:0},supportPointer:!1!==jt.supportPointer&&"PointerEvent"in window&&(!u||c),emptyInsertThreshold:5};for(n in z.initializePlugins(this,t,i),i)n in e||(e[n]=i[n]);for(o in Rt(e),this)"_"===o.charAt(0)&&"function"==typeof this[o]&&(this[o]=this[o].bind(this));this.nativeDraggable=!e.forceFallback&&It,this.nativeDraggable&&(this.options.touchStartThreshold=1),e.supportPointer?h(t,"pointerdown",this._onTapStart):(h(t,"mousedown",this._onTapStart),h(t,"touchstart",this._onTapStart)),this.nativeDraggable&&(h(t,"dragover",this),h(t,"dragenter",this)),St.push(this.el),e.store&&e.store.get&&this.sort(e.store.get(this)||[]),a(this,A())}function Ht(t,e,n,o,i,r,a,l){var s,c,u=t[K],d=u.options.onMove;return!window.CustomEvent||y||w?(s=document.createEvent("Event")).initEvent("move",!0,!0):s=new CustomEvent("move",{bubbles:!0,cancelable:!0}),s.to=e,s.from=t,s.dragged=n,s.draggedRect=o,s.related=i||e,s.relatedRect=r||X(e),s.willInsertAfter=l,s.originalEvent=a,t.dispatchEvent(s),c=d?d.call(u,s,a):c}function Lt(t){t.draggable=!1}function Kt(){xt=!1}function Wt(t){return setTimeout(t,0)}function zt(t){return clearTimeout(t)}jt.prototype={constructor:jt,_isOutsideThisEl:function(t){this.el.contains(t)||t===this.el||(vt=null)},_getDirection:function(t,e){return"function"==typeof this.options.direction?this.options.direction.call(this,t,e,Z):this.options.direction},_onTapStart:function(e){if(e.cancelable){var n=this,o=this.el,t=this.options,i=t.preventOnFilter,r=e.type,a=e.touches&&e.touches[0]||e.pointerType&&"touch"===e.pointerType&&e,l=(a||e).target,s=e.target.shadowRoot&&(e.path&&e.path[0]||e.composedPath&&e.composedPath()[0])||l,c=t.filter;if(!function(t){Ot.length=0;var e=t.getElementsByTagName("input"),n=e.length;for(;n--;){var o=e[n];o.checked&&Ot.push(o)}}(o),!Z&&!(/mousedown|pointerdown/.test(r)&&0!==e.button||t.disabled)&&!s.isContentEditable&&(this.nativeDraggable||!u||!l||"SELECT"!==l.tagName.toUpperCase())&&!((l=P(l,t.draggable,o,!1))&&l.animated||et===l)){if(it=j(l),at=j(l,t.draggable),"function"==typeof c){if(c.call(this,e,l,this))return V({sortable:n,rootEl:s,name:"filter",targetEl:l,toEl:o,fromEl:o}),U("filter",n,{evt:e}),void(i&&e.preventDefault())}else if(c=c&&c.split(",").some(function(t){if(t=P(s,t.trim(),o,!1))return V({sortable:n,rootEl:t,name:"filter",targetEl:l,fromEl:o,toEl:o}),U("filter",n,{evt:e}),!0}))return void(i&&e.preventDefault());t.handle&&!P(s,t.handle,o,!1)||this._prepareDragStart(e,a,l)}}},_prepareDragStart:function(t,e,n){var o,i=this,r=i.el,a=i.options,l=r.ownerDocument;n&&!Z&&n.parentNode===r&&(o=X(n),J=r,$=(Z=n).parentNode,tt=Z.nextSibling,et=n,st=a.group,ut={target:jt.dragged=Z,clientX:(e||t).clientX,clientY:(e||t).clientY},ft=ut.clientX-o.left,gt=ut.clientY-o.top,this._lastX=(e||t).clientX,this._lastY=(e||t).clientY,Z.style["will-change"]="all",o=function(){U("delayEnded",i,{evt:t}),jt.eventCanceled?i._onDrop():(i._disableDelayedDragEvents(),!s&&i.nativeDraggable&&(Z.draggable=!0),i._triggerDragStart(t,e),V({sortable:i,name:"choose",originalEvent:t}),k(Z,a.chosenClass,!0))},a.ignore.split(",").forEach(function(t){D(Z,t.trim(),Lt)}),h(l,"dragover",Bt),h(l,"mousemove",Bt),h(l,"touchmove",Bt),a.supportPointer?(h(l,"pointerup",i._onDrop),this.nativeDraggable||h(l,"pointercancel",i._onDrop)):(h(l,"mouseup",i._onDrop),h(l,"touchend",i._onDrop),h(l,"touchcancel",i._onDrop)),s&&this.nativeDraggable&&(this.options.touchStartThreshold=4,Z.draggable=!0),U("delayStart",this,{evt:t}),!a.delay||a.delayOnTouchOnly&&!e||this.nativeDraggable&&(w||y)?o():jt.eventCanceled?this._onDrop():(a.supportPointer?(h(l,"pointerup",i._disableDelayedDrag),h(l,"pointercancel",i._disableDelayedDrag)):(h(l,"mouseup",i._disableDelayedDrag),h(l,"touchend",i._disableDelayedDrag),h(l,"touchcancel",i._disableDelayedDrag)),h(l,"mousemove",i._delayedDragTouchMoveHandler),h(l,"touchmove",i._delayedDragTouchMoveHandler),a.supportPointer&&h(l,"pointermove",i._delayedDragTouchMoveHandler),i._dragStartTimer=setTimeout(o,a.delay)))},_delayedDragTouchMoveHandler:function(t){t=t.touches?t.touches[0]:t;Math.max(Math.abs(t.clientX-this._lastX),Math.abs(t.clientY-this._lastY))>=Math.floor(this.options.touchStartThreshold/(this.nativeDraggable&&window.devicePixelRatio||1))&&this._disableDelayedDrag()},_disableDelayedDrag:function(){Z&&Lt(Z),clearTimeout(this._dragStartTimer),this._disableDelayedDragEvents()},_disableDelayedDragEvents:function(){var t=this.el.ownerDocument;p(t,"mouseup",this._disableDelayedDrag),p(t,"touchend",this._disableDelayedDrag),p(t,"touchcancel",this._disableDelayedDrag),p(t,"pointerup",this._disableDelayedDrag),p(t,"pointercancel",this._disableDelayedDrag),p(t,"mousemove",this._delayedDragTouchMoveHandler),p(t,"touchmove",this._delayedDragTouchMoveHandler),p(t,"pointermove",this._delayedDragTouchMoveHandler)},_triggerDragStart:function(t,e){e=e||"touch"==t.pointerType&&t,!this.nativeDraggable||e?this.options.supportPointer?h(document,"pointermove",this._onTouchMove):h(document,e?"touchmove":"mousemove",this._onTouchMove):(h(Z,"dragend",this),h(J,"dragstart",this._onDragStart));try{document.selection?Wt(function(){document.selection.empty()}):window.getSelection().removeAllRanges()}catch(t){}},_dragStarted:function(t,e){var n;Dt=!1,J&&Z?(U("dragStarted",this,{evt:e}),this.nativeDraggable&&h(document,"dragover",Ft),n=this.options,t||k(Z,n.dragClass,!1),k(Z,n.ghostClass,!0),jt.active=this,t&&this._appendGhost(),V({sortable:this,name:"start",originalEvent:e})):this._nulling()},_emulateDragOver:function(){if(dt){this._lastX=dt.clientX,this._lastY=dt.clientY,Xt();for(var t=document.elementFromPoint(dt.clientX,dt.clientY),e=t;t&&t.shadowRoot&&(t=t.shadowRoot.elementFromPoint(dt.clientX,dt.clientY))!==e;)e=t;if(Z.parentNode[K]._isOutsideThisEl(t),e)do{if(e[K])if(e[K]._onDragOver({clientX:dt.clientX,clientY:dt.clientY,target:t,rootEl:e})&&!this.options.dragoverBubble)break}while(e=g(t=e));Yt()}},_onTouchMove:function(t){if(ut){var e=this.options,n=e.fallbackTolerance,o=e.fallbackOffset,i=t.touches?t.touches[0]:t,r=Q&&b(Q,!0),a=Q&&r&&r.a,l=Q&&r&&r.d,e=At&&wt&&E(wt),a=(i.clientX-ut.clientX+o.x)/(a||1)+(e?e[0]-Tt[0]:0)/(a||1),l=(i.clientY-ut.clientY+o.y)/(l||1)+(e?e[1]-Tt[1]:0)/(l||1);if(!jt.active&&!Dt){if(n&&Math.max(Math.abs(i.clientX-this._lastX),Math.abs(i.clientY-this._lastY))<n)return;this._onDragStart(t,!0)}Q&&(r?(r.e+=a-(ht||0),r.f+=l-(pt||0)):r={a:1,b:0,c:0,d:1,e:a,f:l},r="matrix(".concat(r.a,",").concat(r.b,",").concat(r.c,",").concat(r.d,",").concat(r.e,",").concat(r.f,")"),R(Q,"webkitTransform",r),R(Q,"mozTransform",r),R(Q,"msTransform",r),R(Q,"transform",r),ht=a,pt=l,dt=i),t.cancelable&&t.preventDefault()}},_appendGhost:function(){if(!Q){var t=this.options.fallbackOnBody?document.body:J,e=X(Z,!0,At,!0,t),n=this.options;if(At){for(wt=t;"static"===R(wt,"position")&&"none"===R(wt,"transform")&&wt!==document;)wt=wt.parentNode;wt!==document.body&&wt!==document.documentElement?(wt===document&&(wt=O()),e.top+=wt.scrollTop,e.left+=wt.scrollLeft):wt=O(),Tt=E(wt)}k(Q=Z.cloneNode(!0),n.ghostClass,!1),k(Q,n.fallbackClass,!0),k(Q,n.dragClass,!0),R(Q,"transition",""),R(Q,"transform",""),R(Q,"box-sizing","border-box"),R(Q,"margin",0),R(Q,"top",e.top),R(Q,"left",e.left),R(Q,"width",e.width),R(Q,"height",e.height),R(Q,"opacity","0.8"),R(Q,"position",At?"absolute":"fixed"),R(Q,"zIndex","100000"),R(Q,"pointerEvents","none"),jt.ghost=Q,t.appendChild(Q),R(Q,"transform-origin",ft/parseInt(Q.style.width)*100+"% "+gt/parseInt(Q.style.height)*100+"%")}},_onDragStart:function(t,e){var n=this,o=t.dataTransfer,i=n.options;U("dragStart",this,{evt:t}),jt.eventCanceled?this._onDrop():(U("setupClone",this),jt.eventCanceled||((nt=C(Z)).removeAttribute("id"),nt.draggable=!1,nt.style["will-change"]="",this._hideClone(),k(nt,this.options.chosenClass,!1),jt.clone=nt),n.cloneId=Wt(function(){U("clone",n),jt.eventCanceled||(n.options.removeCloneOnHide||J.insertBefore(nt,Z),n._hideClone(),V({sortable:n,name:"clone"}))}),e||k(Z,i.dragClass,!0),e?(Et=!0,n._loopId=setInterval(n._emulateDragOver,50)):(p(document,"mouseup",n._onDrop),p(document,"touchend",n._onDrop),p(document,"touchcancel",n._onDrop),o&&(o.effectAllowed="move",i.setData&&i.setData.call(n,o,Z)),h(document,"drop",n),R(Z,"transform","translateZ(0)")),Dt=!0,n._dragStartId=Wt(n._dragStarted.bind(n,e,t)),h(document,"selectstart",n),mt=!0,window.getSelection().removeAllRanges(),u&&R(document.body,"user-select","none"))},_onDragOver:function(n){var o,i,r,t,e,a=this.el,l=n.target,s=this.options,c=s.group,u=jt.active,d=st===c,h=s.sort,p=ct||u,f=this,g=!1;if(!xt){if(void 0!==n.preventDefault&&n.cancelable&&n.preventDefault(),l=P(l,s.draggable,a,!0),O("dragOver"),jt.eventCanceled)return g;if(Z.contains(n.target)||l.animated&&l.animatingX&&l.animatingY||f._ignoreWhileAnimating===l)return A(!1);if(Et=!1,u&&!s.disabled&&(d?h||(i=$!==J):ct===this||(this.lastPutMode=st.checkPull(this,u,Z,n))&&c.checkPut(this,u,Z,n))){if(r="vertical"===this._getDirection(n,l),o=X(Z),O("dragOverValid"),jt.eventCanceled)return g;if(i)return $=J,M(),this._hideClone(),O("revert"),jt.eventCanceled||(tt?J.insertBefore(Z,tt):J.appendChild(Z)),A(!0);var m=F(a,s.draggable);if(m&&(S=n,c=r,x=X(F((E=this).el,E.options.draggable)),E=L(E.el,E.options,Q),!(c?S.clientX>E.right+10||S.clientY>x.bottom&&S.clientX>x.left:S.clientY>E.bottom+10||S.clientX>x.right&&S.clientY>x.top)||m.animated)){if(m&&(t=n,e=r,C=X(B((_=this).el,0,_.options,!0)),_=L(_.el,_.options,Q),e?t.clientX<_.left-10||t.clientY<C.top&&t.clientX<C.right:t.clientY<_.top-10||t.clientY<C.bottom&&t.clientX<C.left)){var v=B(a,0,s,!0);if(v===Z)return A(!1);if(D=X(l=v),!1!==Ht(J,a,Z,o,l,D,n,!1))return M(),a.insertBefore(Z,v),$=a,N(),A(!0)}else if(l.parentNode===a){var b,y,w,D=X(l),E=Z.parentNode!==a,S=(S=Z.animated&&Z.toRect||o,x=l.animated&&l.toRect||D,_=(e=r)?S.left:S.top,t=e?S.right:S.bottom,C=e?S.width:S.height,v=e?x.left:x.top,S=e?x.right:x.bottom,x=e?x.width:x.height,!(_===v||t===S||_+C/2===v+x/2)),_=r?"top":"left",C=Y(l,"top","top")||Y(Z,"top","top"),v=C?C.scrollTop:void 0;if(vt!==l&&(y=D[_],_t=!1,Ct=!S&&s.invertSwap||E),0!==(b=function(t,e,n,o,i,r,a,l){var s=o?t.clientY:t.clientX,c=o?n.height:n.width,t=o?n.top:n.left,o=o?n.bottom:n.right,n=!1;if(!a)if(l&&yt<c*i){if(_t=!_t&&(1===bt?t+c*r/2<s:s<o-c*r/2)?!0:_t)n=!0;else if(1===bt?s<t+yt:o-yt<s)return-bt}else if(t+c*(1-i)/2<s&&s<o-c*(1-i)/2)return function(t){return j(Z)<j(t)?1:-1}(e);if((n=n||a)&&(s<t+c*r/2||o-c*r/2<s))return t+c/2<s?1:-1;return 0}(n,l,D,r,S?1:s.swapThreshold,null==s.invertedSwapThreshold?s.swapThreshold:s.invertedSwapThreshold,Ct,vt===l)))for(var T=j(Z);(w=$.children[T-=b])&&("none"===R(w,"display")||w===Q););if(0===b||w===l)return A(!1);bt=b;var x=(vt=l).nextElementSibling,E=!1,S=Ht(J,a,Z,o,l,D,n,E=1===b);if(!1!==S)return 1!==S&&-1!==S||(E=1===S),xt=!0,setTimeout(Kt,30),M(),E&&!x?a.appendChild(Z):l.parentNode.insertBefore(Z,E?x:l),C&&H(C,0,v-C.scrollTop),$=Z.parentNode,void 0===y||Ct||(yt=Math.abs(y-X(l)[_])),N(),A(!0)}}else{if(m===Z)return A(!1);if((l=m&&a===n.target?m:l)&&(D=X(l)),!1!==Ht(J,a,Z,o,l,D,n,!!l))return M(),m&&m.nextSibling?a.insertBefore(Z,m.nextSibling):a.appendChild(Z),$=a,N(),A(!0)}if(a.contains(Z))return A(!1)}return!1}function O(t,e){U(t,f,I({evt:n,isOwner:d,axis:r?"vertical":"horizontal",revert:i,dragRect:o,targetRect:D,canSort:h,fromSortable:p,target:l,completed:A,onMove:function(t,e){return Ht(J,a,Z,o,t,X(t),n,e)},changed:N},e))}function M(){O("dragOverAnimationCapture"),f.captureAnimationState(),f!==p&&p.captureAnimationState()}function A(t){return O("dragOverCompleted",{insertion:t}),t&&(d?u._hideClone():u._showClone(f),f!==p&&(k(Z,(ct||u).options.ghostClass,!1),k(Z,s.ghostClass,!0)),ct!==f&&f!==jt.active?ct=f:f===jt.active&&ct&&(ct=null),p===f&&(f._ignoreWhileAnimating=l),f.animateAll(function(){O("dragOverAnimationComplete"),f._ignoreWhileAnimating=null}),f!==p&&(p.animateAll(),p._ignoreWhileAnimating=null)),(l===Z&&!Z.animated||l===a&&!l.animated)&&(vt=null),s.dragoverBubble||n.rootEl||l===document||(Z.parentNode[K]._isOutsideThisEl(n.target),t||Bt(n)),!s.dragoverBubble&&n.stopPropagation&&n.stopPropagation(),g=!0}function N(){rt=j(Z),lt=j(Z,s.draggable),V({sortable:f,name:"change",toEl:a,newIndex:rt,newDraggableIndex:lt,originalEvent:n})}},_ignoreWhileAnimating:null,_offMoveEvents:function(){p(document,"mousemove",this._onTouchMove),p(document,"touchmove",this._onTouchMove),p(document,"pointermove",this._onTouchMove),p(document,"dragover",Bt),p(document,"mousemove",Bt),p(document,"touchmove",Bt)},_offUpEvents:function(){var t=this.el.ownerDocument;p(t,"mouseup",this._onDrop),p(t,"touchend",this._onDrop),p(t,"pointerup",this._onDrop),p(t,"pointercancel",this._onDrop),p(t,"touchcancel",this._onDrop),p(document,"selectstart",this)},_onDrop:function(t){var e=this.el,n=this.options;rt=j(Z),lt=j(Z,n.draggable),U("drop",this,{evt:t}),$=Z&&Z.parentNode,rt=j(Z),lt=j(Z,n.draggable),jt.eventCanceled||(_t=Ct=Dt=!1,clearInterval(this._loopId),clearTimeout(this._dragStartTimer),zt(this.cloneId),zt(this._dragStartId),this.nativeDraggable&&(p(document,"drop",this),p(e,"dragstart",this._onDragStart)),this._offMoveEvents(),this._offUpEvents(),u&&R(document.body,"user-select",""),R(Z,"transform",""),t&&(mt&&(t.cancelable&&t.preventDefault(),n.dropBubble||t.stopPropagation()),Q&&Q.parentNode&&Q.parentNode.removeChild(Q),(J===$||ct&&"clone"!==ct.lastPutMode)&&nt&&nt.parentNode&&nt.parentNode.removeChild(nt),Z&&(this.nativeDraggable&&p(Z,"dragend",this),Lt(Z),Z.style["will-change"]="",mt&&!Dt&&k(Z,(ct||this).options.ghostClass,!1),k(Z,this.options.chosenClass,!1),V({sortable:this,name:"unchoose",toEl:$,newIndex:null,newDraggableIndex:null,originalEvent:t}),J!==$?(0<=rt&&(V({rootEl:$,name:"add",toEl:$,fromEl:J,originalEvent:t}),V({sortable:this,name:"remove",toEl:$,originalEvent:t}),V({rootEl:$,name:"sort",toEl:$,fromEl:J,originalEvent:t}),V({sortable:this,name:"sort",toEl:$,originalEvent:t})),ct&&ct.save()):rt!==it&&0<=rt&&(V({sortable:this,name:"update",toEl:$,originalEvent:t}),V({sortable:this,name:"sort",toEl:$,originalEvent:t})),jt.active&&(null!=rt&&-1!==rt||(rt=it,lt=at),V({sortable:this,name:"end",toEl:$,originalEvent:t}),this.save())))),this._nulling()},_nulling:function(){U("nulling",this),J=Z=$=Q=tt=nt=et=ot=ut=dt=mt=rt=lt=it=at=vt=bt=ct=st=jt.dragged=jt.ghost=jt.clone=jt.active=null,Ot.forEach(function(t){t.checked=!0}),Ot.length=ht=pt=0},handleEvent:function(t){switch(t.type){case"drop":case"dragend":this._onDrop(t);break;case"dragenter":case"dragover":Z&&(this._onDragOver(t),function(t){t.dataTransfer&&(t.dataTransfer.dropEffect="move");t.cancelable&&t.preventDefault()}(t));break;case"selectstart":t.preventDefault()}},toArray:function(){for(var t,e=[],n=this.el.children,o=0,i=n.length,r=this.options;o<i;o++)P(t=n[o],r.draggable,this.el,!1)&&e.push(t.getAttribute(r.dataIdAttr)||function(t){var e=t.tagName+t.className+t.src+t.href+t.textContent,n=e.length,o=0;for(;n--;)o+=e.charCodeAt(n);return o.toString(36)}(t));return e},sort:function(t,e){var n={},o=this.el;this.toArray().forEach(function(t,e){e=o.children[e];P(e,this.options.draggable,o,!1)&&(n[t]=e)},this),e&&this.captureAnimationState(),t.forEach(function(t){n[t]&&(o.removeChild(n[t]),o.appendChild(n[t]))}),e&&this.animateAll()},save:function(){var t=this.options.store;t&&t.set&&t.set(this)},closest:function(t,e){return P(t,e||this.options.draggable,this.el,!1)},option:function(t,e){var n=this.options;if(void 0===e)return n[t];var o=z.modifyOption(this,t,e);n[t]=void 0!==o?o:e,"group"===t&&Rt(n)},destroy:function(){U("destroy",this);var t=this.el;t[K]=null,p(t,"mousedown",this._onTapStart),p(t,"touchstart",this._onTapStart),p(t,"pointerdown",this._onTapStart),this.nativeDraggable&&(p(t,"dragover",this),p(t,"dragenter",this)),Array.prototype.forEach.call(t.querySelectorAll("[draggable]"),function(t){t.removeAttribute("draggable")}),this._onDrop(),this._disableDelayedDragEvents(),St.splice(St.indexOf(this.el),1),this.el=t=null},_hideClone:function(){ot||(U("hideClone",this),jt.eventCanceled||(R(nt,"display","none"),this.options.removeCloneOnHide&&nt.parentNode&&nt.parentNode.removeChild(nt),ot=!0))},_showClone:function(t){"clone"===t.lastPutMode?ot&&(U("showClone",this),jt.eventCanceled||(Z.parentNode!=J||this.options.group.revertClone?tt?J.insertBefore(nt,tt):J.appendChild(nt):J.insertBefore(nt,Z),this.options.group.revertClone&&this.animate(Z,nt),R(nt,"display",""),ot=!1)):this._hideClone()}},Mt&&h(document,"touchmove",function(t){(jt.active||Dt)&&t.cancelable&&t.preventDefault()}),jt.utils={on:h,off:p,css:R,find:D,is:function(t,e){return!!P(t,e,t,!1)},extend:function(t,e){if(t&&e)for(var n in e)e.hasOwnProperty(n)&&(t[n]=e[n]);return t},throttle:_,closest:P,toggleClass:k,clone:C,index:j,nextTick:Wt,cancelNextTick:zt,detectDirection:kt,getChild:B,expando:K},jt.get=function(t){return t[K]},jt.mount=function(){for(var t=arguments.length,e=new Array(t),n=0;n<t;n++)e[n]=arguments[n];(e=e[0].constructor===Array?e[0]:e).forEach(function(t){if(!t.prototype||!t.prototype.constructor)throw"Sortable: Mounted plugin must be a constructor function, not ".concat({}.toString.call(t));t.utils&&(jt.utils=I(I({},jt.utils),t.utils)),z.mount(t)})},jt.create=function(t,e){return new jt(t,e)};var Gt,Ut,qt,Vt,Zt,$t,Qt=[],Jt=!(jt.version="1.15.6");function te(){Qt.forEach(function(t){clearInterval(t.pid)}),Qt=[]}function ee(){clearInterval($t)}var ne,oe=_(function(n,t,e,o){if(t.scroll){var i,r=(n.touches?n.touches[0]:n).clientX,a=(n.touches?n.touches[0]:n).clientY,l=t.scrollSensitivity,s=t.scrollSpeed,c=O(),u=!1;Ut!==e&&(Ut=e,te(),Gt=t.scroll,i=t.scrollFn,!0===Gt&&(Gt=M(e,!0)));var d=0,h=Gt;do{var p=h,f=X(p),g=f.top,m=f.bottom,v=f.left,b=f.right,y=f.width,w=f.height,D=void 0,E=void 0,S=p.scrollWidth,_=p.scrollHeight,C=R(p),T=p.scrollLeft,f=p.scrollTop,E=p===c?(D=y<S&&("auto"===C.overflowX||"scroll"===C.overflowX||"visible"===C.overflowX),w<_&&("auto"===C.overflowY||"scroll"===C.overflowY||"visible"===C.overflowY)):(D=y<S&&("auto"===C.overflowX||"scroll"===C.overflowX),w<_&&("auto"===C.overflowY||"scroll"===C.overflowY)),T=D&&(Math.abs(b-r)<=l&&T+y<S)-(Math.abs(v-r)<=l&&!!T),f=E&&(Math.abs(m-a)<=l&&f+w<_)-(Math.abs(g-a)<=l&&!!f);if(!Qt[d])for(var x=0;x<=d;x++)Qt[x]||(Qt[x]={});Qt[d].vx==T&&Qt[d].vy==f&&Qt[d].el===p||(Qt[d].el=p,Qt[d].vx=T,Qt[d].vy=f,clearInterval(Qt[d].pid),0==T&&0==f||(u=!0,Qt[d].pid=setInterval(function(){o&&0===this.layer&&jt.active._onTouchMove(Zt);var t=Qt[this.layer].vy?Qt[this.layer].vy*s:0,e=Qt[this.layer].vx?Qt[this.layer].vx*s:0;"function"==typeof i&&"continue"!==i.call(jt.dragged.parentNode[K],e,t,n,Zt,Qt[this.layer].el)||H(Qt[this.layer].el,e,t)}.bind({layer:d}),24))),d++}while(t.bubbleScroll&&h!==c&&(h=M(h,!1)));Jt=u}},30),n=function(t){var e=t.originalEvent,n=t.putSortable,o=t.dragEl,i=t.activeSortable,r=t.dispatchSortableEvent,a=t.hideGhostForTarget,t=t.unhideGhostForTarget;e&&(i=n||i,a(),e=e.changedTouches&&e.changedTouches.length?e.changedTouches[0]:e,e=document.elementFromPoint(e.clientX,e.clientY),t(),i&&!i.el.contains(e)&&(r("spill"),this.onSpill({dragEl:o,putSortable:n})))};function ie(){}function re(){}ie.prototype={startIndex:null,dragStart:function(t){t=t.oldDraggableIndex;this.startIndex=t},onSpill:function(t){var e=t.dragEl,n=t.putSortable;this.sortable.captureAnimationState(),n&&n.captureAnimationState();t=B(this.sortable.el,this.startIndex,this.options);t?this.sortable.el.insertBefore(e,t):this.sortable.el.appendChild(e),this.sortable.animateAll(),n&&n.animateAll()},drop:n},a(ie,{pluginName:"revertOnSpill"}),re.prototype={onSpill:function(t){var e=t.dragEl,t=t.putSortable||this.sortable;t.captureAnimationState(),e.parentNode&&e.parentNode.removeChild(e),t.animateAll()},drop:n},a(re,{pluginName:"removeOnSpill"});var ae,le,se,ce,ue,de=[],he=[],pe=!1,fe=!1,ge=!1;function me(n,o){he.forEach(function(t,e){e=o.children[t.sortableIndex+(n?Number(e):0)];e?o.insertBefore(t,e):o.appendChild(t)})}function ve(){de.forEach(function(t){t!==se&&t.parentNode&&t.parentNode.removeChild(t)})}return jt.mount(new function(){function t(){for(var t in this.defaults={scroll:!0,forceAutoScrollFallback:!1,scrollSensitivity:30,scrollSpeed:10,bubbleScroll:!0},this)"_"===t.charAt(0)&&"function"==typeof this[t]&&(this[t]=this[t].bind(this));h(document,"dragover",this._handleAutoScroll)}return t.prototype={dragStarted:function(t){t=t.originalEvent;this.sortable.nativeDraggable?h(document,"dragover",this._handleAutoScroll):this.options.supportPointer?h(document,"pointermove",this._handleFallbackAutoScroll):t.touches?h(document,"touchmove",this._handleFallbackAutoScroll):h(document,"mousemove",this._handleFallbackAutoScroll)},dragOverCompleted:function(t){t=t.originalEvent;this.options.dragOverBubble||t.rootEl||this._handleAutoScroll(t)},drop:function(){this.sortable.nativeDraggable?p(document,"dragover",this._handleAutoScroll):(p(document,"pointermove",this._handleFallbackAutoScroll),p(document,"touchmove",this._handleFallbackAutoScroll),p(document,"mousemove",this._handleFallbackAutoScroll)),ee(),te(),clearTimeout(m),m=void 0},nulling:function(){Zt=Ut=Gt=Jt=$t=qt=Vt=null,Qt.length=0},_handleFallbackAutoScroll:function(t){this._handleAutoScroll(t,!0)},_handleAutoScroll:function(e,n){var o,i=this,r=(e.touches?e.touches[0]:e).clientX,a=(e.touches?e.touches[0]:e).clientY,t=document.elementFromPoint(r,a);Zt=e,n||this.options.forceAutoScrollFallback||w||y||u?(oe(e,this.options,t,n),o=M(t,!0),!Jt||$t&&r===qt&&a===Vt||($t&&ee(),$t=setInterval(function(){var t=M(document.elementFromPoint(r,a),!0);t!==o&&(o=t,te()),oe(e,i.options,t,n)},10),qt=r,Vt=a)):this.options.bubbleScroll&&M(t,!0)!==O()?oe(e,this.options,M(t,!1),!1):te()}},a(t,{pluginName:"scroll",initializeByDefault:!0})}),jt.mount(re,ie),jt.mount(new function(){function t(){this.defaults={swapClass:"sortable-swap-highlight"}}return t.prototype={dragStart:function(t){t=t.dragEl;ne=t},dragOverValid:function(t){var e=t.completed,n=t.target,o=t.onMove,i=t.activeSortable,r=t.changed,a=t.cancel;i.options.swap&&(t=this.sortable.el,i=this.options,n&&n!==t&&(t=ne,ne=!1!==o(n)?(k(n,i.swapClass,!0),n):null,t&&t!==ne&&k(t,i.swapClass,!1)),r(),e(!0),a())},drop:function(t){var e,n,o=t.activeSortable,i=t.putSortable,r=t.dragEl,a=i||this.sortable,l=this.options;ne&&k(ne,l.swapClass,!1),ne&&(l.swap||i&&i.options.swap)&&r!==ne&&(a.captureAnimationState(),a!==o&&o.captureAnimationState(),n=ne,t=(e=r).parentNode,l=n.parentNode,t&&l&&!t.isEqualNode(n)&&!l.isEqualNode(e)&&(i=j(e),r=j(n),t.isEqualNode(l)&&i<r&&r++,t.insertBefore(n,t.children[i]),l.insertBefore(e,l.children[r])),a.animateAll(),a!==o&&o.animateAll())},nulling:function(){ne=null}},a(t,{pluginName:"swap",eventProperties:function(){return{swapItem:ne}}})}),jt.mount(new function(){function t(o){for(var t in this)"_"===t.charAt(0)&&"function"==typeof this[t]&&(this[t]=this[t].bind(this));o.options.avoidImplicitDeselect||(o.options.supportPointer?h(document,"pointerup",this._deselectMultiDrag):(h(document,"mouseup",this._deselectMultiDrag),h(document,"touchend",this._deselectMultiDrag))),h(document,"keydown",this._checkKeyDown),h(document,"keyup",this._checkKeyUp),this.defaults={selectedClass:"sortable-selected",multiDragKey:null,avoidImplicitDeselect:!1,setData:function(t,e){var n="";de.length&&le===o?de.forEach(function(t,e){n+=(e?", ":"")+t.textContent}):n=e.textContent,t.setData("Text",n)}}}return t.prototype={multiDragKeyDown:!1,isMultiDrag:!1,delayStartGlobal:function(t){t=t.dragEl;se=t},delayEnded:function(){this.isMultiDrag=~de.indexOf(se)},setupClone:function(t){var e=t.sortable,t=t.cancel;if(this.isMultiDrag){for(var n=0;n<de.length;n++)he.push(C(de[n])),he[n].sortableIndex=de[n].sortableIndex,he[n].draggable=!1,he[n].style["will-change"]="",k(he[n],this.options.selectedClass,!1),de[n]===se&&k(he[n],this.options.chosenClass,!1);e._hideClone(),t()}},clone:function(t){var e=t.sortable,n=t.rootEl,o=t.dispatchSortableEvent,t=t.cancel;this.isMultiDrag&&(this.options.removeCloneOnHide||de.length&&le===e&&(me(!0,n),o("clone"),t()))},showClone:function(t){var e=t.cloneNowShown,n=t.rootEl,t=t.cancel;this.isMultiDrag&&(me(!1,n),he.forEach(function(t){R(t,"display","")}),e(),ue=!1,t())},hideClone:function(t){var e=this,n=(t.sortable,t.cloneNowHidden),t=t.cancel;this.isMultiDrag&&(he.forEach(function(t){R(t,"display","none"),e.options.removeCloneOnHide&&t.parentNode&&t.parentNode.removeChild(t)}),n(),ue=!0,t())},dragStartGlobal:function(t){t.sortable;!this.isMultiDrag&&le&&le.multiDrag._deselectMultiDrag(),de.forEach(function(t){t.sortableIndex=j(t)}),de=de.sort(function(t,e){return t.sortableIndex-e.sortableIndex}),ge=!0},dragStarted:function(t){var e,n=this,t=t.sortable;this.isMultiDrag&&(this.options.sort&&(t.captureAnimationState(),this.options.animation&&(de.forEach(function(t){t!==se&&R(t,"position","absolute")}),e=X(se,!1,!0,!0),de.forEach(function(t){t!==se&&T(t,e)}),pe=fe=!0)),t.animateAll(function(){pe=fe=!1,n.options.animation&&de.forEach(function(t){x(t)}),n.options.sort&&ve()}))},dragOver:function(t){var e=t.target,n=t.completed,t=t.cancel;fe&&~de.indexOf(e)&&(n(!1),t())},revert:function(t){var n,o,e=t.fromSortable,i=t.rootEl,r=t.sortable,a=t.dragRect;1<de.length&&(de.forEach(function(t){r.addAnimationState({target:t,rect:fe?X(t):a}),x(t),t.fromRect=a,e.removeAnimationState(t)}),fe=!1,n=!this.options.removeCloneOnHide,o=i,de.forEach(function(t,e){e=o.children[t.sortableIndex+(n?Number(e):0)];e?o.insertBefore(t,e):o.appendChild(t)}))},dragOverCompleted:function(t){var e,n=t.sortable,o=t.isOwner,i=t.insertion,r=t.activeSortable,a=t.parentEl,l=t.putSortable,t=this.options;i&&(o&&r._hideClone(),pe=!1,t.animation&&1<de.length&&(fe||!o&&!r.options.sort&&!l)&&(e=X(se,!1,!0,!0),de.forEach(function(t){t!==se&&(T(t,e),a.appendChild(t))}),fe=!0),o||(fe||ve(),1<de.length?(o=ue,r._showClone(n),r.options.animation&&!ue&&o&&he.forEach(function(t){r.addAnimationState({target:t,rect:ce}),t.fromRect=ce,t.thisAnimationDuration=null})):r._showClone(n)))},dragOverAnimationCapture:function(t){var e=t.dragRect,n=t.isOwner,t=t.activeSortable;de.forEach(function(t){t.thisAnimationDuration=null}),t.options.animation&&!n&&t.multiDrag.isMultiDrag&&(ce=a({},e),e=b(se,!0),ce.top-=e.f,ce.left-=e.e)},dragOverAnimationComplete:function(){fe&&(fe=!1,ve())},drop:function(t){var o,i,r,a,n,e,l,s=t.originalEvent,c=t.rootEl,u=t.parentEl,d=t.sortable,h=t.dispatchSortableEvent,p=t.oldIndex,t=t.putSortable,f=t||this.sortable;s&&(o=this.options,i=u.children,ge||(o.multiDragKey&&!this.multiDragKeyDown&&this._deselectMultiDrag(),k(se,o.selectedClass,!~de.indexOf(se)),~de.indexOf(se)?(de.splice(de.indexOf(se),1),ae=null,G({sortable:d,rootEl:c,name:"deselect",targetEl:se,originalEvent:s})):(de.push(se),G({sortable:d,rootEl:c,name:"select",targetEl:se,originalEvent:s}),s.shiftKey&&ae&&d.el.contains(ae)?(r=j(ae),a=j(se),~r&&~a&&r!==a&&function(){for(var e,t=r<a?(e=r,a):(e=a,r+1),n=o.filter;e<t;e++)~de.indexOf(i[e])||P(i[e],o.draggable,u,!1)&&(n&&("function"==typeof n?n.call(d,s,i[e],d):n.split(",").some(function(t){return P(i[e],t.trim(),u,!1)}))||(k(i[e],o.selectedClass,!0),de.push(i[e]),G({sortable:d,rootEl:c,name:"select",targetEl:i[e],originalEvent:s})))}()):ae=se,le=f)),ge&&this.isMultiDrag&&(fe=!1,(u[K].options.sort||u!==c)&&1<de.length&&(n=X(se),e=j(se,":not(."+this.options.selectedClass+")"),!pe&&o.animation&&(se.thisAnimationDuration=null),f.captureAnimationState(),pe||(o.animation&&(se.fromRect=n,de.forEach(function(t){var e;t.thisAnimationDuration=null,t!==se&&(e=fe?X(t):n,t.fromRect=e,f.addAnimationState({target:t,rect:e}))})),ve(),de.forEach(function(t){i[e]?u.insertBefore(t,i[e]):u.appendChild(t),e++}),p===j(se)&&(l=!1,de.forEach(function(t){t.sortableIndex!==j(t)&&(l=!0)}),l&&(h("update"),h("sort")))),de.forEach(function(t){x(t)}),f.animateAll()),le=f),(c===u||t&&"clone"!==t.lastPutMode)&&he.forEach(function(t){t.parentNode&&t.parentNode.removeChild(t)}))},nullingGlobal:function(){this.isMultiDrag=ge=!1,he.length=0},destroyGlobal:function(){this._deselectMultiDrag(),p(document,"pointerup",this._deselectMultiDrag),p(document,"mouseup",this._deselectMultiDrag),p(document,"touchend",this._deselectMultiDrag),p(document,"keydown",this._checkKeyDown),p(document,"keyup",this._checkKeyUp)},_deselectMultiDrag:function(t){if(!(void 0!==ge&&ge||le!==this.sortable||t&&P(t.target,this.options.draggable,this.sortable.el,!1)||t&&0!==t.button))for(;de.length;){var e=de[0];k(e,this.options.selectedClass,!1),de.shift(),G({sortable:this.sortable,rootEl:this.sortable.el,name:"deselect",targetEl:e,originalEvent:t})}},_checkKeyDown:function(t){t.key===this.options.multiDragKey&&(this.multiDragKeyDown=!0)},_checkKeyUp:function(t){t.key===this.options.multiDragKey&&(this.multiDragKeyDown=!1)}},a(t,{pluginName:"multiDrag",utils:{select:function(t){var e=t.parentNode[K];e&&e.options.multiDrag&&!~de.indexOf(t)&&(le&&le!==e&&(le.multiDrag._deselectMultiDrag(),le=e),k(t,e.options.selectedClass,!0),de.push(t))},deselect:function(t){var e=t.parentNode[K],n=de.indexOf(t);e&&e.options.multiDrag&&~n&&(k(t,e.options.selectedClass,!1),de.splice(n,1))}},eventProperties:function(){var n=this,o=[],i=[];return de.forEach(function(t){var e;o.push({multiDragElement:t,index:t.sortableIndex}),e=fe&&t!==se?-1:fe?j(t,":not(."+n.options.selectedClass+")"):j(t),i.push({multiDragElement:t,index:e})}),{items:r(de),clones:[].concat(he),oldIndicies:o,newIndicies:i}},optionListeners:{multiDragKey:function(t){return"ctrl"===(t=t.toLowerCase())?t="Control":1<t.length&&(t=t.charAt(0).toUpperCase()+t.substr(1)),t}}})}),jt});
+</script>
+</body>
+</html>
