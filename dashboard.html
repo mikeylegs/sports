@@ -516,10 +516,16 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .lf-wws-status.live{color:#34d399;}
 .wws-soc-crest{width:21.5cqh;height:21.5cqh;max-width:95%;}   /* r484: matched to MLB's .wws-mlb .wws-tm-crest (21.5cqh, was 23) — Mike: "standardize the rest of the card too". r455's clamp comment (NFL/NHL/NBA precedent for percentage-locked columns) still applies. */
 /* R74: tennis pregame has lots of vertical space — bigger headshots + a larger weekday line */
-.wws-tn-rows.pre .wws-tn-head{width:13.3cqh;height:13.3cqh;}   /* r499: re-dialed in tennis-studio.html this session (was 22cqh, R74/r480 stale default) */
 /* r480: row padding is now flat 0 in every state (dialed in studio) — the old 2.2cqh
    pregame-only bump is gone; vertical rhythm comes from wws-tn-rows'/wws-tn-row's gaps instead. */
-.wws-pre-when{font-size:6.0cqh!important;font-weight:800!important;color:#fbbf24!important;margin-top:2.4cqh!important;letter-spacing:0.3px;}   /* r501: gold to match every other sport's pregame kickoff line (.wws-soc-pre/.wws-mlb-kick/.wws-kick-word all #fbbf24) */
+/* r503: pregame status restructured to a two-line stack (Option A) — dialed in
+   tennis-studio.html, verified via headless render that Mike's dialed word-size doesn't
+   clip on the real worst case ("Saturday · 12:00 PM"). Retires the single-line .wws-pre-when
+   (r501). Line 1 = day + time (temporal), line 2 = round (context) — grouping time with
+   round on one line read wrong. */
+.wws-pre-when-stack{display:flex;flex-direction:column;align-items:center;gap:2.3cqh;margin-top:2.4cqh;}
+.wws-pre-when-word{font-size:8.4cqh;font-weight:800;color:#fbbf24;line-height:1;white-space:nowrap;}
+.wws-pre-when-time{font-size:8.0cqh;font-weight:800;color:#fbbf24;line-height:1;white-space:nowrap;}
 .wws-soc-name{font-size:7.6cqh;}   /* r484: matched to MLB's .wws-mlb .wws-tm-name (7.6cqh, was 4.8) — data-fit/data-fit-min on the span updated to match (see wwsSoccerInner). */
 .wws-soc-rec{font-size:6.4cqh;white-space:nowrap;}   /* r484: new — matches .wws-mlb .wws-tm-rec. Suppressed by wwsSoccerInner's side() once scorers are showing (has-scorers state); sandbox-verified the real .lf-stage{overflow:hidden} clips the scorer list otherwise once record+bigger name+bigger crest compete for the same column height. */
 .wws-soc-hero{font-size:14cqh;}
@@ -12376,7 +12382,6 @@ function wwsTennisInner(d){
   // tennis sides by wwsPollEvents — r481 only ever stripped the render, never the data, so no
   // data-layer change needed here.
   const rows = d.sides.map(x => `<div class="wws-tn-row">
-    ${d.pre ? wwsFace(x,'wws-tn-head') : ''}
     ${x.flag ? `<img class="wws-flag wws-tn-flag" src="${x.flag}" alt="" onerror="this.style.opacity=0">` : ''}
     <div class="wws-tn-name-wrap"><span class="wws-tn-name${x.winner?' w':''}" data-fit="${d.pre?5.3:5.4}" data-fit-min="${d.pre?5.1:5.4}">${x.name}</span>${x.serving && d.live ? '<span class="wws-serve"></span>' : ''}</div>
     <span class="wws-tn-sets">${x.sets.map((s,i) =>
@@ -12418,8 +12423,8 @@ function wwsTennisInner(d){
       }
     }
     const rnd = (d.status||'').split('·').map(x=>x.trim()).find(x=>/final|round|semi|quarter/i.test(x)) || '';
-    const parts = [wd, d.kickoff, rnd].filter(Boolean);
-    if (parts.length) statusHtml = `<div class="lf-wws-status wws-pre-when">${parts.join(' · ')}</div>`;
+    const preWord = [wd, d.kickoff].filter(Boolean).join(' · ');
+    if (preWord || rnd) statusHtml = `<div class="wws-pre-when-stack">${preWord ? `<span class="wws-pre-when-word">${preWord}</span>` : ''}${rnd ? `<span class="wws-pre-when-time">${rnd}</span>` : ''}</div>`;
   }
   return wwsBanner(d) + `<div class="wws-tn-rows wws-tennis${d.pre?' pre':''}">${rows}</div>${statusHtml}`;
 }
@@ -13912,7 +13917,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r501-tennis-pregame-gold-titlecase';
+const BUILD_MARKER = 'r503-tennis-pregame-status-stack';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
