@@ -443,22 +443,24 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .wws-banner-venue{font-size:3.2cqh;font-weight:600;color:rgba(255,255,255,0.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:0.6cqh;}
 .wws-flag{width:5.2cqh;height:3.6cqh;object-fit:cover;border-radius:0.5cqh;flex-shrink:0;}
 .wws-face-fallback{display:inline-flex;align-items:center;justify-content:center;background:#1d2f54;color:#fff;font-weight:800;}
-.wws-tn-rows{display:flex;flex-direction:column;gap:1.2cqh;padding:2.4cqh 2cqh 0;}   /* r480: dialed in tennis-studio.html */
-.wws-tn-row{display:flex;align-items:center;gap:1.3cqh;min-width:0;padding:0 0;}   /* r480 */
+.wws-tn-rows{display:flex;flex-direction:column;gap:5.5cqh;padding:2.4cqh 2cqh 0;}   /* r500: LIVE value, dialed in tennis-studio.html */
+.wws-tn-rows.pre{gap:0cqh;}   /* r500: PREGAME override — Mike's two-card values were genuinely different, not shared */
+.wws-tn-row{display:flex;align-items:center;gap:0.6cqh;min-width:0;padding:1.7cqh 0;}   /* r500: dialed in tennis-studio.html — same on both cards */
 .wws-tn-head{width:16cqh;height:16cqh;border-radius:50%;object-fit:cover;border:0.3cqh solid rgba(255,255,255,0.3);flex-shrink:0;font-size:5cqh;}   /* r480 */
 /* r480: name + serve-dot now share one wrapper so the dot hugs the visible name text
    instead of trailing a flex:1 name span. */
-.wws-tn-name-wrap{display:flex;align-items:center;gap:1.4cqh;flex:1 1 auto;min-width:0;}
-.wws-tn-name{font-size:6.2cqh;font-weight:900;color:rgba(255,255,255,0.8);flex:0 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}   /* r480: font-size is the pre-fitText fallback — data-fit governs the live max */
+.wws-tn-name-wrap{display:flex;align-items:center;gap:0.9cqh;flex:1 1 auto;min-width:0;}   /* r500 */
+.wws-tn-name{font-size:5.4cqh;font-weight:900;color:rgba(255,255,255,0.8);flex:0 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}   /* r500: font-size is the pre-fitText fallback — data-fit governs the real max/floor per mode */
 .wws-tn-name.w{color:#fff;}
-.wws-serve{width:3cqh;height:3cqh;border-radius:50%;background:#34d399;flex-shrink:0;}   /* r480 */
-.wws-tn-sets{display:flex;gap:2.2cqh;flex-shrink:0;margin-left:1.5cqh;font-variant-numeric:tabular-nums;}   /* r480 */
-.wws-tn-set{font-size:5.9cqh;font-weight:900;color:rgba(255,255,255,0.45);min-width:3.1cqh;text-align:center;font-variant-numeric:tabular-nums;}   /* r480 */
+.wws-serve{width:2.5cqh;height:2.5cqh;border-radius:50%;background:#34d399;flex-shrink:0;}   /* r500: live-only */
+.wws-tn-sets{display:flex;gap:1.8cqh;flex-shrink:0;margin-left:1.5cqh;font-variant-numeric:tabular-nums;}   /* r500: live-only (sets hidden pregame) */
+.wws-tn-set{font-size:6.3cqh;font-weight:900;color:rgba(255,255,255,0.45);min-width:2.0cqh;text-align:center;font-variant-numeric:tabular-nums;}   /* r500: live-only */
 .wws-tn-set.won{color:#fff;}
 .wws-tn-set.hot{color:#d4af37;}
 .wws-tn-tb{font-size:0.4em;font-weight:800;color:rgba(255,255,255,0.5);vertical-align:super;margin-left:0.05em;}   /* r480: tiebreak point tally superscript */
-.wws-flag.wws-tn-flag{width:7.5cqh;height:calc(7.5cqh * 0.69);}   /* r480: .wws-flag is shared w/ golf+soccer — tennis-only override via a second class, compound selector so it always wins */
-.wws-tn-status{font-size:5.9cqh;}   /* r480: lf-wws-status is shared across every sport — tennis-only override via a second class */
+.wws-flag.wws-tn-flag{width:7.7cqh;height:calc(7.7cqh * 0.69);}   /* r500: LIVE value — .wws-flag is shared w/ golf+soccer, compound selector so it always wins */
+.wws-tn-rows.pre .wws-flag.wws-tn-flag{width:9.6cqh;height:calc(9.6cqh * 0.69);}   /* r500: PREGAME override */
+.wws-tn-status{font-size:6.7cqh;}   /* r500: LIVE value — lf-wws-status is shared across every sport, tennis-only override via a second class */
 .wws-g-row{display:flex;align-items:center;gap:1.4cqh;padding:0.8cqh 2cqh;}
 /* R67: golf pregame card */
 .wws-gp{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.8cqh;height:100%;padding:1cqh 3cqh 3cqh;text-align:center;}
@@ -514,10 +516,10 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .lf-wws-status.live{color:#34d399;}
 .wws-soc-crest{width:21.5cqh;height:21.5cqh;max-width:95%;}   /* r484: matched to MLB's .wws-mlb .wws-tm-crest (21.5cqh, was 23) — Mike: "standardize the rest of the card too". r455's clamp comment (NFL/NHL/NBA precedent for percentage-locked columns) still applies. */
 /* R74: tennis pregame has lots of vertical space — bigger headshots + a larger weekday line */
-.wws-tn-rows.pre .wws-tn-head{width:22cqh;height:22cqh;}   /* R74/r480: tennis pregame has space — bigger headshots, redialed */
+.wws-tn-rows.pre .wws-tn-head{width:13.3cqh;height:13.3cqh;}   /* r499: re-dialed in tennis-studio.html this session (was 22cqh, R74/r480 stale default) */
 /* r480: row padding is now flat 0 in every state (dialed in studio) — the old 2.2cqh
    pregame-only bump is gone; vertical rhythm comes from wws-tn-rows'/wws-tn-row's gaps instead. */
-.wws-pre-when{font-size:4.6cqh!important;font-weight:800!important;color:rgba(255,255,255,0.82)!important;margin-top:2.4cqh!important;letter-spacing:0.3px;}
+.wws-pre-when{font-size:6.0cqh!important;font-weight:800!important;color:rgba(255,255,255,0.82)!important;margin-top:2.4cqh!important;letter-spacing:0.3px;}   /* r500: PREGAME value, dialed in tennis-studio.html */
 .wws-soc-name{font-size:7.6cqh;}   /* r484: matched to MLB's .wws-mlb .wws-tm-name (7.6cqh, was 4.8) — data-fit/data-fit-min on the span updated to match (see wwsSoccerInner). */
 .wws-soc-rec{font-size:6.4cqh;white-space:nowrap;}   /* r484: new — matches .wws-mlb .wws-tm-rec. Suppressed by wwsSoccerInner's side() once scorers are showing (has-scorers state); sandbox-verified the real .lf-stage{overflow:hidden} clips the scorer list otherwise once record+bigger name+bigger crest compete for the same column height. */
 .wws-soc-hero{font-size:14cqh;}
@@ -12340,8 +12342,8 @@ function wwsBanner(d){
   // r480: tennis-studio.html dialed the banner title/venue bigger than the 3.9/3.6 default —
   // fitText() sets el.style.fontSize straight from data-fit on every render (see fitText()),
   // overriding any CSS font-size rule, so the tennis bump has to land here, not in a CSS block.
-  const _titleFit = d.kind === 'tennis' ? 5.8 : (_lg ? _lg.fit : 3.9);
-  const _venueFit = d.kind === 'tennis' ? 4.0 : 3.6;
+  const _titleFit = d.kind === 'tennis' ? 5.9 : (_lg ? _lg.fit : 3.9);   /* r500: dialed in tennis-studio.html, same both cards */
+  const _venueFit = d.kind === 'tennis' ? 4.2 : 3.6;   /* r500: dialed in tennis-studio.html, same both cards */
   return `<div class="wws-banner"><div class="wws-banner-bar"></div><div class="wws-banner-txt">
     <div class="wws-banner-title" data-fit="${_titleFit}" data-fit-min="1.0">${name}${liveBadge}</div>
     ${d.venue ? `<div class="wws-banner-venue" data-fit="${_venueFit}" data-fit-min="2.2">${d.venue}</div>` : ''}
@@ -12366,13 +12368,17 @@ function wwsTennisInner(d){
   // r480: dialed in tennis-studio.html — wws-tennis marker (same idea as .wws-mlb/.wws-nfl/
   // .wws-nba); the truly-shared classes (wws-flag, lf-wws-status) get their own wws-tn-*
   // marker below instead since they aren't nested under .wws-tn-rows.
-  // r481: headshots dropped (Mike: "they shouldn't be there") — was wwsFace(x,'wws-tn-head'),
-  // first element in the row. wwsFace() itself stays (soccer/team cards still use it) and
-  // .wws-tn-head's CSS rules are left in place, now unused — same low-risk-dead-code call as
-  // r477's lfLinescoreHtml.
+  // r481: headshots dropped from LIVE (Mike: "they shouldn't be there" — crowded the score
+  // line). wwsFace() itself stays (soccer/team cards still use it).
+  // r499: re-added for PREGAME ONLY — pregame has no score line, so the space is free and the
+  // card read too bare without them (Mike, dialed in tennis-studio.html). LIVE stays headshot-
+  // free, matching the original r481 call. headshot/headshotIds are already populated on the
+  // tennis sides by wwsPollEvents — r481 only ever stripped the render, never the data, so no
+  // data-layer change needed here.
   const rows = d.sides.map(x => `<div class="wws-tn-row">
+    ${d.pre ? wwsFace(x,'wws-tn-head') : ''}
     ${x.flag ? `<img class="wws-flag wws-tn-flag" src="${x.flag}" alt="" onerror="this.style.opacity=0">` : ''}
-    <div class="wws-tn-name-wrap"><span class="wws-tn-name${x.winner?' w':''}" data-fit="6.2" data-fit-min="5.1">${x.name}</span>${x.serving && d.live ? '<span class="wws-serve"></span>' : ''}</div>
+    <div class="wws-tn-name-wrap"><span class="wws-tn-name${x.winner?' w':''}" data-fit="${d.pre?5.3:5.4}" data-fit-min="${d.pre?5.1:5.4}">${x.name}</span>${x.serving && d.live ? '<span class="wws-serve"></span>' : ''}</div>
     <span class="wws-tn-sets">${x.sets.map((s,i) =>
       `<span class="wws-tn-set${i===nSets-1&&d.live?' hot':''}${(+s.v>=6)?' won':''}">${s.v}${s.tb?`<sup class="wws-tn-tb">${s.tb}</sup>`:''}</span>`).join('')}</span>
   </div>`).join('');
@@ -13906,7 +13912,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r498-weekday-titlecase';
+const BUILD_MARKER = 'r500-tennis-live-pregame-split';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
