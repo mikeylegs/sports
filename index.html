@@ -12248,10 +12248,19 @@ async function wwsPollEvents(){
           : kind === 'soccer' ? ((ven.address && [ven.address.city, ven.address.state].filter(Boolean).join(', ')) || '')
           : kind === 'tennis' ? (ven.court || [ven.fullName, ven.address && (ven.address.city || ven.address.state)].filter(Boolean).join(' · '))   // r480: court name (e.g. "Louis Armstrong Stadium") over bare city, when ESPN sends it
           : [ven.fullName, ven.address && (ven.address.city || ven.address.state)].filter(Boolean).join(' · ');
-        WWS.events[e.espnId] = { title: e.title, label: bLabel, kind, league: e.league, date: ev.date || '',
+        // r496: tennis's `ev` is the whole TOURNAMENT (e.g. "US Open", Aug 24-Sep 14) — ev.date is
+        // the tournament's own start date, not this match's scheduled time. Confirmed live: Mike
+        // saw "MONDAY 12:00 AM" for a match actually at 7:00 PM tonight; Aug 24 2026 (the US
+        // Open's start date) IS a Monday — exactly the tournament date with a midnight placeholder,
+        // rendered as if it were the match. The real per-match time is comp.date (already used
+        // correctly for ranking matches in wwsPollWatchPlayers' best-match picker, just never
+        // threaded through to what actually renders here). Every other sport's `ev` IS the single
+        // game/match, so ev.date is already correct there — scoped this to tennis only.
+        const _evWhen = (kind === 'tennis' && comp.date) ? comp.date : ev.date;
+        WWS.events[e.espnId] = { title: e.title, label: bLabel, kind, league: e.league, date: _evWhen || '',
           round: (ev.status && ev.status.period) || (comp.status && comp.status.period) || 0,
           pre: (kind === 'tennis' ? ((comp.status && comp.status.type && comp.status.type.state) || st.state) : st.state) === 'pre',
-          kickoff: ev.date ? new Date(ev.date).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}) : '',
+          kickoff: _evWhen ? new Date(_evWhen).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}) : '',
           sides: kind === 'golf' ? sides.slice(0, 20) : sides,
           venue: bVenue,
           golf: kind === 'golf' ? (ev.__golfPreview || null) : undefined,   // r421: GOLF-CARD-SPEC fields
@@ -13877,7 +13886,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r495-follow-tennis-players';
+const BUILD_MARKER = 'r496-tennis-match-date-fix';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
