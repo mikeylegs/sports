@@ -13537,7 +13537,25 @@ function _mlbFeedToLfShape(gamePk, j){
   const rec = t => (t && typeof t.record?.wins === 'number' && typeof t.record?.losses === 'number')
     ? `${t.record.wins}-${t.record.losses}` : '';
   const dec = ld.decisions || {};
-  const mkP = p => (p && p.fullName) ? { name: lfShortName(p.fullName) } : null;
+  // r507: liveData.decisions only ever carried the pitcher's name (id/fullName/link) — no
+  // W-L record, unlike the ESPN-summary path's boxscore notes. The record lives in
+  // liveData.boxscore.teams.{away,home}.players['ID'+personId].seasonStats.pitching — search
+  // both sides by id since decisions.winner/loser/save don't say which team they're on.
+  // Mike: names always rendered fine, record never did (confirmed via ?mlbtest=1 console dump —
+  // extractDecisionsFromBoxscore had record all along, this fallback path never did).
+  const box = ld.boxscore;
+  const _mlbPersonRecord = personId => {
+    try{
+      for (const side of ['away','home']){
+        const p = box?.teams?.[side]?.players?.['ID' + personId];
+        const ps = p?.seasonStats?.pitching;
+        if (ps && ps.wins != null && ps.losses != null) return `${ps.wins}-${ps.losses}`;
+      }
+    }catch(_){}
+    if (MLB_DEBUG) golfDebugLog(`[MLB DEBUG] _mlbPersonRecord: no seasonStats.pitching.wins/losses found for person ${personId} in either side's boxscore.players`);
+    return '';
+  };
+  const mkP = p => (p && p.fullName) ? { name: lfShortName(p.fullName), record: p.id != null ? _mlbPersonRecord(p.id) : '' } : null;
   const win = mkP(dec.winner), loss = mkP(dec.loser), save = mkP(dec.save);
   const decisions = (win || loss) ? { win, loss, save } : null;
   return {
@@ -13928,7 +13946,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r506-tennis-rank-spacing';
+const BUILD_MARKER = 'r507-mlb-fallback-decision-record';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
