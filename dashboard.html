@@ -12021,7 +12021,43 @@ async function wwsPollWatchPlayers(){
     }
   }
   const curatedIds = new Set(WWS.sel.filter(e => !e.__watch).map(e => String(e.espnId)));
-  WWS.sel = WWS.sel.filter(e => !e.__watchPlayer)
+  // r508: scope the __watchPlayer wipe to tennis entries only — wwsPollWatchGolf owns its
+  // own golf/pga __watchPlayer entries below and runs on the same cadence; an unscoped wipe
+  // here would stomp whichever poller ran second.
+  WWS.sel = WWS.sel.filter(e => !(e.__watchPlayer && e.league && e.league.startsWith('tennis')))
+    .concat(found.filter(f => !curatedIds.has(f.espnId)));
+}
+/* r508 — WWS.watch.players: follow individual GOLFERS. Mirrors wwsPollWatchPlayers above but
+   feeds the GENERIC curated-golf pipeline (wwsPollEvents' kind==='golf' branch + wwsGolfInner)
+   instead of building any bespoke card — that pipeline already renders any starred golf/pga
+   event correctly (proven live on the Tour Championship), so a follow-hit here just injects a
+   normal WWS.sel entry, same shape wws-selector.html's team/tournament browse-and-star produces.
+   PGA-only (Mike, 9/4): ESPN's event-id-less /scoreboard returns exactly one "featured" current
+   tournament per tour — a second concurrent PGA event the same week can be missed. Accepted. */
+async function wwsPollWatchGolf(){
+  const players = ((WWS.watch && WWS.watch.players) || []).filter(p => p.sport === 'golf');
+  const found = [];
+  if (players.length){
+    const _wpFold = s => String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    let data = null;
+    try { data = await proxyFetch('https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard'); } catch(_){}
+    const ev = data && data.events && data.events[0];
+    const comps = ev && ev.competitions && ev.competitions[0] && ev.competitions[0].competitors || [];
+    const hit = ev && players.some(p => {
+      const pf = _wpFold(p.name);
+      return pf && comps.some(c => { const a = c.athlete || {};
+        const nm = _wpFold(a.displayName || a.shortName || '');
+        return nm && (nm.includes(pf) || pf.includes(nm)); });
+    });
+    if (hit){
+      const dk = wwsToday().replace(/-/g,'');
+      found.push({ league: 'golf/pga', label: 'PGA', espnId: String(ev.id),
+        title: ev.shortName || ev.name || '', showFrom: dk, showUntil: dk,
+        __watch: true, __watchPlayer: true });
+    }
+  }
+  const curatedIds = new Set(WWS.sel.filter(e => !e.__watch).map(e => String(e.espnId)));
+  WWS.sel = WWS.sel.filter(e => !(e.__watchPlayer && e.league && e.league.startsWith('golf')))
     .concat(found.filter(f => !curatedIds.has(f.espnId)));
 }
 /* r421 — golf preview card fetcher (GOLF-CARD-SPEC.md). Extends r414/r415's course-only
@@ -13073,8 +13109,8 @@ function wwsFillSlides(){
   });
 }
 if (new URLSearchParams(location.search).get('wws') !== '0'){
-  (async () => { await wwsPollSelections(); await wwsPollWatch(); await wwsPollWatchPlayers(); await wwsPollEvents(); })();
-  setInterval(async () => { await wwsPollSelections(); await wwsPollWatch(); await wwsPollWatchPlayers(); }, 30000);   // R84: 30s (was 5min — Mike: too slow, felt like refresh-only). Picks up selector changes in ~30s. r170: player-follows run same cadence as team-follows, before wwsPollEvents so a freshly-found match hydrates on the very next 60s tick rather than waiting a full cycle.
+  (async () => { await wwsPollSelections(); await wwsPollWatch(); await wwsPollWatchPlayers(); await wwsPollWatchGolf(); await wwsPollEvents(); })();
+  setInterval(async () => { await wwsPollSelections(); await wwsPollWatch(); await wwsPollWatchPlayers(); await wwsPollWatchGolf(); }, 30000);   // R84: 30s (was 5min — Mike: too slow, felt like refresh-only). Picks up selector changes in ~30s. r170: player-follows run same cadence as team-follows, before wwsPollEvents so a freshly-found match hydrates on the very next 60s tick rather than waiting a full cycle. r508: golf-follow runs same lane.
   setInterval(wwsPollEvents, 60000);
   // Round 11: 20s fast lane while any curated event is in-play (fixes the
   // slow FT flip seen live — 60s worst-case felt like a stall at match end).
@@ -13946,7 +13982,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r507-mlb-fallback-decision-record';
+const BUILD_MARKER = 'r508-golf-player-follow';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
