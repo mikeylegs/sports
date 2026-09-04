@@ -1,145 +1,175 @@
 {
   "v": 1,
-  "updated": "2026-09-03T19:15:36.033Z",
+  "updated": "2026-09-04T21:18:26.668Z",
   "events": [
     {
       "league": "baseball/mlb",
       "label": "MLB",
-      "espnId": "401816796",
-      "title": "St. Louis Cardinals @ Los Angeles Dodgers",
-      "showFrom": "20260903",
-      "showUntil": "20260903",
+      "espnId": "401816809",
+      "title": "Athletics @ Seattle Mariners",
+      "showFrom": "20260904",
+      "showUntil": "20260904",
       "rank": 1
     },
     {
-      "league": "tennis/atp,tennis/wta",
-      "label": "Tennis · US Open",
-      "espnId": "189-2026:182563",
-      "title": "C. Gauff (#4) v P. Badosa",
-      "showFrom": "20260903",
-      "showUntil": "20260903",
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816811",
+      "title": "Washington Nationals @ Los Angeles Dodgers",
+      "showFrom": "20260904",
+      "showUntil": "20260904",
       "rank": 2
     },
     {
-      "league": "soccer/usa.1",
-      "label": "MLS",
-      "espnId": "761777",
-      "title": "Atlanta United FC @ Inter Miami CF",
-      "showFrom": "20260905",
-      "showUntil": "20260905",
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401877193",
+      "title": "Detroit Tigers @ Cleveland Guardians",
+      "showFrom": "20260904",
+      "showUntil": "20260904",
       "rank": 3
     },
     {
-      "league": "soccer/eng.1",
-      "label": "English Premier League",
-      "espnId": "401879287",
-      "title": "Coventry City @ Manchester City",
-      "showFrom": "20260905",
-      "showUntil": "20260905",
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816802",
+      "title": "Milwaukee Brewers @ Cincinnati Reds",
+      "showFrom": "20260904",
+      "showUntil": "20260904",
       "rank": 4
     },
     {
-      "league": "soccer/eng.1",
-      "label": "English Premier League",
-      "espnId": "401879291",
-      "title": "Manchester United @ Everton",
-      "showFrom": "20260906",
-      "showUntil": "20260906",
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816797",
+      "title": "Los Angeles Angels @ Pittsburgh Pirates",
+      "showFrom": "20260904",
+      "showUntil": "20260904",
       "rank": 5
     },
     {
-      "league": "soccer/eng.1",
-      "label": "English Premier League",
-      "espnId": "401879292",
-      "title": "Chelsea @ Arsenal",
-      "showFrom": "20260906",
-      "showUntil": "20260906",
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816798",
+      "title": "Atlanta Braves @ Philadelphia Phillies",
+      "showFrom": "20260904",
+      "showUntil": "20260904",
       "rank": 6
     },
     {
       "league": "baseball/mlb",
       "label": "MLB",
-      "espnId": "401816790",
-      "title": "Toronto Blue Jays @ Cleveland Guardians",
-      "showFrom": "20260903",
-      "showUntil": "20260903",
+      "espnId": "401816799",
+      "title": "Boston Red Sox @ Baltimore Orioles",
+      "showFrom": "20260904",
+      "showUntil": "20260904",
       "rank": 7
     },
     {
       "league": "baseball/mlb",
       "label": "MLB",
-      "espnId": "401816789",
-      "title": "San Francisco Giants @ Pittsburgh Pirates",
-      "showFrom": "20260903",
-      "showUntil": "20260903",
+      "espnId": "401816800",
+      "title": "Chicago Cubs @ Miami Marlins",
+      "showFrom": "20260904",
+      "showUntil": "20260904",
       "rank": 8
     },
     {
       "league": "baseball/mlb",
       "label": "MLB",
-      "espnId": "401816791",
-      "title": "Chicago White Sox @ Houston Astros",
-      "showFrom": "20260903",
-      "showUntil": "20260903",
+      "espnId": "401816801",
+      "title": "Detroit Tigers @ Cleveland Guardians",
+      "showFrom": "20260904",
+      "showUntil": "20260904",
       "rank": 9
     },
     {
       "league": "baseball/mlb",
       "label": "MLB",
-      "espnId": "401816788",
-      "title": "Boston Red Sox @ Baltimore Orioles",
-      "showFrom": "20260903",
-      "showUntil": "20260903",
+      "espnId": "401816803",
+      "title": "San Francisco Giants @ New York Mets",
+      "showFrom": "20260904",
+      "showUntil": "20260904",
       "rank": 10
     },
     {
       "league": "baseball/mlb",
       "label": "MLB",
-      "espnId": "401816793",
-      "title": "Milwaukee Brewers @ Chicago Cubs",
-      "showFrom": "20260903",
-      "showUntil": "20260903",
+      "espnId": "401816805",
+      "title": "Minnesota Twins @ Chicago White Sox",
+      "showFrom": "20260904",
+      "showUntil": "20260904",
       "rank": 11
     },
     {
       "league": "baseball/mlb",
       "label": "MLB",
-      "espnId": "401816792",
-      "title": "Miami Marlins @ Kansas City Royals",
-      "showFrom": "20260903",
-      "showUntil": "20260903",
+      "espnId": "401816806",
+      "title": "Tampa Bay Rays @ Texas Rangers",
+      "showFrom": "20260904",
+      "showUntil": "20260904",
       "rank": 12
     },
     {
       "league": "baseball/mlb",
       "label": "MLB",
-      "espnId": "401816794",
-      "title": "Tampa Bay Rays @ Texas Rangers",
-      "showFrom": "20260903",
-      "showUntil": "20260903",
+      "espnId": "401816804",
+      "title": "Arizona Diamondbacks @ Houston Astros",
+      "showFrom": "20260904",
+      "showUntil": "20260904",
       "rank": 13
     },
     {
       "league": "baseball/mlb",
       "label": "MLB",
-      "espnId": "401816795",
-      "title": "Athletics @ Seattle Mariners",
-      "showFrom": "20260903",
-      "showUntil": "20260903",
+      "espnId": "401816807",
+      "title": "Toronto Blue Jays @ Kansas City Royals",
+      "showFrom": "20260904",
+      "showUntil": "20260904",
       "rank": 14
     },
     {
-      "league": "tennis/atp,tennis/wta",
-      "label": "Tennis · US Open",
-      "espnId": "189-2026:182745",
-      "title": "D. Shapovalov v B. Shelton (#8)",
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816808",
+      "title": "St. Louis Cardinals @ Colorado Rockies",
       "showFrom": "20260904",
       "showUntil": "20260904",
       "rank": 15
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816810",
+      "title": "New York Yankees @ San Diego Padres",
+      "showFrom": "20260904",
+      "showUntil": "20260904",
+      "rank": 16
     }
   ],
   "watch": {
-    "teams": [],
+    "teams": [
+      {
+        "league": "soccer/eng.1",
+        "abbr": "MCI",
+        "name": "Manchester City"
+      },
+      {
+        "league": "baseball/mlb",
+        "abbr": "NYY",
+        "name": "New York Yankees"
+      },
+      {
+        "league": "hockey/nhl",
+        "abbr": "NYR",
+        "name": "New York Rangers"
+      },
+      {
+        "league": "basketball/nba",
+        "abbr": "NY",
+        "name": "New York Knicks"
+      }
+    ],
     "players": []
   }
 }
