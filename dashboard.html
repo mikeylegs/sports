@@ -445,7 +445,7 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .wws-face-fallback{display:inline-flex;align-items:center;justify-content:center;background:#1d2f54;color:#fff;font-weight:800;}
 .wws-tn-rows{display:flex;flex-direction:column;gap:5.5cqh;padding:2.4cqh 2cqh 0;}   /* r500: LIVE value, dialed in tennis-studio.html */
 .wws-tn-rows.pre{gap:0cqh;}   /* r500: PREGAME override — Mike's two-card values were genuinely different, not shared */
-.wws-tn-row{display:flex;align-items:center;gap:0.6cqh;min-width:0;padding:1.7cqh 0;}   /* r500: dialed in tennis-studio.html — same on both cards */
+.wws-tn-row{display:flex;align-items:center;gap:2.1cqh;min-width:0;padding:1.7cqh 0;}   /* r506: row gap widened for rank spacing (flag/rank/name/sets all share this one gap — padding untouched, .wws-tn-sets' own internal gap left as-is per Mike) */
 .wws-tn-head{width:16cqh;height:16cqh;border-radius:50%;object-fit:cover;border:0.3cqh solid rgba(255,255,255,0.3);flex-shrink:0;font-size:5cqh;}   /* r480 */
 /* r480: name + serve-dot now share one wrapper so the dot hugs the visible name text
    instead of trailing a flex:1 name span. */
@@ -453,7 +453,7 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 /* r505: rank/seed — between flag & name, dialed in tennis-studio.html. Shown in both live
    and pregame (identity info, not a "no score yet" filler). Fixed-width slot so an
    unseeded player's empty prefix still keeps both rows' flags/names aligned. */
-.wws-tn-rank{font-size:4.4cqh;font-weight:900;color:rgba(255,255,255,0.6);min-width:2.6cqh;text-align:right;flex-shrink:0;}
+.wws-tn-rank{font-size:4.4cqh;font-weight:900;color:rgba(255,255,255,0.6);min-width:2.6cqh;text-align:right;flex-shrink:0;margin-right:0cqh;}   /* r506: own dedicated gap zeroed — row's widened gap already supplies the space, avoids stacking both */
 .wws-tn-name{font-size:5.4cqh;font-weight:900;color:rgba(255,255,255,0.8);flex:0 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}   /* r500: font-size is the pre-fitText fallback — data-fit governs the real max/floor per mode */
 .wws-tn-name.w{color:#fff;}
 .wws-serve{width:2.5cqh;height:2.5cqh;border-radius:50%;background:#34d399;flex-shrink:0;}   /* r500: live-only */
@@ -13928,7 +13928,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r505-tennis-rank';
+const BUILD_MARKER = 'r506-tennis-rank-spacing';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
