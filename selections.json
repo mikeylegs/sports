@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-09-06T02:39:21.099Z",
+  "updated": "2026-09-06T04:25:55.266Z",
   "events": [
     {
       "league": "tennis/atp,tennis/wta",
@@ -10,42 +10,6 @@
       "showFrom": "20260905",
       "showUntil": "20260905",
       "rank": 1
-    },
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816818",
-      "title": "San Francisco Giants @ New York Mets",
-      "showFrom": "20260905",
-      "showUntil": "20260905",
-      "rank": 2
-    },
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816813",
-      "title": "Atlanta Braves @ Philadelphia Phillies",
-      "showFrom": "20260905",
-      "showUntil": "20260905",
-      "rank": 3
-    },
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816826",
-      "title": "Washington Nationals @ Los Angeles Dodgers",
-      "showFrom": "20260905",
-      "showUntil": "20260905",
-      "rank": 4
-    },
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816824",
-      "title": "Athletics @ Seattle Mariners",
-      "showFrom": "20260905",
-      "showUntil": "20260905",
-      "rank": 5
     }
   ],
   "watch": {
