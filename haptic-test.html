@@ -1,0 +1,22 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  body{background:#111;color:#fff;font:16px sans-serif;padding:40px;text-align:center}
+  button{font-size:20px;padding:20px 40px;border-radius:12px;border:0;background:#3a86ff;color:#fff}
+  label{position:fixed;top:-999px;left:-999px;width:1px;height:1px;opacity:0}
+</style></head>
+<body>
+  <label id="hl" for="hs"><input type="checkbox" switch id="hs" tabindex="-1"></label>
+  <p>Tap the button. You should feel a single tick each time.</p>
+  <button id="btn">Tap me</button>
+  <p id="out">—</p>
+<script>
+  var hl=document.getElementById('hl');
+  document.getElementById('btn').addEventListener('touchstart', function(e){
+    e.preventDefault();
+    hl.click();
+    document.getElementById('out').textContent = 'clicked at ' + new Date().toLocaleTimeString();
+  }, {passive:false});
+</script>
+</body></html>
