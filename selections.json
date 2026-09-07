@@ -1,7 +1,134 @@
 {
   "v": 1,
-  "updated": "2026-09-07T16:48:11.492Z",
-  "events": [],
+  "updated": "2026-09-07T16:49:06.979Z",
+  "events": [
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816843",
+      "title": "Atlanta Braves @ Philadelphia Phillies",
+      "showFrom": "20260907",
+      "showUntil": "20260907",
+      "rank": 1
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816846",
+      "title": "New York Mets @ Miami Marlins",
+      "showFrom": "20260907",
+      "showUntil": "20260907",
+      "rank": 2
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816842",
+      "title": "Los Angeles Angels @ Boston Red Sox",
+      "showFrom": "20260907",
+      "showUntil": "20260907",
+      "rank": 3
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816844",
+      "title": "Cleveland Guardians @ Baltimore Orioles",
+      "showFrom": "20260907",
+      "showUntil": "20260907",
+      "rank": 4
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816851",
+      "title": "Toronto Blue Jays @ Athletics",
+      "showFrom": "20260907",
+      "showUntil": "20260907",
+      "rank": 5
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816847",
+      "title": "Arizona Diamondbacks @ Kansas City Royals",
+      "showFrom": "20260907",
+      "showUntil": "20260907",
+      "rank": 6
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816848",
+      "title": "Chicago Cubs @ Milwaukee Brewers",
+      "showFrom": "20260907",
+      "showUntil": "20260907",
+      "rank": 7
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816845",
+      "title": "Minnesota Twins @ Detroit Tigers",
+      "showFrom": "20260907",
+      "showUntil": "20260907",
+      "rank": 8
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816852",
+      "title": "Washington Nationals @ San Diego Padres",
+      "showFrom": "20260907",
+      "showUntil": "20260907",
+      "rank": 9
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816850",
+      "title": "St. Louis Cardinals @ San Francisco Giants",
+      "showFrom": "20260907",
+      "showUntil": "20260907",
+      "rank": 10
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816849",
+      "title": "Cincinnati Reds @ Los Angeles Dodgers",
+      "showFrom": "20260907",
+      "showUntil": "20260907",
+      "rank": 11
+    },
+    {
+      "league": "tennis/atp,tennis/wta",
+      "label": "Tennis · US Open",
+      "espnId": "189-2026:182692",
+      "title": "L. Tien (#14) v K. Khachanov",
+      "showFrom": "20260907",
+      "showUntil": "20260907",
+      "rank": 12
+    },
+    {
+      "league": "tennis/atp,tennis/wta",
+      "label": "Tennis · US Open",
+      "espnId": "189-2026:182557",
+      "title": "C. Gauff (#4) v I. Jovic (#14)",
+      "showFrom": "20260907",
+      "showUntil": "20260907",
+      "rank": 13
+    },
+    {
+      "league": "tennis/atp,tennis/wta",
+      "label": "Tennis · US Open",
+      "espnId": "189-2026:182682",
+      "title": "L. Darderi (#21) v A. Zverev (#1)",
+      "showFrom": "20260907",
+      "showUntil": "20260907",
+      "rank": 14
+    }
+  ],
   "watch": {
     "teams": [
       {
