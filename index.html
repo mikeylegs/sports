@@ -1462,7 +1462,7 @@ html.nomask #mlb-takeover.tko-full .tkoH-photo{ -webkit-mask:none !important; ma
 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-record{display:none;}
 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-pbline{display:none;}
 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-team-info{min-width:0;justify-content:center;flex:1 1 auto;align-items:flex-start;}
-#row-MLB .mlb-feat-slot.has-wp .mlb-feat-abbr{font-size:clamp(22px,13cqmin,84px);overflow:visible;text-overflow:clip;max-width:none;letter-spacing:-1.5px;line-height:1;text-align:left;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-abbr{font-size:clamp(22px,13cqmin,84px);overflow:hidden;text-overflow:clip;max-width:100%;letter-spacing:-1.5px;line-height:1;text-align:left;}
 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-score{font-size:clamp(12px,26.5cqmin,105px);min-width:0;flex-shrink:0;text-align:right;line-height:1;}
 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-status{flex-direction:column;min-width:0;max-width:60cqh;gap:var(--sp-2);flex-shrink:0;justify-content:center;}
 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit{flex-direction:column;gap:1.5cqh;}
@@ -3746,6 +3746,42 @@ async function mlbLinescoreHits(gamePk){
 const _pkIndex = { t: 0, map: null, inflight: null };   // 'AWAY@HOME' -> [{pk,live,inning,hits}]
 const _hitsByGameKey = new Map();                       // 'AWAY@HOME' -> {t, away, home}
 const B1B_INDEX_TTL = 60000, B1B_HITS_TTL = 45000;
+// ── R105 review-state gate ───────────────────────────────────────
+// Separate, faster-polled cache of MLB's own broadcast detailedState per matchup —
+// deliberately NOT sharing _pkIndex's 60s TTL (too coarse: a live probe measured a
+// full ABS-challenge round-trip, "In Progress" -> "Player challenge: Pitch Result"
+// -> "In Progress", at ~8s). Same statsapi schedule endpoint _mlbPkIndex() already
+// calls; detailedState was already in that payload, just not extracted before now.
+// Verified league-wide (9/6-9/7): gameData.review.hasChallenges / absChallenges.
+// hasChallenges are CUMULATIVE (never revert to false before Final) so are useless
+// for this; detailedState is the confirmed live, self-reverting signal.
+const _reviewStateByGameKey = new Map();   // 'AWAY@HOME' -> {t, detailedState}
+const REVIEW_POLL_MS = 5000, REVIEW_STALE_MS = 15000;   // stale poll -> fail OPEN, never permanently wedge a real final
+async function pollMLBReviewState(){
+  try {
+    const url = 'https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=' + _etYmd(0)
+              + '&endDate=' + _etYmd(1) + '&hydrate=linescore,team';
+    const raw = await proxyFetchText(url);
+    if (!raw) return;   // keep last-known state rather than wipe on a transient fetch fail
+    const dates = JSON.parse(raw)?.dates || [];
+    const now = Date.now();
+    dates.forEach(d => (d.games || []).forEach(g => {
+      const a = g.teams?.away?.team?.abbreviation, h = g.teams?.home?.team?.abbreviation;
+      if (!a || !h) return;
+      _reviewStateByGameKey.set(a + '@' + h, { t: now, detailedState: g.status?.detailedState || null });
+    }));
+  } catch (_) { /* silent — same policy as _mlbPkIndex, main cycle unaffected */ }
+}
+// Covers ALL MLB games (not just Mike's designated NYY/NYM), matching R105's own
+// scope. Gated on the MLB fullscreen layout being active, same as fetchMLBLiveFast,
+// so this never polls when no MLB view is even on screen.
+setInterval(() => { if (getLayoutMode() === 'mlbFull') pollMLBReviewState(); }, REVIEW_POLL_MS);
+function reviewBlocksFinal(awayAbbr, homeAbbr){
+  const entry = _reviewStateByGameKey.get(awayAbbr + '@' + homeAbbr);
+  if (!entry) return false;                             // no data yet — fail open, don't block
+  if (Date.now() - entry.t > REVIEW_STALE_MS) return false;  // poll gone stale/dead — fail open
+  return /challenge|review/i.test(entry.detailedState || '');
+}
 function _etYmd(off){
   const n = nowET(); n.setDate(n.getDate() + (off || 0));
   return n.getFullYear() + '-' + String(n.getMonth()+1).padStart(2,'0') + '-' + String(n.getDate()).padStart(2,'0');
@@ -4988,14 +5024,29 @@ function parseEvent(ev, leagueKey) {
         const prev = window._inferFinal[id];
         // require the SAME settled state on 2 consecutive polls before committing
         if (prev && prev.a === awayScore && prev.h === homeScore && prev.lbl === lbl){
-          gameStatus = 'final';
-          timeLabel  = 'Final';
-          window._inferFinalFired = window._inferFinalFired || {};
-          if (!window._inferFinalFired[id]){
-            window._inferFinalFired[id] = true;
-            const walkoff = isBottom && homeAhead;
-            console.log(`[R105] inferred FINAL${walkoff ? ' (WALK-OFF)' : ''}: ${awayAbbr} ${awayScore} @ ${homeAbbr} ${homeScore} — ESPN still said "${lbl}"`);
-            try{ if(window.nightEvent) nightEvent('game','final_inferred',{teams:awayAbbr+'@'+homeAbbr, score:awayScore+'-'+homeScore, walkoff:!!walkoff, espnSaid:lbl}); }catch(_){}
+          // R105b: a live challenge/review holds off the commit even once settled+
+          // persisted — this is exactly the NYY@SD replay-overturn failure mode
+          // (double-play briefly satisfied this same guard before the overturn
+          // reinstated the runner). Don't reset `prev` — the persistence window
+          // stays open so we commit the instant the review clears, no extra delay.
+          if (reviewBlocksFinal(awayAbbr, homeAbbr)){
+            window._inferFinalBlockedLogged = window._inferFinalBlockedLogged || {};
+            if (!window._inferFinalBlockedLogged[id]){
+              window._inferFinalBlockedLogged[id] = true;
+              console.log(`[R105b] final HELD (review/challenge active): ${awayAbbr} ${awayScore} @ ${homeAbbr} ${homeScore} — ESPN said "${lbl}"`);
+              try{ if(window.nightEvent) nightEvent('game','final_inferred_blocked',{teams:awayAbbr+'@'+homeAbbr, score:awayScore+'-'+homeScore, espnSaid:lbl}); }catch(_){}
+            }
+          } else {
+            delete (window._inferFinalBlockedLogged||{})[id];
+            gameStatus = 'final';
+            timeLabel  = 'Final';
+            window._inferFinalFired = window._inferFinalFired || {};
+            if (!window._inferFinalFired[id]){
+              window._inferFinalFired[id] = true;
+              const walkoff = isBottom && homeAhead;
+              console.log(`[R105] inferred FINAL${walkoff ? ' (WALK-OFF)' : ''}: ${awayAbbr} ${awayScore} @ ${homeAbbr} ${homeScore} — ESPN still said "${lbl}"`);
+              try{ if(window.nightEvent) nightEvent('game','final_inferred',{teams:awayAbbr+'@'+homeAbbr, score:awayScore+'-'+homeScore, walkoff:!!walkoff, espnSaid:lbl}); }catch(_){}
+            }
           }
         } else {
           window._inferFinal[id] = { a: awayScore, h: homeScore, lbl };
@@ -13982,7 +14033,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r508-golf-player-follow';
+const BUILD_MARKER = 'r510-r105-review-gate';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
