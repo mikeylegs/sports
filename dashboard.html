@@ -7033,11 +7033,14 @@ const SPORTS_CAL = {
   // is DEAD today (Jul 15), exactly as intended.
   TENNIS_MAJORS: {
     label: 'Tennis Grand Slam',
+    // r518: `slam` added to each window — resolvePhase() only ever told tennis-fill THAT a
+    // major was live, never WHICH one, so its handle stayed hardcoded to Wimbledon year-round
+    // (see tennis-fill below). The value is a channelIds key, same map channelIds already uses.
     phases: [
-      { phase:'LIVE', from:'2026-01-19', to:'2026-02-01' }, { phase:'DECAYING', from:'2026-02-02', to:'2026-02-02' },  // Australian Open
-      { phase:'LIVE', from:'2026-05-24', to:'2026-06-07' }, { phase:'DECAYING', from:'2026-06-08', to:'2026-06-08' },  // French Open
-      { phase:'LIVE', from:'2026-06-29', to:'2026-07-12' }, { phase:'DECAYING', from:'2026-07-13', to:'2026-07-13' },  // Wimbledon
-      { phase:'LIVE', from:'2026-08-31', to:'2026-09-13' }, { phase:'DECAYING', from:'2026-09-14', to:'2026-09-14' },  // US Open
+      { phase:'LIVE', from:'2026-01-19', to:'2026-02-01', slam:'ausopen' },    { phase:'DECAYING', from:'2026-02-02', to:'2026-02-02', slam:'ausopen' },     // Australian Open
+      { phase:'LIVE', from:'2026-05-24', to:'2026-06-07', slam:'frenchopen' }, { phase:'DECAYING', from:'2026-06-08', to:'2026-06-08', slam:'frenchopen' },  // French Open
+      { phase:'LIVE', from:'2026-06-29', to:'2026-07-12', slam:'Wimbledon' },  { phase:'DECAYING', from:'2026-07-13', to:'2026-07-13', slam:'Wimbledon' },   // Wimbledon
+      { phase:'LIVE', from:'2026-08-31', to:'2026-09-13', slam:'usopen' },     { phase:'DECAYING', from:'2026-09-14', to:'2026-09-14', slam:'usopen' },      // US Open
     ],
   },
   // r467: the 4 golf MAJORS (Masters/PGA Champ/US Open/Open), web-verified 2026 dates.
@@ -7082,6 +7085,17 @@ function resolvePhase(src){
   const patch = (src.lifecycle.phases && src.lifecycle.phases[hit.phase]) || null;
   if (!patch) return null;                                // in a phase the source doesn't react to
   return { phase: hit.phase, event: src.lifecycle.event, patch };
+}
+
+// r518: which Grand Slam's channel tennis-fill should pull from RIGHT NOW — the `slam` tag on
+// whichever TENNIS_MAJORS window today falls in (LIVE or its 1-day DECAYING tail), a channelIds
+// key exactly like every other handle in this file. Falls back to 'Wimbledon' only as a last
+// resort (tennis-fill is dormantUnlessPhase-gated on this same calendar, so in practice this
+// fallback should never actually fire — kept defensive, not load-bearing).
+function _currentTennisSlamHandle(){
+  const today = _etDateStr();
+  const hit = (SPORTS_CAL.TENNIS_MAJORS.phases || []).find(w => today >= w.from && today <= w.to);
+  return (hit && hit.slam) || 'Wimbledon';
 }
 
 function _leagueInSeason(lg){
@@ -7550,14 +7564,29 @@ const RECAP = {
                     reject:/preview|picks to win|predictions|power rankings|contenders|pretenders/i,
                     titleHint:/highlight|round|leader|best|shot/i,
                     glow:'rgba(212,175,55,0.95)' },
-    'tennis-fill':{ label:'Tennis',    handle:'Wimbledon', query:'tennis highlights', priority:2, timeless:true, maxAgeDays:45,
+    'tennis-fill':{ label:'Tennis',
+                    // r518: was a hardcoded 'Wimbledon' handle year-round — so during every OTHER
+                    // slam (right now, the US Open: channelIds.usopen, verified title="US Open"),
+                    // this source was still fetching Wimbledon's channel, which has had nothing
+                    // new to post since mid-July. dormantUnlessPhase correctly turned it ON for
+                    // the US Open window, it just pointed at the wrong channel the whole time —
+                    // Mike: "is this page wired in for US Open highlights? if not, please wire it
+                    // and prioritize it." It was not; this wires it. Reuses the same slam-name ->
+                    // channelIds-key mapping stamped onto TENNIS_MAJORS.phases above.
+                    handle(){ return _currentTennisSlamHandle(); },
+                    query:'tennis highlights', priority:2, timeless:true, maxAgeDays:45,
                     windowH: 48,
                     // R137 LIFECYCLE: MAJORS ONLY. dormantUnlessPhase → the source is OFF
                     // outside the four Grand Slams (doesn't even fetch). LIVE during a major,
                     // 1-day tail after the final, then dead. Mike: secondary sport, majors only.
                     dormantUnlessPhase:true,
                     lifecycle:{ event:'TENNIS_MAJORS', phases:{
-                      LIVE:{ scoreBoost:2, windowH:48 },       // during a slam: normal-ish
+                      // r518: Mike asked to PRIORITIZE tennis while a major is actually live —
+                      // was +2 (weakest boost of any major-gated filler: fifa +4, soccer +3, golf
+                      // up to +8). Matched to fifa's +4 rather than golf's +8, since golf's own
+                      // comment already flags +8 as deliberately aggressive for majors week;
+                      // tennis stays "secondary sport" per R137 but no longer the weakest one.
+                      LIVE:{ scoreBoost:4, windowH:48 },
                       DECAYING:{ scoreBoost:-2, windowH:30 },  // finals-recap day only
                     } },
                     // R103: DOUBLES were dominating (Heliovaara/Patten, Kamiji/Zhu, Guo/Mladenovic…).
@@ -14110,7 +14139,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r517-tennis-stack-no-shrink';
+const BUILD_MARKER = 'r518-tennis-fill-usopen-handle';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
