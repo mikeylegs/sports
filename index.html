@@ -12362,10 +12362,21 @@ async function wwsPollEvents(){
         // threaded through to what actually renders here). Every other sport's `ev` IS the single
         // game/match, so ev.date is already correct there — scoped this to tennis only.
         const _evWhen = (kind === 'tennis' && comp.date) ? comp.date : ev.date;
+        // r514: even comp.date (r496's fix for the tournament-start-date bug) carries a bare
+        // midnight placeholder for a bracket slot ESPN hasn't assigned a real time to yet (e.g.
+        // "Winner QF1 vs Winner QF2" before the earlier round finishes) — confirmed by Mike's own
+        // screenshot: "Wednesday · 12:00 AM · Quarterfinal" for a match with no real start time.
+        // A tennis match genuinely starting at exactly 00:00 local is not a real-world case, so
+        // treat literal midnight as "no real time assigned" and drop the kickoff clause entirely
+        // rather than print a fake-looking time. Scoped to tennis only, same as r496's fix above —
+        // other sports' `ev`/comp objects don't have this placeholder behavior.
+        const _evWhenDt = _evWhen ? new Date(_evWhen) : null;
+        const _tennisRealTime = !(kind === 'tennis' && _evWhenDt && !isNaN(_evWhenDt) &&
+          _evWhenDt.getHours() === 0 && _evWhenDt.getMinutes() === 0);
         WWS.events[e.espnId] = { title: e.title, label: bLabel, kind, league: e.league, date: _evWhen || '',
           round: (ev.status && ev.status.period) || (comp.status && comp.status.period) || 0,
           pre: (kind === 'tennis' ? ((comp.status && comp.status.type && comp.status.type.state) || st.state) : st.state) === 'pre',
-          kickoff: _evWhen ? new Date(_evWhen).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}) : '',
+          kickoff: (_evWhen && _tennisRealTime) ? new Date(_evWhen).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}) : '',
           sides: kind === 'golf' ? sides.slice(0, 20) : sides,
           venue: bVenue,
           golf: kind === 'golf' ? (ev.__golfPreview || null) : undefined,   // r421: GOLF-CARD-SPEC fields
@@ -14080,7 +14091,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r513-mlb-fallback-save-count';
+const BUILD_MARKER = 'r514-tennis-no-fake-midnight';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
