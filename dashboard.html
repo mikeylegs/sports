@@ -13466,6 +13466,14 @@ function extractDecisionsFromBoxscore(boxscore, eventId) {
     const pitching = (teamEntry.statistics || []).find(s => s.type === 'pitching');
     if (!pitching) return;
     const eraIdx = (pitching.names || []).indexOf('ERA');
+    // r512: the pitchingDecision note's parsed "record" is the pitcher's SEASON W-L
+    // (e.g. "5-2") for EVERY decision type, save included — confirmed live (Mike:
+    // Mason Miller's 33rd save showed "(5-2)" on the card, not "(33)"). The note text
+    // was never carrying a save tally at all; the real running save count lives in the
+    // same per-athlete stats array ERA already comes from, under the 'SV' column. Look
+    // it up the same way and prefer it for the save slot specifically — win/loss keep
+    // using the note's W-L record exactly as before, nothing there was wrong.
+    const svIdx = (pitching.names || []).indexOf('SV');
     (pitching.athletes || []).forEach(a => {
       const note = (a.notes || []).find(n => n.type === 'pitchingDecision');
       if (!note) return;
@@ -13479,7 +13487,10 @@ function extractDecisionsFromBoxscore(boxscore, eventId) {
       };
       if (parsed.code === 'W') win = info;
       else if (parsed.code === 'L') loss = info;
-      else if (parsed.code.startsWith('S')) save = info; // SV, S, etc.
+      else if (parsed.code.startsWith('S')) { // SV, S, etc.
+        const sv = svIdx >= 0 ? a.stats?.[svIdx] : null;
+        save = sv ? { ...info, record: sv } : info;   // fall back to the note if SV isn't present
+      }
     });
   });
   const result = (!win && !loss) ? null : { win, loss, save };
@@ -13776,9 +13787,17 @@ function renderLastFinalSlot(abbr, g, nextGame, slotClass, opts) {
   let nextNetwork = '';
   let nextOpp = ''; let nextSide = '';
   let nextPit = null;   // normalized {mine, opp} probable pitchers for the fill
+  // r512: the pill used to show the game TIME regardless of day ("7:05 PM" whether
+  // tonight or tomorrow), color-coded by timePillCls only — Mike: "next game shows
+  // exactly the same now whether the game is today or tomorrow." Color alone at wall
+  // distance/glance wasn't legible as a day distinction. Show the DAY label instead
+  // of the time whenever it's not today's game — "TOMORROW" / "WED" reads unambiguous
+  // at a glance; today's game keeps showing the actual time, which is the useful info.
+  const _pillText = (dayPart, timeStr) => /tonight|today/i.test(dayPart) ? timeStr : (dayPart || timeStr).toUpperCase();
   if (nextGame) {
     const dayPart = (nextGame.timeLabel||'').split(' · ')[0]||'';
-    nextTimeStr = (nextGame.timeLabel||'').split(' · ').pop();
+    const timeStr = (nextGame.timeLabel||'').split(' · ').pop();
+    nextTimeStr = _pillText(dayPart, timeStr);
     const oppAbb = nextGame.awayAbbr===abbr ? nextGame.homeAbbr : nextGame.awayAbbr;
     const atVs = nextGame.awayAbbr===abbr ? '@' : 'vs';
     nextOpp = oppAbb; nextSide = atVs;
@@ -13799,7 +13818,8 @@ function renderLastFinalSlot(abbr, g, nextGame, slotClass, opts) {
     const cached = _nextGameCache[abbr];
     if (cached) {
       const dayPart = (cached.timeLabel||'').split(' · ')[0]||'';
-      nextTimeStr = (cached.timeLabel||'').split(' · ').pop();
+      const timeStr = (cached.timeLabel||'').split(' · ').pop();
+      nextTimeStr = _pillText(dayPart, timeStr);
       nextOpp = cached.opp; nextSide = cached.side;
       nextMatchup = `${cached.side} ${cached.opp}`;
       nextNetwork = cached.network || '';
@@ -14043,7 +14063,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r511-nextgame-merged-patch';
+const BUILD_MARKER = 'r512-save-count-and-daypill';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
