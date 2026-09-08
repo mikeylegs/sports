@@ -13559,9 +13559,19 @@ function ensureNextGame(abbr, teamMlbId, g, nextGame, slotClass) {
       // each call, so it'll pick up what was just cached.
       const row = document.getElementById('row-MLB');
       const slot = row?.querySelector(`.mlb-feat-slot.${slotClass}`);
-      // R12: when the anchor is the merged NYY+NYM pane, a single-team re-render
-      // here would clobber it — cache-only; the next 15-60s cycle rebuilds merged.
-      if (slot && !(slotClass === 'yank' && window._anchorMerged)) slot.outerHTML = renderLastFinalSlot(abbr, g, nextGame, slotClass);
+      // R12 (r511 fix): when the anchor is the merged NYY+NYM pane, patching with
+      // the WRONG team's render would clobber whichever team is currently shown —
+      // that's still blocked. But blocking the patch unconditionally left a real
+      // bug: if this fetch resolves for the team CURRENTLY on screen, "No game
+      // scheduled" sat frozen until the next lap-driven _anchorSwap() (up to ~70-80s
+      // away) even though the data was already sitting in cache. Confirmed live
+      // (Mike, DevTools): _nextGameCache['NYY'] had the correct Tomorrow-vs-COL
+      // data while the pane still read "No game scheduled". Patch immediately
+      // whenever this cached team IS the one currently visible.
+      const mergedShowsThisTeam = slotClass === 'yank' && window._anchorMerged && window._anchorTeam === abbr;
+      if (slot && (!(slotClass === 'yank' && window._anchorMerged) || mergedShowsThisTeam)) {
+        slot.outerHTML = renderLastFinalSlot(abbr, g, nextGame, slotClass);
+      }
     })
     .catch(e => console.warn('[nextgame] fetch failed:', e && e.message))
     .finally(() => {
@@ -14033,7 +14043,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r510-r105-review-gate';
+const BUILD_MARKER = 'r511-nextgame-merged-patch';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
