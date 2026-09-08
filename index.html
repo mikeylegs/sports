@@ -1227,6 +1227,11 @@ html.nomask #mlb-takeover.tko-full .tkoH-photo{ -webkit-mask:none !important; ma
 #mlb-takeover.tko-wc{padding:0;background:#05070d;overflow:hidden;container-type:size;}
 #mlb-takeover.tko-wc .tkoA-bgflag{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:1;animation:tkoFlagIn 0.5s ease-out;}
 #mlb-takeover.tko-wc .tkoA-scrim{position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,10,20,0.35),rgba(5,10,20,0.72));}
+/* r519c: vignette scrim for a flag backdrop behind CENTERED text (no head/logo — tennis's case).
+   Darkest at center where kicker/headline/box-score sit, fading lighter toward the edges so the
+   flag still reads as a "giant backdrop" (Mike's ask) instead of being washed flat. Dialed in
+   tennis-winloss-splash-preview.html against a real Ben Shelton example before shipping. */
+#mlb-takeover.tko-wc .tkoA-scrim-centered{position:absolute;inset:0;background:radial-gradient(75% 65% at 50% 50%,rgba(5,10,20,0.88) 0%,rgba(5,10,20,0.72) 45%,rgba(5,10,20,0.4) 100%);}
 #mlb-takeover.tko-wc .tkoA-accent{position:absolute;left:0;top:0;height:100%;width:1.4cqh;}
 #mlb-takeover.tko-wc .tkoA-sweep{position:absolute;top:0;left:0;height:100%;width:40%;pointer-events:none;background:linear-gradient(100deg,transparent,rgba(255,255,255,0.07),transparent);animation:tkoSweep 1.6s ease-out;}
 /* ★ r178 hero-photo HR card. cqh = 1% of card height, so sizes track the slot. */
@@ -1276,6 +1281,15 @@ html.nomask #mlb-takeover.tko-full .tkoH-photo{ -webkit-mask:none !important; ma
 #mlb-takeover.tko-wc .tkoA-ball{font-size:5cqh;}
 #mlb-takeover.tko-wc .tkoA-subtxt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
 #mlb-takeover.tko-wc .tkoA-band{position:absolute;left:0;right:0;bottom:0;height:20cqh;display:flex;align-items:center;justify-content:center;gap:3.4cqh;background:linear-gradient(to top,rgba(0,0,0,0.62),transparent);animation:tkopop 0.6s ease-out;}
+/* r519b: tennis box-score band — two stacked rows instead of the flat 2-number band. Overrides
+   just the container's flex direction/height/padding; the row/name/set/tb classes inside are
+   reused unchanged from the live WWS tennis card (.wws-tn-row etc., defined near line 446). */
+#mlb-takeover.tko-wc .tkoA-band-tennis{height:auto;min-height:26cqh;flex-direction:column;justify-content:center;gap:0.8cqh;padding:2.6cqh 4cqh;}
+#mlb-takeover.tko-wc .tkoA-band-tennis .wws-tn-row{padding:0;gap:2.6cqh;justify-content:center;}
+#mlb-takeover.tko-wc .tkoA-band-tennis .wws-tn-name{font-size:6.8cqh;min-width:26cqh;text-align:right;overflow:visible;color:rgba(255,255,255,0.62);}
+#mlb-takeover.tko-wc .tkoA-band-tennis .wws-tn-name.w{color:#fff;}
+#mlb-takeover.tko-wc .tkoA-band-tennis .wws-tn-sets{font-size:1em;min-width:26cqh;}
+#mlb-takeover.tko-wc .tkoA-band-tennis .wws-tn-set{font-size:8.2cqh;}
 #mlb-takeover.tko-wc .tkoA-nm{font-size:6.4cqh;font-weight:800;color:rgba(255,255,255,0.62);letter-spacing:0.2cqh;}
 /*R44*/#mlb-takeover.tko-wc .tkoA-sc{font-size:13cqh;font-weight:900;color:#fff;line-height:1;}
 #mlb-takeover.tko-wc .tkoA-dash{font-size:7cqh;font-weight:700;color:rgba(255,255,255,0.35);}
@@ -1287,6 +1301,15 @@ html.nomask #mlb-takeover.tko-full .tkoH-photo{ -webkit-mask:none !important; ma
 /*R47*/#mlb-takeover.tko-wc .tkoA-chips{display:flex;flex-wrap:nowrap;gap:1.2cqh;margin-top:1.6cqh;}
 /*R47*/#mlb-takeover.tko-wc .tkoA-chip{font-size:4.4cqh;font-weight:900;color:#fff;white-space:nowrap;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.22);border-radius:100px;padding:1cqh 2.2cqh;letter-spacing:0.05cqh;}
 @keyframes tkoFlagIn{0%{transform:translateY(-50%) scale(1.15);opacity:0}100%{transform:translateY(-50%) scale(1);opacity:0.16}}
+/* r519d: Mike — "see why flag isn't rendering." It WAS rendering, just fading to tkoFlagIn's
+   0.16 end-opacity, which is the WC card's existing subtle-accent tuning (a flag behind a
+   headshot+text split) — never meant to carry a "giant backdrop." Tennis has no face, so this
+   is a second, ADDITIVE-only keyframe/class (mirrors the r519c .tkoA-scrim-centered pattern
+   exactly) that gives tennis its own bold end-opacity without touching the WC card's animation
+   or any other .tkoA-bgflag caller. Verified via Playwright screenshot in
+   tennis-winloss-splash-preview.html before porting here. */
+@keyframes tkoFlagInBold{0%{transform:translateY(-50%) scale(1.15);opacity:0}100%{transform:translateY(-50%) scale(1);opacity:0.6}}
+#mlb-takeover.tko-wc .tkoA-bgflag.tkoA-bgflag-bold{animation:tkoFlagInBold 0.5s ease-out;}
 @keyframes tkoSweep{0%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
 #mlb-takeover.left{left:0;}
 #mlb-takeover.right{left:50%;}
@@ -6553,8 +6576,13 @@ function updateStaleness(){
 }
 function tkoABuild(o){
   const ac=o.accent||'#d4af37';
+  // r519c: a flag WITHOUT a head/logo (tennis's case — no face at all, centered text) needs a
+  // different scrim than the WC card's side-split gradient (that one assumes a face on one side,
+  // text on the other — with no face, the busy flag stripes stayed distracting behind centered
+  // text, confirmed via a real screenshot before shipping, not guessed). `!(o.head||o.logo)`
+  // mirrors the `centered` check below without requiring `face` (computed after `bg`).
   const bg = o.flag
-    ? `<img class="tkoA-bgflag" src="${o.flag}" onerror="this.style.display='none'"><div class="tkoA-scrim"></div>`
+    ? `<img class="tkoA-bgflag${!(o.head||o.logo) ? ' tkoA-bgflag-bold' : ''}" src="${o.flag}" onerror="this.style.display='none'"><div class="tkoA-scrim${!(o.head||o.logo) ? ' tkoA-scrim-centered' : ''}"></div>`
     : `<div class="tkoA-wash" style="background:linear-gradient(135deg,${o.wash||'rgba(11,42,94,0.95)'} 0%,rgba(9,26,56,0.98) 55%,rgba(5,10,20,1) 100%)"></div>${o.wm?`<img class="tkoA-wm" src="${o.wm}" onerror="this.style.display='none'">`:''}`;   // R43: flat diagonal wash + full-bleed team logo watermark (mockup)
   const face = o.head
     ? `<div class="tkoA-headwrap" style="background:linear-gradient(145deg,${ac},rgba(255,255,255,0.1))"><img src="${o.head}" onerror="this.style.opacity=0"></div>`
@@ -6563,7 +6591,17 @@ function tkoABuild(o){
     : '';
   const sub = o.sub ? `<div class="tkoA-scorer">${o.subIcon?`<span class="tkoA-ball">${o.subIcon}</span> `:''}<span class="tkoA-subtxt">${o.sub}</span></div>` : '';
   const chips = (o.chips&&o.chips.length) ? `<div class="tkoA-chips">${o.chips.map(c=>`<span class="tkoA-chip">${c}</span>`).join('')}</div>` : '';
-  const band = o.band ? `<div class="tkoA-band">
+  const band = o.tnBox
+    // r519b: real tennis set-by-set box score, Mike \u2014 "2-1 [sets-won] format... not applicable
+    // to tennis. Bottom should show the full tennis set-by-set box score." Reuses
+    // .wws-tn-row/name/sets/set/tb VERBATIM \u2014 the exact classes/values already dialed for the
+    // on-screen tennis card (r480/r500) \u2014 not new sizes invented for the splash. Per-set `won`
+    // highlight uses the same >=6-games heuristic wwsTennisInner's own render already uses.
+    ? `<div class="tkoA-band tkoA-band-tennis">${o.tnBox.map(s => `<div class="wws-tn-row">
+        <span class="wws-tn-name${s.winner ? ' w' : ''}">${s.name || ''}</span>
+        <span class="wws-tn-sets">${(s.sets || []).map(v => `<span class="wws-tn-set${(+v.v >= 6) ? ' won' : ''}">${v.v != null ? v.v : ''}${v.tb ? `<sup class="wws-tn-tb">${v.tb}</sup>` : ''}</span>`).join('')}</span>
+      </div>`).join('')}</div>`
+    : o.band ? `<div class="tkoA-band">
       <span class="tkoA-nm">${o.band.aAbbr||''}</span><span class="tkoA-sc${o.band.lit==='a'?' win':''}" style="${o.band.lit==='a'?`color:${ac}`:''}">${o.band.aScore}</span>
       <span class="tkoA-dash">\u2013</span>
       <span class="tkoA-sc${o.band.lit==='h'?' win':''}" style="${o.band.lit==='h'?`color:${ac}`:''}">${o.band.hScore}</span><span class="tkoA-nm">${o.band.hAbbr||''}</span>
@@ -12339,6 +12377,26 @@ async function wwsPollEvents(){
           })() : {}),
         }));
         if (kind === 'golf') sides.sort((a, b) => (parseFloat(a.score) || 0) - (parseFloat(b.score) || 0));
+        // r519: SPEC-tennis-win-splash — which side (if any) is a followed singles player.
+        // Doubles is a non-issue in practice: 3 real live fetches against this exact endpoint
+        // (tennis/atp,tennis/wta scoreboard, incl. during the live US Open) never returned a
+        // doubles competition — every competitor here has always carried a singular c.athlete,
+        // so a doubles pairing (which ESPN would represent some other way) simply wouldn't match
+        // a followed singles name anyway. Belt-and-suspenders: also require exactly 2 competitors
+        // and skip if comp.type.text ever says "Doubles", in case that assumption ever breaks.
+        let followedSide = null;
+        if (kind === 'tennis' && comp.competitors && comp.competitors.length === 2 &&
+            !/doubles/i.test((comp.type && comp.type.text) || '')){
+          const followedTennis = ((WWS.watch && WWS.watch.players) || []).filter(p => p.sport === 'tennis');
+          if (followedTennis.length){
+            const _wpFold = s => String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+            const idx = comp.competitors.findIndex(c => {
+              const nm = _wpFold((c.athlete && (c.athlete.displayName || c.athlete.shortName)) || '');
+              return nm && followedTennis.some(p => { const pf = _wpFold(p.name); return pf && (nm.includes(pf) || pf.includes(nm)); });
+            });
+            if (idx !== -1) followedSide = idx;
+          }
+        }
         // Soccer deluxe (round 10): goal scorers per side from competition details.
         let scorers = null;
         if (kind === 'soccer'){
@@ -12408,11 +12466,16 @@ async function wwsPollEvents(){
         const _evWhenDt = _evWhen ? new Date(_evWhen) : null;
         const _tennisRealTime = !(kind === 'tennis' && _evWhenDt && !isNaN(_evWhenDt) &&
           _evWhenDt.getHours() === 0 && _evWhenDt.getMinutes() === 0);
+        // r519: capture the PRE-overwrite state so the win/loss splash trigger below (after this
+        // assignment) can detect the pre/live -> final transition edge — same "diff against the
+        // value captured before overwrite" shape the soccer goal-takeover above already uses.
+        const _prevTennisEv = (kind === 'tennis') ? WWS.events[e.espnId] : null;
         WWS.events[e.espnId] = { title: e.title, label: bLabel, kind, league: e.league, date: _evWhen || '',
           round: (ev.status && ev.status.period) || (comp.status && comp.status.period) || 0,
           pre: (kind === 'tennis' ? ((comp.status && comp.status.type && comp.status.type.state) || st.state) : st.state) === 'pre',
           kickoff: (_evWhen && _tennisRealTime) ? new Date(_evWhen).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}) : '',
           sides: kind === 'golf' ? sides.slice(0, 20) : sides,
+          followedSide,   // r519: SPEC-tennis-win-splash — index into sides[], or null
           venue: bVenue,
           golf: kind === 'golf' ? (ev.__golfPreview || null) : undefined,   // r421: GOLF-CARD-SPEC fields
           situation: (comp.situation && (comp.situation.downDistanceText || comp.situation.shortDownDistanceText)) || '',
@@ -12430,6 +12493,48 @@ async function wwsPollEvents(){
           live: kind === 'tennis'
             ? ((comp.status && comp.status.type && comp.status.type.state) === 'in')   // R23: per-match
             : st.state === 'in' };
+        // r519 — SPEC-tennis-win-splash: fires once, on the pre/live -> final transition, for a
+        // followed singles player. No video (tennis is a bad live-fetch candidate per this
+        // session's discussion) — a plain result card, modeled on the MLB TEAM WIN splash's shape
+        // (kicker/headline/band, dashboard.html ~11513) rather than the photo-heavy hero variants;
+        // tennis has no equivalent action-photo pipeline. Fires on BOTH outcomes (Mike: "loss
+        // notified too") — win gets the amber accent already established for tennis this session
+        // (r515-r518); loss gets a deliberately quieter neutral accent, same card shape.
+        if (kind === 'tennis' && followedSide != null && typeof showTakeover === 'function'){
+          const newD = WWS.events[e.espnId];
+          const wasFinal = _prevTennisEv && !_prevTennisEv.pre && !_prevTennisEv.live;
+          if (!wasFinal && !newD.pre && !newD.live){
+            const mySide = newD.sides[followedSide], otherSide = newD.sides[1 - followedSide];
+            if (mySide && otherSide){
+              const won = !!mySide.winner;
+              const accent = won ? '#fbbf24' : 'rgba(148,163,184,0.9)';   // amber (r515-518 identity) vs quiet slate
+              const wash   = won ? 'rgba(251,191,36,0.9)' : 'rgba(71,85,105,0.85)';
+              // r519 fix: payload MUST nest under `a:` — showTakeover's Design-A path reads
+              // `opts.a` (dashboard.html ~6814: `const A = opts.a || (opts.wc ? {...} : null);`
+              // `if (A){...}` is the only branch that calls tkoABuild at all). A flat opts object
+              // (no `a`/`wc` key) resolves A to null and renders nothing but an empty scrim — caught
+              // by building a visual mock for Mike before shipping, not guessed past.
+              // r519b: Mike — "2-1 [sets-won] format... not applicable to tennis. Bottom should
+              // show the full tennis set-by-set box score." Passing `tnBox` (real sides[] verbatim,
+              // same shape wwsTennisInner already renders) instead of the generic flat `band` —
+              // tkoABuild's new tnBox branch reuses `.wws-tn-row/name/sets/set/tb` unchanged (the
+              // exact classes/values already dialed for the on-screen tennis card this session,
+              // not new sizes guessed for the splash).
+              // r519c: Mike — "Work in the country flag too. Giant backdrop with gradient fade."
+              // `mySide.flag` is already populated (dashboard.html ~12292, same ESPN
+              // `athlete.flag.href` field the live card's `.wws-tn-flag` already uses) — nothing
+              // new to fetch. `o.flag` is an EXISTING tkoABuild input (the soccer/WC goal card's
+              // full-bleed flag treatment: `.tkoA-bgflag` + `.tkoA-scrim` gradient, dashboard.html
+              // ~6556-6557/CSS ~1228-1229) — reused as-is, zero new markup/CSS. Always the
+              // FOLLOWED player's flag (not the match winner's), win or lose — this card is about
+              // our player. `onerror` on the img already hides it gracefully if a flag URL 404s.
+              showTakeover({ side:'right', a:{ accent, wash, flag: mySide.flag || '',
+                kicker:'Final',
+                headline: won ? `${(mySide.name||'').toUpperCase()} WINS` : `${(mySide.name||'').toUpperCase()} FALLS`,
+                tnBox: newD.sides.map(s => ({ name: s.name || '', winner: !!s.winner, sets: s.sets || [] })) } });
+            }
+          }
+        }
        } catch(_evErr){
          // R139: surface, don't swallow. Panel stays up; this one event is skipped.
          console.warn('[wws] event populate failed for', e && e.espnId, _evErr);
@@ -14139,7 +14244,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r518-tennis-fill-usopen-handle';
+const BUILD_MARKER = 'r519-tennis-winloss-splash';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
