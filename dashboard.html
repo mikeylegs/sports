@@ -12543,7 +12543,16 @@ function wwsTennisInner(d){
     }
     const rnd = (d.status||'').split('·').map(x=>x.trim()).find(x=>/final|round|semi|quarter/i.test(x)) || '';
     const preWord = [wd, d.kickoff].filter(Boolean).join(' · ');
-    if (preWord || rnd) statusHtml = `<div class="wws-pre-when-stack">${preWord ? `<span class="wws-pre-when-word">${preWord}</span>` : ''}${rnd ? `<span class="wws-tn-round-pill">${rnd}</span>` : ''}</div>`;
+    // r517: combined "Wednesday · 11:45 PM" can overflow the 960px slot at this font-size (a real
+    // weekday name + a late time, measured — see HANDOFF) since .mlb-feat-slot clips (overflow:
+    // hidden), and Mike wants the combined look kept when it fits rather than shrunk to fit. So:
+    // NO shrinking — data-stack-check tags the combined span with its raw day/time parts, and
+    // fitText()'s new stacking pass (below) measures the real rendered width post-insert and
+    // swaps it for two stacked spans (word/time, same classes _wwsKickStack already uses for
+    // MLB) only if it would actually clip. Only tagged when BOTH parts exist — a bare day word
+    // (Today/Tonight, no kickoff) is always short enough, never needs the check.
+    const _stackAttrs = (wd && d.kickoff) ? ` data-stack-check="1" data-day="${wd}" data-time="${d.kickoff}"` : '';
+    if (preWord || rnd) statusHtml = `<div class="wws-pre-when-stack">${preWord ? `<span class="wws-pre-when-word"${_stackAttrs}>${preWord}</span>` : ''}${rnd ? `<span class="wws-tn-round-pill">${rnd}</span>` : ''}</div>`;
   }
   return wwsBanner(d) + `<div class="wws-tn-rows wws-tennis${d.pre?' pre':''}">${rows}</div>${statusHtml}`;
 }
@@ -14101,7 +14110,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r516-tennis-live-pill';
+const BUILD_MARKER = 'r517-tennis-stack-no-shrink';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -15881,6 +15890,28 @@ function fitText(scope){
         if (fits()) { best = mid; lo = mid; } else { hi = mid; }
       }
       el.style.fontSize = best + 'px';
+    }
+  });
+  // r517: tennis pregame day/time — stack-if-clips, NEVER shrink (Mike: "no shrinking"). Reuses
+  // this same fitText pass (already triggered on every #row-MLB DOM change via the MutationObserver
+  // below) so no new call site is needed. One-shot: once split into two spans, data-stack-check is
+  // gone with the combined span, so this is naturally idempotent and self-heals on the next real
+  // render (e.g. once "Wednesday" becomes "Today", a fresh combined span is built and re-checked).
+  // Proven in stack_sandbox.html against real production geometry (1920x1080, real slot/padding)
+  // before landing here — see HANDOFF r517.
+  (scope || document).querySelectorAll('[data-stack-check]').forEach(el => {
+    const day = el.dataset.day, time = el.dataset.time;
+    if (!day || !time) return;
+    const parent = el.parentElement;
+    if (!parent) return;
+    if (el.scrollWidth > parent.clientWidth + 0.5) {
+      const wordSpan = document.createElement('span');
+      wordSpan.className = 'wws-pre-when-word';
+      wordSpan.textContent = day;
+      const timeSpan = document.createElement('span');
+      timeSpan.className = 'wws-pre-when-time';
+      timeSpan.textContent = time;
+      el.replaceWith(wordSpan, timeSpan);
     }
   });
 }
