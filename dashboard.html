@@ -527,9 +527,12 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
    clip on the real worst case ("Saturday · 12:00 PM"). Retires the single-line .wws-pre-when
    (r501). Line 1 = day + time (temporal), line 2 = round (context) — grouping time with
    round on one line read wrong. */
-.wws-pre-when-stack{display:flex;flex-direction:column;align-items:center;gap:2.3cqh;margin-top:2.4cqh;}
-.wws-pre-when-word{font-size:8.4cqh;font-weight:800;color:#fbbf24;line-height:1;white-space:nowrap;}
+.wws-pre-when-stack{display:flex;flex-direction:column;align-items:center;gap:2cqh;margin-top:3cqh;}
+.wws-pre-when-word{font-size:9.4cqh;font-weight:800;color:#fbbf24;line-height:1;white-space:nowrap;}
 .wws-pre-when-time{font-size:8.0cqh;font-weight:800;color:#fbbf24;line-height:1;white-space:nowrap;}
+/* r515: round-label pill (studio-dialed in tennis-pregame-pill-studio.html) — replaces the
+   plain wws-pre-when-time styling for the round text (e.g. "QUARTERFINAL"). */
+.wws-tn-round-pill{margin-top:1.8cqh;display:inline-flex;align-items:center;justify-content:center;background:rgba(251,191,36,0.12);color:rgb(251,191,36);border:1px solid rgba(251,191,36,0.3);border-radius:20px;padding:0.75cqh 2.4cqh;font-size:5cqh;font-weight:700;letter-spacing:1.5px;white-space:nowrap;text-transform:uppercase;}
 .wws-soc-name{font-size:7.6cqh;}   /* r484: matched to MLB's .wws-mlb .wws-tm-name (7.6cqh, was 4.8) — data-fit/data-fit-min on the span updated to match (see wwsSoccerInner). */
 .wws-soc-rec{font-size:6.4cqh;white-space:nowrap;}   /* r484: new — matches .wws-mlb .wws-tm-rec. Suppressed by wwsSoccerInner's side() once scorers are showing (has-scorers state); sandbox-verified the real .lf-stage{overflow:hidden} clips the scorer list otherwise once record+bigger name+bigger crest compete for the same column height. */
 .wws-soc-hero{font-size:14cqh;}
@@ -12533,7 +12536,7 @@ function wwsTennisInner(d){
     }
     const rnd = (d.status||'').split('·').map(x=>x.trim()).find(x=>/final|round|semi|quarter/i.test(x)) || '';
     const preWord = [wd, d.kickoff].filter(Boolean).join(' · ');
-    if (preWord || rnd) statusHtml = `<div class="wws-pre-when-stack">${preWord ? `<span class="wws-pre-when-word">${preWord}</span>` : ''}${rnd ? `<span class="wws-pre-when-time">${rnd}</span>` : ''}</div>`;
+    if (preWord || rnd) statusHtml = `<div class="wws-pre-when-stack">${preWord ? `<span class="wws-pre-when-word">${preWord}</span>` : ''}${rnd ? `<span class="wws-tn-round-pill">${rnd}</span>` : ''}</div>`;
   }
   return wwsBanner(d) + `<div class="wws-tn-rows wws-tennis${d.pre?' pre':''}">${rows}</div>${statusHtml}`;
 }
@@ -14091,7 +14094,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r514-tennis-no-fake-midnight';
+const BUILD_MARKER = 'r515-tennis-round-pill';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
