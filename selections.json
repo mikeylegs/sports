@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-09-08T15:56:54.741Z",
+  "updated": "2026-09-08T16:12:11.236Z",
   "events": [
     {
       "league": "tennis/atp,tennis/wta",
@@ -76,7 +76,48 @@
     }
   ],
   "watch": {
-    "teams": [],
-    "players": []
+    "teams": [
+      {
+        "league": "baseball/mlb",
+        "abbr": "NYY",
+        "name": "New York Yankees"
+      },
+      {
+        "league": "hockey/nhl",
+        "abbr": "NYR",
+        "name": "New York Rangers"
+      },
+      {
+        "league": "basketball/nba",
+        "abbr": "NY",
+        "name": "New York Knicks"
+      }
+    ],
+    "players": [
+      {
+        "sport": "tennis",
+        "name": "Ben Shelton"
+      },
+      {
+        "sport": "tennis",
+        "name": "Carlos Alcaraz"
+      },
+      {
+        "sport": "tennis",
+        "name": "Alexander Zverev"
+      },
+      {
+        "sport": "tennis",
+        "name": "Coco Gauff"
+      },
+      {
+        "sport": "golf",
+        "name": "Scottie Scheffler"
+      },
+      {
+        "sport": "golf",
+        "name": "Rory McIlroy"
+      }
+    ]
   }
 }
