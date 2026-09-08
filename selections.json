@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-09-08T16:12:11.236Z",
+  "updated": "2026-09-08T16:44:59.933Z",
   "events": [
     {
       "league": "tennis/atp,tennis/wta",
@@ -73,6 +73,24 @@
       "showFrom": "20260908",
       "showUntil": "20260908",
       "rank": 8
+    },
+    {
+      "league": "tennis/atp,tennis/wta",
+      "label": "Tennis · US Open",
+      "espnId": "189-2026:182573",
+      "title": "C. Gauff (#4) v M. Andreeva (#5)",
+      "showFrom": "20260909",
+      "showUntil": "20260909",
+      "rank": 9
+    },
+    {
+      "league": "tennis/atp,tennis/wta",
+      "label": "Tennis · US Open",
+      "espnId": "189-2026:182772",
+      "title": "B. Van De Zandschulp v A. Zverev (#1)",
+      "showFrom": "20260909",
+      "showUntil": "20260909",
+      "rank": 10
     }
   ],
   "watch": {
