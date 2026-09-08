@@ -1,43 +1,82 @@
 {
   "v": 1,
-  "updated": "2026-09-08T11:09:53.851Z",
-  "events": [],
+  "updated": "2026-09-08T15:56:54.741Z",
+  "events": [
+    {
+      "league": "tennis/atp,tennis/wta",
+      "label": "Tennis · US Open",
+      "espnId": "189-2026:182533",
+      "title": "L. Noskova (#6) v A. Sabalenka (#1)",
+      "showFrom": "20260908",
+      "showUntil": "20260908",
+      "rank": 1
+    },
+    {
+      "league": "tennis/atp,tennis/wta",
+      "label": "Tennis · US Open",
+      "espnId": "189-2026:182777",
+      "title": "A. Michelsen v F. Tiafoe (#11)",
+      "showFrom": "20260908",
+      "showUntil": "20260908",
+      "rank": 2
+    },
+    {
+      "league": "tennis/atp,tennis/wta",
+      "label": "Tennis · US Open",
+      "espnId": "189-2026:182535",
+      "title": "E. Navarro (#26) v J. Pegula (#3)",
+      "showFrom": "20260908",
+      "showUntil": "20260908",
+      "rank": 3
+    },
+    {
+      "league": "tennis/atp,tennis/wta",
+      "label": "Tennis · US Open",
+      "espnId": "189-2026:182780",
+      "title": "C. Alcaraz (#2) v B. Shelton (#8)",
+      "showFrom": "20260908",
+      "showUntil": "20260908",
+      "rank": 4
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816863",
+      "title": "Cincinnati Reds @ Los Angeles Dodgers",
+      "showFrom": "20260908",
+      "showUntil": "20260908",
+      "rank": 5
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816858",
+      "title": "New York Mets @ Miami Marlins",
+      "showFrom": "20260908",
+      "showUntil": "20260908",
+      "rank": 6
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816853",
+      "title": "Los Angeles Angels @ Boston Red Sox",
+      "showFrom": "20260908",
+      "showUntil": "20260908",
+      "rank": 7
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816859",
+      "title": "Tampa Bay Rays @ Atlanta Braves",
+      "showFrom": "20260908",
+      "showUntil": "20260908",
+      "rank": 8
+    }
+  ],
   "watch": {
-    "teams": [
-      {
-        "league": "soccer/eng.1",
-        "abbr": "MCI",
-        "name": "Manchester City"
-      },
-      {
-        "league": "baseball/mlb",
-        "abbr": "NYY",
-        "name": "New York Yankees"
-      },
-      {
-        "league": "hockey/nhl",
-        "abbr": "NYR",
-        "name": "New York Rangers"
-      },
-      {
-        "league": "basketball/nba",
-        "abbr": "NY",
-        "name": "New York Knicks"
-      }
-    ],
-    "players": [
-      {
-        "sport": "tennis",
-        "name": "Coco Gauff"
-      },
-      {
-        "sport": "tennis",
-        "name": "Alexander Zverev"
-      },
-      {
-        "sport": "tennis",
-        "name": "Ben Shelton"
-      }
-    ]
+    "teams": [],
+    "players": []
   }
 }
