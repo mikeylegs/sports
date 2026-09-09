@@ -14428,7 +14428,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r523-probe-simple-summary';
+const BUILD_MARKER = 'r524-probes-input-fix-copy';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -16451,6 +16451,10 @@ window.CC = (function(){
   // console-callable, read-only speed-runs; this just gives them n/opts inputs and a results
   // pane instead of a browser console. Same functions, zero new selection/resolution logic.
   var PROBE_RESULTS={montage:null, recap:null}, PROBE_BUSY={montage:false, recap:false};
+  // r524: remembers the LAST value/checked/selected state of the probe inputs across re-renders
+  // (the busy-state render, the 1s live timer on other sub-tabs, tab switches) so the controls
+  // don't visually snap back to their hardcoded defaults after every rebuild of pb.innerHTML.
+  var PROBE_INPUTS={mn:20, mrebuild:false, rn:15, rslot:'yank'};
   /* P2 (r245): staged flag overrides. Seeded from the URL on open; the user edits them via
      the interactive controls; the reload button applies them to a new URL. Distinct from the
      URL's current flags so we can show pending changes before reload. ACTION flags never
@@ -17008,24 +17012,35 @@ window.CC = (function(){
                    }).join('\n') : '(0 rows)');
         var rSimple = (rR && !rR.error && rR.simple) ? rR.simple : '';
         var rSummary = (rR && !rR.error && rR.summary) ? rR.summary : '';
+        var _cpBtn = function(elId, label){
+          return ' <button class="probe-copy" onclick="CC.copyProbe(\''+elId+'\',this)" title="Copy to clipboard">📋 '+label+'</button>';
+        };
         pb.innerHTML =
             '<div class="probe-block">'
           + '<b>🎥 Montage speed-run</b> <span class="nt" style="display:inline">— league-wide HR reel (montageBuild + _montageClipFor)</span><br>'
-          + 'n: <input id="cc-mprobe-n" type="number" min="1" max="200" value="20" style="width:56px">'
-          + ' <label style="margin-left:8px"><input id="cc-mprobe-rebuild" type="checkbox"> rebuild queue</label>'
+          + 'n: <input id="cc-mprobe-n" type="number" min="1" max="200" value="'+PROBE_INPUTS.mn+'" style="width:56px" '
+              + 'oninput="CC.syncProbeInput(\'mn\',this.value)" title="How many queued HRs to speed-run (in order)">'
+          + ' <label style="margin-left:8px" title="Force a fresh montageBuild() instead of reusing the cached queue — use after new HRs have happened since the last run">'
+              + '<input id="cc-mprobe-rebuild" type="checkbox"'+(PROBE_INPUTS.mrebuild?' checked':'')+' onchange="CC.syncProbeInput(\'mrebuild\',this.checked)"> rebuild queue</label>'
           + ' <button id="cc-mprobe-btn" onclick="CC.runMontageProbe()"'+(mBusy?' disabled':'')+'>'+(mBusy?'Running…':'Run')+'</button>'
           + '</div>'
-          + '<pre>'+mTxt.replace(/</g,'&lt;')+'</pre>'
-          + (mSimple ? '<div style="margin-top:6px"><b>Simplified:</b><pre>'+mSimple.replace(/</g,'&lt;')+'</pre></div>' : '')
+          + '<pre id="cc-mprobe-out">'+mTxt.replace(/</g,'&lt;')+'</pre>'
+          + (mTxt && mTxt.charAt(0)!=='(' ? _cpBtn('cc-mprobe-out','copy table') : '')
+          + (mSimple ? '<div style="margin-top:6px"><b>Simplified:</b>'+_cpBtn('cc-mprobe-simple','copy list')+'<pre id="cc-mprobe-simple">'+mSimple.replace(/</g,'&lt;')+'</pre></div>' : '')
           + (mSummary ? '<div class="nt">'+mSummary.replace(/</g,'&lt;')+'</div>' : '')
           + '<div class="probe-block" style="margin-top:14px">'
           + '<b>📺 Recap rotation speed-run</b> <span class="nt" style="display:inline">— RECAP.director cycle (resolveVideo)</span><br>'
-          + 'n: <input id="cc-rprobe-n" type="number" min="1" max="100" value="15" style="width:56px">'
-          + ' slot: <select id="cc-rprobe-slot"><option value="yank">yank</option><option value="secondary">secondary</option></select>'
+          + 'n: <input id="cc-rprobe-n" type="number" min="1" max="100" value="'+PROBE_INPUTS.rn+'" style="width:56px" '
+              + 'oninput="CC.syncProbeInput(\'rn\',this.value)" title="How many rotation ticks to speed-run">'
+          + ' slot: <select id="cc-rprobe-slot" onchange="CC.syncProbeInput(\'rslot\',this.value)" '
+              + 'title="Which on-screen recap slot to simulate — yank (hero slot: team hoh-nyy/hoh-nym, pga-golf, wws-final are eligible) or secondary (those are skipped)">'
+          + '<option value="yank"'+(PROBE_INPUTS.rslot==='yank'?' selected':'')+'>yank</option>'
+          + '<option value="secondary"'+(PROBE_INPUTS.rslot==='secondary'?' selected':'')+'>secondary</option></select>'
           + ' <button id="cc-rprobe-btn" onclick="CC.runRecapProbe()"'+(rBusy?' disabled':'')+'>'+(rBusy?'Running…':'Run')+'</button>'
           + '</div>'
-          + '<pre>'+rTxt.replace(/</g,'&lt;')+'</pre>'
-          + (rSimple ? '<div style="margin-top:6px"><b>Simplified:</b><pre>'+rSimple.replace(/</g,'&lt;')+'</pre></div>' : '')
+          + '<pre id="cc-rprobe-out">'+rTxt.replace(/</g,'&lt;')+'</pre>'
+          + (rTxt && rTxt.charAt(0)!=='(' ? _cpBtn('cc-rprobe-out','copy table') : '')
+          + (rSimple ? '<div style="margin-top:6px"><b>Simplified:</b>'+_cpBtn('cc-rprobe-simple','copy list')+'<pre id="cc-rprobe-simple">'+rSimple.replace(/</g,'&lt;')+'</pre></div>' : '')
           + (rSummary ? '<div class="nt">'+rSummary.replace(/</g,'&lt;')+'</div>' : '')
           + '<div class="nt">Both are read-only speed-runs: they resolve picks through the real selector '
           + 'functions (same code the live rotations use) but never call playCompanionClip/showTakeover/'
@@ -17110,7 +17125,13 @@ window.CC = (function(){
           if(open){ if(!CUR) CUR='now';
             if(_liveT) clearInterval(_liveT);
             _liveT=setInterval(function(){ try{
-              if(CUR==='now'||CUR==='montage'||CUR==='brain'||CUR==='pipeline') renderPane(CUR);   // r301: +pipeline (WWS sub-tab live diag)
+              // r524: Probes sub-tab holds no "live" data (PROBE_RESULTS only changes on a Run
+              // click, which already calls renderPane itself) — rebuilding its innerHTML every
+              // second was blowing away the n/rebuild/slot inputs mid-interaction (checkbox
+              // silently reverting, the slot <select> collapsing back to 'yank' the instant you
+              // opened it) and resetting scroll to the top of the panel. Skip it here; the other
+              // pipeline sub-tabs (sources/yt/wws/quota) keep their real 1s live diag.
+              if(CUR==='now'||CUR==='montage'||CUR==='brain'||(CUR==='pipeline'&&PIPE_SUB!=='probes')) renderPane(CUR);   // r301: +pipeline (WWS sub-tab live diag)
             }catch(_){} }, 1000);
           } else if(_liveT){ clearInterval(_liveT); _liveT=null; }
         }catch(_){}
@@ -17132,10 +17153,14 @@ window.CC = (function(){
     // and against the CC having closed mid-run (renderPane no-ops safely if 'probes' isn't
     // still the active sub-tab; PROBE_RESULTS persists either way for the next open).
     runMontageProbe:function(){ if(PROBE_BUSY.montage) return;
-      PROBE_BUSY.montage=true; try{ renderPane('pipeline'); }catch(_){}
+      // r524: read the n/rebuild inputs BEFORE the busy-state renderPane() below — that call
+      // rebuilds pb.innerHTML to show "Running…", which re-creates #cc-mprobe-n/#cc-mprobe-rebuild
+      // from scratch at their DEFAULT markup values. Reading them after (the r522 order) silently
+      // discarded whatever the user had typed/checked and always ran with n=20, rebuild=off.
       var nEl=$('cc-mprobe-n'), rbEl=$('cc-mprobe-rebuild');
       var n=parseInt(nEl&&nEl.value,10)||20;
       var opts={}; if(rbEl&&rbEl.checked) opts.rebuild=1;
+      PROBE_BUSY.montage=true; try{ renderPane('pipeline'); }catch(_){}
       (async function(){
         try{ PROBE_RESULTS.montage = await window.montageProbe(n, opts); }
         catch(e){ PROBE_RESULTS.montage = { error:String((e&&e.message)||e) }; }
@@ -17144,10 +17169,11 @@ window.CC = (function(){
       })();
     },
     runRecapProbe:function(){ if(PROBE_BUSY.recap) return;
-      PROBE_BUSY.recap=true; try{ renderPane('pipeline'); }catch(_){}
+      // r524: same fix as runMontageProbe above — read n/slot before the busy-state re-render.
       var nEl=$('cc-rprobe-n'), slotEl=$('cc-rprobe-slot');
       var n=parseInt(nEl&&nEl.value,10)||15;
       var opts={ slot:(slotEl&&slotEl.value)||'yank' };
+      PROBE_BUSY.recap=true; try{ renderPane('pipeline'); }catch(_){}
       (async function(){
         try{ PROBE_RESULTS.recap = await window.recapProbe(n, opts); }
         catch(e){ PROBE_RESULTS.recap = { error:String((e&&e.message)||e) }; }
@@ -17155,6 +17181,28 @@ window.CC = (function(){
         try{ renderPane('pipeline'); }catch(_){}
       })();
     },
+    // r524: fired on every keystroke/change of a probe input so PROBE_INPUTS always reflects what's
+    // on screen, independent of whether/when a re-render happens next (busy-state render, the other
+    // pipeline sub-tabs' 1s live timer, a tab switch and back). Purely cosmetic bookkeeping — the
+    // actual run still reads the live DOM value at click time (see runMontageProbe/runRecapProbe).
+    syncProbeInput:function(key, val){ try{ PROBE_INPUTS[key]=val; }catch(_){} },
+    copyProbe:function(elId, btn){ try{
+        var el=$(elId); if(!el) return;
+        var text=el.textContent||'';
+        var done=function(ok){ if(!btn) return; var orig=btn.textContent;
+          btn.textContent = ok ? '✓ copied' : '✗ failed';
+          setTimeout(function(){ try{ btn.textContent=orig; }catch(_){} }, 1200); };
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(text).then(function(){ done(true); }, function(){ done(false); });
+        } else {
+          // r524 fallback: older WebViews (kiosk Chromium builds vary) may lack the async
+          // Clipboard API — hidden-textarea + execCommand('copy') is the standard shim.
+          var ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed';
+          ta.style.opacity='0'; document.body.appendChild(ta); ta.focus(); ta.select();
+          var ok=false; try{ ok=document.execCommand('copy'); }catch(_){}
+          document.body.removeChild(ta); done(ok);
+        }
+      }catch(_){} },
     star:function(n){ try{ var i=stars.indexOf(n); if(i<0) stars.push(n); else stars.splice(i,1);
         savePrefs(); renderFlags(); }catch(e){} },
     fsz:function(d){ try{ FSZ=Math.max(12,Math.min(20,FSZ+d));
