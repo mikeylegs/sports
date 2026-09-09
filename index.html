@@ -12804,7 +12804,14 @@ async function wwsPollEvents(){
         if (kind === 'tennis' && followedSide != null && typeof showTakeover === 'function'){
           const newD = WWS.events[e.espnId];
           const wasFinal = _prevTennisEv && !_prevTennisEv.pre && !_prevTennisEv.live;
-          if (!wasFinal && !newD.pre && !newD.live){
+          // r534: WWS.events is pure in-memory — a page refresh wipes it, so _prevTennisEv is
+          // undefined on the first poll after every reload. wasFinal then reads false (nothing to
+          // compare against) even though the match has been sitting final in ESPN's feed the
+          // whole time, so the "just transitioned to final" edge fired on every single refresh.
+          // Mike: "getting the Pegula splash every time I refresh... it should go." Require
+          // _prevTennisEv to actually exist — i.e. we tracked this match live/pre ourselves THIS
+          // session — so a cold boot into an already-final match never fires, only a real edge does.
+          if (_prevTennisEv && !wasFinal && !newD.pre && !newD.live){
             const mySide = newD.sides[followedSide], otherSide = newD.sides[1 - followedSide];
             if (mySide && otherSide){
               const won = !!mySide.winner;
@@ -14276,9 +14283,18 @@ function renderLastFinalSlot(abbr, g, nextGame, slotClass, opts) {
   // classList pass (r530) — that post-hoc swap caused a visible flash (frame
   // 1 renders the old hardcoded default, frame 2 swaps to the real slide) on
   // every fetchAll rebuild, which read as new stutter. Single atomic paint now.
+  // r533: potg/spot/teamlead/hr/era always come back data-ready="0" on a fresh rebuild — their
+  // content depends on an async fetch that hasn't re-run for the new DOM node yet. Baking
+  // .active onto one of them (because the rotation had legitimately been sitting there before
+  // the rebuild) creates an orphan: readySlides() filters unready slides out of its own
+  // candidate list, so paint() never sees it and never turns it back off — it stays active
+  // forever, stacked on top of whatever paint() correctly activates next. Mike: "Weird bug...
+  // POTG overlapping next game... wasn't momentary." Only lf/stand/next are always-ready in the
+  // fresh markup, so only those are safe to carry forward across a rebuild.
   const _hiddenSlides = new Set((typeof getHiddenCards==='function'?getHiddenCards():[]));
+  const _alwaysReadyTypes = new Set(['lf','stand','next']);
   const _tracked = (window._lfActiveKey || {})[slotClass];
-  const _activeKey = (_tracked && !_hiddenSlides.has(_tracked.type)) ? _tracked.key : (hasRecap ? 'lf' : 'next');
+  const _activeKey = (_tracked && _alwaysReadyTypes.has(_tracked.type) && !_hiddenSlides.has(_tracked.type)) ? _tracked.key : (hasRecap ? 'lf' : 'next');
   const _lfActive = key => (opts.bare ? '' : (key === _activeKey ? ' active' : ''));
   const isNYY = abbr === 'NYY';
   const teamIsAway = hasRecap && g.awayAbbr === abbr;
@@ -14601,7 +14617,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r532-tennis-set-won-fix';
+const BUILD_MARKER = 'r534-tennis-splash-refresh-fix';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
