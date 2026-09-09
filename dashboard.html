@@ -1347,7 +1347,21 @@ html.nomask #mlb-takeover.tko-full .tkoH-photo{ -webkit-mask:none !important; ma
    own 100% value) during the invisible tko-prep frame, so the ONLY visible motion left is the
    card's existing tkopopC pop-in. Without this the animation would replay from its 0% state the
    moment tko-prep is swapped for show (a fresh keyframe play), causing a double-motion flicker. */
-#mlb-takeover.tko-wc.tkflag .tkoA-bgflag-bold{animation:none !important;opacity:0.6;}
+/* r529 — Mike circled it: 3 visible gaps (left, top, bottom) between the card edge/accent bar
+   and where the actual flag graphic starts. Re-checked the CSS: .tkoA-bgflag is inset:0, 100%/100%,
+   object-fit:cover against #mlb-takeover with padding:0 — that combination CANNOT leave a margin
+   on its own (cover always fills the box, cropping instead of letterboxing). A uniform gap on
+   multiple sides that CSS positioning can't produce points at the ESPN flag asset itself: these
+   `athlete.flag.href` icons are built as small badges (a lot of them ship with built-in padding/
+   a border since they're designed for compact display, not full-bleed backdrops), so `cover`
+   faithfully renders the image INCLUDING that baked-in margin. transform:scale() on the already-
+   cropped (overflow:hidden on .tko-wc) image pushes more of that fixed asset margin outside the
+   visible crop, shrinking it in view without needing to touch positioning. 1.3 is a starting
+   estimate, NOT dialed against the real asset — the studio's placeholder SVGs don't have this
+   baked-in padding at all, so this can't be tuned there; nudge --tn-flag-scale up/down against the
+   real wall and tell me the number that kills the gaps, or send the actual flag image file and
+   I'll measure the real padding instead of guessing. */
+#mlb-takeover.tko-wc.tkflag .tkoA-bgflag-bold{animation:none !important;opacity:0.6;transform:scale(var(--tn-flag-scale,1.3));}
 @keyframes tkoSweep{0%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
 #mlb-takeover.left{left:0;}
 #mlb-takeover.right{left:50%;}
@@ -14539,7 +14553,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r528-final-kicker-selector-fix';
+const BUILD_MARKER = 'r529-flag-scale-crop-estimate';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
