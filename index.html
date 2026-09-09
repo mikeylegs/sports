@@ -3682,9 +3682,17 @@ window.montageProbe = async function(n, opts){
   const skipped = rows.filter(r => String(r.picked).indexOf('SKIP') === 0).length;
   const errored = rows.filter(r => String(r.picked).indexOf('ERROR') === 0).length;
   try{ console.table(rows); }catch(_){ console.log(rows); }
-  console.log('[montageProbe] ' + rows.length + '/' + queue.length + ' beats resolved in '
+  const summary = '[montageProbe] ' + rows.length + '/' + queue.length + ' beats resolved in '
     + (Date.now() - t0) + 'ms — ' + skipped + ' skipped, ' + errored + ' errored. '
-    + 'No video was played (playCompanionClip/showTakeover never called).');
+    + 'No video was played (playCompanionClip/showTakeover never called).';
+  console.log(summary);
+  // r523: stash the bottom-line summary + a cleaned ordered list as extra (non-enumerable-breaking)
+  // properties on the returned array — arrays stay arrays (console.table/.map/.filter all still
+  // work exactly as before for anyone calling this from the console), the CC Probes tab just reads
+  // rows.summary/rows.simple to show the same text it would've had to scroll the console for.
+  rows.summary = summary;
+  rows.simple = rows.map((r, i) => (i + 1) + '. ' + (r.batter || '?') + ' HR#' + (r.hr == null ? '—' : r.hr)
+    + ' (' + (r.game || '') + ') → ' + r.picked).join('\n');
   return rows;
 };
 
@@ -8968,12 +8976,21 @@ async function findRecap(sourceId){
    pga-golf/wws-final eligibility checks, same golf-boost retarget — kept line-for-line
    equivalent to recapDirectorTick, ~7939-8077, so if that gating logic changes both places need
    updating) that never touches the real cursor/seen-set/DOM, and resolves the video the same
-   way the real dispatch would — via findRecap(), the exact same picker playRecap() calls —
-   EXCEPT findRecap runs under window._auditing=true, the exact same read-only flag the existing
-   Pool Auditor (?pools=1, poolsSweep() below) already uses to guarantee "a sweep cannot change
-   what the panel serves" (see R123 comment below): with it set, findRecap does not write its
-   video cache, does not stamp _recapServedAt, does not touch the anti-monotony ring — so this
-   probe cannot bias which clip the REAL next rotation picks. playRecap() itself is never called.
+   way the real dispatch would — via resolveVideo() (~10465, plus its fallback-source chain from
+   playRecap ~10598), the exact wrapper playRecap() calls, NOT findRecap() directly. (r521b: the
+   first cut of this probe called findRecap() directly and Mike caught the fallout — it made the
+   already-expired wc-final pin (expiresAt 2026-08-03) look playable, because findRecap's PINNED
+   branch skips everything, while resolveVideo's expiresAt check at the top would have correctly
+   returned null. resolveVideo also owns the MLB-exact-recap path for hoh-nyy/hoh-nym — a real
+   game's mp4 cut via mlbRecap()/ucsMlbGame, entirely bypassing YouTube when one exists — which
+   findRecap alone can never see.) resolveVideo's own YouTube leg still runs under
+   window._auditing=true, the exact same read-only flag the existing Pool Auditor (?pools=1,
+   poolsSweep() below) already uses to guarantee "a sweep cannot change what the panel serves"
+   (see R123 comment below) — findRecap under that flag skips its cache write, its
+   _recapServedAt stamp, and the anti-monotony ring update. The MLB/SNY legs read live data and
+   write nothing except the window._recapVia debug flag, snapshotted and restored same as
+   _auditing. playRecap() itself is never called — no video plays, no _recapActive claim, no
+   dormancy/YTLT log writes (those live in playRecap, after the resolve step, never reached).
    Usage: await recapProbe(10)   — or recapProbe(20, {slot:'secondary'}) for the other pane. */
 window.recapProbe = async function(n, opts){
   n = n || 10; opts = opts || {};
@@ -8984,7 +9001,26 @@ window.recapProbe = async function(n, opts){
   const seenLocal = new Set(_recapSeen);    // LOCAL clone — the real _recapSeen is never written
   const rows = [];
   const wasAuditing = window._auditing;
+  const wasRecapVia = window._recapVia;
   window._auditing = true;                  // read-only mode for findRecap (R123's own guarantee)
+  // r521b — Mike caught this by reading the wc-final result: playRecap() does NOT call
+  // findRecap() directly, it calls resolveVideo(sourceId) (~10465), which wraps findRecap with
+  // the disabled/pin-expiry checks (10467-10479 — this is WHY the first cut of this probe wrongly
+  // showed the expired wc-final pin as playable), the MLB-exact-recap path for team sources
+  // (ucsMlbGame/mlbRecap, bypassing YouTube entirely when a real cut exists), the SNY-condensed
+  // path for NYM, r167's full-game suppression, and (10598) a fallback-source chain. Calling
+  // resolveVideo() instead of findRecap() is the fix — same read-only guarantee (_auditing only
+  // gates findRecap/the YouTube leg; the MLB/SNY legs read live data but write nothing except the
+  // window._recapVia debug flag, snapshotted/restored below same as _auditing).
+  async function _resolve(sourceId){
+    let video = null;
+    try { video = await resolveVideo(sourceId); } catch(ex){ throw ex; }
+    if (!video){
+      const fb = (RECAP.sources[sourceId] || {}).fallback;
+      if (fb) video = await resolveVideo(fb);   // mirrors playRecap's own fallback chain (10598)
+    }
+    return video;
+  }
   try {
     for (let step = 0; step < n; step++){
       // ---- WWS-companion priority (mirrors recapDirectorTick's R65 block, read-only) ----
@@ -8996,7 +9032,7 @@ window.recapProbe = async function(n, opts){
         if (jump && !seenLocal.has(jump.seen)){
           seenLocal.add(jump.seen);
           let video = null, err = null;
-          try { video = await findRecap(jump.src); } catch(ex){ err = String((ex && ex.message) || ex); }
+          try { video = await _resolve(jump.src); } catch(ex){ err = String((ex && ex.message) || ex); }
           rows.push({ '#': rows.length + 1, cand: jump.src, note: 'WWS jump (best-effort, not a cycle slot)',
             picked: video ? (video.title || video.videoId) : (err ? 'ERROR: ' + err : 'NO VIDEO') });
           // real code always falls through to the cycle scan after a WWS jump attempt — mirrored:
@@ -9029,7 +9065,7 @@ window.recapProbe = async function(n, opts){
         // this is the point where the real tick calls playRecap(cand, ...) — resolve, don't play.
         idx = (pos + 1) % cycle.length;   // LOCAL advance only — RECAP.director.idx untouched
         let video = null, err = null;
-        try { video = await findRecap(cand); } catch(ex){ err = String((ex && ex.message) || ex); }
+        try { video = await _resolve(cand); } catch(ex){ err = String((ex && ex.message) || ex); }
         rows.push({ '#': rows.length+1, cand, note:'DISPATCH', picked: video ? (video.title || video.videoId) : (err ? 'ERROR: ' + err : 'NO VIDEO') });
         dispatched = true;
         break;
@@ -9040,12 +9076,21 @@ window.recapProbe = async function(n, opts){
       }
     }
   } finally {
-    window._auditing = wasAuditing;   // always restore, even if a candidate's findRecap threw
+    window._auditing = wasAuditing;   // always restore, even if a candidate's resolveVideo threw
+    window._recapVia = wasRecapVia;   // resolveVideo sets this debug flag on every call — restore it too
   }
   try{ console.table(rows); }catch(_){ console.log(rows); }
-  console.log('[recapProbe] ' + rows.length + ' rotation steps resolved, read-only — '
+  const summary = '[recapProbe] ' + rows.length + ' rotation steps resolved, read-only — '
     + 'RECAP.director.idx/count, _recapSeen, the recap video cache, and DOM active-slide state '
-    + 'were all left untouched; no video was played (playRecap() was never called).');
+    + 'were all left untouched; no video was played (playRecap() was never called).';
+  console.log(summary);
+  // r523: same extra-props pattern as montageProbe (see its comment) — .summary/.simple, array
+  // identity/behavior otherwise unchanged. Simplified list drops skip/CYCLE-EXHAUSTED rows (those
+  // aren't "what would have played", they're why the scan moved on) and keeps DISPATCH + WWS-jump
+  // rows only, which is exactly the "clean ordered list of what would have played" Mike asked for.
+  rows.summary = summary;
+  rows.simple = rows.filter(r => r.note === 'DISPATCH' || String(r.note || '').indexOf('WWS jump') === 0)
+    .map((r, i) => (i + 1) + '. ' + r.cand + ' → ' + r.picked).join('\n');
   return rows;
 };
 
@@ -14383,7 +14428,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r521-recap-probe';
+const BUILD_MARKER = 'r523-probe-simple-summary';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -16401,6 +16446,11 @@ window.CC = (function(){
             ['pipeline','Pipeline'],['montage','Montage'],['brain','Brain'],['watch','Watchlist']];
   var DUMPS={now:'_now',montage:'_montage',brain:'_brain',tko:'tkoDump',watch:'favDump',pipeline:'poolsDump',debug:'dirDump'};   // P6: brain refreshes too
   var stars=[],FSZ=14,open=false,PIPE_SUB='sources';   // P3: pipeline sub-tab
+  // r522: Pipeline → Probes sub-tab. Mike: "Can we build these two into CC. I guess in
+  // pipeline tab?" — window.montageProbe()/window.recapProbe() (r520/r521b) already exist as
+  // console-callable, read-only speed-runs; this just gives them n/opts inputs and a results
+  // pane instead of a browser console. Same functions, zero new selection/resolution logic.
+  var PROBE_RESULTS={montage:null, recap:null}, PROBE_BUSY={montage:false, recap:false};
   /* P2 (r245): staged flag overrides. Seeded from the URL on open; the user edits them via
      the interactive controls; the reload button applies them to a new URL. Distinct from the
      URL's current flags so we can show pending changes before reload. ACTION flags never
@@ -16870,6 +16920,7 @@ window.CC = (function(){
         + '<button class="'+(sub==='yt'?'on':'')+'" onclick="CC.pipe(\'yt\')">\u25b6 Videos</button>'
         + '<button class="'+(sub==='wws'?'on':'')+'" onclick="CC.pipe(\'wws\')">\ud83c\udf0d WWS</button>'
         + '<button class="'+(sub==='quota'?'on':'')+'" onclick="CC.pipe(\'quota\')">\u26a1 Quota</button>'
+        + '<button class="'+(sub==='probes'?'on':'')+'" onclick="CC.pipe(\'probes\')">\ud83d\udd2c Probes</button>'
         + '</div><div class="pipebody" id="cc-pipebody"></div>';
       var pb=$('cc-pipebody'); if(!pb) return;
       /* r494: YouTube quota meter. NOT flag-gated — the tally is a side effect of calls that
@@ -16929,6 +16980,58 @@ window.CC = (function(){
         pb.innerHTML='<pre>'+(hdr+'\n\n'+rowsTxt).replace(/</g,'&lt;')+'</pre>'
           + '<div class="nt">Per-slide rotation state. <b>pool &lt;2</b> = rotation returns immediately (stall). '
           + '<b>active held</b> should climb to ~12s then flip; if it keeps resetting toward 0 while the wall re-renders, the timer is being restarted (the NYY-live bug r299 fixed).</div>';
+        return;
+      }
+      // r522: PROBES — n-input + run button for montageProbe()/recapProbe() (r520/r521b),
+      // instead of typing them in a browser console. Same functions, same read-only guarantees
+      // (no video ever plays, no rotation/cursor/seen-state is touched) — this pane only adds
+      // inputs and a results readout around calls the CC was already capable of making.
+      if(sub==='probes'){
+        var mR=PROBE_RESULTS.montage, rR=PROBE_RESULTS.recap;
+        var mBusy=PROBE_BUSY.montage, rBusy=PROBE_BUSY.recap;
+        var mTxt = mBusy ? 'running…'
+                 : !mR ? '(not run yet)'
+                 : mR.error ? 'ERROR: '+mR.error
+                 : (mR.length ? mR.map(function(r){
+                     return String(r['#']).padStart(3)+'  '+String(r.day||'').padEnd(11)
+                       + ' '+String(r.game||'').padEnd(9)+' '+String(r.batter||'').padEnd(22).slice(0,22)
+                       + ' hr:'+String(r.hr==null?'—':r.hr).padStart(2)+'  '+String(r.picked||'');
+                   }).join('\n') : '(0 rows — empty queue)');
+        var mSimple = (mR && !mR.error && mR.simple) ? mR.simple : '';
+        var mSummary = (mR && !mR.error && mR.summary) ? mR.summary : '';
+        var rTxt = rBusy ? 'running…'
+                 : !rR ? '(not run yet)'
+                 : rR.error ? 'ERROR: '+rR.error
+                 : (rR.length ? rR.map(function(r){
+                     return String(r['#']).padStart(3)+'  '+String(r.cand||'').padEnd(15)
+                       + ' '+String(r.note||'').padEnd(48).slice(0,48)+' '+String(r.picked||'');
+                   }).join('\n') : '(0 rows)');
+        var rSimple = (rR && !rR.error && rR.simple) ? rR.simple : '';
+        var rSummary = (rR && !rR.error && rR.summary) ? rR.summary : '';
+        pb.innerHTML =
+            '<div class="probe-block">'
+          + '<b>🎥 Montage speed-run</b> <span class="nt" style="display:inline">— league-wide HR reel (montageBuild + _montageClipFor)</span><br>'
+          + 'n: <input id="cc-mprobe-n" type="number" min="1" max="200" value="20" style="width:56px">'
+          + ' <label style="margin-left:8px"><input id="cc-mprobe-rebuild" type="checkbox"> rebuild queue</label>'
+          + ' <button id="cc-mprobe-btn" onclick="CC.runMontageProbe()"'+(mBusy?' disabled':'')+'>'+(mBusy?'Running…':'Run')+'</button>'
+          + '</div>'
+          + '<pre>'+mTxt.replace(/</g,'&lt;')+'</pre>'
+          + (mSimple ? '<div style="margin-top:6px"><b>Simplified:</b><pre>'+mSimple.replace(/</g,'&lt;')+'</pre></div>' : '')
+          + (mSummary ? '<div class="nt">'+mSummary.replace(/</g,'&lt;')+'</div>' : '')
+          + '<div class="probe-block" style="margin-top:14px">'
+          + '<b>📺 Recap rotation speed-run</b> <span class="nt" style="display:inline">— RECAP.director cycle (resolveVideo)</span><br>'
+          + 'n: <input id="cc-rprobe-n" type="number" min="1" max="100" value="15" style="width:56px">'
+          + ' slot: <select id="cc-rprobe-slot"><option value="yank">yank</option><option value="secondary">secondary</option></select>'
+          + ' <button id="cc-rprobe-btn" onclick="CC.runRecapProbe()"'+(rBusy?' disabled':'')+'>'+(rBusy?'Running…':'Run')+'</button>'
+          + '</div>'
+          + '<pre>'+rTxt.replace(/</g,'&lt;')+'</pre>'
+          + (rSimple ? '<div style="margin-top:6px"><b>Simplified:</b><pre>'+rSimple.replace(/</g,'&lt;')+'</pre></div>' : '')
+          + (rSummary ? '<div class="nt">'+rSummary.replace(/</g,'&lt;')+'</div>' : '')
+          + '<div class="nt">Both are read-only speed-runs: they resolve picks through the real selector '
+          + 'functions (same code the live rotations use) but never call playCompanionClip/showTakeover/'
+          + 'playRecap — nothing plays on the wall, and neither rotation’s cursor/seen-state/DOM is touched. '
+          + 'A recap run can make real YouTube API calls (quota-visible in the Quota tab) for sources not '
+          + 'already cached.</div>';
         return;
       }
       /* r250: host the LIVE HUD for the active sub (pools → rich WON/REQUIRE format; ytlog →
@@ -17024,6 +17127,34 @@ window.CC = (function(){
         try{ renderPane(k); }catch(_){}   // r200: refresh on switch, never stale
       }catch(e){} },
     pipe:function(which){ try{ PIPE_SUB=which; renderPane('pipeline'); }catch(e){} },   // P3: pipeline sub-tab
+    // r522: CC-hosted montageProbe()/recapProbe() — same read-only functions (r520/r521b),
+    // just called from a button instead of a console. Guarded against double-fire (PROBE_BUSY)
+    // and against the CC having closed mid-run (renderPane no-ops safely if 'probes' isn't
+    // still the active sub-tab; PROBE_RESULTS persists either way for the next open).
+    runMontageProbe:function(){ if(PROBE_BUSY.montage) return;
+      PROBE_BUSY.montage=true; try{ renderPane('pipeline'); }catch(_){}
+      var nEl=$('cc-mprobe-n'), rbEl=$('cc-mprobe-rebuild');
+      var n=parseInt(nEl&&nEl.value,10)||20;
+      var opts={}; if(rbEl&&rbEl.checked) opts.rebuild=1;
+      (async function(){
+        try{ PROBE_RESULTS.montage = await window.montageProbe(n, opts); }
+        catch(e){ PROBE_RESULTS.montage = { error:String((e&&e.message)||e) }; }
+        PROBE_BUSY.montage=false;
+        try{ renderPane('pipeline'); }catch(_){}
+      })();
+    },
+    runRecapProbe:function(){ if(PROBE_BUSY.recap) return;
+      PROBE_BUSY.recap=true; try{ renderPane('pipeline'); }catch(_){}
+      var nEl=$('cc-rprobe-n'), slotEl=$('cc-rprobe-slot');
+      var n=parseInt(nEl&&nEl.value,10)||15;
+      var opts={ slot:(slotEl&&slotEl.value)||'yank' };
+      (async function(){
+        try{ PROBE_RESULTS.recap = await window.recapProbe(n, opts); }
+        catch(e){ PROBE_RESULTS.recap = { error:String((e&&e.message)||e) }; }
+        PROBE_BUSY.recap=false;
+        try{ renderPane('pipeline'); }catch(_){}
+      })();
+    },
     star:function(n){ try{ var i=stars.indexOf(n); if(i<0) stars.push(n); else stars.splice(i,1);
         savePrefs(); renderFlags(); }catch(e){} },
     fsz:function(d){ try{ FSZ=Math.max(12,Math.min(20,FSZ+d));
