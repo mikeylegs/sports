@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-09-09T03:45:15.022Z",
+  "updated": "2026-09-09T05:28:55.286Z",
   "events": [
     {
       "league": "baseball/mlb",
@@ -180,10 +180,6 @@
       {
         "sport": "golf",
         "name": "Rory McIlroy"
-      },
-      {
-        "sport": "tennis",
-        "name": "Emma Navarro"
       },
       {
         "sport": "tennis",
