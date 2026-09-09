@@ -1,7 +1,107 @@
 {
   "v": 1,
-  "updated": "2026-09-09T14:09:04.685Z",
-  "events": [],
+  "updated": "2026-09-09T14:11:07.429Z",
+  "events": [
+    {
+      "league": "football/nfl",
+      "label": "NFL",
+      "espnId": "401872656",
+      "title": "New England Patriots @ Seattle Seahawks",
+      "showFrom": "20260909",
+      "showUntil": "20260909",
+      "rank": 1
+    },
+    {
+      "league": "soccer/esp.1",
+      "label": "LALIGA",
+      "espnId": "401882880",
+      "title": "Rayo Vallecano @ Real Madrid",
+      "showFrom": "20260912",
+      "showUntil": "20260912",
+      "rank": 2
+    },
+    {
+      "league": "soccer/eng.1",
+      "label": "English Premier League",
+      "espnId": "401878779",
+      "title": "Arsenal @ Sunderland",
+      "showFrom": "20260912",
+      "showUntil": "20260912",
+      "rank": 3
+    },
+    {
+      "league": "soccer/ita.1",
+      "label": "Serie A",
+      "espnId": "401874941",
+      "title": "AC Milan @ Lazio",
+      "showFrom": "20260912",
+      "showUntil": "20260912",
+      "rank": 4
+    },
+    {
+      "league": "soccer/ger.1",
+      "label": "Bundesliga",
+      "espnId": "401884799",
+      "title": "SC Paderborn 07 @ Borussia Dortmund",
+      "showFrom": "20260912",
+      "showUntil": "20260912",
+      "rank": 5
+    },
+    {
+      "league": "tennis/atp,tennis/wta",
+      "label": "Tennis · US Open",
+      "espnId": "189-2026:182576",
+      "title": "E. Rybakina (#2) v Q. Zheng",
+      "showFrom": "20260909",
+      "showUntil": "20260909",
+      "rank": 6
+    },
+    {
+      "league": "tennis/atp,tennis/wta",
+      "label": "Tennis · US Open",
+      "espnId": "189-2026:182573",
+      "title": "C. Gauff (#4) v M. Andreeva (#5)",
+      "showFrom": "20260909",
+      "showUntil": "20260909",
+      "rank": 7
+    },
+    {
+      "league": "tennis/atp,tennis/wta",
+      "label": "Tennis · US Open",
+      "espnId": "189-2026:182770",
+      "title": "A. Blockx (#28) v K. Khachanov",
+      "showFrom": "20260909",
+      "showUntil": "20260909",
+      "rank": 8
+    },
+    {
+      "league": "tennis/atp,tennis/wta",
+      "label": "Tennis · US Open",
+      "espnId": "189-2026:182772",
+      "title": "B. Van De Zandschulp v A. Zverev (#1)",
+      "showFrom": "20260909",
+      "showUntil": "20260909",
+      "rank": 9
+    },
+    {
+      "league": "tennis/atp,tennis/wta",
+      "label": "Tennis · US Open",
+      "espnId": "189-2026:182553",
+      "title": "J. Pegula (#3) v A. Sabalenka (#1)",
+      "showFrom": "20260910",
+      "showUntil": "20260910",
+      "rank": 10
+    },
+    {
+      "league": "tennis/atp,tennis/wta",
+      "label": "Tennis · US Open",
+      "espnId": "189-2026:182766",
+      "title": "B. Shelton (#8) v F. Tiafoe (#11)",
+      "showFrom": "20260911",
+      "showUntil": "20260911",
+      "rank": 11
+    }
+  ],
   "watch": {
     "teams": [
       {
