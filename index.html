@@ -13762,33 +13762,27 @@ if (new URLSearchParams(location.search).get('wws') !== '0'){
   }, 1000);
 })();
 
-// r530: every fetchAll-driven re-render rebuilds a team's stage via
+// r530/r531: every fetchAll-driven re-render rebuilds a team's stage via
 // `slot.outerHTML = renderLastFinalSlot(...)`, and that fresh markup always
-// hardcodes slide 0 (lf, or next if no recap) as .active — independent of
+// hardcoded slide 0 (lf, or next if no recap) as .active — independent of
 // the rotation's own 12s interval, which keeps ticking its `idx` right
 // through the rebuild without restarting. Result: every 30-60s data refresh
 // visually snapped the pane back to slide 1 until the next rotation tick
-// (up to 12s later) repainted the real idx — looked like the countdown was
-// "resetting" the rotation cadence. Fix: paint() below stashes the current
-// slide's identity; _lfResyncActive re-applies it right after a rebuild so
-// the visible slide never moves except on the rotation's own tick.
+// (up to 12s later) repainted the real idx.
+// r530 first tried fixing this with a second rAF-scheduled classList pass
+// after the rebuild — that caused a worse, NEW visible flash (frame 1 paints
+// the old hardcoded default, frame 2 swaps to the real slide) on every
+// refresh. r531 removes that: paint() stashes {key,type} for
+// renderLastFinalSlot to read and bake directly into the fresh markup's
+// class= attributes (see _lfActive() there), so the rebuild is a single
+// atomic paint of the correct slide — no second frame, no flash.
 window._lfActiveKey = window._lfActiveKey || {};
 function _lfSlideKey(el) { return el && (el.id || el.dataset.slide); }
-function _lfResyncActive(slotClass) {
-  const key = window._lfActiveKey[slotClass];
-  if (!key) return;   // rotation hasn't painted yet this session — leave the default
-  const s = document.getElementById(`${slotClass}-stage`);
-  if (!s) return;
-  const slides = Array.from(s.querySelectorAll('.lf-slide'));
-  const match = slides.find(el => _lfSlideKey(el) === key);
-  if (!match) return;   // team/pane changed (anchor swap) — default active is correct there
-  slides.forEach(el => el.classList.toggle('active', el === match));
-}
 
 function startLfRotation(slotClass, divCacheId, teamMlbId, spotlights) {
   const flagKey = 'lfRotationStarted_' + slotClass;
   if (window[flagKey]) {
-    requestAnimationFrame(() => { _lfResyncActive(slotClass); lfHealStats(slotClass); });
+    requestAnimationFrame(() => lfHealStats(slotClass));
     return;
   }
   window[flagKey] = true;
@@ -13815,7 +13809,7 @@ function startLfRotation(slotClass, divCacheId, teamMlbId, spotlights) {
   const paint = (slides, i) => {
     slides.forEach((s, k) => s.classList.toggle('active', k === i));
     const cur = slides[i];
-    window._lfActiveKey[slotClass] = _lfSlideKey(cur);   // r530: remembered so a mid-cycle data rebuild can restore it
+    window._lfActiveKey[slotClass] = cur ? { key: _lfSlideKey(cur), type: cur.dataset.slide } : null;   // r531: baked into the next rebuild's markup directly (see renderLastFinalSlot's _lfActive)
     if (cur && cur.dataset.slide === 'stand') {
       const body = cur.querySelector('.lf-stand3');
       if (body) body.innerHTML = lfStand3Html(cur.dataset.div || divCacheId);   // R12: merged stage carries AL+NL slides
@@ -14239,6 +14233,11 @@ function renderLastFinalSlot(abbr, g, nextGame, slotClass, opts) {
   // pane can compose both teams into one stage. sfx keeps ids unique per team.
   opts = opts || {};
   const sfx = opts.bare ? '-' + abbr : '';
+  // r531: bake the rotation's real active slide into the fresh markup itself
+  // instead of correcting it after the fact via a second rAF-scheduled
+  // classList pass (r530) — that post-hoc swap caused a visible flash (frame
+  // 1 renders the old hardcoded default, frame 2 swaps to the real slide) on
+  // every fetchAll rebuild, which read as new stutter. Single atomic paint now.
   // r485: g from the MLB-statsapi yesterday-fallback (r474, _mlbFeedToLfShape) carries a
   // synthetic id ('mlb:'+gamePk) and its OWN already-correct `decisions` (pulled straight from
   // MLB's feed) — it isn't an ESPN event id, so ensureDecisions' summary?event=mlb:NNNN fetch
@@ -14259,6 +14258,15 @@ function renderLastFinalSlot(abbr, g, nextGame, slotClass, opts) {
   // bailing to a static card, we just drop the lf slide and keep the rest of
   // the evergreen rotation (stand/next/spot/teamlead/hr/era) running.
   const hasRecap = !!g;
+  // r531: bake the rotation's real active slide into the fresh markup itself
+  // instead of correcting it after the fact via a second rAF-scheduled
+  // classList pass (r530) — that post-hoc swap caused a visible flash (frame
+  // 1 renders the old hardcoded default, frame 2 swaps to the real slide) on
+  // every fetchAll rebuild, which read as new stutter. Single atomic paint now.
+  const _hiddenSlides = new Set((typeof getHiddenCards==='function'?getHiddenCards():[]));
+  const _tracked = (window._lfActiveKey || {})[slotClass];
+  const _activeKey = (_tracked && !_hiddenSlides.has(_tracked.type)) ? _tracked.key : (hasRecap ? 'lf' : 'next');
+  const _lfActive = key => (opts.bare ? '' : (key === _activeKey ? ' active' : ''));
   const isNYY = abbr === 'NYY';
   const teamIsAway = hasRecap && g.awayAbbr === abbr;
   const oppAbbr   = hasRecap ? (teamIsAway ? g.homeAbbr : g.awayAbbr) : '';
@@ -14351,7 +14359,7 @@ function renderLastFinalSlot(abbr, g, nextGame, slotClass, opts) {
   const spotlights = LF_SPOTLIGHTS[teamMlbId] || [];
   if (!opts.bare) startLfRotation(slotClass, divCacheId, teamMlbId, spotlights);
 
-  const coreSlides = `${hasRecap ? `<div class="lf-slide${opts.bare?'':' active'}" data-slide="lf" data-team="${abbr}">
+  const coreSlides = `${hasRecap ? `<div class="lf-slide${_lfActive('lf')}" data-slide="lf" data-team="${abbr}">
           <div class="lf-slide-head">Last Game</div>
           <div class="lf-score-row">
             <div class="lf-score-col">
@@ -14366,7 +14374,7 @@ function renderLastFinalSlot(abbr, g, nextGame, slotClass, opts) {
           </div>
           ${lfDecisionsHtml(decisions)}
         </div>` : ''}
-        <div class="lf-slide" data-slide="potg" data-ready="0" id="${slotClass}-potg" data-gamepk="${g&&(g.id||g.gamePk||g.pk)||''}">
+        <div class="lf-slide${_lfActive(`${slotClass}-potg`)}" data-slide="potg" data-ready="0" id="${slotClass}-potg" data-gamepk="${g&&(g.id||g.gamePk||g.pk)||''}">
           <div class="lf-slide-head">Player of the Game</div>
           <div class="lf-potg-body">
             <img class="lf-potg-img" src="" alt="" onerror="this.style.opacity=0" style="opacity:0">
@@ -14374,11 +14382,11 @@ function renderLastFinalSlot(abbr, g, nextGame, slotClass, opts) {
             <div class="lf-potg-line"></div>
           </div>
         </div>
-        <div class="lf-slide" data-slide="stand" data-div="${divCacheId}">
+        <div class="lf-slide${_lfActive('stand')}" data-slide="stand" data-div="${divCacheId}">
           <div class="lf-slide-head">${isNYY?'AL East':'NL East'}</div>
           <div class="lf-stand3" id="${slotClass}-stand3${sfx}">${lfStand3Html(divCacheId)}</div>
         </div>
-        <div class="lf-slide${(hasRecap||opts.bare)?'':' active'}" data-slide="next" data-opp="${nextOpp}" data-side="${nextSide}">
+        <div class="lf-slide${_lfActive('next')}" data-slide="next" data-opp="${nextOpp}" data-side="${nextSide}">
           ${nextOpp ? `<div class="lf-next2">
             <div class="lf-next2-opp">
               <img class="lf-next2-logo" src="${logoUrl('MLB',nextOpp)}" alt="" onerror="this.style.opacity=0">
@@ -14404,7 +14412,7 @@ function renderLastFinalSlot(abbr, g, nextGame, slotClass, opts) {
       </div>
       <div class="lf-stage" id="${slotClass}-stage">
         ${coreSlides}
-        ${spotlights.map((sp,i)=>`<div class="lf-slide" data-slide="spot" data-ready="0" id="${slotClass}-spot${i}">
+        ${spotlights.map((sp,i)=>`<div class="lf-slide${_lfActive(`${slotClass}-spot${i}`)}" data-slide="spot" data-ready="0" id="${slotClass}-spot${i}">
           <div class="lf-slide-head">Player Spotlight</div>
           <div class="lf-player">
             <div class="lf-player-top">
@@ -14414,15 +14422,15 @@ function renderLastFinalSlot(abbr, g, nextGame, slotClass, opts) {
             <div class="lf-player-stats"></div>
           </div>
         </div>`).join('')}
-        ${teamMlbId?`<div class="lf-slide" data-slide="teamlead" data-ready="0" id="${slotClass}-teamlead">
+        ${teamMlbId?`<div class="lf-slide${_lfActive(`${slotClass}-teamlead`)}" data-slide="teamlead" data-ready="0" id="${slotClass}-teamlead">
           <div class="lf-slide-head">Team Leaders</div>
           <div class="lf-tlead"></div>
         </div>`:''}
-        ${teamMlbId?`<div class="lf-slide" data-slide="hr" data-ready="0" id="${slotClass}-hr">
+        ${teamMlbId?`<div class="lf-slide${_lfActive(`${slotClass}-hr`)}" data-slide="hr" data-ready="0" id="${slotClass}-hr">
           <div class="lf-slide-head">Home Run Leaders</div>
           <div class="lf-leaders"></div>
         </div>
-        <div class="lf-slide" data-slide="era" data-ready="0" id="${slotClass}-era">
+        <div class="lf-slide${_lfActive(`${slotClass}-era`)}" data-slide="era" data-ready="0" id="${slotClass}-era">
           <div class="lf-slide-head">ERA Leaders</div>
           <div class="lf-leaders"></div>
         </div>`:''}
@@ -14580,7 +14588,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r530-lf-rotation-resync';
+const BUILD_MARKER = 'r531-lf-rotation-baked-active';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
