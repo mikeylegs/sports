@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-09-08T21:22:10.907Z",
+  "updated": "2026-09-09T02:18:20.717Z",
   "events": [],
   "watch": {
     "teams": [
@@ -52,6 +52,10 @@
       {
         "sport": "tennis",
         "name": "Frances Tiafoe"
+      },
+      {
+        "sport": "tennis",
+        "name": "Jessica Pegula"
       }
     ]
   }
