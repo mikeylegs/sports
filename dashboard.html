@@ -1284,18 +1284,26 @@ html.nomask #mlb-takeover.tko-full .tkoH-photo{ -webkit-mask:none !important; ma
 /* r519b: tennis box-score band — two stacked rows instead of the flat 2-number band. Overrides
    just the container's flex direction/height/padding; the row/name/set/tb classes inside are
    reused unchanged from the live WWS tennis card (.wws-tn-row etc., defined near line 446). */
-#mlb-takeover.tko-wc .tkoA-band-tennis{height:auto;min-height:26cqh;flex-direction:column;justify-content:center;gap:0.8cqh;padding:2.6cqh 4cqh;}
-#mlb-takeover.tko-wc .tkoA-band-tennis .wws-tn-row{padding:0;gap:2.6cqh;justify-content:center;}
-#mlb-takeover.tko-wc .tkoA-band-tennis .wws-tn-name{font-size:6.8cqh;min-width:26cqh;text-align:right;overflow:visible;color:rgba(255,255,255,0.62);}
-#mlb-takeover.tko-wc .tkoA-band-tennis .wws-tn-name.w{color:#fff;}
-#mlb-takeover.tko-wc .tkoA-band-tennis .wws-tn-sets{font-size:1em;min-width:26cqh;}
+#mlb-takeover.tko-wc .tkoA-band-tennis{height:auto;min-height:26cqh;flex-direction:column;justify-content:center;gap:1.8cqh;padding:2.6cqh 4cqh;}
+#mlb-takeover.tko-wc .tkoA-band-tennis .wws-tn-row{padding:0;gap:4.6cqh;justify-content:center;}
+/* r525: rank+name are one sub-group now (tennis-splash-studio.html r524d) — their own tight gap
+   (1.7cqh) independent of the row's name↔score gap (4.6cqh), so widening one never drags the other. */
+#mlb-takeover.tko-wc .tkoA-band-tennis .wws-tn-namegrp{display:flex;align-items:baseline;gap:1.7cqh;flex-shrink:0;}
+#mlb-takeover.tko-wc .tkoA-band-tennis .wws-tn-name{font-size:9cqh;width:36cqh;min-width:36cqh;flex-shrink:0;text-align:right;overflow:visible;color:rgba(255,255,255,0.62);}
+/* r525: winner's name is ALWAYS gold, independent of `accent` (accent still varies win/loss for
+   the ribbon — Mike: "highlight winner in gold no matter what"). */
+#mlb-takeover.tko-wc .tkoA-band-tennis .wws-tn-name.w{color:#fbbf24;}
+/* r524f: bottom row's name reads left-aligned (top stays right) — studio-dialed, Mike's call. */
+#mlb-takeover.tko-wc .tkoA-band-tennis .wws-tn-row:last-child .wws-tn-name{text-align:left;}
+#mlb-takeover.tko-wc .tkoA-band-tennis .wws-tn-sets{font-size:1em;gap:0.2cqh;}
 /* r519e: Mike — "score columns are not vertically aligned." wws-tn-set's base rule only sets
    min-width:2.0cqh (content-driven), so a set WITH a tiebreak superscript renders wider than one
    without, and since .wws-tn-sets is a plain flex row (no shared column grid), that shifted every
    later column out of line with the row above/below it. Fixed width (not min-width) turns each
    set into a real column — a tiebreak's <sup> can overflow it slightly (visually harmless) without
    pushing later columns. Confirmed via screenshot: 7/6, 4/6, 6/3 now line up exactly. */
-#mlb-takeover.tko-wc .tkoA-band-tennis .wws-tn-set{font-size:8.2cqh;width:10cqh;min-width:10cqh;}
+#mlb-takeover.tko-wc .tkoA-band-tennis .wws-tn-set{font-size:9.4cqh;width:8.5cqh;min-width:8.5cqh;}
+#mlb-takeover.tko-wc .tkoA-band-tennis .wws-tn-rank{font-size:5cqh;width:5.1cqh;min-width:5.1cqh;flex-shrink:0;text-align:right;font-weight:900;color:rgba(255,255,255,0.5);}
 #mlb-takeover.tko-wc .tkoA-nm{font-size:6.4cqh;font-weight:800;color:rgba(255,255,255,0.62);letter-spacing:0.2cqh;}
 /*R44*/#mlb-takeover.tko-wc .tkoA-sc{font-size:13cqh;font-weight:900;color:#fff;line-height:1;}
 #mlb-takeover.tko-wc .tkoA-dash{font-size:7cqh;font-weight:700;color:rgba(255,255,255,0.35);}
@@ -6648,8 +6656,13 @@ function tkoABuild(o){
     // .wws-tn-row/name/sets/set/tb VERBATIM \u2014 the exact classes/values already dialed for the
     // on-screen tennis card (r480/r500) \u2014 not new sizes invented for the splash. Per-set `won`
     // highlight uses the same >=6-games heuristic wwsTennisInner's own render already uses.
+    // r525: rank+name grouped into .wws-tn-namegrp (own dedicated gap, doesn't drag with the
+    // row's name<->score gap) — ported from tennis-splash-studio.html r524d/r524e/r525.
     ? `<div class="tkoA-band tkoA-band-tennis">${o.tnBox.map(s => `<div class="wws-tn-row">
-        <span class="wws-tn-name${s.winner ? ' w' : ''}">${s.name || ''}</span>
+        <div class="wws-tn-namegrp">
+          ${s.rank ? `<span class="wws-tn-rank">${s.rank}</span>` : ''}
+          <span class="wws-tn-name${s.winner ? ' w' : ''}">${s.name || ''}</span>
+        </div>
         <span class="wws-tn-sets">${(s.sets || []).map(v => `<span class="wws-tn-set${(+v.v >= 6) ? ' won' : ''}">${v.v != null ? v.v : ''}${v.tb ? `<sup class="wws-tn-tb">${v.tb}</sup>` : ''}</span>`).join('')}</span>
       </div>`).join('')}</div>`
     : o.band ? `<div class="tkoA-band">
@@ -6931,6 +6944,47 @@ function showTakeover(opts){
       requestAnimationFrame(()=>{ requestAnimationFrame(()=>{
         el.classList.remove('tko-prep'); el.classList.add('show');
       }); });
+    }
+    /* r525 — TENNIS BOX-SCORE NAME SYNC. Ported from tennis-splash-studio.html's
+       syncNameSizes(): the two `.wws-tn-name` spans each have a FIXED width column
+       (--tn-name-w equivalent above), so a long name can overflow its own box while the
+       other name (shorter) sits fine — shrinking only the overflowing one independently
+       made the "Name font-size" dial visibly move just one name, not both (r524e bug).
+       This finds whichever name needs the MOST shrink and applies that one size to both,
+       so they always move together and stay visually paired. `trueW()` mirrors fitText()'s
+       real technique (dashboard.html ~16169): temporarily clear overflow/whiteSpace/maxWidth
+       to read the TRUE unclipped scrollWidth before measuring. */
+    if (A.tnBox){
+      requestAnimationFrame(() => {
+        try{
+          const names = [...el.querySelectorAll('.tkoA-band-tennis .wws-tn-name')];
+          if (!names.length) return;
+          names.forEach(n => { n.style.fontSize = ''; });
+          const baseFontPx = parseFloat(getComputedStyle(names[0]).fontSize);
+          const minPx = baseFontPx * 0.45;
+          let neededPx = baseFontPx;
+          names.forEach(nameEl => {
+            const boxW = nameEl.clientWidth;
+            const o = { ov: nameEl.style.overflow, ws: nameEl.style.whiteSpace, mw: nameEl.style.maxWidth };
+            const trueW = () => {
+              nameEl.style.overflow = 'visible'; nameEl.style.whiteSpace = 'nowrap'; nameEl.style.maxWidth = 'none';
+              const w = nameEl.scrollWidth;
+              nameEl.style.overflow = o.ov; nameEl.style.whiteSpace = o.ws; nameEl.style.maxWidth = o.mw;
+              return w;
+            };
+            if (trueW() <= boxW + 0.5) return;
+            let lo = minPx, hi = baseFontPx, best = minPx;
+            for (let i = 0; i < 14; i++){
+              const mid = (lo + hi) / 2;
+              nameEl.style.fontSize = mid + 'px';
+              if (trueW() <= boxW + 0.5) { best = mid; lo = mid; } else { hi = mid; }
+            }
+            nameEl.style.fontSize = '';
+            neededPx = Math.min(neededPx, best);
+          });
+          if (neededPx < baseFontPx - 0.5) names.forEach(n => { n.style.fontSize = neededPx + 'px'; });
+        }catch(_){}
+      });
     }
     /* r230: pill is left-aligned below the name (no JS measure, no reflow). The centering
        experiments (r227 JS measure, r229 CSS column) both caused artifacts — left is clean. */
@@ -12710,12 +12764,19 @@ async function wwsPollEvents(){
               // new to fetch. `o.flag` is an EXISTING tkoABuild input (the soccer/WC goal card's
               // full-bleed flag treatment: `.tkoA-bgflag` + `.tkoA-scrim` gradient, dashboard.html
               // ~6556-6557/CSS ~1228-1229) — reused as-is, zero new markup/CSS. Always the
-              // FOLLOWED player's flag (not the match winner's), win or lose — this card is about
-              // our player. `onerror` on the img already hides it gracefully if a flag URL 404s.
-              showTakeover({ side:'right', a:{ accent, wash, flag: mySide.flag || '',
+              // FOLLOWED player's flag, win or lose (SUPERSEDED by r525 below — now the winner's
+              // flag). `onerror` on the img already hides it gracefully if a flag URL 404s.
+              // r525: Mike — "flag should represent country of winner", "drop FALLS in favor of
+              // WINS for the winner". Both are one change: headline/flag now derive from whichever
+              // SIDE actually won (winnerSide), not hardcoded to the followed player. `accent`/`wash`
+              // above are unchanged and still say whether it's good news for US (gold) or not
+              // (quiet slate) — that framing stays; only the headline text + flag image follow the
+              // match winner. Ported from tennis-splash-studio.html's deriveCard().
+              const winnerSide = newD.sides.find(s => s.winner) || mySide;
+              showTakeover({ side:'right', a:{ accent, wash, flag: winnerSide.flag || '',
                 kicker:'Final',
-                headline: won ? `${(mySide.name||'').toUpperCase()} WINS` : `${(mySide.name||'').toUpperCase()} FALLS`,
-                tnBox: newD.sides.map(s => ({ name: s.name || '', winner: !!s.winner, sets: s.sets || [] })) } });
+                headline: `${(winnerSide.name||'').toUpperCase()} WINS`,
+                tnBox: newD.sides.map(s => ({ name: s.name || '', rank: s.rank || null, winner: !!s.winner, sets: s.sets || [] })) } });
             }
           }
         }
@@ -14428,7 +14489,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r524-probes-input-fix-copy';
+const BUILD_MARKER = 'r525-tennis-splash-port';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
