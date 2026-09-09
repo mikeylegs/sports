@@ -6920,8 +6920,23 @@ function showTakeover(opts){
   // clip lands in the meantime it will preempt the resumed recap, which is correct.
   try {
     if (_recapSuspend()){
+      // r546: instrumentation only. This 6800ms is stale against TKO_CARD_MS (now 12000ms,
+      // bumped r203) — the recap resume call fires ~5.2s before the card actually clears.
+      // Logging both ends (here, and at the _tkoTimer teardown below) lets a future freeze
+      // report be diffed against real timestamps instead of guessed at. NOTE: `resumed` below
+      // only reflects that _recapResume() didn't throw synchronously — its .play()/.playVideo()
+      // promise rejection is still swallowed inside _recapResume itself (10041), so this can't
+      // yet prove the video actually restarted, only that resume was attempted.
+      const _r546SuspendAt = Date.now();
+      try{ if(window.nightEvent) nightEvent('recap','suspend',{ t: _r546SuspendAt }); }catch(_){}
       clearTimeout(window._recapResumeT);
-      window._recapResumeT = setTimeout(() => { try { _recapResume(); } catch(_){} }, 6800);
+      window._recapResumeT = setTimeout(() => {
+        let _resumed = false;
+        try { _recapResume(); _resumed = true; } catch(_){}
+        try{ if(window.nightEvent) nightEvent('recap','resume',{
+          t: Date.now(), heldMs: Date.now() - _r546SuspendAt, resumed: _resumed
+        }); }catch(_){}
+      }, 6800);
     }
   } catch(_){}
 
@@ -7130,6 +7145,9 @@ function showTakeover(opts){
   window._tkoTimer=setTimeout(()=>{
     el.className='';
     const sc = document.getElementById('tko-scrim'); if (sc) sc.classList.remove('show');
+    // r546: instrumentation only — real on-screen card duration, to diff against the
+    // recap suspend/resume timestamps logged above.
+    try{ if(window.nightEvent) nightEvent('takeover','card-cleared',{ t: Date.now() }); }catch(_){}
   }, TKO_CARD_MS);
 }
 
@@ -9319,12 +9337,27 @@ window.recapProbe = async function(n, opts){
           // playing first. why?" — this is why. _lfRecapGame[abbr] is the same hasRecap signal
           // renderLastFinalSlot itself sets (line ~14329), independent of which pane is currently
           // rendered — checking that instead matches reality without touching the DOM.
-          const hasTeamRecap = !!_lfRecapGame[wantTeam];
+          // r544: r535/r540's _lfRecapGame-only check was still too strict — it only reflects
+          // whichever team's pane happened to render MOST RECENTLY into the shared anchor slot
+          // (outerHTML replacement means only one team's markup exists in the DOM at a time).
+          // Real dispatch doesn't wait for that: when the anchor is merged and showing the OTHER
+          // team, it self-heals via window._anchorSwap() (~line 8162), which renders straight
+          // from window._anchorArgs.{yg,mg} — the SAME last-final-game data the periodic fetch
+          // cycle keeps fresh regardless of which team is currently visible. Mike confirmed the
+          // wall plays Mets fine (real dispatch self-heals) while the probe kept reporting NYM
+          // skipped — because _lfRecapGame.NYM only updates when NYM's OWN pane last rendered,
+          // which can lag far behind. Reading _anchorArgs directly (a plain property read — no
+          // DOM mutation, no render, no _anchorSwap call) mirrors what the swap WOULD produce
+          // without ever triggering it, closing that gap while staying fully read-only.
+          const _anchorData = window._anchorArgs || {};
+          const hasTeamRecap = !!_lfRecapGame[wantTeam]
+            || !!(wantTeam === 'NYY' ? _anchorData.yg : _anchorData.mg);
           if (!hasTeamRecap){
-            // r540: distinguish the boot-race (fetch still in flight, will very likely
-            // resolve within seconds) from a genuine "team hasn't played/finished" skip —
-            // same underlying condition, very different meaning for an audit reading this.
-            const bootPending = (Date.now() - _pageLoadAt) < _BOOT_GRACE_MS;
+            // r540 (narrowed by r544): _anchorArgs itself doesn't exist until the FIRST fetch
+            // cycle completes — that narrow window is the only case boot-grace still describes
+            // accurately now that the common lagging-pane case above is fixed directly.
+            const dataNotYetLoaded = !window._anchorArgs;
+            const bootPending = dataNotYetLoaded && (Date.now() - _pageLoadAt) < _BOOT_GRACE_MS;
             const note = bootPending
               ? 'skip — ' + wantTeam + ' last-final fetch still pending (boot grace <' + Math.round(_BOOT_GRACE_MS/1000) + 's, re-probe shortly — not a confirmed skip)'
               : 'skip — no recent final for ' + wantTeam + ' (not post-game)';
@@ -13032,6 +13065,16 @@ async function wwsPollEvents(){
               // open discussion, not decided here. Same strip regex already used for soccer
               // scorer names (dashboard.html ~12934's goalCol: /^[A-Z]\.\s+/).
               const tkoLastName = n => (n || '').replace(/^[A-Z]\.\s+/, '');
+              // r546: instrumentation only. Mike reported a followed-player win splash that
+              // fired correctly on his phone but never surfaced on the wall kiosk, alongside
+              // a recap freeze of a similar duration on the wall. _prevTennisEv is per-instance
+              // in-memory (r534) — a divergent hadPrevTennisEv across instances at the same
+              // espnId is the smoking gun for "this instance never saw the edge fire" as an
+              // explanation independent of any recap collision.
+              try{ if(window.nightEvent) nightEvent('tennis','splash-fire',{
+                espnId: e.espnId, followedSide, hadPrevTennisEv: !!_prevTennisEv,
+                winner: tkoLastName(winnerSide.name)
+              }); }catch(_){}
               showTakeover({ side:'right', a:{ accent, wash, flag: winnerSide.flag || '',
                 kicker:'Final',
                 headline: `${tkoLastName(winnerSide.name).toUpperCase()} WINS`,
@@ -14799,7 +14842,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r543-uploads-2page-100items';
+const BUILD_MARKER = 'r546-nightevent-splash-recap-instrumentation';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -16679,6 +16722,35 @@ body.ccopen #ccdot{top:5px;right:6px}   /* r259: stays in the corner, open or cl
 #ccp .sw.on{background:#164060}#ccp .sw.on::after{left:18px;background:#7dd3fc}
 #ccp .fin{background:#0d1725;border:1px solid #2a3a4d;color:#e6edf7;border-radius:5px;padding:3px 7px;font:inherit;font-size:calc(var(--fs) - 2px);margin-left:6px;max-width:130px}
 #ccp .fin:disabled{opacity:.4}
+/* r545: PROBES TAB CLEANUP — Mike: "white text boxes should be background-colored, copy
+   buttons should be more similar to the rest of CC." The n-input/slot-select on the Probes tab
+   (cc-mprobe-n, cc-rprobe-n, cc-rprobe-slot) had no class at all, so they fell through to raw
+   browser-default white inputs — everything else in CC (the .fin flag-override inputs, .sw
+   toggles) is styled, these two speed-run controls were the one unstyled gap. Same dark-navy
+   input treatment as .fin, scoped generically so any future bare input/select in CC inherits it
+   without needing its own rule. #ccp pre already had a dark background (#0a1420) — that part
+   wasn't actually broken, just visually close enough to the panel bg that a fresh eye reads it
+   as "still white" next to genuinely-white inputs sitting right above it.
+   Explicit specificity note: #ccp .fin ((1,1,0)) still outranks this ((1,0,1)) wherever .fin is
+   used elsewhere, so this only fills the gap and changes nothing already styled. */
+#ccp input[type=number],#ccp input[type=text],#ccp select{background:#0d1725;border:1px solid #2a3a4d;
+  color:#e6edf7;border-radius:5px;padding:3px 7px;font:inherit;font-size:calc(var(--fs) - 2px)}
+#ccp input[type=checkbox]{accent-color:#7dd3fc}
+/* Probe "copy table"/"copy list" buttons had ZERO css class (grep confirmed no .probe-copy rule
+   existed at all) — raw browser-default buttons, which is exactly the light bordered pill Mike
+   flagged against CC's actual dark button language. Matches the palette CC already uses for
+   its OTHER copy button (.pncopy, used on the HUD-remount panels) minus that class's
+   position:absolute (built for corner-pinning on a .pn panel; these sit inline after a <pre>). */
+#ccp .probe-copy{background:#16202e;border:1px solid #2b3a4e;color:#9fb0c6;border-radius:6px;
+  padding:3px 10px;font:inherit;font-size:calc(var(--fs) - 3px);cursor:pointer;opacity:.85}
+#ccp .probe-copy:hover{opacity:1;color:#cde4ff}
+/* The "Run" buttons (cc-mprobe-btn/cc-rprobe-btn) were bare <button> elements too — same
+   #ccp .bt button treatment used for CC's other secondary action buttons, so Run reads as
+   part of the same button language instead of a stray default button. */
+#ccp .probe-run{background:#16202e;border:1px solid #2a3a4d;color:#7dd3fc;border-radius:6px;
+  padding:5px 12px;font:inherit;font-size:calc(var(--fs) - 1px);cursor:pointer}
+#ccp .probe-run:hover{background:#1c2a3a}
+#ccp .probe-run:disabled{opacity:.5;cursor:default}
 #ccp .fbtn.act{background:#3a2416;border:1px solid #7e5a2b;color:#f8c98a;border-radius:5px;padding:3px 11px;font:inherit;cursor:pointer}
 #ccp .offd{color:#5b6b80;font-style:italic;font-size:calc(var(--fs) - 3px);margin-left:4px}
 #ccp .rlbar{display:flex;align-items:center;gap:9px;padding:9px 13px;border-bottom:1px solid #22303f;flex-wrap:wrap}
@@ -17393,7 +17465,7 @@ window.CC = (function(){
               + 'oninput="CC.syncProbeInput(\'mn\',this.value)" title="How many queued HRs to speed-run (in order)">'
           + ' <label style="margin-left:8px" title="Force a fresh montageBuild() instead of reusing the cached queue — use after new HRs have happened since the last run">'
               + '<input id="cc-mprobe-rebuild" type="checkbox"'+(PROBE_INPUTS.mrebuild?' checked':'')+' onchange="CC.syncProbeInput(\'mrebuild\',this.checked)"> rebuild queue</label>'
-          + ' <button id="cc-mprobe-btn" onclick="CC.runMontageProbe()"'+(mBusy?' disabled':'')+'>'+(mBusy?'Running…':'Run')+'</button>'
+          + ' <button id="cc-mprobe-btn" class="probe-run" onclick="CC.runMontageProbe()"'+(mBusy?' disabled':'')+'>'+(mBusy?'Running…':'Run')+'</button>'
           + '</div>'
           + '<pre id="cc-mprobe-out">'+mTxt.replace(/</g,'&lt;')+'</pre>'
           + (mTxt && mTxt.charAt(0)!=='(' ? _cpBtn('cc-mprobe-out','copy table') : '')
@@ -17407,7 +17479,7 @@ window.CC = (function(){
               + 'title="Which on-screen recap slot to simulate — yank (hero slot: team hoh-nyy/hoh-nym, pga-golf, wws-final are eligible) or secondary (those are skipped)">'
           + '<option value="yank"'+(PROBE_INPUTS.rslot==='yank'?' selected':'')+'>yank</option>'
           + '<option value="secondary"'+(PROBE_INPUTS.rslot==='secondary'?' selected':'')+'>secondary</option></select>'
-          + ' <button id="cc-rprobe-btn" onclick="CC.runRecapProbe()"'+(rBusy?' disabled':'')+'>'+(rBusy?'Running…':'Run')+'</button>'
+          + ' <button id="cc-rprobe-btn" class="probe-run" onclick="CC.runRecapProbe()"'+(rBusy?' disabled':'')+'>'+(rBusy?'Running…':'Run')+'</button>'
           + '</div>'
           + '<pre id="cc-rprobe-out">'+rTxt.replace(/</g,'&lt;')+'</pre>'
           + (rTxt && rTxt.charAt(0)!=='(' ? _cpBtn('cc-rprobe-out','copy table') : '')
