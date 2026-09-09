@@ -3376,6 +3376,44 @@ async function simHR(opt){
 }
 window.simHR = simHR;
 
+/* r547 — simTennisSplash(): fires the followed-player win/loss splash through the exact same
+   showTakeover() call the real WWS tennis-event loop makes (~line 13090), so the r546 nightEvent
+   instrumentation (recap/suspend, recap/resume, takeover/card-cleared, tennis/splash-fire) can be
+   exercised on demand instead of waiting for a real match to end. Kicker is tagged '· SIM' (same
+   convention as simHR's '💥 SIM') so it's never mistaken for a real result on the wall. Card-only —
+   does not touch WWS.events/_prevTennisEv, same restraint as simHR's mode-A path.
+   Usage: simTennisSplash()  — or simTennisSplash({won:false, winner:'Ben Shelton', loser:'Coco Gauff'})
+   To reproduce Mike's report (a recap playing when the splash fires): start a recap, then call
+   this within its first ~5s so _recapSuspend() actually engages and recap/suspend+resume both log. */
+function simTennisSplash(opt){
+  opt = opt || {};
+  const won = opt.won !== false;
+  const winner = opt.winner || 'Coco Gauff';
+  const loser  = opt.loser  || 'Ben Shelton';
+  const espnId = opt.espnId || ('sim-' + Date.now());
+  const followedSide = 0;
+  const hadPrevTennisEv = opt.hadPrevTennisEv !== false;   // pass {hadPrevTennisEv:false} to sim the suspected miss
+  const accent = won ? '#fbbf24' : 'rgba(148,163,184,0.9)';
+  const wash   = won ? 'rgba(251,191,36,0.9)' : 'rgba(71,85,105,0.85)';
+  try{ if(window.nightEvent) nightEvent('tennis','splash-fire',{
+    espnId, followedSide, hadPrevTennisEv, winner, sim:true
+  }); }catch(_){}
+  if (typeof showTakeover !== 'function'){ console.log('[simTennisSplash] showTakeover not available'); return 'no showTakeover'; }
+  showTakeover({ side:'right', a:{ accent, wash, flag:'',
+    kicker:'Final · SIM',
+    headline: `${winner.toUpperCase()} WINS`,
+    tnBox: [
+      { name: winner, rank: null, winner: true,  sets: [{v:6},{v:6}] },
+      { name: loser,  rank: null, winner: false, sets: [{v:4},{v:3}] }
+    ] } });
+  const _recapWasActive = (typeof _recapActive !== 'undefined' && _recapActive === true);
+  console.log('[simTennisSplash] fired —', winner, won ? 'WINS' : 'loses', '· run nightReport() in ~' +
+    Math.round(TKO_CARD_MS/1000) + 's to see tennis/splash-fire, takeover/card-cleared' +
+    (_recapWasActive ? ', and recap/suspend + recap/resume (a recap was active).' : ' (no recap was active — suspend/resume will not log this run).'));
+  return 'fired';
+}
+window.simTennisSplash = simTennisSplash;
+
 /* r324 — simSequence(): a ONE-COMMAND scripted demo so you can eyes-on the full arc over VNC:
    montage beats → live Judge takeover CARD (with the LIVE badge) → montage beats → Judge
    companion CLIP → montage beats. It just drops real items into the montage queue at spaced
@@ -14842,7 +14880,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r546-nightevent-splash-recap-instrumentation';
+const BUILD_MARKER = 'r547-sim-tennis-splash';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
