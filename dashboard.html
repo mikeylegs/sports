@@ -8452,15 +8452,25 @@ async function fetchChannelUploads(channelId){
   const memo = _uploadsMemo[channelId];
   if (memo && (Date.now() - memo.at) < UPLOADS_MEMO_MS) return memo.items;
   try {
-    // r539: 25→50 (YouTube's max for this endpoint; playlistItems.list is a flat 1 quota
-    // unit regardless of maxResults, so this is free). Mike: high-volume channels during a
-    // live event (US Open posting LIVE practice streams/radio feeds on every court) can fill
-    // 25 slots with same-day noise, scrolling yesterday's real match highlights out of the
-    // fetch entirely before REQUIRE even sees them. 50 buys headroom; revisit with adaptive
-    // 2nd-page fetching (nextPageToken, +1 unit) during boost-active windows if still tight.
+    // r539: 25→50 (YouTube's max per page; playlistItems.list is a flat 1 quota unit
+    // regardless of maxResults, so this is free).
+    // r543: 50→100 via a 2nd page (nextPageToken). Mike caught real QF Highlights videos
+    // (Pegula/Navarro, Sabalenka/Noskova, Tiafoe/Michelsen — real, 16h old, sitting right there
+    // on the channel) still scrolling out of a 50-item fetch during the US Open's highest-volume
+    // hours (LIVE practice streams/radio feeds on every court). Page 2 costs 1 extra quota unit
+    // per channel per 10-min cache window — trivial next to search.list's 100/call, so this is
+    // now unconditional rather than boost-window-gated as originally planned. Best-effort: a
+    // failed page 2 still returns page 1's results (fail open, never worse than pre-r543).
     const d = await ytApi('playlistItems', { part:'snippet', playlistId: pl, maxResults:'50' });
+    let items = d.items || [];
+    if (d.nextPageToken){
+      try {
+        const d2 = await ytApi('playlistItems', { part:'snippet', playlistId: pl, maxResults:'50', pageToken: d.nextPageToken });
+        items = items.concat(d2.items || []);
+      } catch(e2){ console.warn('[recap] uploads page-2 failed for ' + channelId + ' (serving page 1 only):', e2.message); }
+    }
     const out = [];
-    (d.items || []).forEach(it => {
+    items.forEach(it => {
       const sn = it && it.snippet; if (!sn) return;
       const vid = sn.resourceId && sn.resourceId.videoId;
       // Deleted/private uploads still occupy a slot, with a placeholder title and often no id.
@@ -8491,7 +8501,9 @@ async function fetchChannelLatest(channelId, tag){
   if (!channelId) return { items: null, via: 'no-channel' };
   if (Date.now() >= RECAP_QUOTA_LATCH_UNTIL){
     const up = await fetchChannelUploads(channelId);
-    if (up && up.length) return { items: up, via: 'UPLOADS ' + (tag || channelId) + ' (playlistItems, 1 unit, latest ~25, query NOT applied)' };
+    // r543: label was stale since r539 (said "1 unit, latest ~25" when it was already 50) —
+    // fixed to reflect reality now that a 2nd page makes it up to 2 units / ~100 items.
+    if (up && up.length) return { items: up, via: 'UPLOADS ' + (tag || channelId) + ' (playlistItems, up to 2 units, latest ~100, query NOT applied)' };
   } else {
     console.log('[recap] quota latched -> skipping uploads for ' + (tag || channelId));
   }
@@ -14787,7 +14799,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r542-match-point-deprioritize';
+const BUILD_MARKER = 'r543-uploads-2page-100items';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
