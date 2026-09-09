@@ -7848,6 +7848,10 @@ const RECAP = {
        the existing Rangers carve-out, so both still pass; everything else out-of-season (a
        random single-team recap, a trade rumor video, etc.) still gets filtered out. */
     'nhl-fill':   { label:'NHL',       handle:'NHL', query:'nhl highlights', priority:3, timeless:true, maxAgeDays:60,
+                    windowH: 1440,   // r539: maxAgeDays:60 was dead — the real gate (line ~8739) defaults
+                                      // timeless sources to windowH:72h, killing a 60-day-old-tolerant
+                                      // source's own best content ("Best Goal From Every Team" @ 168.6h).
+                                      // Explicit windowH makes the 60-day intent actually apply.
                     require(){ return _leagueInSeason('NHL') ? null : /\bRangers\b|\bNYR\b|Best (?:Goal|Play)s? (?:From|of)|Every (?:NHL )?Team|Top \d+ (?:Goals|Plays)|Season Recap/i; },
                     titleHint:/goal|highlight|save|recap|best/i, glow:'rgba(150,150,160,0.9)' },
     'nba-fill':   { label:'NBA',       handle:'NBA', query:'nba highlights', priority:3, timeless:true, maxAgeDays:60,
@@ -7855,16 +7859,25 @@ const RECAP = {
                     titleHint:/highlight|dunk|top play|recap|best/i, glow:'rgba(200,120,50,0.9)' },
     'nfl-fill':   { label:'NFL',       handle:'NFL', priority:3, timeless:true, maxAgeDays:60,
                     query(){ return _leagueInSeason('NFL') ? 'nfl highlights' : null; },   // R93: no favorite NFL team → hard off out of season (null query = source skipped cleanly)
+                    reject: /Top 100 Players/i,   // r539: nfl-top100 owns the countdown exclusively —
+                                                   // without this, nfl-fill's generic query nets the
+                                                   // same clips and both sources dispatch the identical
+                                                   // video (Mike: "only one NFL video" showing twice).
                     titleHint:/highlight|touchdown|recap|top play|best/i, glow:'rgba(120,140,200,0.9)' },
     // r538: Mike, from the video audit — "1: Myles Garrett (DE, Rams) | Top 100 Players of
     // 2026 - THIS IS ACTUALLY THE PERFECT TYPE OF FILLER/PRE-SEASON CONTENT I WANT. SHORT,
-    // PLAYER SPOTLIGHT VIDEOS... WORK THEM INTO THE ROTATION. KEEP IT TOP 25." Deliberately NOT
-    // gated by _leagueInSeason('NFL') like nfl-fill is — this is quality standalone content
-    // regardless of whether the season's started, the exact opposite problem nfl-fill's
-    // in-season-only gate solves for. require() enforces "top 25" by checking the leading
-    // rank number itself (1-25, colon-delimited, as every entry in this series is titled), not
-    // just a titleHint nudge — rank 26+ genuinely gets excluded, not merely deprioritized.
-    'nfl-top100': { label:'NFL Top 100', handle:'NFL', query:'Top 100 Players of 2026', priority:3, timeless:true, maxAgeDays:120,
+    // PLAYER SPOTLIGHT VIDEOS... WORK THEM INTO THE ROTATION. KEEP IT TOP 25." require() enforces
+    // "top 25" by checking the leading rank number itself (1-25, colon-delimited, as every entry
+    // in this series is titled), not just a titleHint nudge — rank 26+ genuinely gets excluded.
+    // r539: Mike — "NFL Top 100 will strictly be for pre-season content... give it its own
+    // avenue" — this countdown series runs preseason and wraps by ~Week 1; without a window it
+    // would sit in the cycle forever after the series ends, returning NO VIDEO indefinitely.
+    // Gated to Aug 1 – Sep 15 ET (covers the full countdown incl. the Week-1 tail observed live
+    // on Sep 9). Outside that window it's NOT-ELIGIBLE (query→null), same clean-skip pattern as
+    // every other query()-gated source — nfl-fill takes over with no competition.
+    'nfl-top100': { label:'NFL Top 100', handle:'NFL', priority:3, timeless:true, maxAgeDays:120,
+                    query(){ const d = nowET(), m = d.getMonth()+1, day = d.getDate();
+                             return (m === 8 || (m === 9 && day <= 15)) ? 'Top 100 Players of 2026' : null; },
                     require:/^(?:[1-9]|1[0-9]|2[0-5]):\s.*Top 100 Players/i,
                     titleHint:/Top 100 Players/i, glow:'rgba(120,140,200,0.9)' },
   },
@@ -8426,7 +8439,13 @@ async function fetchChannelUploads(channelId){
   const memo = _uploadsMemo[channelId];
   if (memo && (Date.now() - memo.at) < UPLOADS_MEMO_MS) return memo.items;
   try {
-    const d = await ytApi('playlistItems', { part:'snippet', playlistId: pl, maxResults:'25' });
+    // r539: 25→50 (YouTube's max for this endpoint; playlistItems.list is a flat 1 quota
+    // unit regardless of maxResults, so this is free). Mike: high-volume channels during a
+    // live event (US Open posting LIVE practice streams/radio feeds on every court) can fill
+    // 25 slots with same-day noise, scrolling yesterday's real match highlights out of the
+    // fetch entirely before REQUIRE even sees them. 50 buys headroom; revisit with adaptive
+    // 2nd-page fetching (nextPageToken, +1 unit) during boost-active windows if still tight.
+    const d = await ytApi('playlistItems', { part:'snippet', playlistId: pl, maxResults:'50' });
     const out = [];
     (d.items || []).forEach(it => {
       const sn = it && it.snippet; if (!sn) return;
@@ -14708,7 +14727,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r538-nhl-fix-nfl-top100';
+const BUILD_MARKER = 'r539-nhl-window-nfl-dedup-uploads-50';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
