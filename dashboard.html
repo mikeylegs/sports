@@ -3651,6 +3651,43 @@ async function mlbContent(gamePk) {
   return items;
 }
 
+/* r520 — MONTAGE PROBE. Mike: "simulates what videos would get chosen for regular rotation,
+   but just an expedited pace... don't even actually play the videos. Just do a speed run of n
+   number of video rotations to see what would actually play on the panel." Reuses the REAL
+   selection path unchanged — montageBuild() for tonight's queue, mlbContent()+_montageClipFor()
+   for each beat's pick — nothing reimplemented. Never calls playCompanionClip/showTakeover/any
+   video element, never touches MONTAGE.i/on (uses a local loop index), so it's safe to run
+   whether or not the live montage is currently on the wall. Console-callable, same convention
+   as nightReport()/nightDump(). Usage: await montageProbe(20)  — or montageProbe(50,{rebuild:1})
+   to force a fresh queue build (today+yesterday's HRs) instead of reusing whatever's cached. */
+window.montageProbe = async function(n, opts){
+  n = n || 20; opts = opts || {};
+  const t0 = Date.now();
+  if (opts.rebuild || !MONTAGE.queue || !MONTAGE.queue.length) await montageBuild();
+  const queue = MONTAGE.queue || [];
+  const count = Math.min(n, queue.length);
+  const rows = [];
+  for (let i = 0; i < count; i++){
+    const e = queue[i];
+    const tPick0 = Date.now();
+    let clip = null, err = null;
+    try { clip = _montageClipFor(await mlbContent(e.pk), e.hr); }
+    catch(ex){ err = String((ex && ex.message) || ex); }
+    rows.push({
+      '#': i + 1, day: e.etDay, game: e.game, batter: e.batter, hr: e.hrNum, inning: e.inning,
+      picked: clip ? clip.title : (err ? 'ERROR: ' + err : 'SKIP (no clip)'),
+      ms: Date.now() - tPick0
+    });
+  }
+  const skipped = rows.filter(r => String(r.picked).indexOf('SKIP') === 0).length;
+  const errored = rows.filter(r => String(r.picked).indexOf('ERROR') === 0).length;
+  try{ console.table(rows); }catch(_){ console.log(rows); }
+  console.log('[montageProbe] ' + rows.length + '/' + queue.length + ' beats resolved in '
+    + (Date.now() - t0) + 'ms — ' + skipped + ' skipped, ' + errored + ' errored. '
+    + 'No video was played (playCompanionClip/showTakeover never called).');
+  return rows;
+};
+
 /* Most recent FINAL game for a team, within the last `days`. Returns gamePk|null. */
 async function mlbLastFinalGamePk(teamId, days = 2) {
   // r264: ET-anchored date window (was toISOString()=UTC → skewed a day late at night, the
@@ -8915,6 +8952,102 @@ async function findRecap(sourceId){
   if (!pick) console.warn('[recap] no video found for', sourceId);
   return pick;
 }
+
+/* r521 — RECAP PROBE. Mike, correcting r520 (which speed-ran the league-wide HR MONTAGE, a
+   separate system): "I meant the regular recap video rotation." That's RECAP.director — the
+   cycle of team/league/filler sources (hoh-nyy, mlb-daily, wws-final, golf-fill, etc., see
+   RECAP.director.cycle above) that recapDirectorTick() walks on every pane-rotation tick,
+   picking ONE eligible candidate and calling playRecap() on it.
+   recapDirectorTick() itself can't be called directly for a dry-run speed-run: it's stateful
+   and side-effecting by design — it advances the real D.idx/D.count cursor, adds to the real
+   _recapSeen set (so a WWS final only jumps once, ever), flips which slide is DOM-`active` on
+   the yank/wws stage, and calls playRecap() (which claims _recapActive and actually starts
+   playback). Speed-running N of those for real would desync live rotation state and flicker
+   the wall — exactly what Mike asked NOT to do.
+   So this is a READ-ONLY mirror of recapDirectorTick's gating (same cycle scan, same wantTeam/
+   pga-golf/wws-final eligibility checks, same golf-boost retarget — kept line-for-line
+   equivalent to recapDirectorTick, ~7939-8077, so if that gating logic changes both places need
+   updating) that never touches the real cursor/seen-set/DOM, and resolves the video the same
+   way the real dispatch would — via findRecap(), the exact same picker playRecap() calls —
+   EXCEPT findRecap runs under window._auditing=true, the exact same read-only flag the existing
+   Pool Auditor (?pools=1, poolsSweep() below) already uses to guarantee "a sweep cannot change
+   what the panel serves" (see R123 comment below): with it set, findRecap does not write its
+   video cache, does not stamp _recapServedAt, does not touch the anti-monotony ring — so this
+   probe cannot bias which clip the REAL next rotation picks. playRecap() itself is never called.
+   Usage: await recapProbe(10)   — or recapProbe(20, {slot:'secondary'}) for the other pane. */
+window.recapProbe = async function(n, opts){
+  n = n || 10; opts = opts || {};
+  const slotClass = opts.slot || 'yank';
+  const D = RECAP.director;
+  const cycle = D.cycle || [];
+  let idx = D.idx;                          // LOCAL copy — RECAP.director.idx is never written
+  const seenLocal = new Set(_recapSeen);    // LOCAL clone — the real _recapSeen is never written
+  const rows = [];
+  const wasAuditing = window._auditing;
+  window._auditing = true;                  // read-only mode for findRecap (R123's own guarantee)
+  try {
+    for (let step = 0; step < n; step++){
+      // ---- WWS-companion priority (mirrors recapDirectorTick's R65 block, read-only) ----
+      if (slotClass === 'yank' && !window._noWwsJump){
+        const fin = wwsFinalTarget();
+        const up = fin ? null : wwsUpcomingTarget();
+        const jump = fin ? { src:'wws-final', seen: fin.id }
+                   : up  ? { src:'wws-preview', seen: 'pv:' + up.id } : null;
+        if (jump && !seenLocal.has(jump.seen)){
+          seenLocal.add(jump.seen);
+          let video = null, err = null;
+          try { video = await findRecap(jump.src); } catch(ex){ err = String((ex && ex.message) || ex); }
+          rows.push({ '#': rows.length + 1, cand: jump.src, note: 'WWS jump (best-effort, not a cycle slot)',
+            picked: video ? (video.title || video.videoId) : (err ? 'ERROR: ' + err : 'NO VIDEO') });
+          // real code always falls through to the cycle scan after a WWS jump attempt — mirrored:
+          // do NOT skip the scan below for this same step.
+        }
+      }
+      // ---- cycle scan (mirrors the while(guard++<cycle.length) loop, read-only) ----
+      let dispatched = false;
+      for (let guard = 0; guard < cycle.length; guard++){
+        const pos = (idx + guard) % cycle.length;
+        let cand = cycle[pos];
+        if ((cand === 'mlb-daily' || cand === 'mlb-allgames') && golfBoostActive()){
+          if (slotClass === 'yank' && wwsRecapTarget('golf') && !_dormant('pga-golf')) cand = 'pga-golf';
+          else if (!_dormant('golf-fill')) cand = 'golf-fill';
+        }
+        const wantTeam = cand === 'hoh-nyy' ? 'NYY' : cand === 'hoh-nym' ? 'NYM' : null;
+        if (wantTeam){
+          if (slotClass !== 'yank'){ rows.push({ '#': rows.length+1, cand, note:'skip — team source needs yank slot, got '+slotClass, picked:'—' }); continue; }
+          // read-only existence check — does NOT toggle .active (that flip is a real, visible
+          // wall side effect in recapDirectorTick; a probe must not cause it).
+          const lf = document.querySelector(`#yank-stage .lf-slide[data-slide="lf"][data-team="${wantTeam}"]`);
+          if (!lf){ rows.push({ '#': rows.length+1, cand, note:'skip — no lf-slide for '+wantTeam+' (not post-game)', picked:'—' }); continue; }
+        }
+        if (cand === 'pga-golf' || cand === 'wws-final'){
+          if (slotClass !== 'yank'){ rows.push({ '#': rows.length+1, cand, note:'skip — wws source needs yank slot, got '+slotClass, picked:'—' }); continue; }
+          const t = cand === 'pga-golf' ? wwsRecapTarget('golf') : wwsFinalTarget();
+          if (!t){ rows.push({ '#': rows.length+1, cand, note:'skip — no eligible wws target today', picked:'—' }); continue; }
+          if (cand === 'wws-final' && t.id) seenLocal.add(t.id);   // mirrors "fire once per final" — local only
+        }
+        // this is the point where the real tick calls playRecap(cand, ...) — resolve, don't play.
+        idx = (pos + 1) % cycle.length;   // LOCAL advance only — RECAP.director.idx untouched
+        let video = null, err = null;
+        try { video = await findRecap(cand); } catch(ex){ err = String((ex && ex.message) || ex); }
+        rows.push({ '#': rows.length+1, cand, note:'DISPATCH', picked: video ? (video.title || video.videoId) : (err ? 'ERROR: ' + err : 'NO VIDEO') });
+        dispatched = true;
+        break;
+      }
+      if (!dispatched){
+        rows.push({ '#': rows.length+1, cand:'—', note:'CYCLE EXHAUSTED — every candidate skipped this pass', picked:'—' });
+        break;   // matches reality: nothing would change on the next tick either, until state does
+      }
+    }
+  } finally {
+    window._auditing = wasAuditing;   // always restore, even if a candidate's findRecap threw
+  }
+  try{ console.table(rows); }catch(_){ console.log(rows); }
+  console.log('[recapProbe] ' + rows.length + ' rotation steps resolved, read-only — '
+    + 'RECAP.director.idx/count, _recapSeen, the recap video cache, and DOM active-slide state '
+    + 'were all left untouched; no video was played (playRecap() was never called).');
+  return rows;
+};
 
 
 /* ══════════════════════════════════════════════════════════════════════════════
