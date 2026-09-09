@@ -7834,7 +7834,13 @@ const RECAP = {
                                 '\\w+\\s*/\\s*\\w+.*\\bvs\\b.*\\w+\\s*/\\s*\\w+',   // doubles (was dead code)
                                 'Press Conference|Interview|says ".*"|Official game ATP|through the years',
                                 'visits Wimbledon|cricketer|T20|Champions.? Dinner|Arrival|Royal Box',  // the celebrity-visit noise
-                                'dance|Party Time'
+                                'dance|Party Time',
+                                'Full (?:Match|Final)\\b'   // r541: Mike, explicit — "SHOULD BE HIGHLIGHTS. SPECIFICALLY
+                                                             // REJECT 'FULL MATCH'." r536 had added this to require()'s
+                                                             // OR-list as a stopgap when it was the only highlights-shaped
+                                                             // title around; now that r539's maxResults:50 keeps the pool
+                                                             // deep, a full-length replay should never outrank real
+                                                             // Highlights content. reject() runs after require() and wins.
                               ].join('|'), 'i')
                             : /Press Conference/i,
                     titleHint:/highlight|match|final|point|best/i, glow:'rgba(140,200,80,0.9)' },
@@ -8991,6 +8997,13 @@ async function findRecap(sourceId){
   // team name + "full game" + titleHint + recency + popularity (view count).
   const now = Date.now();
   const team = (src.teamName || '').toLowerCase();
+  // r542: Mike — a tennis "Match Point" clip is real, valid content (not Full Match's kind of
+  // noise), but for a big-story match it was outscoring the SAME match's own proper Highlights
+  // reel on freshness/views alone (Rybakina's world-No.1 clincher: Match Point 23.7 vs. the
+  // Zheng/Rybakina Highlights video scoring lower in the same pool). "DEPRIORITIZE IF A GENUINE
+  // FULL HIGHLIGHT EXISTS" — computed once against the whole pool, not per-item, so Match Point
+  // still wins outright when it's the ONLY coverage of that match (nothing to defer to).
+  const _hasGenuineHighlights = pool.some(y => /Highlights\b/i.test(y.title) && !/Match Point/i.test(y.title));
   const score = (x) => {
     const t = x.title.toLowerCase();
     let s = 0;
@@ -9115,6 +9128,10 @@ async function findRecap(sourceId){
       const mins = (now - _recapShownAt[x.videoId]) / 60000;
       if (mins < 45) s -= (45 - mins) * 0.25;   // up to -11 when just shown, fades over 45m
     }
+    // r542: soft demotion, not a reject — see _hasGenuineHighlights above. -8 reliably drops
+    // Match Point below any real Highlights candidate (observed gaps were ~0.3-1pt) without
+    // touching it at all when no Highlights coverage exists in the pool.
+    if (/Match Point/i.test(x.title) && _hasGenuineHighlights) s -= 8;
     return s;
   };
   pool.sort((a, b) => score(b) - score(a) || (b.views - a.views) || (new Date(b.published) - new Date(a.published)));
@@ -14770,7 +14787,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r540-probe-boot-grace-and-cooldown-sim';
+const BUILD_MARKER = 'r542-match-point-deprioritize';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
