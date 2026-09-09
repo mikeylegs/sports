@@ -13762,9 +13762,35 @@ if (new URLSearchParams(location.search).get('wws') !== '0'){
   }, 1000);
 })();
 
+// r530: every fetchAll-driven re-render rebuilds a team's stage via
+// `slot.outerHTML = renderLastFinalSlot(...)`, and that fresh markup always
+// hardcodes slide 0 (lf, or next if no recap) as .active — independent of
+// the rotation's own 12s interval, which keeps ticking its `idx` right
+// through the rebuild without restarting. Result: every 30-60s data refresh
+// visually snapped the pane back to slide 1 until the next rotation tick
+// (up to 12s later) repainted the real idx — looked like the countdown was
+// "resetting" the rotation cadence. Fix: paint() below stashes the current
+// slide's identity; _lfResyncActive re-applies it right after a rebuild so
+// the visible slide never moves except on the rotation's own tick.
+window._lfActiveKey = window._lfActiveKey || {};
+function _lfSlideKey(el) { return el && (el.id || el.dataset.slide); }
+function _lfResyncActive(slotClass) {
+  const key = window._lfActiveKey[slotClass];
+  if (!key) return;   // rotation hasn't painted yet this session — leave the default
+  const s = document.getElementById(`${slotClass}-stage`);
+  if (!s) return;
+  const slides = Array.from(s.querySelectorAll('.lf-slide'));
+  const match = slides.find(el => _lfSlideKey(el) === key);
+  if (!match) return;   // team/pane changed (anchor swap) — default active is correct there
+  slides.forEach(el => el.classList.toggle('active', el === match));
+}
+
 function startLfRotation(slotClass, divCacheId, teamMlbId, spotlights) {
   const flagKey = 'lfRotationStarted_' + slotClass;
-  if (window[flagKey]) { requestAnimationFrame(() => lfHealStats(slotClass)); return; }
+  if (window[flagKey]) {
+    requestAnimationFrame(() => { _lfResyncActive(slotClass); lfHealStats(slotClass); });
+    return;
+  }
   window[flagKey] = true;
   ensureTeamStats(slotClass, teamMlbId, spotlights);
   /* r345: defer to after the coreSlides HTML is inserted — the slide isn't in the DOM yet when
@@ -13789,6 +13815,7 @@ function startLfRotation(slotClass, divCacheId, teamMlbId, spotlights) {
   const paint = (slides, i) => {
     slides.forEach((s, k) => s.classList.toggle('active', k === i));
     const cur = slides[i];
+    window._lfActiveKey[slotClass] = _lfSlideKey(cur);   // r530: remembered so a mid-cycle data rebuild can restore it
     if (cur && cur.dataset.slide === 'stand') {
       const body = cur.querySelector('.lf-stand3');
       if (body) body.innerHTML = lfStand3Html(cur.dataset.div || divCacheId);   // R12: merged stage carries AL+NL slides
@@ -14553,7 +14580,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r529-flag-scale-crop-estimate';
+const BUILD_MARKER = 'r530-lf-rotation-resync';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
