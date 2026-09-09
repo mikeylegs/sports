@@ -7811,7 +7811,15 @@ const RECAP = {
                     // Mirza". A FUNCTION-require is STRICT: empty pool → SKIP THE SOURCE.
                     // Mike's rule: after a tournament ends, show finals/best-plays for a few days,
                     // then FADE AWAY — do not scrape the barrel. Strict require IS that fade.
-                    require(){ return /(?:\||Semi-?Final|Quarter-?Final|Final|Round) Highlights\b|\| Highlights \||Extended Highlights|Match Point|Plays of the Tournament|Best (?:Points|Shots|Plays)|tie-?break|Full (?:Match|Final)/i; },
+                    // r536: real US Open QF highlight videos (Shelton/Alcaraz, Pegula/Navarro,
+                    // Tiafoe/Michelsen) are titled "<Players> Highlights | <Round>" — Highlights
+                    // BEFORE the pipe, not after or preceded by a round name. None of the existing
+                    // alternatives covered that shape, so all three were silently rejected every
+                    // night, and the too-long "Full Match" video won by being the only real
+                    // highlights-shaped title the filter could see. Added `Highlights\s*\|` to
+                    // catch it — proven against all 3 missing titles + the correct Jovic-Gauff
+                    // highlights video via a standalone regex test before shipping.
+                    require(){ return /(?:\||Semi-?Final|Quarter-?Final|Final|Round) Highlights\b|\| Highlights \||Highlights\s*\||Extended Highlights|Match Point|Plays of the Tournament|Best (?:Points|Shots|Plays)|tie-?break|Full (?:Match|Final)/i; },
 
                     reject: /\w+\s*\/\s*\w+.*\bvs\b.*\w+\s*\/\s*\w+/i.source
                             ? new RegExp([
@@ -7985,6 +7993,29 @@ function golfBoostActive(){
   const ph = _golfMajorPhase();
   return !!((ph && (ph.phase === 'LIVE' || ph.phase === 'EVENT_IMMINENT')) || wwsGolfSelected());
 }
+// r537: Mike — "generalize that major-swap to soccer tournaments too" (tennis was already
+// asked for). Golf's swap-in (retarget a generic MLB filler slot to golf during a major) was
+// the only sport wired up; tennis-fill's own lifecycle scoreBoost sat unused, and soccer had no
+// equivalent at all. These two mirror _golfMajorPhase()'s exact shape against the SPORTS_CAL
+// entries that already exist for tennis/soccer majors — no new calendar data needed.
+function _tennisMajorPhase(){
+  const cal = SPORTS_CAL.TENNIS_MAJORS;
+  const today = _etDateStr();
+  return (cal.phases || []).find(w => today >= w.from && today <= w.to) || null;
+}
+function tennisBoostActive(){
+  const ph = _tennisMajorPhase();
+  return !!(ph && ph.phase === 'LIVE');   // r518: DECAYING tail is finals-recap only, not a filler-swap trigger
+}
+function _soccerMajorPhase(){
+  const cal = SPORTS_CAL.SOCCER_MAJORS;
+  const today = _etDateStr();
+  return (cal.phases || []).find(w => today >= w.from && today <= w.to) || null;
+}
+function soccerBoostActive(){
+  const ph = _soccerMajorPhase();
+  return !!(ph && ph.phase === 'LIVE');
+}
 // aliases for quick manual triggers: ?video=nyy|nym|daily
 const RECAP_ALIAS = { nyy:'hoh-nyy', nym:'hoh-nym', daily:'mlb-daily', mlb:'mlb-daily' };
 
@@ -8140,15 +8171,24 @@ function recapDirectorTick(slotClass){
     // and we keep scanning for something playable.
     const pos = (D.idx + guard - 1) % D.cycle.length;
     let cand = D.cycle[pos];
-    // r467: GOLF BOOST — a generic MLB filler slot (mlb-daily/mlb-allgames) yields to golf
-    // during a major or whenever Mike's actually curated a golf event (golfBoostActive).
-    // Prefer pga-golf's dedicated round recap (needs the yank slot + an eligible WWS target);
-    // otherwise golf-fill (no slot restriction, always eligible to try). Fail-open: if both
-    // golf sources are dormant, cand is left untouched and the original filler plays as before —
-    // this never removes a candidate, it only retargets what plays in that slot.
-    if ((cand === 'mlb-daily' || cand === 'mlb-allgames') && golfBoostActive()){
-      if (slotClass === 'yank' && wwsRecapTarget('golf') && !_dormant('pga-golf')) cand = 'pga-golf';
-      else if (!_dormant('golf-fill')) cand = 'golf-fill';
+    // r467/r537: MAJOR BOOST — a generic MLB filler slot (mlb-daily/mlb-allgames) yields to
+    // whichever major is actually live: golf during a major or a curated golf event
+    // (golfBoostActive), tennis during a Grand Slam (tennisBoostActive), soccer during a major
+    // international tournament (soccerBoostActive). Golf checked first only because it already
+    // had the most specific sub-target (pga-golf vs golf-fill); order among the three otherwise
+    // doesn't matter since real-world majors essentially never overlap. Fail-open throughout: if
+    // every candidate sport-source is dormant, cand is left untouched and the original filler
+    // plays as before — this never removes a candidate, it only retargets what plays in that slot.
+    if (cand === 'mlb-daily' || cand === 'mlb-allgames'){
+      if (golfBoostActive()){
+        if (slotClass === 'yank' && wwsRecapTarget('golf') && !_dormant('pga-golf')) cand = 'pga-golf';
+        else if (!_dormant('golf-fill')) cand = 'golf-fill';
+      } else if (tennisBoostActive() && !_dormant('tennis-fill')){
+        cand = 'tennis-fill';
+      } else if (soccerBoostActive()){
+        if (!_dormant('fifa-fill')) cand = 'fifa-fill';
+        else if (!_dormant('foxsoccer-fill')) cand = 'foxsoccer-fill';
+      }
     }
     // r146a: skip dormant sources — UNLESS every candidate is dormant, in which case
     // suppression would blank the wall. Fail-open: a repeat beats a black screen.
@@ -8892,6 +8932,17 @@ async function findRecap(sourceId){
       const _noShorts = pool.filter(x => !(x.secs > 0 && x.secs <= 60));   // R62/R63: drop vertical Shorts
       if (_noShorts.length) pool = _noShorts;
       _aud('SHORTS ≤60s', _preShorts, pool, 'vertical Shorts');
+      // r537: hard length cap — Mike: "anything longer than 15 min really has no business on
+      // the panel pretty much ever." mlb-allgames' ~25min "Top Plays last week" compilation was
+      // dispatching TWICE in one rotation pass, eating close to an hour of screen time. Same
+      // soft-guard discipline as the Shorts filter just above (and every other gate in this
+      // pipeline, per r147's fail-open precedent) — reject anything over the cap, but never let
+      // the reject empty the pool outright; that would blank the wall instead of just trimming it.
+      const MAX_RECAP_MINS = 15;
+      const _preLong = pool;
+      const _noLong = pool.filter(x => !(x.mins > MAX_RECAP_MINS));
+      if (_noLong.length) pool = _noLong;
+      _aud('LENGTH ≤' + MAX_RECAP_MINS + 'm', _preLong, pool, 'over the length cap — long-form videos have no business in the rotation');
     } catch(e){ console.warn('[recap] view-count hydrate failed, scoring without it:', e.message); }
   }
 
@@ -9161,17 +9212,35 @@ window.recapProbe = async function(n, opts){
       for (let guard = 0; guard < cycle.length; guard++){
         const pos = (idx + guard) % cycle.length;
         let cand = cycle[pos];
-        if ((cand === 'mlb-daily' || cand === 'mlb-allgames') && golfBoostActive()){
-          if (slotClass === 'yank' && wwsRecapTarget('golf') && !_dormant('pga-golf')) cand = 'pga-golf';
-          else if (!_dormant('golf-fill')) cand = 'golf-fill';
+        // r537: kept in exact parity with the real dispatch's major-boost swap above — this
+        // session's own recapProbe/reality mismatch (r535) is the reason to never let these two
+        // copies drift again.
+        if (cand === 'mlb-daily' || cand === 'mlb-allgames'){
+          if (golfBoostActive()){
+            if (slotClass === 'yank' && wwsRecapTarget('golf') && !_dormant('pga-golf')) cand = 'pga-golf';
+            else if (!_dormant('golf-fill')) cand = 'golf-fill';
+          } else if (tennisBoostActive() && !_dormant('tennis-fill')){
+            cand = 'tennis-fill';
+          } else if (soccerBoostActive()){
+            if (!_dormant('fifa-fill')) cand = 'fifa-fill';
+            else if (!_dormant('foxsoccer-fill')) cand = 'foxsoccer-fill';
+          }
         }
         const wantTeam = cand === 'hoh-nyy' ? 'NYY' : cand === 'hoh-nym' ? 'NYM' : null;
         if (wantTeam){
           if (slotClass !== 'yank'){ rows.push({ '#': rows.length+1, cand, note:'skip — team source needs yank slot, got '+slotClass, picked:'—' }); continue; }
-          // read-only existence check — does NOT toggle .active (that flip is a real, visible
-          // wall side effect in recapDirectorTick; a probe must not cause it).
-          const lf = document.querySelector(`#yank-stage .lf-slide[data-slide="lf"][data-team="${wantTeam}"]`);
-          if (!lf){ rows.push({ '#': rows.length+1, cand, note:'skip — no lf-slide for '+wantTeam+' (not post-game)', picked:'—' }); continue; }
+          // r535: was a live DOM query for #yank-stage .lf-slide[data-team=...] — only ever true
+          // for whichever team the merged anchor happens to be SHOWING at probe-run time
+          // (window._anchorTeam alternates NYY/NYM every rotation lap). The real dispatch
+          // (~line 8162) self-heals this by calling window._anchorSwap() to flip the pane before
+          // re-checking — a probe can't do that (a real, visible wall side effect) — so it
+          // silently reported a fully-eligible team's recap as unavailable whenever the OTHER
+          // team happened to be the visible anchor. Mike: "NYY recap video not listed despite
+          // playing first. why?" — this is why. _lfRecapGame[abbr] is the same hasRecap signal
+          // renderLastFinalSlot itself sets (line ~14329), independent of which pane is currently
+          // rendered — checking that instead matches reality without touching the DOM.
+          const hasTeamRecap = !!_lfRecapGame[wantTeam];
+          if (!hasTeamRecap){ rows.push({ '#': rows.length+1, cand, note:'skip — no recent final for '+wantTeam+' (not post-game)', picked:'—' }); continue; }
         }
         if (cand === 'pga-golf' || cand === 'wws-final'){
           if (slotClass !== 'yank'){ rows.push({ '#': rows.length+1, cand, note:'skip — wws source needs yank slot, got '+slotClass, picked:'—' }); continue; }
@@ -9205,9 +9274,16 @@ window.recapProbe = async function(n, opts){
   // identity/behavior otherwise unchanged. Simplified list drops skip/CYCLE-EXHAUSTED rows (those
   // aren't "what would have played", they're why the scan moved on) and keeps DISPATCH + WWS-jump
   // rows only, which is exactly the "clean ordered list of what would have played" Mike asked for.
+  // r535: team-source skips ('skip — no recent final for ...') are kept too, unlike the other skip
+  // kinds (wws-final/pga-golf/wc-final absence, cycle-exhausted — those really are the season-
+  // gated non-issues Mike already discounts). A hoh-nyy/hoh-nym skip is the one kind that can be
+  // real news (an actually-eligible recap silently missing) — hiding it is what made the list
+  // untrustworthy in the first place. Shown with its reason instead of a blank '—'.
   rows.summary = summary;
-  rows.simple = rows.filter(r => r.note === 'DISPATCH' || String(r.note || '').indexOf('WWS jump') === 0)
-    .map((r, i) => (i + 1) + '. ' + r.cand + ' → ' + r.picked).join('\n');
+  rows.simple = rows.filter(r => r.note === 'DISPATCH' || String(r.note || '').indexOf('WWS jump') === 0
+      || String(r.note || '').indexOf('skip — no recent final for') === 0)
+    .map((r, i) => (i + 1) + '. ' + r.cand + ' → ' + (r.note === 'DISPATCH' || String(r.note || '').indexOf('WWS jump') === 0 ? r.picked : r.note))
+    .join('\n');
   return rows;
 };
 
@@ -14617,7 +14693,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r534-tennis-splash-refresh-fix';
+const BUILD_MARKER = 'r537-major-boost-and-length-cap';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
