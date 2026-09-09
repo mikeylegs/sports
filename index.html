@@ -7145,6 +7145,13 @@ function showTakeover(opts){
 // Last-final game facts per team (NYY/NYM), stashed by renderLastFinalSlot so
 // the video recap's bottom caption can show recency + result.
 const _lfRecapGame = {};
+// r540: page-load timestamp — lets recapProbe tell "NYM/NYY genuinely has no recent final"
+// apart from "the last-final-game fetch just hasn't resolved yet" (a real, observed boot-race:
+// on a fresh load/reload, _lfRecapGame starts empty and only fills in once each team's async
+// fetch completes; NYY consistently resolves first, so NYM read as falsely "not post-game" for
+// a short window every time). Was reporting both cases with the same alarming skip text.
+const _pageLoadAt = Date.now();
+const _BOOT_GRACE_MS = 120000;   // 2min — comfortably covers the observed gap between boot and NYM's fetch resolving
 // R95 SELECTOR-DRIVEN FILTERING (Mike: "convert selector choices to search terms,
 // filtered by the director logic"). The selection IS the intent — so a selected event's
 // name becomes a REQUIRED token in the local RSS filter. NOT an API keyword search (that
@@ -9204,6 +9211,16 @@ window.recapProbe = async function(n, opts){
   const rows = [];
   const wasAuditing = window._auditing;
   const wasRecapVia = window._recapVia;
+  // r540: TENNIS INSTRUMENTATION — findRecap's own SEEN-cooldown gate (line ~8890) reads the
+  // real _recapShownAt, which the probe never wrote (by design — R123's read-only guarantee).
+  // That made every simulated cycle re-pick the same highest scorer forever (Shelton/Alcaraz,
+  // 24 straight rows) even though the pool genuinely had 5 distinct candidates post-r539 — the
+  // probe just never told itself "you already showed that one." Mirrors what actually happens
+  // live (playRecap stamps _recapShownAt on every real play, rotating the next pick) by
+  // snapshotting the real object, letting DISPATCH rows stamp it same as playRecap does
+  // (line ~10873), and restoring the exact original snapshot in the finally block below —
+  // same net-zero-side-effect contract as the _auditing/_recapVia restore right below it.
+  const _shownAtBackup = Object.assign({}, _recapShownAt);
   window._auditing = true;                  // read-only mode for findRecap (R123's own guarantee)
   // r521b — Mike caught this by reading the wc-final result: playRecap() does NOT call
   // findRecap() directly, it calls resolveVideo(sourceId) (~10465), which wraps findRecap with
@@ -9274,7 +9291,16 @@ window.recapProbe = async function(n, opts){
           // renderLastFinalSlot itself sets (line ~14329), independent of which pane is currently
           // rendered — checking that instead matches reality without touching the DOM.
           const hasTeamRecap = !!_lfRecapGame[wantTeam];
-          if (!hasTeamRecap){ rows.push({ '#': rows.length+1, cand, note:'skip — no recent final for '+wantTeam+' (not post-game)', picked:'—' }); continue; }
+          if (!hasTeamRecap){
+            // r540: distinguish the boot-race (fetch still in flight, will very likely
+            // resolve within seconds) from a genuine "team hasn't played/finished" skip —
+            // same underlying condition, very different meaning for an audit reading this.
+            const bootPending = (Date.now() - _pageLoadAt) < _BOOT_GRACE_MS;
+            const note = bootPending
+              ? 'skip — ' + wantTeam + ' last-final fetch still pending (boot grace <' + Math.round(_BOOT_GRACE_MS/1000) + 's, re-probe shortly — not a confirmed skip)'
+              : 'skip — no recent final for ' + wantTeam + ' (not post-game)';
+            rows.push({ '#': rows.length+1, cand, note, picked:'—' }); continue;
+          }
         }
         if (cand === 'pga-golf' || cand === 'wws-final'){
           if (slotClass !== 'yank'){ rows.push({ '#': rows.length+1, cand, note:'skip — wws source needs yank slot, got '+slotClass, picked:'—' }); continue; }
@@ -9287,6 +9313,14 @@ window.recapProbe = async function(n, opts){
         let video = null, err = null;
         try { video = await _resolve(cand); } catch(ex){ err = String((ex && ex.message) || ex); }
         rows.push({ '#': rows.length+1, cand, note:'DISPATCH', picked: video ? (video.title || video.videoId) : (err ? 'ERROR: ' + err : 'NO VIDEO') });
+        // r540: stamp exactly like playRecap does (line ~10873/10874) so the NEXT time this same
+        // source comes up in the scan, findRecap's SEEN gate sees it as recently shown and rotates
+        // to the next-best candidate — mirroring real rotation instead of re-picking the same
+        // top scorer every simulated step. Restored to the pre-probe snapshot in the finally below.
+        if (video){
+          if (video.videoId) _recapShownAt[video.videoId] = Date.now();
+          else if (video.kind === 'mp4' && video.gamePk) _recapShownAt['mlb:' + video.gamePk] = Date.now();
+        }
         dispatched = true;
         break;
       }
@@ -9298,6 +9332,10 @@ window.recapProbe = async function(n, opts){
   } finally {
     window._auditing = wasAuditing;   // always restore, even if a candidate's resolveVideo threw
     window._recapVia = wasRecapVia;   // resolveVideo sets this debug flag on every call — restore it too
+    // r540: undo every simulated stamp above — restore _recapShownAt to exactly what it was
+    // before this probe ran, so a real video's real cooldown state is never altered by a probe.
+    for (const k of Object.keys(_recapShownAt)) delete _recapShownAt[k];
+    Object.assign(_recapShownAt, _shownAtBackup);
   }
   try{ console.table(rows); }catch(_){ console.log(rows); }
   const summary = '[recapProbe] ' + rows.length + ' rotation steps resolved, read-only — '
@@ -9313,9 +9351,14 @@ window.recapProbe = async function(n, opts){
   // gated non-issues Mike already discounts). A hoh-nyy/hoh-nym skip is the one kind that can be
   // real news (an actually-eligible recap silently missing) — hiding it is what made the list
   // untrustworthy in the first place. Shown with its reason instead of a blank '—'.
+  // r540: the boot-grace variant of that same skip ('skip — NYM/NYY last-final fetch still
+  // pending...') gets the same treatment — it's the other half of the r535 fix, and dropping it
+  // would silently recreate the exact "hidden skip row" problem r535 was written to solve.
+  const _isTeamSkip = note => String(note || '').indexOf('skip — no recent final for') === 0
+    || String(note || '').indexOf('last-final fetch still pending') !== -1;
   rows.summary = summary;
   rows.simple = rows.filter(r => r.note === 'DISPATCH' || String(r.note || '').indexOf('WWS jump') === 0
-      || String(r.note || '').indexOf('skip — no recent final for') === 0)
+      || _isTeamSkip(r.note))
     .map((r, i) => (i + 1) + '. ' + r.cand + ' → ' + (r.note === 'DISPATCH' || String(r.note || '').indexOf('WWS jump') === 0 ? r.picked : r.note))
     .join('\n');
   return rows;
@@ -14727,7 +14770,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r539-nhl-window-nfl-dedup-uploads-50';
+const BUILD_MARKER = 'r540-probe-boot-grace-and-cooldown-sim';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
