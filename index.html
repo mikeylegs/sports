@@ -6696,13 +6696,19 @@ function tkoABuild(o){
     // highlight uses the same >=6-games heuristic wwsTennisInner's own render already uses.
     // r525: rank+name grouped into .wws-tn-namegrp (own dedicated gap, doesn't drag with the
     // row's name<->score gap) — ported from tennis-splash-studio.html r524d/r524e/r525.
-    ? `<div class="tkoA-band tkoA-band-tennis">${o.tnBox.map(s => `<div class="wws-tn-row">
+    // r532: same fix as wwsTennisInner's live card — `>=6` alone bolds the loser too on any
+    // tiebreak set (7-6: loser's 6 is also >=6). Compare against the opponent's score per set.
+    ? `<div class="tkoA-band tkoA-band-tennis">${o.tnBox.map((s, si) => { const opp = o.tnBox.length === 2 ? o.tnBox[1 - si] : null; return `<div class="wws-tn-row">
         <div class="wws-tn-namegrp">
           ${s.rank ? `<span class="wws-tn-rank">${s.rank}</span>` : ''}
           <span class="wws-tn-name${s.winner ? ' w' : ''}">${s.name || ''}</span>
         </div>
-        <span class="wws-tn-sets">${(s.sets || []).map(v => `<span class="wws-tn-set${(+v.v >= 6) ? ' won' : ''}">${v.v != null ? v.v : ''}${v.tb ? `<sup class="wws-tn-tb">${v.tb}</sup>` : ''}</span>`).join('')}</span>
-      </div>`).join('')}</div>`
+        <span class="wws-tn-sets">${(s.sets || []).map((v, i) => {
+          const oppV = opp && opp.sets && opp.sets[i] && opp.sets[i].v != null ? +opp.sets[i].v : null;
+          const won = oppV != null ? (+v.v > oppV) : (+v.v >= 6);
+          return `<span class="wws-tn-set${won ? ' won' : ''}">${v.v != null ? v.v : ''}${v.tb ? `<sup class="wws-tn-tb">${v.tb}</sup>` : ''}</span>`;
+        }).join('')}</span>
+      </div>`; }).join('')}</div>`
     : o.band ? `<div class="tkoA-band">
       <span class="tkoA-nm">${o.band.aAbbr||''}</span><span class="tkoA-sc${o.band.lit==='a'?' win':''}" style="${o.band.lit==='a'?`color:${ac}`:''}">${o.band.aScore}</span>
       <span class="tkoA-dash">\u2013</span>
@@ -12938,13 +12944,20 @@ function wwsTennisInner(d){
   // free, matching the original r481 call. headshot/headshotIds are already populated on the
   // tennis sides by wwsPollEvents — r481 only ever stripped the render, never the data, so no
   // data-layer change needed here.
-  const rows = d.sides.map(x => `<div class="wws-tn-row">
+  // r532: `.won` used a bare `+s.v>=6` heuristic — wrong for any set the loser also reached 6
+  // in (any tiebreak set, e.g. 7-6: winner=7 correctly bold, but loser=6 also >=6 so it got
+  // bolded too). Mike: "First set, both scores are bold." Compare against the OPPONENT's score
+  // in that same set index instead — bold only the side that actually scored higher.
+  const rows = d.sides.map((x, si) => { const opp = d.sides.length === 2 ? d.sides[1 - si] : null; return `<div class="wws-tn-row">
     ${x.flag ? `<img class="wws-flag wws-tn-flag" src="${x.flag}" alt="" onerror="this.style.opacity=0">` : ''}
     ${x.rank ? `<span class="wws-tn-rank">${x.rank}</span>` : ''}
     <div class="wws-tn-name-wrap"><span class="wws-tn-name${x.winner?' w':''}" data-fit="${d.pre?5.3:5.4}" data-fit-min="${d.pre?5.1:5.4}">${x.name}</span>${x.serving && d.live ? '<span class="wws-serve"></span>' : ''}</div>
-    <span class="wws-tn-sets">${x.sets.map((s,i) =>
-      `<span class="wws-tn-set${i===nSets-1&&d.live?' hot':''}${(+s.v>=6)?' won':''}">${s.v}${s.tb?`<sup class="wws-tn-tb">${s.tb}</sup>`:''}</span>`).join('')}</span>
-  </div>`).join('');
+    <span class="wws-tn-sets">${x.sets.map((s,i) => {
+      const oppV = opp && opp.sets[i] && opp.sets[i].v != null ? +opp.sets[i].v : null;
+      const won = oppV != null ? (+s.v > oppV) : (+s.v >= 6);
+      return `<span class="wws-tn-set${i===nSets-1&&d.live?' hot':''}${won?' won':''}">${s.v}${s.tb?`<sup class="wws-tn-tb">${s.tb}</sup>`:''}</span>`;
+    }).join('')}</span>
+  </div>`; }).join('');
   // R74: PREGAME weekday label ("FRIDAY · 8:30 AM · Semifinal") — bigger, weekday from
   // d.date, drop raw m/d + EDT. Non-pre keeps the normal status line.
   // r516: LIVE/FINAL round label ("QUARTERFINAL", "FINAL · QUARTERFINAL") now uses the same
@@ -14588,7 +14601,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r531-lf-rotation-baked-active';
+const BUILD_MARKER = 'r532-tennis-set-won-fix';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
