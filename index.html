@@ -7481,7 +7481,8 @@ const RECAP = {
   channelIds: {                    // R64: hardcoded official channel IDs (quota-free;
     // skips the forHandle API call that was burning quota / 429ing).
     'MLB':'UCoLrcjPV5PbUrUyXq5mjc_A', 'fifa':'UCpcTrCXblq78GZrTUTLWeBw',
-    'NHL':'UCKLFMlGQ3aEzteuHBRgBFSg', 'NBA':'UCWJ2lWNubArHWmf3FIHbfcQ',
+    'NHL':'UCqFMzb-4AUf6WAIbl132QKA',   // r538: Mike-supplied, real channel — the old id (r176) served a stale 2019 archive
+    'NBA':'UCWJ2lWNubArHWmf3FIHbfcQ',
     'NFL':'UCDVYQ4Zhbm3S2dlz7P1GBDg', 'pgatour':'UCQl18L5vfX9hCSclV_F6XpQ',
     'cbsgolf':'UCyeer4UbTK9pzZL9_hhCimA',
     // A5 (r141, Mike-supplied): The Open coverage. NBC Sports = US network-exclusive
@@ -7836,15 +7837,18 @@ const RECAP = {
     // Mike's favorites (NYR Rangers, NYK Knicks) which survive as a bottom-priority LAST RESORT
     // ("a Knicks G-League clip if there's truly nothing else"). Scored -6 out of season so they
     // only ever surface when the pool is otherwise empty. NFL has no favorite → hard off, no exception.
-    /* ★ r176: DEAD FEED, DISABLED. Every audit for days showed this channel returning
-       October 2019 content (59,000+ hours old) — the handle resolves to a stale or
-       archived feed, not the live NHL channel. The require killed all 15 items every
-       time, so nothing bad reached the wall, but it burned a fetch every rotation and
-       added a permanent GATED-EMPTY row to every audit. Dormant until the handle is
-       fixed; the config stays so the season logic isn't lost. */
+    /* ★ r176: was DISABLED — every audit for days showed the OLD channelIds.NHL id returning
+       October 2019 content (59,000+ hours old), a stale/wrong handle, not the live NHL channel.
+       r538: Mike supplied the real channel id (UCqFMzb-4AUf6WAIbl132QKA) — re-enabled.
+       r538: out-of-season require was Rangers/NYR-only (R93's "favorite team is the only
+       exception" rule) — too narrow for what Mike actually wants here. "With the NHL just
+       around the corner, this is the type of filler content I would rather see over repetitive
+       MLB highlights" (re: "The BEST Goal From EVERY NHL Team in 2025-26"). That's league-wide
+       season-recap/best-of content, not a Rangers clip — added an alternative for it alongside
+       the existing Rangers carve-out, so both still pass; everything else out-of-season (a
+       random single-team recap, a trade rumor video, etc.) still gets filtered out. */
     'nhl-fill':   { label:'NHL',       handle:'NHL', query:'nhl highlights', priority:3, timeless:true, maxAgeDays:60,
-                    disabled:true,   // r176 — feed serves 2019 archive; re-enable when the handle is corrected
-                    require(){ return _leagueInSeason('NHL') ? null : /\bRangers\b|\bNYR\b/i; },
+                    require(){ return _leagueInSeason('NHL') ? null : /\bRangers\b|\bNYR\b|Best (?:Goal|Play)s? (?:From|of)|Every (?:NHL )?Team|Top \d+ (?:Goals|Plays)|Season Recap/i; },
                     titleHint:/goal|highlight|save|recap|best/i, glow:'rgba(150,150,160,0.9)' },
     'nba-fill':   { label:'NBA',       handle:'NBA', query:'nba highlights', priority:3, timeless:true, maxAgeDays:60,
                     require(){ return _leagueInSeason('NBA') ? null : /\bKnicks\b|\bNYK\b/i; },
@@ -7852,6 +7856,17 @@ const RECAP = {
     'nfl-fill':   { label:'NFL',       handle:'NFL', priority:3, timeless:true, maxAgeDays:60,
                     query(){ return _leagueInSeason('NFL') ? 'nfl highlights' : null; },   // R93: no favorite NFL team → hard off out of season (null query = source skipped cleanly)
                     titleHint:/highlight|touchdown|recap|top play|best/i, glow:'rgba(120,140,200,0.9)' },
+    // r538: Mike, from the video audit — "1: Myles Garrett (DE, Rams) | Top 100 Players of
+    // 2026 - THIS IS ACTUALLY THE PERFECT TYPE OF FILLER/PRE-SEASON CONTENT I WANT. SHORT,
+    // PLAYER SPOTLIGHT VIDEOS... WORK THEM INTO THE ROTATION. KEEP IT TOP 25." Deliberately NOT
+    // gated by _leagueInSeason('NFL') like nfl-fill is — this is quality standalone content
+    // regardless of whether the season's started, the exact opposite problem nfl-fill's
+    // in-season-only gate solves for. require() enforces "top 25" by checking the leading
+    // rank number itself (1-25, colon-delimited, as every entry in this series is titled), not
+    // just a titleHint nudge — rank 26+ genuinely gets excluded, not merely deprioritized.
+    'nfl-top100': { label:'NFL Top 100', handle:'NFL', query:'Top 100 Players of 2026', priority:3, timeless:true, maxAgeDays:120,
+                    require:/^(?:[1-9]|1[0-9]|2[0-5]):\s.*Top 100 Players/i,
+                    titleHint:/Top 100 Players/i, glow:'rgba(120,140,200,0.9)' },
   },
 };
 
@@ -8047,7 +8062,7 @@ RECAP.director = {
   enabled: new URLSearchParams(location.search).get('recaps') !== '0',
   cycle: ['hoh-nyy', 'mlb-daily', 'hoh-nym', 'mlb-allgames', 'wws-final', 'fifa-fill', 'foxsoccer-fill',
           'hoh-nyy', 'mlb-daily', 'hoh-nym', 'pga-golf', 'golf-fill', 'wc-final',   // r176: randa-open parked; r467: mlb-season removed
-          'hoh-nyy', 'mlb-daily', 'hoh-nym', 'wws-final', 'nhl-fill', 'nba-fill', 'nfl-fill', 'tennis-fill'],  // R64: MLB-dominant, league filler sprinkled low-frequency
+          'hoh-nyy', 'mlb-daily', 'hoh-nym', 'wws-final', 'nhl-fill', 'nba-fill', 'nfl-fill', 'nfl-top100', 'tennis-fill'],  // R64/r538: MLB-dominant, league filler sprinkled low-frequency
   idx: 0, count: 0,
   threshold: parseInt(new URLSearchParams(location.search).get('rotations'), 10) || (_tickDebug ? 1 : 10),
   maxMs: _tickDebug ? 10000 : 0,   // >0 → hard-cut the video after this many ms
@@ -14693,7 +14708,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r537-major-boost-and-length-cap';
+const BUILD_MARKER = 'r538-nhl-fix-nfl-top100';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
