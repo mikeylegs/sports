@@ -1,25 +1,7 @@
 {
   "v": 1,
-  "updated": "2026-09-10T15:30:58.242Z",
+  "updated": "2026-09-10T21:00:19.675Z",
   "events": [
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816885",
-      "title": "Tampa Bay Rays @ Atlanta Braves",
-      "showFrom": "20260910",
-      "showUntil": "20260910",
-      "rank": 1
-    },
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401816883",
-      "title": "Colorado Rockies @ New York Yankees",
-      "showFrom": "20260910",
-      "showUntil": "20260910",
-      "rank": 2
-    },
     {
       "league": "tennis/atp,tennis/wta",
       "label": "Tennis · US Open",
@@ -27,7 +9,7 @@
       "title": "J. Pegula (#3) v A. Sabalenka (#1)",
       "showFrom": "20260910",
       "showUntil": "20260910",
-      "rank": 3
+      "rank": 1
     },
     {
       "league": "tennis/atp,tennis/wta",
@@ -36,6 +18,24 @@
       "title": "E. Rybakina (#2) v C. Gauff (#4)",
       "showFrom": "20260910",
       "showUntil": "20260910",
+      "rank": 2
+    },
+    {
+      "league": "tennis/atp,tennis/wta",
+      "label": "Tennis · US Open",
+      "espnId": "189-2026:182768",
+      "title": "K. Khachanov v A. Zverev (#1)",
+      "showFrom": "20260911",
+      "showUntil": "20260911",
+      "rank": 3
+    },
+    {
+      "league": "tennis/atp,tennis/wta",
+      "label": "Tennis · US Open",
+      "espnId": "189-2026:182766",
+      "title": "B. Shelton (#8) v F. Tiafoe (#11)",
+      "showFrom": "20260911",
+      "showUntil": "20260911",
       "rank": 4
     }
   ],
