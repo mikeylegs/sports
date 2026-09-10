@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-09-10T15:29:25.039Z",
+  "updated": "2026-09-10T15:30:58.242Z",
   "events": [
     {
       "league": "baseball/mlb",
@@ -64,10 +64,6 @@
       },
       {
         "sport": "tennis",
-        "name": "Carlos Alcaraz"
-      },
-      {
-        "sport": "tennis",
         "name": "Alexander Zverev"
       },
       {
@@ -81,10 +77,6 @@
       {
         "sport": "golf",
         "name": "Rory McIlroy"
-      },
-      {
-        "sport": "tennis",
-        "name": "Frances Tiafoe"
       },
       {
         "sport": "tennis",
