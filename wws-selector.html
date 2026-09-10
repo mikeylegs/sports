@@ -65,7 +65,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Wide World of Sports — Day Selector <span style="font-size:12px;font-weight:400;opacity:.5;font-family:monospace">selector-r179</span></h1>
+  <h1>Wide World of Sports — Day Selector <span style="font-size:12px;font-weight:400;opacity:.5;font-family:monospace">selector-r182</span></h1>
   <p class="sub">Pick today's / this weekend's events for the panel. Output is <code>selections.json</code> — commit it to the repo root and the dashboard (phase 2) picks it up on its next poll.</p>
   <div class="bar">
     <select id="range">
@@ -123,10 +123,13 @@
     <div id="catRefreshStatus" style="display:none;margin:0 0 8px;font-size:11px;color:var(--acc)"></div>
 
     <div class="subpane">
-      <div class="subhd open" id="subhd-teams" onclick="toggleSub('teams')">
+      <!-- selector-r181: Mike — both TEAMS and PLAYERS should start collapsed. PLAYERS already
+           did (subhd-players has no "open" class, sub-players already has `hidden`); TEAMS was
+           the one left open by default — matching its markup to PLAYERS' is the whole fix. -->
+      <div class="subhd" id="subhd-teams" onclick="toggleSub('teams')">
         <span class="chev">▶</span> TEAMS <span class="cnt" id="cntStar">0</span>
       </div>
-      <div class="subbody" id="sub-teams">
+      <div class="subbody" id="sub-teams" hidden>
         <div style="position:relative;margin:0 0 8px">
           <!-- selector-r165: same suppression as #q above. -->
           <input id="tq" placeholder="Filter by team or player…" oninput="drawTeams()"
@@ -217,6 +220,18 @@
   <div id="selected" style="display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin:0 0 12px">
     <div style="font-weight:800;margin-bottom:8px">✓ Currently selected <span class="d" style="font-weight:400">— everything picked across all sports; tap ✕ to remove</span></div>
     <div id="selgrid" style="display:flex;flex-direction:column;gap:4px;max-height:360px;overflow:auto"></div>
+  </div>
+  <!-- selector-r180: Mike — "every league comes up selected, I have to manually unselect 18
+       before picking the ones I want." lgOn's fallback default (line ~676) is intentionally
+       "all except MLB" for a brand-new device with no saved picks yet; the LEAGUE PERSISTENCE
+       itself (localStorage, per-device) was already correct and untouched — this just adds the
+       fast escape hatch he asked for instead of re-litigating the default. -->
+  <!-- selector-r182: nitpick fix — match the existing per-league "all / none" button
+       (#12a/r151, line ~849) exactly, instead of the plain underlined-text links r180 shipped
+       with. Same background/border/color/radius/font/padding; same lowercase wording. -->
+  <div style="display:flex;gap:6px;margin:0 0 6px">
+    <button onclick="lgSetAll(true)" style="background:#0f1a2a;border:1px solid var(--line);color:var(--acc);border-radius:5px;font:inherit;font-size:11px;padding:2px 9px;cursor:pointer">all</button>
+    <button onclick="lgSetAll(false)" style="background:#0f1a2a;border:1px solid var(--line);color:var(--acc);border-radius:5px;font:inherit;font-size:11px;padding:2px 9px;cursor:pointer">none</button>
   </div>
   <div id="lgchips" style="display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px"></div>
   <div id="list"><p class="sub">Press SCAN.</p></div>
@@ -680,6 +695,15 @@ function drawChips(){
       ${lgOn.has(p)?'background:#0e3b2b;border:1px solid var(--acc);color:#fff':'background:transparent;border:1px solid var(--line);color:var(--mut)'}">${ico} ${label}</button>`).join('');
 }
 function lgToggle(p){ lgOn.has(p) ? lgOn.delete(p) : lgOn.add(p); localStorage.setItem(LG_KEY, JSON.stringify([...lgOn])); drawChips(); }
+// selector-r180: All/None escape hatch. All matches the existing default-fallback convention
+// (R70/71: MLB stays off — pin-only, board owns MLB) rather than reintroducing it via a bulk
+// action; None just empties the set. Same persistence path as lgToggle — one localStorage write.
+function lgSetAll(on){
+  lgOn.clear();
+  if (on) LEAGUES.forEach(([p]) => { if (p !== 'baseball/mlb') lgOn.add(p); });
+  localStorage.setItem(LG_KEY, JSON.stringify([...lgOn]));
+  drawChips();
+}
 document.addEventListener('DOMContentLoaded', () => { drawChips(); loadPublished(); drawSelected(); updCounts(); });   // R97: restore persisted picks + fetch what's ACTUALLY live
 
 // Same proxy fallback chain the dashboard uses (proven on the panel).
