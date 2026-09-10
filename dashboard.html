@@ -6954,17 +6954,18 @@ function showTakeover(opts){
   } catch(e){ window._tkoCompanion = 'ERR ' + e.message; try{ tkoRenderHud(); }catch(_){} }
 
   // R117: a takeover must not play on top of a running recap. Suspend it, and bring
-  // it back when the card clears (6.5s — see the hide timer below). If a companion
-  // clip lands in the meantime it will preempt the resumed recap, which is correct.
+  // it back when the card clears. If a companion clip lands in the meantime it will
+  // preempt the resumed recap, which is correct.
   try {
     if (_recapSuspend()){
-      // r546: instrumentation only. This 6800ms is stale against TKO_CARD_MS (now 12000ms,
-      // bumped r203) — the recap resume call fires ~5.2s before the card actually clears.
-      // Logging both ends (here, and at the _tkoTimer teardown below) lets a future freeze
-      // report be diffed against real timestamps instead of guessed at. NOTE: `resumed` below
-      // only reflects that _recapResume() didn't throw synchronously — its .play()/.playVideo()
-      // promise rejection is still swallowed inside _recapResume itself (10041), so this can't
-      // yet prove the video actually restarted, only that resume was attempted.
+      // r546: instrumentation. r548: the resume delay below now ties to TKO_CARD_MS
+      // directly instead of a hand-copied literal (was hardcoded 6800ms, stale against
+      // TKO_CARD_MS's r203 bump to 12000ms — recap used to resume ~5.2s before the card
+      // actually cleared). One source of truth now; can't drift again. NOTE: `resumed`
+      // below only reflects that _recapResume() didn't throw synchronously — its
+      // .play()/.playVideo() promise rejection is still swallowed inside _recapResume
+      // itself (10041), so this can't yet prove the video actually restarted, only that
+      // resume was attempted.
       const _r546SuspendAt = Date.now();
       try{ if(window.nightEvent) nightEvent('recap','suspend',{ t: _r546SuspendAt }); }catch(_){}
       clearTimeout(window._recapResumeT);
@@ -6974,7 +6975,7 @@ function showTakeover(opts){
         try{ if(window.nightEvent) nightEvent('recap','resume',{
           t: Date.now(), heldMs: Date.now() - _r546SuspendAt, resumed: _resumed
         }); }catch(_){}
-      }, 6800);
+      }, TKO_CARD_MS);
     }
   } catch(_){}
 
@@ -10087,6 +10088,12 @@ function _recapSuspend(){
   if (!_recapActive || window._recapSuspended) return false;
   try { if (window._recapMp4) window._recapMp4.pause(); } catch(_){}
   try { _recapPlayer && _recapPlayer.pauseVideo && _recapPlayer.pauseVideo(); } catch(_){}
+  // r548: R117's own doc says the recap should play "UNDERNEATH the takeover card" while
+  // suspended — but #mlb-recap is z-index:90, #mlb-takeover is z-index:70, so pausing alone
+  // left the (frozen) recap frame drawn ON TOP of the takeover the whole suspended window,
+  // fully hiding it. Same hide _recapPreempt already uses (10111) — just applied on suspend
+  // too, and undone on resume below, instead of only on a hard teardown.
+  try { const el = document.getElementById('mlb-recap'); if (el) el.classList.remove('show'); } catch(_){}
   window._recapSuspended = true;
   return true;
 }
@@ -10096,6 +10103,9 @@ function _recapResume(){
   if (!_recapActive) return;                       // it was preempted meanwhile — leave it dead
   try { if (window._recapMp4) window._recapMp4.play().catch(()=>{}); } catch(_){}
   try { _recapPlayer && _recapPlayer.playVideo && _recapPlayer.playVideo(); } catch(_){}
+  // r548: undo the suspend-time hide above. Skipped when the branch above already returned
+  // (preempted meanwhile) — a fresh dispatch or _recapPreempt owns #mlb-recap's visibility then.
+  try { const el = document.getElementById('mlb-recap'); if (el) el.classList.add('show'); } catch(_){}
 }
 /* Silent teardown: stops the media WITHOUT invoking RECAP._onEnd (which would let
    the director immediately queue another video over the top of the companion). */
@@ -14880,7 +14890,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r547-sim-tennis-splash';
+const BUILD_MARKER = 'r548-recap-suspend-hide-and-resume-timer-fix';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
