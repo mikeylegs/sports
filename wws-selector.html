@@ -65,7 +65,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Wide World of Sports — Day Selector <span style="font-size:12px;font-weight:400;opacity:.5;font-family:monospace">selector-r183</span></h1>
+  <h1>Wide World of Sports — Day Selector <span style="font-size:12px;font-weight:400;opacity:.5;font-family:monospace">selector-r184</span></h1>
   <p class="sub">Pick today's / this weekend's events for the panel. Output is <code>selections.json</code> — commit it to the repo root and the dashboard (phase 2) picks it up on its next poll.</p>
   <div class="bar">
     <select id="range">
@@ -229,9 +229,17 @@
   <!-- selector-r183: nitpick — r182 still shipped TWO separate pills; the existing pattern
        (#12a/r151, line ~852) is ONE toggle button, text "all / none", same element flipping
        between select-all and select-none. Matching exactly means one button, not two —
-       lgToggleAll() below mirrors lgSelectAll's own "if all on, clear; else select all" logic. -->
+       lgToggleAll() below mirrors lgSelectAll's own "if all on, clear; else select all" logic.
+       r184: the style string is identical (`font:inherit` included), but the existing button
+       reads bold because it sits inside .lg (font-weight:800, line ~23) — this button sits in a
+       plain div with no such ambient weight, so `font:inherit` was inheriting regular. Dropped
+       the `font:inherit` SHORTHAND for separate `font-family:inherit` + explicit `font-weight:800`
+       longhands instead of stacking a longhand after the shorthand — a later font-weight is
+       supposed to win over an earlier font-shorthand by ordinary cascade rules, but that
+       interaction is inconsistent enough across engines/parsers that it's not worth relying on
+       for one button; two unambiguous longhands sidestep the question entirely. -->
   <div style="margin:0 0 6px">
-    <button onclick="lgToggleAll()" style="background:#0f1a2a;border:1px solid var(--line);color:var(--acc);border-radius:5px;font:inherit;font-size:11px;padding:2px 9px;cursor:pointer">all / none</button>
+    <button onclick="lgToggleAll()" style="background:#0f1a2a;border:1px solid var(--line);color:var(--acc);border-radius:5px;font-family:inherit;font-weight:800;font-size:11px;padding:2px 9px;cursor:pointer">all / none</button>
   </div>
   <div id="lgchips" style="display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px"></div>
   <div id="list"><p class="sub">Press SCAN.</p></div>
