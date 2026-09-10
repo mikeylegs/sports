@@ -65,7 +65,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Wide World of Sports — Day Selector <span style="font-size:12px;font-weight:400;opacity:.5;font-family:monospace">selector-r184</span></h1>
+  <h1>Wide World of Sports — Day Selector <span style="font-size:12px;font-weight:400;opacity:.5;font-family:monospace">selector-r185</span></h1>
   <p class="sub">Pick today's / this weekend's events for the panel. Output is <code>selections.json</code> — commit it to the repo root and the dashboard (phase 2) picks it up on its next poll.</p>
   <div class="bar">
     <select id="range">
@@ -703,20 +703,25 @@ function drawChips(){
       ${lgOn.has(p)?'background:#0e3b2b;border:1px solid var(--acc);color:#fff':'background:transparent;border:1px solid var(--line);color:var(--mut)'}">${ico} ${label}</button>`).join('');
 }
 function lgToggle(p){ lgOn.has(p) ? lgOn.delete(p) : lgOn.add(p); localStorage.setItem(LG_KEY, JSON.stringify([...lgOn])); drawChips(); }
-// selector-r180: All/None escape hatch. All matches the existing default-fallback convention
-// (R70/71: MLB stays off — pin-only, board owns MLB) rather than reintroducing it via a bulk
-// action; None just empties the set. Same persistence path as lgToggle — one localStorage write.
+// selector-r180: All/None escape hatch. None just empties the set. Same persistence path as
+// lgToggle — one localStorage write.
+// r550: Mike — "I want all/none to affect MLB as well." r180-183 originally excluded MLB from
+// All, mirroring the brand-new-device DEFAULT FALLBACK (R70/71: MLB stays off there — pin-only,
+// board owns MLB) — but that default-fallback convention is a separate mechanism (lgOn's initial
+// value when localStorage is empty, below) from this explicit bulk action. Mike wants the bulk
+// toggle itself to cover every league, MLB included; the R70/71 default-on-a-fresh-device
+// behavior is untouched.
 function lgSetAll(on){
   lgOn.clear();
-  if (on) LEAGUES.forEach(([p]) => { if (p !== 'baseball/mlb') lgOn.add(p); });
+  if (on) LEAGUES.forEach(([p]) => lgOn.add(p));
   localStorage.setItem(LG_KEY, JSON.stringify([...lgOn]));
   drawChips();
 }
-// selector-r183: ONE toggle button (mirrors lgSelectAll's own "if all on, clear; else select
-// all" toggle logic, #12a/r151) instead of r182's two separate buttons. "All" here means the
-// same scannable set lgSetAll(true) already builds (every league except MLB).
+// selector-r183/r550: ONE toggle button (mirrors lgSelectAll's own "if all on, clear; else select
+// all" toggle logic, #12a/r151) instead of r182's two separate buttons. "All" now means literally
+// every league in LEAGUES, MLB included (r550).
 function lgToggleAll(){
-  const scannable = LEAGUES.map(([p]) => p).filter(p => p !== 'baseball/mlb');
+  const scannable = LEAGUES.map(([p]) => p);
   const allOn = scannable.every(p => lgOn.has(p));
   lgSetAll(!allOn);
 }
