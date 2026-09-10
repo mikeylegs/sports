@@ -1220,6 +1220,15 @@ html.nomask #mlb-takeover.tko-full .tkoH-photo{ -webkit-mask:none !important; ma
    tko-prep is swapped for show, same as tko-full uses tkopop/tkopopC for its own reveal. */
 #mlb-takeover.tko-center.tko-prep{ display:flex !important; opacity:0; animation:none !important; }
 #mlb-takeover.tko-full.show{ opacity:1; transition:opacity 0.34s ease-out; animation:none !important; }
+/* r549 — CARD EXIT FADE (all variants). Added instead of the old instant el.className=''
+   snap on clear. !important so it overrides every variant's own opacity rule above
+   (tko-full.show, tko-wc's implicit opacity:1, etc.) without editing each one — this is the
+   ONE exit path, shared by every takeover type per Mike's ask that the fix be universal,
+   not tennis-specific. 300ms: quick enough to feel like a clean dissolve, not a lingering
+   hang, while still overlapping meaningfully with the recap's slower 0.6s fade-in (r548) —
+   short exit under a gentler entrance is the "intentional, polished" feel, not two equal
+   fades racing each other. */
+#mlb-takeover.tko-out{ opacity:0 !important; transition:opacity 0.3s ease !important; animation:none !important; }
 @keyframes tkopopC{ from{ opacity:0; transform:translate(-50%,-50%) scale(0.94); }
                     to{ opacity:1; transform:translate(-50%,-50%) scale(1); } }
 #tko-scrim{ position:fixed; inset:0; z-index:65; display:none; opacity:0;
@@ -7182,11 +7191,18 @@ function showTakeover(opts){
      the card; a 0.5s tail lets the blur ease out rather than snap. */
   clearTimeout(window._tkoTimer);
   window._tkoTimer=setTimeout(()=>{
-    el.className='';
+    // r549: fade the card out instead of the old instant el.className='' snap — there was
+    // never an exit transition for ANY takeover variant (only entrance: tkopop/tkopopC).
+    // That snap landed right as r548's recap fade-in (0.6s) started, so the return read as
+    // abrupt. .tko-out is !important so it wins over every variant's own opacity rule
+    // (tko-full.show, tko-wc, etc.) without touching their entrance styling. Full class
+    // teardown is deferred 300ms to let the fade actually finish before display:none cuts it.
+    el.classList.add('tko-out');
     const sc = document.getElementById('tko-scrim'); if (sc) sc.classList.remove('show');
     // r546: instrumentation only — real on-screen card duration, to diff against the
     // recap suspend/resume timestamps logged above.
     try{ if(window.nightEvent) nightEvent('takeover','card-cleared',{ t: Date.now() }); }catch(_){}
+    setTimeout(() => { el.className=''; }, 300);
   }, TKO_CARD_MS);
 }
 
@@ -14890,7 +14906,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r548-recap-suspend-hide-and-resume-timer-fix';
+const BUILD_MARKER = 'r549-takeover-exit-fade';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
