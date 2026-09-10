@@ -65,7 +65,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Wide World of Sports — Day Selector <span style="font-size:12px;font-weight:400;opacity:.5;font-family:monospace">selector-r182</span></h1>
+  <h1>Wide World of Sports — Day Selector <span style="font-size:12px;font-weight:400;opacity:.5;font-family:monospace">selector-r183</span></h1>
   <p class="sub">Pick today's / this weekend's events for the panel. Output is <code>selections.json</code> — commit it to the repo root and the dashboard (phase 2) picks it up on its next poll.</p>
   <div class="bar">
     <select id="range">
@@ -226,12 +226,12 @@
        "all except MLB" for a brand-new device with no saved picks yet; the LEAGUE PERSISTENCE
        itself (localStorage, per-device) was already correct and untouched — this just adds the
        fast escape hatch he asked for instead of re-litigating the default. -->
-  <!-- selector-r182: nitpick fix — match the existing per-league "all / none" button
-       (#12a/r151, line ~849) exactly, instead of the plain underlined-text links r180 shipped
-       with. Same background/border/color/radius/font/padding; same lowercase wording. -->
-  <div style="display:flex;gap:6px;margin:0 0 6px">
-    <button onclick="lgSetAll(true)" style="background:#0f1a2a;border:1px solid var(--line);color:var(--acc);border-radius:5px;font:inherit;font-size:11px;padding:2px 9px;cursor:pointer">all</button>
-    <button onclick="lgSetAll(false)" style="background:#0f1a2a;border:1px solid var(--line);color:var(--acc);border-radius:5px;font:inherit;font-size:11px;padding:2px 9px;cursor:pointer">none</button>
+  <!-- selector-r183: nitpick — r182 still shipped TWO separate pills; the existing pattern
+       (#12a/r151, line ~852) is ONE toggle button, text "all / none", same element flipping
+       between select-all and select-none. Matching exactly means one button, not two —
+       lgToggleAll() below mirrors lgSelectAll's own "if all on, clear; else select all" logic. -->
+  <div style="margin:0 0 6px">
+    <button onclick="lgToggleAll()" style="background:#0f1a2a;border:1px solid var(--line);color:var(--acc);border-radius:5px;font:inherit;font-size:11px;padding:2px 9px;cursor:pointer">all / none</button>
   </div>
   <div id="lgchips" style="display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px"></div>
   <div id="list"><p class="sub">Press SCAN.</p></div>
@@ -703,6 +703,14 @@ function lgSetAll(on){
   if (on) LEAGUES.forEach(([p]) => { if (p !== 'baseball/mlb') lgOn.add(p); });
   localStorage.setItem(LG_KEY, JSON.stringify([...lgOn]));
   drawChips();
+}
+// selector-r183: ONE toggle button (mirrors lgSelectAll's own "if all on, clear; else select
+// all" toggle logic, #12a/r151) instead of r182's two separate buttons. "All" here means the
+// same scannable set lgSetAll(true) already builds (every league except MLB).
+function lgToggleAll(){
+  const scannable = LEAGUES.map(([p]) => p).filter(p => p !== 'baseball/mlb');
+  const allOn = scannable.every(p => lgOn.has(p));
+  lgSetAll(!allOn);
 }
 document.addEventListener('DOMContentLoaded', () => { drawChips(); loadPublished(); drawSelected(); updCounts(); });   // R97: restore persisted picks + fetch what's ACTUALLY live
 
