@@ -27,6 +27,12 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Capture the PREVIOUS build marker (before build.py overwrites index.html)
+        run: |
+          PREV=$(git show HEAD:index.html 2>/dev/null | grep -o "const BUILD_MARKER = '[^']*'" || echo "")
+          echo "PREV_MARKER=$PREV" >> "$GITHUB_ENV"
+          echo "Previous marker: ${PREV:-<none found>}"
+
       - name: Build index.html from dashboard.html
         run: |
           python3 build.py
@@ -35,7 +41,24 @@ jobs:
 
       - name: Show the build marker (Rule Zero, in the log)
         run: |
-          grep -o "const BUILD_MARKER = '[^']*'" index.html || echo "NO BUILD MARKER FOUND"
+          NEW=$(grep -o "const BUILD_MARKER = '[^']*'" index.html || echo "")
+          echo "NEW_MARKER=$NEW" >> "$GITHUB_ENV"
+          echo "${NEW:-NO BUILD MARKER FOUND}"
+
+      - name: Warn if code changed but the marker didn't (marker-stuck guard)
+        run: |
+          # Not a hard fail — a multi-step same-session build (b/c/d/e) can legitimately
+          # share one marker across several real commits. This is a loud log warning only,
+          # so Rule Zero (confirm the deployed marker before diagnosing) can never silently
+          # lie: if you see this warning, the marker on the wall may be stale relative to
+          # what's actually in dashboard.html even though the Action succeeded.
+          if git diff --quiet HEAD -- dashboard.html; then
+            echo "dashboard.html unchanged this push — marker comparison not applicable."
+          elif [ "$PREV_MARKER" = "$NEW_MARKER" ]; then
+            echo "::warning::BUILD_MARKER unchanged ($NEW_MARKER) but dashboard.html changed in this push. If this isn't an intentional same-session sub-fix (b/c/d/e), bump the marker before the next commit."
+          else
+            echo "Marker bumped: ${PREV_MARKER:-<none>} -> $NEW_MARKER"
+          fi
 
       - name: Commit index.html
         run: |
