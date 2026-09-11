@@ -7665,10 +7665,20 @@ const RECAP = {
   // Source registry. Add/tune here — query + titleHint are the live-tuning knobs.
   sources: {
     // R58: official @MLB is primary (official + as-fast-as-HoH + carries editorial
+    // r557: hoh-nyy/hoh-nym both got a real "clearly garbage" hit — a GEICO #GloveStories
+    // player-feature interview under hoh-nym ("From Ohio to NYC | A.J. Ewing reflects on
+    // baseball memories, debut, and more") — sponsored-segment/interview chatter, not a game
+    // highlight. Same reject class R86 already exists for (pressers/talk-shows); these teams
+    // just didn't have one yet. Added to both symmetrically since they share the same @MLB
+    // content pool and the same risk.
     'hoh-nyy':   { apiDrought:true,   // R125: RSS has no Yankees clip → spend ONE API search
-                   label:'Yankees Recap', handle:'MLB', teamName:'Yankees', query:'Yankees highlights', titleHint:/yankees/i, require(){ return /yankee|yanks/i; },   /* R126 STRICT: fade, don't serve opponent's clip */ glow:'rgba(40,120,255,0.95)',  slot:'.mlb-feat-slot.yank' },
+                   label:'Yankees Recap', handle:'MLB', teamName:'Yankees', query:'Yankees highlights', titleHint:/yankees/i, require(){ return /yankee|yanks/i; },   /* R126 STRICT: fade, don't serve opponent's clip */
+                   reject: /reflects on|baseball memories|#?GloveStories|debut,? and more|sits down with|Q&A with|glove ?stories/i,   // r557
+                   glow:'rgba(40,120,255,0.95)',  slot:'.mlb-feat-slot.yank' },
     'hoh-nym':   { apiDrought:true,   // R125: RSS has no Mets clip → spend ONE API search
-                   label:'Mets Recap',    handle:'MLB', teamName:'Mets',    query:'Mets highlights',    titleHint:/mets/i,    require(){ return /mets/i; },   /* R126 STRICT: fade, don't serve opponent's clip */       glow:'rgba(255,120,30,0.95)',  slot:'.mlb-feat-slot.yank' },
+                   label:'Mets Recap',    handle:'MLB', teamName:'Mets',    query:'Mets highlights',    titleHint:/mets/i,    require(){ return /mets/i; },   /* R126 STRICT: fade, don't serve opponent's clip */
+                   reject: /reflects on|baseball memories|#?GloveStories|debut,? and more|sits down with|Q&A with|glove ?stories/i,   // r557
+                   glow:'rgba(255,120,30,0.95)',  slot:'.mlb-feat-slot.yank' },
     // R59: "MLB TOP PLAYS" (relabeled). timeless:true → exempt from the hard date gate
     // (top plays / league-wide recaps / compilations are great filler regardless of age,
     // and a bigger multi-day pool means fewer repeats). maxAgeDays caps how far back.
@@ -8038,7 +8048,18 @@ const RECAP = {
     'nfl-top100': { label:'NFL Top 100', handle:'NFL', priority:3, timeless:true, maxAgeDays:120,
                     query(){ const d = nowET(), m = d.getMonth()+1, day = d.getDate();
                              return (m === 8 || (m === 9 && day <= 15)) ? 'Top 100 Players of 2026' : null; },
-                    require:/^(?:[1-9]|1[0-9]|2[0-5]):\s.*Top 100 Players/i,
+                    // r557: was a bare regex — per the documented require behavior (R124, the
+                    // tennis-fill comment above), a REGEX require "never filters to empty": on a
+                    // day the countdown has no fresh Top-100 entry, it silently fell back to the
+                    // UNFILTERED query pool instead of skipping — that's how "Cody Simpson performs
+                    // the Australian National Anthem at the Melbourne Game" got served under this
+                    // source (clearly garbage, flagged by Mike). A FUNCTION-require is STRICT: an
+                    // empty match empties the pool and the source yields — nfl-fill already takes
+                    // over cleanly on any query()-gated skip, same fallback this now gets too. Also
+                    // added a defensive reject: even a real matching title should never be an
+                    // anthem/ceremony clip.
+                    require(){ return /^(?:[1-9]|1[0-9]|2[0-5]):\s.*Top 100 Players/i; },
+                    reject: /national anthem|performs the anthem|anthem at the/i,   // r557
                     titleHint:/Top 100 Players/i, glow:'rgba(120,140,200,0.9)' },
   },
 };
@@ -8237,6 +8258,7 @@ RECAP.director = {
           'hoh-nyy', 'mlb-daily', 'hoh-nym', 'pga-golf', 'golf-fill', 'wc-final',   // r176: randa-open parked; r467: mlb-season removed
           'hoh-nyy', 'mlb-daily', 'hoh-nym', 'wws-final', 'nhl-fill', 'nba-fill', 'nfl-fill', 'nfl-top100', 'tennis-fill'],  // R64/r538: MLB-dominant, league filler sprinkled low-frequency
   idx: 0, count: 0,
+  _mlbFillerToggle: false,   // r556: alternates mlb-daily/mlb-allgames between tennis-fill and itself during a live major — see the tennisBoostActive() branch below
   threshold: parseInt(new URLSearchParams(location.search).get('rotations'), 10) || (_tickDebug ? 1 : 10),
   maxMs: _tickDebug ? 10000 : 0,   // >0 → hard-cut the video after this many ms
 };
@@ -8316,6 +8338,39 @@ function recapDirectorTick(slotClass){
   }
   if (!D.enabled || _recapActive) return;
   if (D.count < D.threshold) return;
+  // r555 — TEAM PRIORITY: NYY always first when a fresh recap is available. Was pure
+  // round-robin (D.idx cycling RECAP.director.cycle) — hoh-nyy only owns its 3 fixed
+  // cycle slots like everything else, so a fresh Yankees recap could sit many
+  // rotations behind whatever else was mid-cycle (worse once tennisBoostActive() started
+  // eating the mlb-daily/mlb-allgames slots too — see r556 below). Mike: "NYY should
+  // always be first video when there's a fresh, relevant recap available."
+  // Reuses the exact availability check the diagnostic probe already uses (~line 9482:
+  // _lfRecapGame.NYY OR window._anchorArgs.yg — the same hasRecap signal, read-only,
+  // no DOM mutation) instead of a live DOM query, which the probe's own r535/r544 history
+  // proved unreliable (only reflects whichever team's pane rendered into the shared
+  // anchor slot most recently). Mirrors the existing WWS-companion jump below: fires
+  // non-blocking, does NOT touch D.idx, so the round-robin's fairness for every other
+  // source is untouched — playRecap's own _recapActive guard prevents any double-play if
+  // this claims the slot. Seen-once per game (keyed by the real gamePk, same _recapSeen
+  // set the WWS jump already uses) so it doesn't re-jump the same already-served game
+  // forever once it's played.
+  if (slotClass === 'yank'){
+    const _nyyAnchor = window._anchorArgs || {};
+    const nyyGame = _lfRecapGame.NYY || _nyyAnchor.yg;
+    const nyyPk = nyyGame && (nyyGame.gamePk || nyyGame.pk);
+    const nyySeenKey = 'nyy-priority:' + (nyyPk != null ? nyyPk : 'unknown');
+    if (nyyGame && !_recapSeen.has(nyySeenKey)){
+      _recapSeen.add(nyySeenKey);
+      if (window._anchorMerged && window._anchorTeam !== 'NYY' && typeof window._anchorSwap === 'function') window._anchorSwap();
+      const lf = document.querySelector('#yank-stage .lf-slide[data-slide="lf"][data-team="NYY"]');
+      if (lf && !lf.classList.contains('active')){
+        const st = document.getElementById('yank-stage');
+        if (st) st.querySelectorAll('.lf-slide').forEach(x => x.classList.toggle('active', x === lf));
+      }
+      _dirNote('NYY-PRIORITY jump — fresh recap available, preempting round-robin');
+      playRecap('hoh-nyy', { onNoVideo: () => { _dirNote('NYY-PRIORITY jump had no video — falling through to round-robin'); } });
+    }
+  }
   // R65: WWS-COMPANION PRIORITY — a selected WWS event outranks generic filler.
   // FINAL → recap; UPCOMING → preview clip; LIVE → nothing (the live card carries it).
   // Only from the yank tick (where recaps play), and only jumps the WWS stage.
@@ -8372,7 +8427,16 @@ function recapDirectorTick(slotClass){
         if (slotClass === 'yank' && wwsRecapTarget('golf') && !_dormant('pga-golf')) cand = 'pga-golf';
         else if (!_dormant('golf-fill')) cand = 'golf-fill';
       } else if (tennisBoostActive() && !_dormant('tennis-fill')){
-        cand = 'tennis-fill';
+        // r556: was unconditional — EVERY mlb-daily/mlb-allgames slot (4 of the cycle's 22)
+        // got handed to tennis-fill during a live major, so MLB Top Plays/League Highlights
+        // never fired AT ALL while a Slam was on. Mike: "we're not getting any MLB Top 5 or
+        // League highlights... we need to figure out a way to get those back in the mix,
+        // even if they're deprioritized bc of tennis." Alternate instead of hijacking every
+        // slot — tennis still gets boosted (roughly half the MLB filler slots) without fully
+        // starving the league-highlights filler. golf/soccer boosts are unchanged (Mike's ask
+        // was tennis-specific).
+        RECAP.director._mlbFillerToggle = !RECAP.director._mlbFillerToggle;
+        if (RECAP.director._mlbFillerToggle) cand = 'tennis-fill';
       } else if (soccerBoostActive()){
         if (!_dormant('fifa-fill')) cand = 'fifa-fill';
         else if (!_dormant('foxsoccer-fill')) cand = 'foxsoccer-fill';
@@ -15000,7 +15064,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r554-tennis-fill-final-score-badge';
+const BUILD_MARKER = 'r557-nyy-priority-mlb-filler-reject';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
