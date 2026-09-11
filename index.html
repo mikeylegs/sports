@@ -7992,12 +7992,21 @@ const RECAP = {
                                 'Press Conference|Interview|says ".*"|Official game ATP|through the years',
                                 'visits Wimbledon|cricketer|T20|Champions.? Dinner|Arrival|Royal Box',  // the celebrity-visit noise
                                 'dance|Party Time',
-                                'Full (?:Match|Final)\\b'   // r541: Mike, explicit — "SHOULD BE HIGHLIGHTS. SPECIFICALLY
+                                'Full (?:Match|Final)\\b',   // r541: Mike, explicit — "SHOULD BE HIGHLIGHTS. SPECIFICALLY
                                                              // REJECT 'FULL MATCH'." r536 had added this to require()'s
                                                              // OR-list as a stopgap when it was the only highlights-shaped
                                                              // title around; now that r539's maxResults:50 keeps the pool
                                                              // deep, a full-length replay should never outrank real
                                                              // Highlights content. reject() runs after require() and wins.
+                                'Extended Highlights\\b'    // r558: same call, longer-form. Mike: "highlights only" — real
+                                                             // titling is predictable ("<Players> Extended Highlights |
+                                                             // <Round>"), same shape as the plain-Highlights version this
+                                                             // source is actually meant to serve, just the long cut. Left
+                                                             // in require()'s OR-list above (harmless — reject runs after
+                                                             // require and always wins) rather than touched, so a day with
+                                                             // ONLY an Extended Highlights clip still falls through to the
+                                                             // reject step's own never-empty fallback (a bad match beats no
+                                                             // match) instead of being killed at the require stage.
                               ].join('|'), 'i')
                             : /Press Conference/i,
                     titleHint:/highlight|match|final|point|best/i, glow:'rgba(140,200,80,0.9)' },
@@ -15064,7 +15073,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r557-nyy-priority-mlb-filler-reject';
+const BUILD_MARKER = 'r558-tennis-extended-reject-dark-spinners';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -17683,7 +17692,7 @@ window.CC = (function(){
         pb.innerHTML =
             '<div class="probe-block">'
           + '<b>🎥 Montage speed-run</b> <span class="nt" style="display:inline">— league-wide HR reel (montageBuild + _montageClipFor)</span><br>'
-          + 'n: <input id="cc-mprobe-n" type="number" min="1" max="200" value="'+PROBE_INPUTS.mn+'" style="width:56px" '
+          + 'n: <input id="cc-mprobe-n" type="number" min="1" max="200" value="'+PROBE_INPUTS.mn+'" style="width:56px;color-scheme:dark" '
               + 'oninput="CC.syncProbeInput(\'mn\',this.value)" title="How many queued HRs to speed-run (in order)">'
           + ' <label style="margin-left:8px" title="Force a fresh montageBuild() instead of reusing the cached queue — use after new HRs have happened since the last run">'
               + '<input id="cc-mprobe-rebuild" type="checkbox"'+(PROBE_INPUTS.mrebuild?' checked':'')+' onchange="CC.syncProbeInput(\'mrebuild\',this.checked)"> rebuild queue</label>'
@@ -17695,7 +17704,7 @@ window.CC = (function(){
           + (mSummary ? '<div class="nt">'+mSummary.replace(/</g,'&lt;')+'</div>' : '')
           + '<div class="probe-block" style="margin-top:14px">'
           + '<b>📺 Recap rotation speed-run</b> <span class="nt" style="display:inline">— RECAP.director cycle (resolveVideo)</span><br>'
-          + 'n: <input id="cc-rprobe-n" type="number" min="1" max="100" value="'+PROBE_INPUTS.rn+'" style="width:56px" '
+          + 'n: <input id="cc-rprobe-n" type="number" min="1" max="100" value="'+PROBE_INPUTS.rn+'" style="width:56px;color-scheme:dark" '
               + 'oninput="CC.syncProbeInput(\'rn\',this.value)" title="How many rotation ticks to speed-run">'
           + ' slot: <select id="cc-rprobe-slot" onchange="CC.syncProbeInput(\'rslot\',this.value)" '
               + 'title="Which on-screen recap slot to simulate — yank (hero slot: team hoh-nyy/hoh-nym, pga-golf, wws-final are eligible) or secondary (those are skipped)">'
