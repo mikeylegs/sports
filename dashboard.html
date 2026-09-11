@@ -7410,6 +7410,79 @@ function recapBadgeLabel(sourceId){
   return `${base}${g.dateStr ? ` · ${g.dateStr}` : ''} · ${wl} ${g.teamScore}\u2013${g.oppScore} ${g.side} ${g.oppAbbr}`;
 }
 
+/* r554 -- tennis-fill's badge only ever showed the plain "Tennis" label: the source is a
+   bare YouTube search (query:'tennis highlights'), so its resolved video carries just a
+   title like "Coco Gauff vs. Elena Rybakina Highlights | 2026 US Open Semifinal" -- no
+   score data. Mike: match MLB's rich badge ("Coco Gauff def. Elena Rybakina, 7-6 6-4
+   6-2"). Real set scores don't live in the YouTube title; they have to come from ESPN's
+   tennis scoreboard -- the same endpoint wwsPollWatchPlayers already polls. Parse the two
+   names out of the highlight's title, scan today/yesterday/2-days-ago for a COMPLETED
+   (status.type.state==='post') singles match between those two names, and pull the real
+   linescores (same {c.athlete.shortName, c.linescores[].value, c.winner} shape wwsPollEvents'
+   own tennis `sides` builder already uses, line ~12922). Fails soft to null on any miss
+   (no title match, doubles, no such match found, network error) -- recapBadgeLabelAsync
+   below always falls back to the plain "Tennis" label, never breaks the badge. */
+function _tennisFinalNamesFromTitle(title){
+  const m = String(title||'').match(/^(.+?)\s+v(?:s\.?)?\s+(.+?)\s*[|\-\u2013\u2014]\s*(?:Extended\s+)?Highlights\b/i)
+         || String(title||'').match(/^(.+?)\s+v(?:s\.?)?\s+(.+?)\s+(?:Extended\s+)?Highlights\b/i);
+  if (!m) return null;
+  const n1 = m[1].trim(), n2 = m[2].trim();
+  return (n1 && n2) ? [n1, n2] : null;
+}
+async function _tennisFinalFromTitle(title){
+  try {
+    const names = _tennisFinalNamesFromTitle(title);
+    if (!names) return null;
+    const _fold = s => String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z ]/g,'').trim();
+    const [f1, f2] = names.map(_fold);
+    if (!f1 || !f2) return null;
+    const _plusDays = (n) => { const d = nowET(); d.setDate(d.getDate()+n);
+      return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`; };
+    for (const dk of [0, -1, -2].map(_plusDays)){
+      let evs = [];
+      try { evs = await _wwsFetchScoreboard('tennis/atp,tennis/wta', dk); } catch(_){ continue; }
+      for (const ev of evs){
+        for (const g of (ev.groupings || [])){
+          for (const comp of (g.competitions || [])){
+            const cs = comp.competitors || [];
+            if (cs.length !== 2) continue;
+            const st = (comp.status && comp.status.type) || {};
+            if (st.state !== 'post') continue;   // completed matches only
+            if (/doubles/i.test((comp.type && comp.type.text) || '')) continue;
+            const folded = cs.map(c => _fold((c.athlete && (c.athlete.displayName || c.athlete.shortName)) || ''));
+            const matchesPair = (a, b) => a && b && (a.includes(f1) || f1.includes(a)) && (b.includes(f2) || f2.includes(b));
+            if (!(matchesPair(folded[0], folded[1]) || matchesPair(folded[1], folded[0]))) continue;
+            const sides = cs.map(c => ({
+              name: (c.athlete && (c.athlete.shortName || c.athlete.displayName)) || '',
+              winner: !!c.winner,
+              sets: (c.linescores || []).map(l => l.value != null ? String(Math.round(l.value)) : null).filter(v => v != null),
+            }));
+            const w = sides.find(s => s.winner);
+            const l = sides.find(s => s !== w);
+            if (!w || !l || !w.sets.length) continue;
+            const setLine = w.sets.map((v,i) => `${v}-${l.sets[i] != null ? l.sets[i] : '0'}`).join(' ');
+            return { winner: w.name, loser: l.name, setLine };
+          }
+        }
+      }
+    }
+  } catch(_){}
+  return null;
+}
+/* Async badge builder -- the two real playRecap call sites (~line 11048/11056) are already
+   inside an async function past its awaits, so they call this instead of the sync
+   recapBadgeLabel() directly, awaiting once and reusing the same string for both the YTLT
+   log line and the on-screen badge. Bounded by _withResolveTimeout at the call site so a
+   slow/dead ESPN fetch can never stall the recap's reveal -- same fail-fast posture as
+   resolveVideo already uses. */
+async function recapBadgeLabelAsync(sourceId, video){
+  if (sourceId === 'tennis-fill'){
+    const final = await _tennisFinalFromTitle(video && video.title);
+    if (final) return `${final.winner} def. ${final.loser}, ${final.setLine}`;
+  }
+  return recapBadgeLabel(sourceId);
+}
+
 const RECAP_LAST_SEARCH = {};   // R125: sourceId → ts of last API search (quota floor)
 
 /* ══════════════════════════════════════════════════════════════════════════════
@@ -11044,15 +11117,21 @@ async function playRecap(sourceId, opts){
     else if (video.kind === 'mp4' && video.gamePk) _recapShownAt['mlb:' + video.gamePk] = Date.now();   // A4: mp4 recaps have no videoId — key the cooldown by gamePk
     _dormancyNote(sourceId, true);    // r146: source produced — clear any suppression
     _markServed(_servedKey(video));   // global recent-served ring (mp4 keyed by gamePk)
+    /* r554: compute the (possibly-real-score) badge ONCE and reuse it for both the log
+       line and the on-screen text — was calling the sync recapBadgeLabel() twice, now
+       calls the async version once, bounded by the same fail-fast timeout resolveVideo
+       uses so a slow/dead ESPN fetch can never stall the reveal (falls back to the plain
+       sync label on timeout, same as any other miss inside recapBadgeLabelAsync). */
+    const badgeLabel = await _withResolveTimeout(recapBadgeLabelAsync(sourceId, video), RECAP_RESOLVE_TIMEOUT_MS, 'badgeLabel:'+sourceId) || recapBadgeLabel(sourceId);
     ytltRecord({ source:sourceId, title:video.title, videoId:video.videoId,
-                 bottom:recapBadgeLabel(sourceId), lengthSec:video.lengthSec||null,
+                 bottom:badgeLabel, lengthSec:video.lengthSec||null,
                  published:video.published||null });   // R85 YTLT: log the chosen video
 
     // Video confirmed → NOW glow the relevant pane, then emerge into the player.
     if (src.slot) recapGlow(src.slot, src.glow || 'rgba(255,255,255,0.95)');
 
     const el = recapOverlay();
-    el.querySelector('.recap-badge').textContent = recapBadgeLabel(sourceId);
+    el.querySelector('.recap-badge').textContent = badgeLabel;
     RECAP._onEnd = opts.onEnd || null;
 
     const start = () => {
@@ -11072,6 +11151,18 @@ async function playRecap(sourceId, opts){
       // ★ R115 — kind branch. An MLB clip is a bare .mp4 and needs a <video>.
       // The YouTube path below is COMPLETELY UNTOUCHED. No `if (isMLB)` leaks into it.
       if (video.kind === 'mp4'){
+        /* r552: kill any stale YT iframe before mounting the mp4. Every OTHER exit path
+           (endRecap/_recapPreempt/_recapSuspend) tears down _recapPlayer, but this mount
+           never did — so if _recapActive ever went false while a YT clip was still live
+           (a caught error, the NO-VIDEO early-return, or a throttled-background-tab
+           timer race — all real paths that reset the flag without touching the player),
+           the next mp4 dispatch mounted on top of a still-PLAYING YT iframe: two audio
+           sources at once. Confirmed live via an incident report (NYY mp4 recap + a
+           tennis YT clip both PLAYING simultaneously). */
+        try { _recapPlayer && _recapPlayer.stopVideo && _recapPlayer.stopVideo(); } catch(_){}
+        try { _recapPlayer && _recapPlayer.destroy && _recapPlayer.destroy(); } catch(_){}
+        _recapPlayer = null;
+        _resetRecapHost();
         const host = document.getElementById('recap-player');
         if (host){
           host.querySelectorAll('video').forEach(n => n.remove());
@@ -11110,6 +11201,9 @@ async function playRecap(sourceId, opts){
         return;                                   // ← YouTube path not entered at all
       }
 
+      // r552: symmetric to the mp4-branch fix above — kill any stale mp4 <video> before
+      // mounting the YT player, so the same double-audio class of bug can't occur in reverse.
+      try { if (window._recapMp4){ window._recapMp4.pause(); window._recapMp4.remove(); window._recapMp4 = null; } } catch(_){}
       _resetRecapHost();   // r158: never mount onto a leftover iframe or a dirty div
       const kick = () => { try { _recapPlayer && _recapPlayer.mute(); _recapPlayer && _recapPlayer.playVideo(); } catch(_){} };
       if (_recapPlayer && _recapPlayer.loadVideoById){
@@ -14906,7 +15000,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r552-tn-flagrank-gap';
+const BUILD_MARKER = 'r554-tennis-fill-final-score-badge';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
