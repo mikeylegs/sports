@@ -9356,9 +9356,21 @@ async function findRecap(sourceId){
       else                   s -= 9 * forgive;
     }
     // R57 anti-monotony: penalize a video shown recently this session (see _recapShown).
+    // r559: was max -11, fully decayed by 45m — too weak against a small tennis-fill pool
+    // where the length-penalty gap between the best real Highlights clip and the next-best
+    // candidate (a longer compilation, an aging QF clip) can be 5-15pts on its own. Mike's
+    // probe showed Coco Gauff vs. Elena Rybakina winning 4 of the source's dispatches within
+    // one short window, including twice back-to-back a couple of rotations apart, despite
+    // Sabalenka/Pegula and Zverev/Zandschulp real Highlights clips sitting right there in the
+    // same pool. Stronger and longer (max -30, decays over 60m): against a realistic 11pt
+    // real-candidate gap this now suppresses a repeat for ~38 minutes straight (was <1 min
+    // before), tapering to 0 by the full hour. Still a SOFT penalty, not a hard exclude —
+    // r146/r147/r159's own history is why (a hard block starved the wall on thin pools) — if
+    // a clip is genuinely the only eligible one in the pool, it can still win once the penalty
+    // fades, which is correct (no video is worse than a repeat).
     if (typeof _recapShownAt === 'object' && _recapShownAt[x.videoId]){
       const mins = (now - _recapShownAt[x.videoId]) / 60000;
-      if (mins < 45) s -= (45 - mins) * 0.25;   // up to -11 when just shown, fades over 45m
+      if (mins < 60) s -= (60 - mins) * 0.5;   // up to -30 when just shown, fades over 60m
     }
     // r542: soft demotion, not a reject — see _hasGenuineHighlights above. -8 reliably drops
     // Match Point below any real Highlights candidate (observed gaps were ~0.3-1pt) without
@@ -15073,7 +15085,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r558-tennis-extended-reject-dark-spinners';
+const BUILD_MARKER = 'r559-stronger-anti-monotony';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
