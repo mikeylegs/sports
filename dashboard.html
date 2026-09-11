@@ -446,6 +446,7 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .wws-tn-rows{display:flex;flex-direction:column;gap:5.5cqh;padding:2.4cqh 2cqh 0;}   /* r500: LIVE value, dialed in tennis-studio.html */
 .wws-tn-rows.pre{gap:0cqh;}   /* r500: PREGAME override — Mike's two-card values were genuinely different, not shared */
 .wws-tn-row{display:flex;align-items:center;gap:2.1cqh;min-width:0;padding:1.7cqh 0;}   /* r506: row gap widened for rank spacing (flag/rank/name/sets all share this one gap — padding untouched, .wws-tn-sets' own internal gap left as-is per Mike) */
+.wws-tn-flagrank{display:flex;align-items:center;gap:0.7cqh;flex-shrink:0;}   /* r552: flag+rank now share one sub-wrapper w/ its own tighter gap, separate from .wws-tn-row's 2.1cqh — tightens flag↔rank only, leaves rank↔name and name↔sets gaps (still governed by the row's shared gap) untouched */
 .wws-tn-head{width:16cqh;height:16cqh;border-radius:50%;object-fit:cover;border:0.3cqh solid rgba(255,255,255,0.3);flex-shrink:0;font-size:5cqh;}   /* r480 */
 /* r480: name + serve-dot now share one wrapper so the dot hugs the visible name text
    instead of trailing a flex:1 name span. */
@@ -453,7 +454,7 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 /* r505: rank/seed — between flag & name, dialed in tennis-studio.html. Shown in both live
    and pregame (identity info, not a "no score yet" filler). Fixed-width slot so an
    unseeded player's empty prefix still keeps both rows' flags/names aligned. */
-.wws-tn-rank{font-size:4.4cqh;font-weight:900;color:rgba(255,255,255,0.6);min-width:5cqh;text-align:right;flex-shrink:0;margin-right:0cqh;}   /* r506: own dedicated gap zeroed — row's widened gap already supplies the space, avoids stacking both */   /* r551: min-width was 2.6cqh — real Inter digits measured tabular (1-digit=2.45cqh, 2-digit=4.89cqh exactly double), so a single-digit rank sat in a narrower box than a double-digit rank, shifting every name after it right by ~2.3cqh whenever the opponent had a 2-digit ranking. 5cqh fits both digit counts identically; text-align:right keeps 1-digit ranks hugging the same edge. */
+.wws-tn-rank{font-size:4.4cqh;font-weight:900;color:rgba(255,255,255,0.6);min-width:5cqh;text-align:right;flex-shrink:0;margin-right:0cqh;}   /* r506: own dedicated gap zeroed — row's widened gap already supplies the space, avoids stacking both */   /* r551: min-width was 2.6cqh — real Inter digits measured tabular (1-digit=2.45cqh, 2-digit=4.89cqh exactly double), so a single-digit rank sat in a narrower box than a double-digit rank, shifting every name after it right by ~2.3cqh whenever the opponent had a 2-digit ranking. 5cqh fits both digit counts identically; text-align:right keeps 1-digit ranks hugging the same edge. */   /* r552: now ALWAYS rendered (empty when unranked) so its 5cqh box is always reserved — an unranked opponent no longer collapses this slot and shifts that row's name left of the ranked row's name. */
 .wws-tn-name{font-size:5.4cqh;font-weight:900;color:rgba(255,255,255,0.8);flex:0 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}   /* r500: font-size is the pre-fitText fallback — data-fit governs the real max/floor per mode */
 .wws-tn-name.w{color:#fff;}
 .wws-serve{width:2.5cqh;height:2.5cqh;border-radius:50%;background:#34d399;flex-shrink:0;}   /* r500: live-only */
@@ -13245,8 +13246,7 @@ function wwsTennisInner(d){
   // bolded too). Mike: "First set, both scores are bold." Compare against the OPPONENT's score
   // in that same set index instead — bold only the side that actually scored higher.
   const rows = d.sides.map((x, si) => { const opp = d.sides.length === 2 ? d.sides[1 - si] : null; return `<div class="wws-tn-row">
-    ${x.flag ? `<img class="wws-flag wws-tn-flag" src="${x.flag}" alt="" onerror="this.style.opacity=0">` : ''}
-    ${x.rank ? `<span class="wws-tn-rank">${x.rank}</span>` : ''}
+    <div class="wws-tn-flagrank">${x.flag ? `<img class="wws-flag wws-tn-flag" src="${x.flag}" alt="" onerror="this.style.opacity=0">` : ''}<span class="wws-tn-rank">${x.rank || ''}</span></div>
     <div class="wws-tn-name-wrap"><span class="wws-tn-name${x.winner?' w':''}" data-fit="${d.pre?6.70:5.4}" data-fit-min="${d.pre?6.50:5.4}">${x.name}</span>${x.serving && d.live ? '<span class="wws-serve"></span>' : ''}</div>
     <span class="wws-tn-sets">${x.sets.map((s,i) => {
       const oppV = opp && opp.sets[i] && opp.sets[i].v != null ? +opp.sets[i].v : null;
@@ -14906,7 +14906,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r551-tn-name-6.7-rank-align';
+const BUILD_MARKER = 'r552-tn-flagrank-gap';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
