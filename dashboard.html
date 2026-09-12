@@ -1589,8 +1589,9 @@ html.nomask #mlb-takeover.tko-full .tkoH-photo{ -webkit-mask:none !important; ma
    reported bug size and full-screen, single- and double-digit scores.
    ────────────────────────────────────────────────────────────────────────── */
 html.logoscore-v1 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-team-info{display:none;}
-html.logoscore-v1 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-team-logo{align-self:center;}
-html.logoscore-v1 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-score{flex:1 1 auto;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(10.8px, 23.85cqmin, 94.5px) !important;}
+html.logoscore-v1 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-team-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;justify-items:center;}
+html.logoscore-v1 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-team-logo{align-self:center;justify-self:center;height:34cqmin;width:34cqmin;}
+html.logoscore-v1 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-score{justify-self:center;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(14px, 31cqmin, 123px) !important;color:#fff !important;}
 /* Dropping the abbr alone isn't enough at the width that motivated this in the first place:
    .mlb-feat-status's max-width was still a flat 60cqh, which (confirmed via r561_check.js
    against the real markup, not just the abbr-drop) still leaves the team column too narrow
@@ -15145,7 +15146,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r561-logoscore-flag';
+const BUILD_MARKER = 'r562-logoscore-bigger-centered';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
