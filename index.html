@@ -7396,6 +7396,21 @@ const SPORTS_CAL = {
 function _etDateStr(d){ d = d || nowET();
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
 
+// r563: NFL weekly-expiry — hours elapsed since the most recent Wednesday 00:00 ET.
+// Grows 0→~144 across the week (this week's content stays eligible throughout) and
+// resets to ~0 at the next Wednesday (last week's content expires at the Tue/Wed
+// boundary). Mike: "expires Tuesday of following week." Deliberately NOT "hours until
+// next Tuesday" — that shrinks as the week goes on and would expire fresh mid-week
+// content too early, backwards from intent.
+function _hoursSinceLastNflWeekStart(){
+  const et = nowET();
+  const daysSinceWed = (et.getDay() - 3 + 7) % 7;
+  const anchor = new Date(et);
+  anchor.setHours(0,0,0,0);
+  anchor.setDate(anchor.getDate() - daysSinceWed);
+  return (et - anchor) / 3600000;
+}
+
 // Resolve a source's CURRENT lifecycle phase, or null. Pure/read-only.
 // Returns { phase, event, patch } or null. `patch` is the field-overrides object for
 // the active phase (may be {}), taken from src.lifecycle.phases[PHASE].
@@ -7696,7 +7711,12 @@ const RECAP = {
     'foxsoccer':'UCooTLkxcpnTNx6vfOovfBFA',   // Fox Soccer (Mike-verified) — FIFA quick-highlight filler
     // r487: SNY's own channel (Mike-verified via feed <title> — same discipline as every ID
     // above). NYM only — Mike checked NYY's own channel and it doesn't reliably post these.
-    'sny':'UCL_OEjsHTwsHK6WKWs7s7Uw'
+    'sny':'UCL_OEjsHTwsHK6WKWs7s7Uw',
+    // r563: NFL team channels (Mike-supplied, exact IDs — free/zero-quota resolution,
+    // same discipline as sny/foxnfl above).
+    'billsnfl':'UCcEvCxUe2Sm5W6MliEUv0vg',
+    'jetsnfl':'UCROj9vBjc4ZW3AL4cd_BjHg',
+    'giantsnfl':'UCk2FqoG8dN5EAz5WU3A0D7A'
   },
   videoCache: {},                  // sourceId+dateKey -> { at, video|null }
   // Source registry. Add/tune here — query + titleHint are the live-tuning knobs.
@@ -7716,6 +7736,26 @@ const RECAP = {
                    label:'Mets Recap',    handle:'MLB', teamName:'Mets',    query:'Mets highlights',    titleHint:/mets/i,    require(){ return /mets/i; },   /* R126 STRICT: fade, don't serve opponent's clip */
                    reject: /reflects on|baseball memories|#?GloveStories|debut,? and more|sits down with|Q&A with|glove ?stories/i,   // r557
                    glow:'rgba(255,120,30,0.95)',  slot:'.mlb-feat-slot.yank' },
+    // r563: NFL team recaps — Bills/Jets/Giants. Same require/reject discipline as
+    // hoh-nyy/hoh-nym: strict fn-require on team name (empty pool ⇒ yield to filler,
+    // never serve the wrong team), reject presser/practice/podcast chatter. windowH is
+    // a FUNCTION (pipeline gate below now supports this, mirroring the existing
+    // function-reject pattern) — see _hoursSinceLastNflWeekStart above.
+    'nfl-bills':  { handle:'billsnfl', label:'Bills Recap', teamName:'Bills',
+                    query:'Bills highlights', titleHint:/bills/i, require(){ return /bills/i; },
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction/i,
+                    windowH: _hoursSinceLastNflWeekStart,
+                    glow:'rgba(0,51,141,0.95)', slot:'.mlb-feat-slot.yank' },
+    'nfl-jets':   { handle:'jetsnfl', label:'Jets Recap', teamName:'Jets',
+                    query:'Jets highlights', titleHint:/jets/i, require(){ return /jets/i; },
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction/i,
+                    windowH: _hoursSinceLastNflWeekStart,
+                    glow:'rgba(18,87,64,0.95)', slot:'.mlb-feat-slot.yank' },
+    'nfl-giants': { handle:'giantsnfl', label:'Giants Recap', teamName:'Giants',
+                    query:'Giants highlights', titleHint:/giants/i, require(){ return /giants/i; },
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction/i,
+                    windowH: _hoursSinceLastNflWeekStart,
+                    glow:'rgba(1,35,82,0.95)', slot:'.mlb-feat-slot.yank' },
     // R59: "MLB TOP PLAYS" (relabeled). timeless:true → exempt from the hard date gate
     // (top plays / league-wide recaps / compilations are great filler regardless of age,
     // and a bigger multi-day pool means fewer repeats). maxAgeDays caps how far back.
@@ -8302,7 +8342,8 @@ RECAP.director = {
   enabled: new URLSearchParams(location.search).get('recaps') !== '0',
   cycle: ['hoh-nyy', 'mlb-daily', 'hoh-nym', 'mlb-allgames', 'wws-final', 'fifa-fill', 'foxsoccer-fill',
           'hoh-nyy', 'mlb-daily', 'hoh-nym', 'pga-golf', 'golf-fill', 'wc-final',   // r176: randa-open parked; r467: mlb-season removed
-          'hoh-nyy', 'mlb-daily', 'hoh-nym', 'wws-final', 'nhl-fill', 'nba-fill', 'nfl-fill', 'nfl-top100', 'tennis-fill'],  // R64/r538: MLB-dominant, league filler sprinkled low-frequency
+          'hoh-nyy', 'mlb-daily', 'hoh-nym', 'wws-final', 'nhl-fill', 'nba-fill', 'nfl-fill', 'nfl-top100',
+          'nfl-bills', 'nfl-jets', 'nfl-giants', 'tennis-fill'],  // R64/r538/r563: MLB-dominant, league filler sprinkled low-frequency
   idx: 0, count: 0,
   _mlbFillerToggle: false,   // r556: alternates mlb-daily/mlb-allgames between tennis-fill and itself during a live major — see the tennisBoostActive() branch below
   threshold: parseInt(new URLSearchParams(location.search).get('rotations'), 10) || (_tickDebug ? 1 : 10),
@@ -8415,6 +8456,24 @@ function recapDirectorTick(slotClass){
       }
       _dirNote('NYY-PRIORITY jump — fresh recap available, preempting round-robin');
       playRecap('hoh-nyy', { onNoVideo: () => { _dirNote('NYY-PRIORITY jump had no video — falling through to round-robin'); } });
+    }
+  }
+  // r563: NFL TEAM PRIORITY — Bills/Jets/Giants. Non-blocking RETRY, unlike NYY's
+  // pre-confirmed jump above: there is no NFL live-game-finished signal in this codebase
+  // (no NFL statsapi integration exists), so we can't know a video exists before trying.
+  // Attempts one not-yet-seen team per tick; marks seen ONLY on playRecap success, so an
+  // empty attempt doesn't burn the week's slot — the tick naturally retries later once a
+  // real highlight is posted. Seen key resets weekly (Wed 00:00 ET, same anchor the
+  // windowH function above uses). Mike: "Priority jump, expires Tuesday of following week."
+  if (slotClass === 'yank' && _leagueInSeason('NFL')){
+    const _nflWeekKey = _etDateStr(new Date(nowET().getTime() - _hoursSinceLastNflWeekStart() * 3600000));
+    for (const _nflSrc of ['nfl-bills', 'nfl-jets', 'nfl-giants']){
+      const _nflSeenKey = 'nfl-priority:' + _nflSrc + ':' + _nflWeekKey;
+      if (!_recapSeen.has(_nflSeenKey)){
+        playRecap(_nflSrc, { onNoVideo: () => { _dirNote(_nflSrc.toUpperCase() + '-PRIORITY: no video yet this week, will retry'); } })
+          .then(ok => { if (ok) _recapSeen.add(_nflSeenKey); });
+        break;   // one attempt per tick — don't fire all 3 teams simultaneously
+      }
     }
   }
   // R65: WWS-COMPANION PRIORITY — a selected WWS event outranks generic filler.
@@ -9037,7 +9096,7 @@ async function findRecap(sourceId){
   // Sinatra upload; a celebration jingle does not go stale). No time window, and no recency
   // term in the scorer — otherwise a 7-year-old clip scores −5,500 and ranking collapses to
   // "whichever copy was uploaded most recently", which is how you end up with a karaoke version.
-  const _windowH = src.evergreen ? Infinity : (src.windowH ?? (src.timeless ? 72 : 36));
+  const _windowH = src.evergreen ? Infinity : (typeof src.windowH === 'function' ? src.windowH() : (src.windowH ?? (src.timeless ? 72 : 36)));
   { const _preWin = pool; pool = pool.filter(x => _ageH(x) <= _windowH);
     _aud('WINDOW ' + _windowH + 'h', _preWin, pool, 'hard staleness gate' + (src.timeless ? ' (timeless source)' : '')); }
 
@@ -15146,7 +15205,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r562-logoscore-bigger-centered';
+const BUILD_MARKER = 'r563-nfl-team-recaps';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
