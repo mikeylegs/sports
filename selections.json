@@ -1,7 +1,53 @@
 {
   "v": 1,
-  "updated": "2026-09-13T18:17:52.981Z",
-  "events": [],
+  "updated": "2026-09-13T18:18:35.754Z",
+  "events": [
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816921",
+      "title": "Houston Astros @ Tampa Bay Rays",
+      "showFrom": "20260913",
+      "showUntil": "20260913",
+      "rank": 1
+    },
+    {
+      "league": "football/nfl",
+      "label": "NFL",
+      "espnId": "401872924",
+      "title": "New York Jets @ Tennessee Titans",
+      "showFrom": "20260913",
+      "showUntil": "20260913",
+      "rank": 2
+    },
+    {
+      "league": "football/nfl",
+      "label": "NFL",
+      "espnId": "401872660",
+      "title": "Buffalo Bills @ Houston Texans",
+      "showFrom": "20260913",
+      "showUntil": "20260913",
+      "rank": 3
+    },
+    {
+      "league": "football/nfl",
+      "label": "NFL",
+      "espnId": "401872930",
+      "title": "Dallas Cowboys @ New York Giants",
+      "showFrom": "20260913",
+      "showUntil": "20260913",
+      "rank": 4
+    },
+    {
+      "league": "football/nfl",
+      "label": "NFL",
+      "espnId": "401872928",
+      "title": "Miami Dolphins @ Las Vegas Raiders",
+      "showFrom": "20260913",
+      "showUntil": "20260913",
+      "rank": 5
+    }
+  ],
   "watch": {
     "teams": [
       {
