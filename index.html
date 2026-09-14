@@ -7631,9 +7631,16 @@ function classifyTitle(title, teamName){
   if (!_rosterReady) return 'NEUTRAL';
   const t = String(title || '');
   const tl = t.toLowerCase();
-  const mine = _favPlayers[teamName];
+  // r564: CRASH FIX — mine was assumed to always be a real Set (true for MLB's
+  // Yankees/Mets, the only keys _favPlayers has ever held). The NFL team sources
+  // (r563) pass teamName:'Bills'/'Jets'/'Giants', which have no roster entry →
+  // mine was undefined → `[...set]` below threw "set is not iterable" on every
+  // call (log: "nfl-bills → ERROR: set is not iterable"). Empty-Set fallback makes
+  // this a correct no-op for any team with no loaded roster, exactly like the
+  // existing _namesFavPlayer guard a few lines away already does for the same reason.
+  const mine = _favPlayers[teamName] || new Set();
   const otherTeam = teamName === 'Yankees' ? 'Mets' : 'Yankees';
-  const theirs = _favPlayers[otherTeam];
+  const theirs = _favPlayers[otherTeam] || new Set();
 
   // (1) Leading player name — "Yoshida rockets out a homer …", "Juan Soto NO-DOUBT homer".
   //     If a MINE player is named anywhere in the headline (before the first '|' or '('),
@@ -7690,6 +7697,13 @@ const RECAP = {
     'NHL':'UCqFMzb-4AUf6WAIbl132QKA',   // r538: Mike-supplied, real channel — the old id (r176) served a stale 2019 archive
     'NBA':'UCWJ2lWNubArHWmf3FIHbfcQ',
     'NFL':'UCDVYQ4Zhbm3S2dlz7P1GBDg', 'pgatour':'UCQl18L5vfX9hCSclV_F6XpQ',
+    // r564 (Mike-supplied, from a live pool-report sample: "Best Plays From Sunday! |
+    // 2026 NFL Season Week 1"): ⚠ differs from 'NFL' above by only a few characters
+    // (UCDVYQ4Zh-b-m3S2dlz7P1GBDg vs UCDVYQ4Zh-bjiuyXsvbnhQwrw) — flagged for Mike to
+    // double-check, not assumed to be the same channel. Wired into nfl-fill per Mike:
+    // "wire this in to NFL fill... will have to check back next week to see if this is
+    // standard style" — treated as a trial swap, easy to revert to 'NFL' if it doesn't pan out.
+    'nflsunday':'UCDVYQ4ZhbjiuyXsvbnhQwrw',
     'cbsgolf':'UCyeer4UbTK9pzZL9_hhCimA',
     // A5 (r141, Mike-supplied): The Open coverage. NBC Sports = US network-exclusive
     // broadcaster (primary during THE_OPEN LIVE); The R&A = tournament's own channel
@@ -8113,8 +8127,8 @@ const RECAP = {
     'nba-fill':   { label:'NBA',       handle:'NBA', query:'nba highlights', priority:3, timeless:true, maxAgeDays:60,
                     require(){ return _leagueInSeason('NBA') ? null : /\bKnicks\b|\bNYK\b/i; },
                     titleHint:/highlight|dunk|top play|recap|best/i, glow:'rgba(200,120,50,0.9)' },
-    'nfl-fill':   { label:'NFL',       handle:'NFL', priority:3, timeless:true, maxAgeDays:60,
-                    query(){ return _leagueInSeason('NFL') ? 'nfl highlights' : null; },   // R93: no favorite NFL team → hard off out of season (null query = source skipped cleanly)
+    'nfl-fill':   { label:'NFL',       handle:'nflsunday', priority:3, timeless:true, maxAgeDays:60,   // r564: trial-swapped from 'NFL' to the new "Best Plays From Sunday" channel, see channelIds note
+                    query(){ return _leagueInSeason('NFL') ? 'nfl highlights' : null; },   // R93: no favorite NFL team → hard off out of season (null query = source skipped cleanly); still the fallback/API-search query alongside the RSS handle above
                     reject: /Top 100 Players/i,   // r539: nfl-top100 owns the countdown exclusively —
                                                    // without this, nfl-fill's generic query nets the
                                                    // same clips and both sources dispatch the identical
@@ -8341,9 +8355,13 @@ window.setDirectorLive = function(on){
 RECAP.director = {
   enabled: new URLSearchParams(location.search).get('recaps') !== '0',
   cycle: ['hoh-nyy', 'mlb-daily', 'hoh-nym', 'mlb-allgames', 'wws-final', 'fifa-fill', 'foxsoccer-fill',
-          'hoh-nyy', 'mlb-daily', 'hoh-nym', 'pga-golf', 'golf-fill', 'wc-final',   // r176: randa-open parked; r467: mlb-season removed
-          'hoh-nyy', 'mlb-daily', 'hoh-nym', 'wws-final', 'nhl-fill', 'nba-fill', 'nfl-fill', 'nfl-top100',
-          'nfl-bills', 'nfl-jets', 'nfl-giants', 'tennis-fill'],  // R64/r538/r563: MLB-dominant, league filler sprinkled low-frequency
+          'hoh-nyy', 'hoh-nym', 'pga-golf', 'golf-fill', 'wc-final',   // r176: randa-open parked; r467: mlb-season removed; r564: mlb-daily 3x→1x/lap
+          'hoh-nyy', 'hoh-nym', 'wws-final', 'nhl-fill', 'nba-fill', 'nfl-fill', 'nfl-top100',
+          'nfl-bills', 'nfl-jets', 'nfl-giants', 'tennis-fill'],  // R64/r538/r563/r564: MLB-dominant, league filler sprinkled low-frequency
+          // r564: mlb-daily cut from 3x→1x/lap — its RSS/API query only ever surfaces ONE
+          // "Top N Plays" video per day, so the other 2 slots were just replaying the exact
+          // same cached pick (Mike: "Top 5 repeating SEVEN times"). hoh-nyy/hoh-nym stay at
+          // 3x — those vary per game and are genuinely fresh content.
   idx: 0, count: 0,
   _mlbFillerToggle: false,   // r556: alternates mlb-daily/mlb-allgames between tennis-fill and itself during a live major — see the tennisBoostActive() branch below
   threshold: parseInt(new URLSearchParams(location.search).get('rotations'), 10) || (_tickDebug ? 1 : 10),
@@ -15205,7 +15223,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r563-nfl-team-recaps';
+const BUILD_MARKER = 'r564-nfl-crash-fix-mlbdaily-throttle';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
