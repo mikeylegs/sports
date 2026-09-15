@@ -3699,7 +3699,9 @@ try{ var _gp=new URLSearchParams(location.search);
   if(_gp.get('flatreveal')==='1') document.documentElement.classList.add('flatreveal');
   if(_gp.get('nomask')==='1') document.documentElement.classList.add('nomask');
   if(_gp.get('depth')==='1') document.documentElement.classList.add('depth-v1');
-  if(_gp.get('logoscore')==='1') document.documentElement.classList.add('logoscore-v1');
+  // r568: logoscore-v1 promoted to default (Mike: "it's earned its keep"). ?logoscore=0
+  // still opts back to the old team-name layout for a quick A/B without a redeploy.
+  if(_gp.get('logoscore')!=='0') document.documentElement.classList.add('logoscore-v1');
 }catch(_){}
 try{ if(new URLSearchParams(location.search).get('mtrace')==='1') setTimeout(function(){ try{ montageTrace(); }catch(_){} }, 500); }catch(_){}
 try{ if(new URLSearchParams(location.search).get('readaudit')==='1') setTimeout(function(){ try{ readAudit(); }catch(_){} }, 4000); }catch(_){}
@@ -11903,11 +11905,19 @@ function brainTakeoverPayload(c, g){
   const side = 'left';  // MLB takeovers use the anchor slot (P2 may route pins to right)
 
   // helper: HR-style card (headshot + chips)
+  // r567: `who` is ESPN's raw lastPlay sentence ("Judge homers (29) on a fly ball...").
+  // hrNum was never extracted at all (hrTag always empty on this path). The name-strip
+  // regex also only matched literal "homered" (past tense) and missed ESPN's live-play
+  // "homers" wording, so the whole raw sentence leaked into sub unstripped. Pull the
+  // (N) count first, then cut at the verb form (homer/homers/homered/home run) instead
+  // of just "homered", and fall back to the pre-parens text if the verb isn't found.
+  const _hrWhoNum = (c.meta.who||'').match(/\((\d+)\)/);
   const hrCard = (accent, headline) => ({ side, a:{ accent, wash, wm,
     head: hitterId ? `https://a.espncdn.com/i/headshots/mlb/players/full/${hitterId}.png` : '',
     logo: hitterId ? '' : ((typeof logoUrl==='function')?logoUrl('MLB',teamOf):''),
     headline,
-    sub: (c.meta.who||'').replace(/\s+homered.*$/i,'').replace(/\([^)]*\)/g,'').trim() || c.meta.who,
+    hrNum: _hrWhoNum ? '(' + _hrWhoNum[1] + ')' : null,
+    sub: (c.meta.who||'').replace(/\s+(?:homers?|homered|home run).*$/i,'').replace(/\([^)]*\)/g,'').trim() || c.meta.who,
     subIcon:'\u26be',
     chips: (typeof statcastChipsArr==='function' && g.lastPlay) ? statcastChipsArr(g.lastPlay) : [],
     band }});
@@ -15224,7 +15234,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r567-bso-shrink';
+const BUILD_MARKER = 'r569-logoscore-default-on';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
