@@ -585,6 +585,18 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .wws-nfl-to{display:flex;gap:0.4em;margin-top:0.3em;}
 .wws-nfl-to span{width:2.1cqh;height:2.1cqh;border-radius:50%;background:rgba(255,255,255,0.15);}
 .wws-nfl-to span.on{background:#fbbf24;}
+/* r565: NFL final-card PASS/RUSH/REC leader rows. Dialed in nfl-final-leaders-studio.html
+   (lead-scale 1.64, lead-cat-scale 2.05, lead-oy 5cqh, headshots off) — Mike's exact Copy CSS
+   output, baked in as literal values (no CSS vars; the studio's vars were dial-in-only). Headshots
+   are display:none per this dial; flip to flex/block if Mike ever wants them back on the wall. */
+.wws-nfl-leaders{display:flex;flex-direction:column;gap:1.4cqh;margin-top:5cqh;padding:0 1.5cqh;}
+.wws-nfl-lead-row{display:flex;align-items:center;justify-content:space-between;gap:1cqh;}
+.wws-nfl-lead-side{display:flex;align-items:center;gap:1.312cqh;flex:1;min-width:0;}
+.wws-nfl-lead-side.home{flex-direction:row-reverse;text-align:right;}
+.wws-nfl-lead-head{width:10.496cqh;height:10.496cqh;border-radius:50%;object-fit:cover;flex-shrink:0;display:none;}
+.wws-nfl-lead-name{font-size:5.576cqh;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.wws-nfl-lead-stat{font-size:4.756cqh;font-weight:600;color:rgba(255,255,255,0.55);white-space:nowrap;}
+.wws-nfl-lead-cat{flex:0 0 auto;font-size:8.069cqh;font-weight:800;letter-spacing:0.1em;color:rgba(212,175,55,0.85);text-transform:uppercase;padding:0 0.6cqh;}
 /* r424/r429: NHL — dialed in nhl-studio.html. Record intentionally omitted (Mike: card
    design drops it, replaced by an in-progress score readout in intermission mode —
    studio only for now); side() below skips the record span for wws-nhl specifically. */
@@ -1559,12 +1571,13 @@ html.nomask #mlb-takeover.tko-full .tkoH-photo{ -webkit-mask:none !important; ma
 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit{flex-direction:column;gap:1.5cqh;}
 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .sit-divider{display:none;}
 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .sit-block{flex-direction:column;gap:1.4cqh;align-items:center;}
-#row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .sit-diamond{width:20cqmin;height:calc(20cqmin * 0.78);}
-#row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .bso-lbl{font-size:4.4cqmin;width:auto;}
-#row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .bso-dot{width:4.6cqmin;height:4.6cqmin;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .sit-diamond{width:31cqmin;height:calc(31cqmin * 0.78);}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .bso-lbl{font-size:6.3cqmin;width:auto;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .bso-dot{width:6.3cqmin;height:6.3cqmin;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .sit-bso{gap:1.6cqh;}
 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-statusline-btm{flex-direction:column;align-items:center;gap:var(--sp-1);margin-top:1cqh;}
-#row-MLB .mlb-feat-slot.has-wp .mlb-feat-statusline-btm .mlb-feat-time-label{font-size:clamp(11px,7cqh,34px);}
-#row-MLB .mlb-feat-slot.has-wp .mlb-feat-statusline-btm .mlb-feat-net-inline{font-size:3.6cqh;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.55);}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-statusline-btm .mlb-feat-time-label{font-size:clamp(11px,7cqh,34px);white-space:nowrap;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-statusline-btm .mlb-feat-net-inline{font-size:4.2cqh;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.55);}
 #row-MLB .mlb-feat-wp{position:absolute;left:0cqh;right:0cqh;bottom:0cqh;z-index:5;}
 #row-MLB .mlb-feat-wp .wp-bar{height:4.2cqh;border-radius:0cqh;}
 
@@ -13132,6 +13145,56 @@ async function fetchGolfPreview(eventId, league){
   window._golfPreviewCache[key] = out;
   return out;
 }
+/* r565 — NFL LEADERS (PASS/RUSH/REC per team, final card). Probed live earlier this project:
+   summary?event=<id>'s top-level "leaders" key is category-names-only, never populated with
+   real athlete/value data (confirmed against a genuinely-completed game) — a real ESPN API
+   characteristic, not a fetch artifact. The REAL per-athlete lines live in
+   boxscore.players[].statistics[].athletes[].stats, already fetched at no extra endpoint cost
+   since wwsPollEvents needs this same summary call's competitor data anyway. Label order
+   confirmed live (WebFetch against event 401872657, SF@LAR final): passing
+   ["C/ATT","YDS","AVG","TD","INT","SACKS","RTG"], rushing ["CAR","YDS","AVG","TD","LONG"],
+   receiving ["REC","YDS","AVG","TD","LONG","TGTS"] — YDS is index 1 for passing/rushing, index
+   1 for receiving too (REC count is index 0). "Leader" = max YDS in that category per team;
+   ESPN has no native ranked-leader field to defer to (that's exactly what the probe ruled out).
+   Cached per eventId; a 'post' (final) result is cached permanently (stats can't change once
+   final), a 'in' (live) result is NOT cached so it re-fetches and stays current each poll. */
+window._nflLeadersCache = window._nflLeadersCache || {};
+function _nflShortName(full){
+  const parts = String(full||'').trim().split(/\s+/);
+  return parts.length > 1 ? parts[0][0] + '. ' + parts.slice(1).join(' ') : (full || '');
+}
+async function fetchNflLeaders(eventId){
+  const out = {};
+  try {
+    const data = await proxyFetch(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=${eventId}`);
+    const teams = (data && data.boxscore && data.boxscore.players) || [];
+    for (const t of teams){
+      const tid = String((t.team && t.team.id) || '');
+      if (!tid) continue;
+      const cat = name => (t.statistics || []).find(s => s.name === name);
+      const topBy = (catName, ydsIdx) => {
+        const c = cat(catName);
+        if (!c || !c.athletes || !c.athletes.length) return null;
+        let best = null, bestYds = -1;
+        for (const a of c.athletes){
+          const yds = parseFloat((a.stats || [])[ydsIdx]) || 0;
+          if (yds > bestYds){ bestYds = yds; best = a; }
+        }
+        return (best && bestYds > 0) ? best : null;
+      };
+      const mk = (a, statFn) => a ? {
+        name: _nflShortName(a.athlete && a.athlete.displayName),
+        headshot: (a.athlete && a.athlete.headshot && a.athlete.headshot.href) || '',
+        stat: statFn(a.stats || [])
+      } : null;
+      const pass = mk(topBy('passing', 1), s => `${s[1]} YDS · ${s[3]} TD`);
+      const rush = mk(topBy('rushing', 1), s => `${s[1]} YDS · ${s[3]} TD`);
+      const rec  = mk(topBy('receiving', 1), s => `${s[0]} REC · ${s[1]} YDS`);
+      out[tid] = [pass, rush, rec].filter(Boolean);
+    }
+  } catch(e){ console.warn('nfl leaders fetch failed:', e.message); }
+  return out;
+}
 // r479: a tennis selection's league is a comma-joined compound ("tennis/atp,tennis/wta") so one
 // selector pick can hydrate a match from either tour. ESPN's scoreboard endpoint doesn't support
 // a comma-joined sport path — confirmed live: sports/tennis/atp,tennis/wta/scoreboard 400s, each
@@ -13220,6 +13283,17 @@ async function wwsPollEvents(){
         if (kind === 'golf'){
           ev.__golfPreview = await fetchGolfPreview(evId, e.league);
           if (ev.__golfPreview.course && !(ev.courses && ev.courses[0] && ev.courses[0].name)) ev.courses = [{ name: ev.__golfPreview.course }];
+        }
+        // r565: NFL leaders — only worth fetching once the game has actually started (no stats
+        // pregame). 'post' results are cached permanently (final stats never change); 'in'
+        // (live) results are never cached so every poll picks up fresh in-game numbers.
+        if (kind === 'team' && e.league === 'football/nfl'){
+          const _nflState = (comp.status && comp.status.type && comp.status.type.state) || '';
+          if (_nflState === 'in' || _nflState === 'post'){
+            const _cached = window._nflLeadersCache[evId];
+            ev.__nflLeaders = (_cached && _cached.final) ? _cached.data : await fetchNflLeaders(evId);
+            window._nflLeadersCache[evId] = { data: ev.__nflLeaders, final: _nflState === 'post' };
+          }
         }
         const sides = (comp.competitors || []).map(c => ({
           teamId: c.team && c.team.id,
@@ -13376,6 +13450,7 @@ async function wwsPollEvents(){
           followedSide,   // r519: SPEC-tennis-win-splash — index into sides[], or null
           venue: bVenue,
           golf: kind === 'golf' ? (ev.__golfPreview || null) : undefined,   // r421: GOLF-CARD-SPEC fields
+          nflLeaders: ev.__nflLeaders || null,   // r565: {teamId: [pass,rush,rec]|null}, football/nfl only
           situation: (comp.situation && (comp.situation.downDistanceText || comp.situation.shortDownDistanceText)) || '',
           status: kind === 'tennis'
             ? (() => {   // r480: "Final · Round 1" once done; just "Round 1" while live (Mike: drop the
@@ -13745,8 +13820,30 @@ function wwsTeamInner(d){
     : `<span class="wws-hero">${a.score||'0'}<span class="wws-hero-dash">–</span>${h.score||'0'}</span>
       <div class="lf-wws-status${d.live?' live':''}">${d.status||''}</div>
       ${d.situation ? `<div class="wws-sit">${d.situation}</div>` : ''}`;
+  // r565: PASS/RUSH/REC leader rows — NFL final/live only (real box-score data from
+  // fetchNflLeaders via wwsPollEvents, keyed by teamId; pregame has no stats to show).
+  const leadersHtml = (sportClass === 'wws-nfl' && !d.pre && d.nflLeaders)
+    ? nflLeadersHtml(d.nflLeaders[a.teamId], d.nflLeaders[h.teamId]) : '';
   return wwsBanner(d) + `<div class="wws-tm-row ${sportClass}">${side(a)}
-    <div class="wws-tm-mid">${midT}</div>${side(h)}</div>`;
+    <div class="wws-tm-mid">${midT}</div>${side(h)}</div>` + leadersHtml;
+}
+// r565: 3 leader rows (PASS/RUSH/REC), each an away-side + centered category label + home-side.
+// away/home are each an array of up to 3 {name,stat,headshot} objects (or a shorter/empty array
+// if a category had no qualifying athlete — e.g. a shutout-rushing team) or null/undefined
+// entirely (no leader data fetched yet). Dial-in source: nfl-final-leaders-studio.html.
+function nflLeadersHtml(away, home){
+  const CATS = ['PASS','RUSH','REC'];
+  const rows = [];
+  for (let i = 0; i < 3; i++){
+    const a = (away || [])[i], h = (home || [])[i];
+    if (!a && !h) continue;
+    const side = (x, cls) => x ? `<div class="wws-nfl-lead-side ${cls}">
+      ${x.headshot ? `<img class="wws-nfl-lead-head" src="${x.headshot}" alt="" onerror="this.style.display='none'">` : ''}
+      <div class="wws-nfl-lead-txt"><span class="wws-nfl-lead-name">${x.name}</span><span class="wws-nfl-lead-stat">${x.stat}</span></div>
+    </div>` : `<div class="wws-nfl-lead-side ${cls}"></div>`;
+    rows.push(`<div class="wws-nfl-lead-row">${side(a,'away')}<span class="wws-nfl-lead-cat">${CATS[i]}</span>${side(h,'home')}</div>`);
+  }
+  return rows.length ? `<div class="wws-nfl-leaders">${rows.join('')}</div>` : '';
 }
 
 // r277: stacked variant — day-word over time, for the pregame middle column.
@@ -15223,7 +15320,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r564-nfl-crash-fix-mlbdaily-throttle';
+const BUILD_MARKER = 'r565-nyy-logoscore-dial-nfl-leaders';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
