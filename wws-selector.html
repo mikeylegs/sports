@@ -65,7 +65,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Wide World of Sports — Day Selector <span style="font-size:12px;font-weight:400;opacity:.5;font-family:monospace">selector-r185</span></h1>
+  <h1>Wide World of Sports — Day Selector <span style="font-size:12px;font-weight:400;opacity:.5;font-family:monospace">selector-r186</span></h1>
   <p class="sub">Pick today's / this weekend's events for the panel. Output is <code>selections.json</code> — commit it to the repo root and the dashboard (phase 2) picks it up on its next poll.</p>
   <div class="bar">
     <select id="range">
@@ -109,6 +109,14 @@
   <!-- selector-r158: says WHY a player query matched, so "messi" surfacing Genoa is explicable
        (Junior Messias) rather than looking like a bug. Empty/hidden unless a player hit lands. -->
   <div id="qhint" style="display:none;margin:0 0 10px;font-size:12px;color:var(--acc)"></div>
+  <!-- r585: footer-crawl per-league visibility — always visible, not a collapsible panel like
+       ★ FOLLOWING (there's nothing to load/fetch here, just 4 checkboxes). Separate from lgOn's
+       event-scan chips above; see CRAWL_LEAGUES/drawCrawlChips for why they're deliberately not
+       the same toggle. -->
+  <div style="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 12px">
+    <div style="font-weight:800;margin-bottom:6px;font-size:13px">Footer Crawl <span class="d" style="font-weight:400">— which leagues' scores scroll in the dashboard's bottom ticker (fetched regardless; this only filters what's shown)</span></div>
+    <div id="crawlchips" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+  </div>
   <div id="following" style="display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin:0 0 12px">
     <div style="font-weight:800;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
       <span>★ Following <span class="d" style="font-weight:400">— shown in Wide World of Sports whenever they play, no re-scan needed</span></span>
@@ -725,7 +733,28 @@ function lgToggleAll(){
   const allOn = scannable.every(p => lgOn.has(p));
   lgSetAll(!allOn);
 }
-document.addEventListener('DOMContentLoaded', () => { drawChips(); loadPublished(); drawSelected(); updCounts(); });   // R97: restore persisted picks + fetch what's ACTUALLY live
+// r585: footer-crawl per-league visibility — a SEPARATE toggle from lgOn above. lgOn gates
+// which leagues get SCANNED for the events browse list; this gates which leagues the
+// dashboard's footer score crawl (MLB/NHL/NBA/NFL ticker) RENDERS. Deliberately decoupled —
+// turning a league off here must not also drop it from event browsing, and vice versa.
+// Mike's rule: the dashboard fetches every league unconditionally regardless of this setting;
+// it's a pure display filter published alongside watch.teams/watch.players.
+const CRAWL_LEAGUES = [['MLB','⚾ MLB'],['NHL','🏒 NHL'],['NBA','🏀 NBA'],['NFL','🏈 NFL']];
+const CRAWL_LG_KEY = 'wws-crawl-leagues';
+const crawlLgOn = new Set(JSON.parse(localStorage.getItem(CRAWL_LG_KEY) || 'null') || CRAWL_LEAGUES.map(l=>l[0]));   // default: all 4 on
+function drawCrawlChips(){
+  const el = document.getElementById('crawlchips');
+  if (!el) return;
+  el.innerHTML = CRAWL_LEAGUES.map(([key,label]) =>
+    `<button onclick="crawlLgToggle('${key}')" style="padding:7px 10px;font-size:12px;border-radius:16px;font-weight:700;
+      ${crawlLgOn.has(key)?'background:#0e3b2b;border:1px solid var(--acc);color:#fff':'background:transparent;border:1px solid var(--line);color:var(--mut)'}">${label}</button>`).join('');
+}
+function crawlLgToggle(key){
+  crawlLgOn.has(key) ? crawlLgOn.delete(key) : crawlLgOn.add(key);
+  localStorage.setItem(CRAWL_LG_KEY, JSON.stringify([...crawlLgOn]));
+  drawCrawlChips();
+}
+document.addEventListener('DOMContentLoaded', () => { drawChips(); drawCrawlChips(); loadPublished(); drawSelected(); updCounts(); });   // R97: restore persisted picks + fetch what's ACTUALLY live
 
 // Same proxy fallback chain the dashboard uses (proven on the panel).
 const PROXIES = [
@@ -1231,7 +1260,7 @@ function buildSelJson(){
       league: r.path, label: r.league, espnId: r.id, title: r.title,
       showFrom: r.date, showUntil: endDate(r), rank: i+1   // R143: priority rank (1 = highest)
     })),
-    watch: { teams: [...stars.values()], players: [...players.values()] }   // ★ persistent — shown whenever they play/take the court
+    watch: { teams: [...stars.values()], players: [...players.values()], crawlLeagues: [...crawlLgOn] }   // ★ persistent — shown whenever they play/take the court; crawlLeagues r585
   };
   return JSON.stringify(out, null, 2);
 }
