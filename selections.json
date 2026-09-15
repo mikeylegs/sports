@@ -1,9 +1,90 @@
 {
   "v": 1,
-  "updated": "2026-09-15T19:52:28.293Z",
+  "updated": "2026-09-15T20:14:14.135Z",
   "events": [],
   "watch": {
-    "teams": [],
+    "teams": [
+      {
+        "league": "baseball/mlb",
+        "abbr": "NYY",
+        "name": "New York Yankees"
+      },
+      {
+        "league": "hockey/nhl",
+        "abbr": "NYR",
+        "name": "New York Rangers"
+      },
+      {
+        "league": "basketball/nba",
+        "abbr": "NY",
+        "name": "New York Knicks"
+      },
+      {
+        "league": "basketball/nba",
+        "abbr": "MIN",
+        "name": "Minnesota Timberwolves"
+      },
+      {
+        "league": "basketball/nba",
+        "abbr": "OKC",
+        "name": "Oklahoma City Thunder"
+      },
+      {
+        "league": "basketball/nba",
+        "abbr": "ORL",
+        "name": "Orlando Magic"
+      },
+      {
+        "league": "basketball/nba",
+        "abbr": "LAL",
+        "name": "Los Angeles Lakers"
+      },
+      {
+        "league": "basketball/nba",
+        "abbr": "LAC",
+        "name": "LA Clippers"
+      },
+      {
+        "league": "basketball/nba",
+        "abbr": "DAL",
+        "name": "Dallas Mavericks"
+      },
+      {
+        "league": "basketball/nba",
+        "abbr": "CHI",
+        "name": "Chicago Bulls"
+      },
+      {
+        "league": "basketball/nba",
+        "abbr": "IND",
+        "name": "Indiana Pacers"
+      },
+      {
+        "league": "football/nfl",
+        "abbr": "IND",
+        "name": "Indianapolis Colts"
+      },
+      {
+        "league": "football/nfl",
+        "abbr": "ARI",
+        "name": "Arizona Cardinals"
+      },
+      {
+        "league": "football/nfl",
+        "abbr": "DAL",
+        "name": "Dallas Cowboys"
+      },
+      {
+        "league": "football/nfl",
+        "abbr": "LAR",
+        "name": "Los Angeles Rams"
+      },
+      {
+        "league": "baseball/mlb",
+        "abbr": "BOS",
+        "name": "Boston Red Sox"
+      }
+    ],
     "players": [
       {
         "sport": "tennis",
@@ -40,6 +121,54 @@
       {
         "sport": "tennis",
         "name": "Frances Tiafoe"
+      },
+      {
+        "sport": "tennis",
+        "name": "Vivian Wolff"
+      },
+      {
+        "sport": "tennis",
+        "name": "Weronika Falkowska"
+      },
+      {
+        "sport": "tennis",
+        "name": "Whitney Osuigwe"
+      },
+      {
+        "sport": "tennis",
+        "name": "Yasmine Kabbaj"
+      },
+      {
+        "sport": "tennis",
+        "name": "You Xiaodi"
+      },
+      {
+        "sport": "tennis",
+        "name": "Zeynep Sonmez"
+      },
+      {
+        "sport": "tennis",
+        "name": "Zhibek Kulambayeva"
+      },
+      {
+        "sport": "tennis",
+        "name": "Tena Lukas"
+      },
+      {
+        "sport": "tennis",
+        "name": "Teodora Kostovic"
+      },
+      {
+        "sport": "tennis",
+        "name": "Taylor Townsend"
+      },
+      {
+        "sport": "tennis",
+        "name": "Tatjana Maria"
+      },
+      {
+        "sport": "tennis",
+        "name": "Suzan Lamens"
       }
     ],
     "crawlLeagues": [
