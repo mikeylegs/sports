@@ -2514,6 +2514,20 @@ function teamLogoUrl(league, abbr) {
 
 // ── Normalize ESPN's non-standard abbreviations to 3-letter display codes ──
 const ABBR_NORMALIZE = {
+  // r574: NHL LA/NJ → 3-letter (Mike: standardize all teams to 3 letters). Confirmed
+  // live against ESPN's own /nhl/teams endpoint — it genuinely returns 'LA' and 'NJ'
+  // for Kings/Devils, not a parsing quirk. LOGOS and TEAM_COLORS already carry BOTH
+  // spellings as defensive dupes from a past session, so this is a zero-risk add — every
+  // downstream lookup already resolves correctly either way, this just makes the
+  // DISPLAYED abbr consistent with the rest of the league (3 letters everywhere else).
+  'NHL:LA':'LAK', 'NHL:NJ':'NJD',
+  // r576: audit turned up 2 more NHL anomalies confirmed live off the same /nhl/teams
+  // endpoint — Sharks report as 'SJ' (LOGOS/TEAM_COLORS only have 'SJS', no dual-key —
+  // this one was a REAL broken-logo risk, not just cosmetic) and Mammoth report as
+  // 'UTAH' (4 letters; dashboard's own key is 'NHL:UTA'). TB (Lightning) already had a
+  // defensive 'NHL:TB' dual-key from a past session so it wasn't broken, just short —
+  // normalizing it too for full 3-letter consistency league-wide.
+  'NHL:SJ':'SJS', 'NHL:UTAH':'UTA', 'NHL:TB':'TBL',
   'NBA:GS':'GSW', 'NBA:NY':'NYK', 'NBA:NO':'NOP',
   'NBA:SA':'SAS', 'NBA:UTAH':'UTA',
   'MLB:CHW':'CWS', 'MLB:ANA':'LAA', 'MLB:KCR':'KC',
@@ -7756,7 +7770,11 @@ const RECAP = {
     // same discipline as sny/foxnfl above).
     'billsnfl':'UCcEvCxUe2Sm5W6MliEUv0vg',
     'jetsnfl':'UCROj9vBjc4ZW3AL4cd_BjHg',
-    'giantsnfl':'UCk2FqoG8dN5EAz5WU3A0D7A'
+    'giantsnfl':'UCk2FqoG8dN5EAz5WU3A0D7A',
+    // r576: NHL team channels (Mike-supplied, exact IDs). channelIds.NHL (above, r538)
+    // already verified live — reused as-is for the nhl-fill league filler.
+    'rangersnhl':'UCXlX2t7ziIJpZQWZcrHGnow',
+    'islandersnhl':'UC33CtnOXm7fyNVGmT_3UcMA'
   },
   videoCache: {},                  // sourceId+dateKey -> { at, video|null }
   // Source registry. Add/tune here — query + titleHint are the live-tuning knobs.
@@ -7783,19 +7801,31 @@ const RECAP = {
     // function-reject pattern) — see _hoursSinceLastNflWeekStart above.
     'nfl-bills':  { handle:'billsnfl', label:'Bills Recap', teamName:'Bills',
                     query:'Bills highlights', titleHint:/bills/i, require(){ return /bills/i; },
-                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction/i,
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech/i,   // r575: "victory speech" garbage (Aaron Glenn/Jets) — gate speeches out entirely
                     windowH: _hoursSinceLastNflWeekStart,
                     glow:'rgba(0,51,141,0.95)', slot:'.mlb-feat-slot.yank' },
     'nfl-jets':   { handle:'jetsnfl', label:'Jets Recap', teamName:'Jets',
                     query:'Jets highlights', titleHint:/jets/i, require(){ return /jets/i; },
-                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction/i,
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech/i,   // r575: "victory speech" garbage (Aaron Glenn/Jets) — gate speeches out entirely
                     windowH: _hoursSinceLastNflWeekStart,
                     glow:'rgba(18,87,64,0.95)', slot:'.mlb-feat-slot.yank' },
     'nfl-giants': { handle:'giantsnfl', label:'Giants Recap', teamName:'Giants',
                     query:'Giants highlights', titleHint:/giants/i, require(){ return /giants/i; },
-                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction/i,
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech/i,   // r575: "victory speech" garbage (Aaron Glenn/Jets) — gate speeches out entirely
                     windowH: _hoursSinceLastNflWeekStart,
                     glow:'rgba(1,35,82,0.95)', slot:'.mlb-feat-slot.yank' },
+    // r576: NHL team recaps — Rangers/Islanders (Mike-supplied channel IDs). Nightly
+    // cadence like MLB, not weekly like NFL — no windowH override, same as hoh-nyy/hoh-nym
+    // (default gate applies). Same require/reject discipline as every recap source above:
+    // strict fn-require on team name, reject presser/practice/podcast chatter.
+    'nhl-rangers':  { handle:'rangersnhl', label:'Rangers Recap', teamName:'Rangers',
+                    query:'Rangers highlights', titleHint:/rangers/i, require(){ return /rangers/i; },
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech/i,
+                    glow:'rgba(0,56,168,0.95)', slot:'.mlb-feat-slot.yank' },
+    'nhl-islanders': { handle:'islandersnhl', label:'Islanders Recap', teamName:'Islanders',
+                    query:'Islanders highlights', titleHint:/islanders/i, require(){ return /islanders/i; },
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech/i,
+                    glow:'rgba(0,83,155,0.95)', slot:'.mlb-feat-slot.yank' },
     // R59: "MLB TOP PLAYS" (relabeled). timeless:true → exempt from the hard date gate
     // (top plays / league-wide recaps / compilations are great filler regardless of age,
     // and a bigger multi-day pool means fewer repeats). maxAgeDays caps how far back.
@@ -8383,11 +8413,19 @@ RECAP.director = {
   cycle: ['hoh-nyy', 'mlb-daily', 'hoh-nym', 'mlb-allgames', 'wws-final', 'fifa-fill', 'foxsoccer-fill',
           'hoh-nyy', 'hoh-nym', 'pga-golf', 'golf-fill', 'wc-final',   // r176: randa-open parked; r467: mlb-season removed; r564: mlb-daily 3x→1x/lap
           'hoh-nyy', 'hoh-nym', 'wws-final', 'nhl-fill', 'nba-fill', 'nfl-fill', 'nfl-top100',
-          'nfl-bills', 'nfl-jets', 'nfl-giants', 'tennis-fill'],  // R64/r538/r563/r564: MLB-dominant, league filler sprinkled low-frequency
+          'nfl-bills', 'nfl-jets', 'nfl-giants', 'tennis-fill',
+          'nfl-fill', 'nfl-fill', 'nhl-rangers', 'nhl-islanders'],  // R64/r538/r563/r564/r575/r576: MLB-dominant, league filler sprinkled low-frequency
           // r564: mlb-daily cut from 3x→1x/lap — its RSS/API query only ever surfaces ONE
           // "Top N Plays" video per day, so the other 2 slots were just replaying the exact
           // same cached pick (Mike: "Top 5 repeating SEVEN times"). hoh-nyy/hoh-nym stay at
           // 3x — those vary per game and are genuinely fresh content.
+          // r575: nfl-fill bumped 1x→3x (Mike, after confirming nflsunday's real content:
+          // "Top 15 Plays of Week 1! | 2026 NFL Season" — "prioritize this as much as
+          // possible"). Flagged risk, not hidden: this channel posts weekly, not daily, so
+          // within one week the extra 2 slots WILL replay the same cached pick — same shape
+          // as the mlb-daily repeat Mike flagged above. Explicitly what he asked for anyway
+          // (more airtime for this specific format); revisit if "repeating" becomes a new
+          // complaint the way it did for mlb-daily.
   idx: 0, count: 0,
   _mlbFillerToggle: false,   // r556: alternates mlb-daily/mlb-allgames between tennis-fill and itself during a live major — see the tennisBoostActive() branch below
   threshold: parseInt(new URLSearchParams(location.search).get('rotations'), 10) || (_tickDebug ? 1 : 10),
@@ -11243,6 +11281,7 @@ async function resolveVideo(sourceId){
 
   // 1. MLB — exact. Queried, not searched.
   const team = RECAP_MLB_TEAM[sourceId];
+  let _um = null;   // r572: hoisted out of the try below — the SNY/YouTube gate after it needs to read this too
   if (team){
     try {
       // A recap only exists for a FINAL game. ucsMlbGame prioritizes live/imminent, so
@@ -11250,7 +11289,7 @@ async function resolveVideo(sourceId){
       // finds no recap → falls through to YouTube → generic "Top Plays" substitutes for
       // the team recap (Mike's recurring hoh-nym miss). Pass the pk ONLY when the matchup
       // is final; otherwise pass null so mlbRecap resolves the last final itself.
-      const _um = (typeof ucsMlbGame === 'function') ? await ucsMlbGame(team) : null;
+      _um = (typeof ucsMlbGame === 'function') ? await ucsMlbGame(team) : null;
       let r = null;
       if (_um && _um.gameStatus === 'final'){
         /* r571 — STANDING RULE (Mike, replaces r473): "once a new game goes final, ALL
@@ -11288,6 +11327,19 @@ async function resolveVideo(sourceId){
       }
     } catch(_){}
     // no recap cut yet → fall through. NOT an error.
+  }
+  /* r572 — same standing rule, the SNY/YouTube legs closed too. _mp4RecapExists only goes
+     true when leg 1 actually FOUND a real recap for the current latest final (cooldown or
+     not) — so `team && _um.gameStatus==='final' && !_mp4RecapExists` means a newer final
+     exists and NOTHING has been cut for it yet. Mike: "might as well kill that leg too" —
+     neither SNY's condensed clip (matched by title+freshness, not gamePk — same staleness
+     risk) nor the generic YouTube search (36h window, no gamePk lock at all) should be
+     allowed to fill that gap with a highlight for a DIFFERENT, older game. Yield to filler
+     instead and let the real recap show up on a later tick, exactly like a real NO VIDEO. */
+  const _newerFinalNoRecapYet = !!(team && _um && _um.gameStatus === 'final' && !_mp4RecapExists);
+  if (_newerFinalNoRecapYet){
+    window._recapFailReason = 'NEWER FINAL PENDING — no recap cut yet, old clips ineligible (r572)';
+    return null;
   }
 
   // 1.5. SNY condensed recap — NYM only, races the MLB-exact step above (r487, Mike: "check
@@ -15290,7 +15342,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r572-sinatra-url-fix';
+const BUILD_MARKER = 'r577-nhl-rangers-islanders-recap';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
