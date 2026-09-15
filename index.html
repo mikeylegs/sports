@@ -6325,6 +6325,30 @@ function updateSubleaguePhased(alGames, nlGames) {
   const mlbGames = [..._subGames.AL, ..._subGames.NL];
   mlbGames.forEach(g => { g.league = 'MLB'; });
   const byLeague = { MLB: mlbGames, NHL: _footerCrawlCache.NHL, NBA: _footerCrawlCache.NBA, NFL: _footerCrawlCache.NFL };
+  // r586: ALWAYS-ON next-game preview — see ensureFooterNextGame/pollFooterCrawlNextGames above.
+  // A followed team already playing today keeps its real card (no duplicate); one with no game
+  // today gets its cached next-scheduled-game preview appended instead of just disappearing.
+  // Builds a FRESH array per league rather than mutating byLeague[lg] in place — that reference
+  // is the live _footerCrawlCache/mlbGames array, and pushing into it would leak previews into
+  // the cache across renders.
+  {
+    const followedByLg = { MLB:[], NHL:[], NBA:[], NFL:[] };
+    ((WWS.watch && WWS.watch.teams) || []).forEach(t => {
+      const cfg = FOOTER_TEAM_LEAGUES[t.league];
+      if (cfg && t.abbr) followedByLg[cfg.key].push(normalizeAbbr(cfg.key, t.abbr));
+    });
+    Object.keys(followedByLg).forEach(lg => {
+      if (!followedByLg[lg].length) return;
+      const real = byLeague[lg];
+      const havingReal = new Set();
+      real.forEach(g => { havingReal.add(g.awayAbbr); havingReal.add(g.homeAbbr); });
+      const extra = followedByLg[lg]
+        .filter(abbr => !havingReal.has(abbr))
+        .map(abbr => _footerNextGame[`${lg}|${abbr}`])
+        .filter(Boolean);
+      if (extra.length) byLeague[lg] = [...real, ...extra];
+    });
+  }
   const enabled = _footerCrawlEnabledLeagues();
   const order = ['MLB','NHL','NBA','NFL'];
   const activeLeagues = order.filter(lg => enabled.has(lg) && byLeague[lg].length);
@@ -15424,7 +15448,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r585-footer-crawl-multileague';
+const BUILD_MARKER = 'r586-footer-crawl-next-game-always-on';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -16708,6 +16732,67 @@ async function pollFooterCrawlOtherLeagues() {
 }
 setInterval(pollFooterCrawlOtherLeagues, 60000);
 pollFooterCrawlOtherLeagues();
+
+// r586: ALWAYS-ON next-game preview for WWS-followed teams in the footer crawl. Mike: "wondering
+// if my favorited teams should always show next scheduled game, regardless of when it is?" —
+// "always on." Distinct from pollFooterCrawlOtherLeagues above (which fetches EVERY team playing
+// TODAY in a league, no follow-awareness at all): this is per-FOLLOWED-team, looks arbitrarily
+// far ahead via that team's own real season schedule (not a day-window fetch), and only fills in
+// when the team has no real game in today's fetch already.
+const FOOTER_TEAM_LEAGUES = {   // WWS.watch.teams' t.league path -> {crawl key, ESPN sport/slug}
+  'baseball/mlb':  { key:'MLB', sport:'baseball',   slug:'mlb' },
+  'football/nfl':  { key:'NFL', sport:'football',   slug:'nfl' },
+  'hockey/nhl':    { key:'NHL', sport:'hockey',     slug:'nhl' },
+  'basketball/nba':{ key:'NBA', sport:'basketball', slug:'nba' },
+};
+const _footerNextGame = {};           // "LEAGUE|normalizedAbbr" -> mlbCardHtml-shaped g, or null
+const _footerNextGameInFlight = new Set();
+// Endpoint shape confirmed live (9/15) against site.api.espn.com/.../teams/NYR/schedule: a
+// top-level `events[]`, each with `date`, `status.type.state` ('pre'/'in'/'post'), and
+// `competitions[0].competitors[]` ({homeAway, team.abbreviation}) — the exact shape parseEvent()
+// already parses for the scoreboard endpoint, so it's reused unmodified here rather than a
+// second hand-rolled parser. rawAbbr (unnormalized, as stored by the team-catalog's own ESPN
+// harvest) builds the URL; abbr (normalizeAbbr'd) is the cache key, so it matches the already-
+// normalized abbrs real scoreboard games carry for the dedup check in updateSubleaguePhased.
+function ensureFooterNextGame(fkey, cfg, rawAbbr, abbr) {
+  const ck = `${fkey}|${abbr}`;
+  if (ck in _footerNextGame || _footerNextGameInFlight.has(ck)) return;
+  _footerNextGameInFlight.add(ck);
+  const url = `https://site.api.espn.com/apis/site/v2/sports/${cfg.sport}/${cfg.slug}/teams/${rawAbbr}/schedule`;
+  proxyFetch(url).then(data => {
+    const now = Date.now();
+    const upcoming = (data.events || [])
+      .filter(ev => ev.date && new Date(ev.date).getTime() > now && ev.status?.type?.state !== 'post')
+      .sort((a,b) => new Date(a.date) - new Date(b.date))[0];
+    if (!upcoming) { _footerNextGame[ck] = null; return; }
+    const g = parseEvent(upcoming, fkey);
+    // Override parseEvent's real timeLabel ("Tomorrow · 7:10 PM") with a DAY-ONLY label — Mike's
+    // ask: "future game tied to a day and not a time yet." mlbCardHtml's upcoming-status line is
+    // `(g.timeLabel||'').split(' · ').pop()`, which would otherwise grab the TIME half. No ' · '
+    // in the override means .pop() returns the whole day-word untouched.
+    const d = new Date(upcoming.date);
+    const today = new Date(), tmrw = new Date(today); tmrw.setDate(today.getDate()+1);
+    g.timeLabel = (d.toDateString()===today.toDateString()) ? 'TODAY'
+      : (d.toDateString()===tmrw.toDateString()) ? 'TOMORROW'
+      : d.toLocaleDateString('en-US',{weekday:'short'}).toUpperCase();
+    g.id = `next-${ck}`;
+    g.league = fkey;
+    g.__nextGamePreview = true;
+    _footerNextGame[ck] = g;
+  }).catch(() => { /* fails open — leave whatever's cached (or nothing) rather than a bad card */ })
+    .finally(() => {
+      _footerNextGameInFlight.delete(ck);
+      setTimeout(() => { delete _footerNextGame[ck]; }, 30 * 60 * 1000); // refresh every 30 min
+    });
+}
+function pollFooterCrawlNextGames() {
+  ((WWS.watch && WWS.watch.teams) || []).forEach(t => {
+    const cfg = FOOTER_TEAM_LEAGUES[t.league];
+    if (cfg && t.abbr) ensureFooterNextGame(cfg.key, cfg, t.abbr, normalizeAbbr(cfg.key, t.abbr));
+  });
+}
+setInterval(pollFooterCrawlNextGames, 300000);   // next game rarely changes — 5min is plenty
+pollFooterCrawlNextGames();
 
 // getElementById only ever returns the first match in the document, but the
 // status-badge markup is intentionally duplicated — once inside the normal
