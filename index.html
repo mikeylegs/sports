@@ -13340,9 +13340,17 @@ async function wwsPollEvents(){
           ev.__golfPreview = await fetchGolfPreview(evId, e.league);
           if (ev.__golfPreview.course && !(ev.courses && ev.courses[0] && ev.courses[0].name)) ev.courses = [{ name: ev.__golfPreview.course }];
         }
+        // r578: WWS pregame/live cards were reading c.team.abbreviation RAW — this whole
+        // populate path never goes through parseEvent(), so it never got normalizeAbbr()'s
+        // 2-letter→3-letter fixes (r574/r576). Root cause of "NJ still showing" after both
+        // shipped: those fixed the CRAWL's abbr source, not this separate WWS source. e.league
+        // is path-style ("hockey/nhl") — slice the short code the same way WATCH_LEAGUE_LABEL's
+        // keys are built, uppercase it to match ABBR_NORMALIZE's key style ("NHL"), and run it
+        // through normalizeAbbr just like every other abbr source in the file does.
+        const _lgShort = (e.league.split('/')[1] || '').toUpperCase();
         const sides = (comp.competitors || []).map(c => ({
           teamId: c.team && c.team.id,
-          name: (c.team && (c.team.abbreviation || c.team.shortDisplayName)) || (c.athlete && (c.athlete.shortName || c.athlete.displayName)) || '',
+          name: (c.team && (normalizeAbbr(_lgShort, c.team.abbreviation || '') || c.team.shortDisplayName)) || (c.athlete && (c.athlete.shortName || c.athlete.displayName)) || '',
           logo: (c.team && c.team.logo) || '',
           flag: (c.athlete && c.athlete.flag && c.athlete.flag.href) || (c.team && c.team.flag && c.team.flag.href) || '',
           headshot: (c.athlete && c.athlete.headshot && (c.athlete.headshot.href || c.athlete.headshot)) || '',
@@ -15342,7 +15350,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r577-nhl-rangers-islanders-recap';
+const BUILD_MARKER = 'r578-wws-card-abbr-normalize-fix';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
