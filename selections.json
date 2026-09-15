@@ -1,7 +1,62 @@
 {
   "v": 1,
-  "updated": "2026-09-15T20:46:30.504Z",
-  "events": [],
+  "updated": "2026-09-15T21:16:18.849Z",
+  "events": [
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816921",
+      "title": "Houston Astros @ Tampa Bay Rays",
+      "showFrom": "20260913",
+      "showUntil": "20260913",
+      "rank": 1
+    },
+    {
+      "league": "football/nfl",
+      "label": "NFL",
+      "espnId": "401872924",
+      "title": "New York Jets @ Tennessee Titans",
+      "showFrom": "20260913",
+      "showUntil": "20260913",
+      "rank": 2
+    },
+    {
+      "league": "football/nfl",
+      "label": "NFL",
+      "espnId": "401872660",
+      "title": "Buffalo Bills @ Houston Texans",
+      "showFrom": "20260913",
+      "showUntil": "20260913",
+      "rank": 3
+    },
+    {
+      "league": "football/nfl",
+      "label": "NFL",
+      "espnId": "401872930",
+      "title": "Dallas Cowboys @ New York Giants",
+      "showFrom": "20260913",
+      "showUntil": "20260913",
+      "rank": 4
+    },
+    {
+      "league": "football/nfl",
+      "label": "NFL",
+      "espnId": "401872928",
+      "title": "Miami Dolphins @ Las Vegas Raiders",
+      "showFrom": "20260913",
+      "showUntil": "20260913",
+      "rank": 5
+    },
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401816943",
+      "title": "Athletics @ Tampa Bay Rays",
+      "showFrom": "20260915",
+      "showUntil": "20260915",
+      "rank": 6
+    }
+  ],
   "watch": {
     "teams": [
       {
@@ -42,6 +97,10 @@
       },
       {
         "sport": "tennis",
+        "name": "Carlos Alcaraz"
+      },
+      {
+        "sport": "tennis",
         "name": "Alexander Zverev"
       },
       {
@@ -58,22 +117,16 @@
       },
       {
         "sport": "tennis",
+        "name": "Frances Tiafoe"
+      },
+      {
+        "sport": "tennis",
         "name": "Jessica Pegula"
       },
       {
         "sport": "tennis",
         "name": "Emma Navarro"
-      },
-      {
-        "sport": "tennis",
-        "name": "Carlos Alcaraz"
       }
-    ],
-    "crawlLeagues": [
-      "MLB",
-      "NHL",
-      "NBA",
-      "NFL"
     ]
   }
 }
