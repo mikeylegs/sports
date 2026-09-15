@@ -2596,7 +2596,15 @@ async function mlbBroadcastNetwork(gamePk){
     if (raw){
       const games = (JSON.parse(raw).dates || []).flatMap(x => x.games || []);
       const g = games.find(x => x.gamePk === gamePk) || games[0];
-      const b = (g?.broadcasts || []).find(x => x.isNational && x.type === 'TV');
+      // r579: MLB Network rides ALONGSIDE the real broadcaster as a separate isNational:true,
+      // type:'TV' entry (confirmed live, gamePk 823496 9/12 NYY@NYM — carries a genuine
+      // 'MLBN' national entry in the SAME broadcasts array as the correct SNY/YES entries).
+      // The un-filtered isNational&&TV find() could grab MLBN over YES/SNY, or over a real
+      // Apple TV+/Amazon national exclusive if MLBN's entry happened to sort first — MLBN was
+      // never meant to be a candidate here (r471's own comment only ever named FOX/TBS/ESPN/
+      // ABC). Excluding it so this only fires on a genuine national exclusive.
+      const b = (g?.broadcasts || []).find(x => x.isNational && x.type === 'TV'
+        && !/^mlbn$/i.test(x.callSign||'') && !/^mlb\s*network$/i.test(x.name||''));
       network = b ? (b.callSign || b.name || null) : null;
     }
   } catch(_){}
@@ -15350,7 +15358,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r578-wws-card-abbr-normalize-fix';
+const BUILD_MARKER = 'r579-nyy-nym-mlbn-network-clobber-fix';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
