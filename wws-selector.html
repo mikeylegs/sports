@@ -642,8 +642,14 @@ function _teamRowHtml(t, q){
   const hits = nameHit ? [] : _akaHits(t, q);
   const hint = hits.length
     ? `<br><span class="d" style="color:var(--acc)">↳ ${hits.join(' · ')}</span>` : '';
+  // selector-r186: was JSON.stringify(t) (full catalog row incl. the aka roster string) inlined
+  // into a SINGLE-quoted onchange attr. Any apostrophe in aka/name (BUF: "Ar'maj", "O'Cyrus",
+  // "Te'Cory", "Ja'Mori"...) closed the attribute early, silently killing the handler for that
+  // row -- add/remove never reached starToggle. NYY happened to have no apostrophes, so it looked
+  // fine while BUF/NYJ/NYG/etc never stuck. Fix: only pass the 3 fields starToggle actually reads
+  // (aka isn't one of them), and escape any stray ' as a belt-and-suspenders.
   return `<label class="ev ${on?'on':''}" data-key="${key}" style="margin:0;padding:7px 9px;gap:7px">
-    <input type="checkbox" ${on?'checked':''} onchange='starToggle(${JSON.stringify(t)}, this)'>
+    <input type="checkbox" ${on?'checked':''} onchange='starToggle(${JSON.stringify({league:t.league,abbr:t.abbr,name:t.name}).replace(/'/g,"&#39;")}, this)'>
     <span class="m"><span class="t" style="font-size:13px">${t.name}</span><br><span class="d">${t.tag} · ${t.abbr}</span>${hint}</span>
   </label>`;
 }
