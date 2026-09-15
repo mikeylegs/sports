@@ -594,7 +594,7 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .wws-nhl .wws-tm-side{gap:0.0cqh;flex:0 0 24.5%;width:24.5%;}   /* r448: same lock as NFL */
 .wws-nhl .wws-hero{font-size:14.5cqh;}
 .wws-nhl .lf-wws-status{font-size:7.2cqh;}
-.wws-nhl .wws-tm-mid{gap:0.3cqh;flex:0 0 52%;width:52%;}   /* r448: same lock as NFL */
+.wws-nhl .wws-tm-mid{gap:0.3cqh;flex:0 0 52%;width:52%;margin-top:-2.3cqh;}   /* r448: same lock as NFL. r583: r582's exact-cqh-match theory was incomplete — .wws-tm-row has NO fixed height, so align-items:center centers each column against the TALLEST child, and NHL's side column (24.2cqh crest + 9.0cqh name + 6.4cqh record) is taller than MLB's (21.5+7.6+6.4), pushing the centered mid column down. Rendered both cards headless (Playwright) off the real CSS+markup with Mike's exact NYY/NYR data, measured the kick-text band in pixels, and converged this margin-top empirically until MLB/NHL matched exactly (top/bottom pixel-identical) — not a ratio guess this time, a measured fit. */
 .wws-nhl.wws-full .lf-slide{padding:0.0cqh 1.5cqh;}
 .wws-nhl .wws-mlb-kick-stack{gap:1.1cqh;}
 .wws-nhl .wws-kick-word{font-size:9.4cqh;}
@@ -15364,7 +15364,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r582-nhl-record-cqh-exact-match';
+const BUILD_MARKER = 'r583-nhl-wws-mid-offset-measured';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
