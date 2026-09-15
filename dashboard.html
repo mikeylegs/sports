@@ -1560,8 +1560,8 @@ html.nomask #mlb-takeover.tko-full .tkoH-photo{ -webkit-mask:none !important; ma
 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .sit-divider{display:none;}
 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .sit-block{flex-direction:column;gap:1.4cqh;align-items:center;}
 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .sit-diamond{width:31cqmin;height:calc(31cqmin * 0.78);}
-#row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .bso-lbl{font-size:6.3cqmin;width:auto;}
-#row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .bso-dot{width:6.3cqmin;height:6.3cqmin;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .bso-lbl{font-size:5.4cqmin;width:auto;}
+#row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .bso-dot{width:5.4cqmin;height:5.4cqmin;}
 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-sit .sit-bso{gap:1.6cqh;}
 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-statusline-btm{flex-direction:column;align-items:center;gap:var(--sp-1);margin-top:1cqh;}
 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-statusline-btm .mlb-feat-time-label{font-size:clamp(11px,7cqh,34px);white-space:nowrap;}
@@ -15224,7 +15224,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r566-revert-nfl-leaders';
+const BUILD_MARKER = 'r567-bso-shrink';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
