@@ -11343,6 +11343,34 @@ async function playRecap(sourceId, opts){
       if (_seqKey) _recapShowSeq[_seqKey] = _recapShowSeqNext++; }   // r560: source-agnostic dispatch-rank stamp
     _dormancyNote(sourceId, true);    // r146: source produced — clear any suppression
     _markServed(_servedKey(video));   // global recent-served ring (mp4 keyed by gamePk)
+    /* r570 — AUTOMATIC recap-fire audit log (Mike, punchlist #4: "tie candidate resolution to
+       the exact gamePk... with an audit step before committing"). Was: Mike had to be present
+       and manually run recapProbe() when a mismatch happened. Now every real hoh-nyy/hoh-nym
+       fire logs itself into the Night Report — what actually got picked (kind/source/title/
+       videoId/gamePk), and for the mp4 exact-match path, the REAL current last-final gamePk
+       for that team (re-derived the same way resolveVideo's own mlb branch already does via
+       mlbLastFinalGamePks) so a wrong-game pick is visible IN the log itself, not something
+       that has to be guessed at after the fact from a screenshot. Scoped to both NYY and NYM
+       (not just NYY) — same mechanism, RECAP_MLB_TEAM already covers both, zero extra cost.
+       Read-only: never affects what plays, mirrors the existing recap.pick/recap.suspect
+       pattern already used inside mlbRecap() (line ~4098). */
+    try {
+      const _auTeam = RECAP_MLB_TEAM[sourceId];
+      if (_auTeam && window.nightEvent){
+        let _expectedPk = null, _pkMatch = null;
+        if (video.kind === 'mp4'){
+          try {
+            const _tid = MLB_TEAM_IDS[_auTeam] || _auTeam;
+            const _cands = await mlbLastFinalGamePks(_tid, 2, 1);
+            _expectedPk = _cands.length ? _cands[0].gamePk : null;
+            if (_expectedPk != null && video.gamePk != null) _pkMatch = (_expectedPk === video.gamePk);
+          } catch(_){}
+        }
+        nightEvent('recap','fire',{ sourceId, team:_auTeam, kind:video.kind, via:video.source||null,
+          title:String(video.title||'').slice(0,80), videoId:video.videoId||null, gamePk:video.gamePk||null,
+          expectedGamePk:_expectedPk, gamePkMatch:_pkMatch, exact:!!video.exact });
+      }
+    } catch(_){}
     /* r554: compute the (possibly-real-score) badge ONCE and reuse it for both the log
        line and the on-screen text — was calling the sync recapBadgeLabel() twice, now
        calls the async version once, bounded by the same fail-fast timeout resolveVideo
@@ -15234,7 +15262,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r569-logoscore-default-on';
+const BUILD_MARKER = 'r570-recap-fire-audit-log';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
