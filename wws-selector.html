@@ -340,6 +340,9 @@ function _adoptPublishedWatch(watch){
   for (const t of (watch.teams || [])){
     if (!t || !t.league || !t.abbr) continue;
     const key = `${t.league}|${t.abbr}`;
+    // r187: skip anything explicitly unfollowed on THIS device — a stale/lagged published
+    // snapshot must never override a deliberate local removal.
+    if (starsRemoved.has(key)) continue;
     if (!stars.has(key)){ stars.set(key, { league:t.league, abbr:t.abbr, name:t.name }); changed = true; }
   }
   for (const p of (watch.players || [])){
@@ -548,6 +551,19 @@ function drawPlayers(){
 const STAR_KEY = 'wws-stars';
 const stars = new Map(JSON.parse(localStorage.getItem(STAR_KEY) || '[]'));  // "lg|ABBR" -> {league,abbr,name}
 function saveStars(){ localStorage.setItem(STAR_KEY, JSON.stringify([...stars])); }
+// selector-r187: tombstone for explicitly-unfollowed teams. _adoptPublishedWatch (below) is
+// ADDITIVE-ONLY cross-device sync — it re-adds anything the published selections.json has that
+// local `stars` doesn't, with no way to tell "you unfollowed this" from "this device hasn't
+// synced yet." raw.githubusercontent.com has real propagation lag after a publish (publish()'s
+// own success text says "live in ~1 min") — Mike: unselect-all, publish (JSON preview correctly
+// empty), refresh within that window, and _adoptPublishedWatch fetches the STALE pre-clear json
+// and resurrects every team right back into stars, then persists that. This set records which
+// keys were just intentionally removed so the sync can skip them; starToggle clears a key's
+// tombstone the moment it's re-followed, so a genuine re-follow (on this or another device)
+// isn't blocked forever.
+const REMOVED_KEY = 'wws-stars-removed';
+const starsRemoved = new Set(JSON.parse(localStorage.getItem(REMOVED_KEY) || '[]'));
+function saveStarsRemoved(){ localStorage.setItem(REMOVED_KEY, JSON.stringify([...starsRemoved])); }
 const TEAM_LEAGUES = [
   ['baseball/mlb','MLB'], ['basketball/nba','NBA'],
   ['football/nfl','NFL'], ['hockey/nhl','NHL'],
@@ -702,9 +718,12 @@ function clearTeamFilter(){
 }
 function starToggle(t, box){
   const key = `${t.league}|${t.abbr}`;
-  if (box.checked) stars.set(key, {league:t.league, abbr:t.abbr, name:t.name});
-  else stars.delete(key);
-  saveStars(); count();
+  // selector-r187: tombstone this key on remove so cross-device sync (_adoptPublishedWatch)
+  // doesn't resurrect it from a stale published snapshot; clear the tombstone on re-add so a
+  // genuine re-follow isn't permanently blocked.
+  if (box.checked){ stars.set(key, {league:t.league, abbr:t.abbr, name:t.name}); starsRemoved.delete(key); }
+  else { stars.delete(key); starsRemoved.add(key); }
+  saveStars(); saveStarsRemoved(); count();
   const row = box.closest('.ev'); if (row) row.classList.toggle('on', box.checked);   // instant border feedback; full re-group waits for next open/search per note above
 }
 
