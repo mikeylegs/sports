@@ -6890,6 +6890,29 @@ function playSting(){
 window.playSting = playSting;
 window.simSting = function(){ var was=window._stingOn; window._stingOn=true; playSting(); window._stingOn=was; return 'sting fired'; };
 
+/* r571 — SINATRA, AUDIO-ONLY (Mike's workaround). The old 'nyy-win' source played the
+   Sinatra "New York, New York" YouTube video through the full recap player — 3+ minutes
+   of a static thumbnail bogarting the whole screen for a song. Mike: drop the YouTube
+   video, just play a repo-hosted mp3 as plain audio — same shape as playSting() above,
+   just a longer clip and no on/off localStorage toggle (this one only fires on a real
+   NYY win, not a per-play sting, so no settings surface needed). Panel keeps rotating
+   normally underneath; nothing suspends, nothing takes the screen. ⚠ URL below assumes
+   the file lands at this exact repo path/name — update if Mike uploads it elsewhere. */
+window.NYY_WIN_SONG_URL = 'https://mikeylegs.github.io/sports/YANKEES-Win.mp3';
+function playNyyWinSong(){
+  try{
+    if(!window._nyyWinAudio){ window._nyyWinAudio = new Audio(); window._nyyWinAudio.preload='auto'; }
+    var a = window._nyyWinAudio;
+    if(a.src !== window.NYY_WIN_SONG_URL){ try{ a.src = window.NYY_WIN_SONG_URL; }catch(_){} }
+    a.volume = 0.85; a.currentTime = 0;
+    var p = a.play();
+    if(p && p.catch){ p.then(function(){ window._nyyWinSongStatus='OK'; }).catch(function(e){ window._nyyWinSongStatus='failed: '+e.message; }); }
+    else { window._nyyWinSongStatus='OK'; }
+  }catch(e){ window._nyyWinSongStatus='failed: '+e.message; }
+}
+window.playNyyWinSong = playNyyWinSong;
+window.simNyyWinSong = playNyyWinSong;   // console test hook, same convention as simSting
+
 function showTakeover(opts){
   /* ★ r228 — MONTAGE OWNERSHIP LOCK. Mike's model: while a montage runs, IT owns the video
      wall until its queue finishes. Everything else queues behind the montage's last beat.
@@ -11230,16 +11253,19 @@ async function resolveVideo(sourceId){
       const _um = (typeof ucsMlbGame === 'function') ? await ucsMlbGame(team) : null;
       let r = null;
       if (_um && _um.gameStatus === 'final'){
-        /* r473: try the most recent final FIRST, but if its recap hasn't been cut yet,
-           fall back to the previous final too (a doubleheader opener, most often — its
-           recap can be sitting ready for hours while the nightcap's isn't) before ever
-           reaching YouTube. Mike: "at the very least game one should have won." Still
-           prefers the most-recent recap when BOTH exist — this only ever adds a
-           fallback, it doesn't change which one wins when the primary succeeds. */
-        const _teamId = MLB_TEAM_IDS[team] || team;
-        const _cands = await mlbLastFinalGamePks(_teamId, 2, 2);
-        const _pks = _cands.length ? _cands.map(c => c.gamePk) : [_um.gamePk];
-        for (const _cpk of _pks){ r = await mlbRecap(team, _cpk); if (r) break; }
+        /* r571 — STANDING RULE (Mike, replaces r473): "once a new game goes final, ALL
+           old recaps are ineligible." r473's fallback-to-previous-final loop is REMOVED.
+           Real incident that killed it: tonight's NYY@MIN final (8-3 W) had no recap cut
+           yet, so r473 fell back to a real-but-stale Sep 13 NYY-NYM recap (2-0 W) — a
+           genuinely different, older game. That alone read as confusing on the wall; it
+           got worse because recapBadgeLabel()'s bottom-text is a SEPARATE lookup keyed
+           off _lfRecapGame[abbr] (always the true latest final), not off whatever gamePk
+           mlbRecap actually resolved — so the badge read "Sep 14 · W 8-3 @ MIN" while the
+           video playing was the Sep 13 Mets game. Only trying the single newest final's
+           gamePk (never falling back) removes the divergence at the root: this source can
+           now only ever serve a recap for the SAME game the badge describes, or none at
+           all (falls through to YouTube/filler exactly as any other miss does). */
+        r = await mlbRecap(team, _um.gamePk);
       } else {
         r = await mlbRecap(team, null);
       }
@@ -12493,7 +12519,9 @@ function checkBigMoments(games){
           band:{aAbbr:g.awayAbbr,aScore:cur.as,hAbbr:g.homeAbbr,hScore:cur.hs,lit:(teamAbbr===g.awayAbbr?'a':'h')} }});
         // Round-10 note 12: Yankees win → Sinatra. One-shot via the final-transition
         // edge (prev!=='final'); rides the recap player (Premium session = no ads).
-        if(won && teamAbbr==='NYY' && !_recapActive) setTimeout(()=>{ try{ playRecap('nyy-win'); }catch(_){} }, 3500);
+        // r571: audio-only now (see playNyyWinSong above) — no longer routes through
+        // playRecap/the video takeover, so the panel keeps rotating normally underneath.
+        if(won && teamAbbr==='NYY' && !_recapActive) setTimeout(()=>{ try{ playNyyWinSong(); }catch(_){} }, 3500);
         // Round-10 note 14: NY final moved the rail record — refresh standings now.
         try{ fetchDivStandings('5','NYY','AL East'); fetchDivStandings('24','NYM','NL East'); }catch(_){}
       }
@@ -15262,7 +15290,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r570-recap-fire-audit-log';
+const BUILD_MARKER = 'r572-sinatra-url-fix';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
