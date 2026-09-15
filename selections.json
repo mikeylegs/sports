@@ -1,41 +1,47 @@
 {
   "v": 1,
-  "updated": "2026-09-15T22:27:46.644Z",
+  "updated": "2026-09-15T22:28:02.477Z",
   "events": [],
   "watch": {
-    "teams": [
+    "teams": [],
+    "players": [
       {
-        "league": "baseball/mlb",
-        "abbr": "NYY",
-        "name": "New York Yankees"
+        "sport": "tennis",
+        "name": "Ben Shelton"
       },
       {
-        "league": "hockey/nhl",
-        "abbr": "NYR",
-        "name": "New York Rangers"
+        "sport": "tennis",
+        "name": "Carlos Alcaraz"
       },
       {
-        "league": "basketball/nba",
-        "abbr": "NY",
-        "name": "New York Knicks"
+        "sport": "tennis",
+        "name": "Alexander Zverev"
       },
       {
-        "league": "football/nfl",
-        "abbr": "BUF",
-        "name": "Buffalo Bills"
+        "sport": "tennis",
+        "name": "Coco Gauff"
       },
       {
-        "league": "football/nfl",
-        "abbr": "NYJ",
-        "name": "New York Jets"
+        "sport": "golf",
+        "name": "Scottie Scheffler"
       },
       {
-        "league": "football/nfl",
-        "abbr": "NYG",
-        "name": "New York Giants"
+        "sport": "golf",
+        "name": "Rory McIlroy"
+      },
+      {
+        "sport": "tennis",
+        "name": "Frances Tiafoe"
+      },
+      {
+        "sport": "tennis",
+        "name": "Jessica Pegula"
+      },
+      {
+        "sport": "tennis",
+        "name": "Emma Navarro"
       }
     ],
-    "players": [],
     "crawlLeagues": [
       "MLB",
       "NHL",
