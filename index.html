@@ -1759,6 +1759,14 @@ html.logoscore-v1 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-status{max-width:min(
 .mlb-lg-band{width:5px;flex-shrink:0;align-self:stretch;}
 .mlb-lg-band.al{background:#e4002b;box-shadow:0 0 10px rgba(228,0,43,0.6);}
 .mlb-lg-band.nl{background:#3b7dd8;box-shadow:0 0 10px rgba(59,125,216,0.6);}
+/* r585: big league-logo divider between MLB/NHL/NBA/NFL blocks in the footer crawl —
+   scrolls through inline as part of the same track, no fade/cut (Mike's ask). Values
+   studio-dialed in footer-crawl-studio.html; the divider line came back fully transparent
+   (gap:0, line opacity:0) so it's dropped from the markup entirely rather than shipping an
+   invisible element. */
+.mlb-lg-divider{display:flex;align-items:center;flex:none;padding:0 1.5cqh;height:100%;}
+.mlb-lg-divider-logo{width:14.6cqh;height:14.6cqh;object-fit:contain;flex-shrink:0;
+  filter:drop-shadow(0 0 6px rgba(255,255,255,0.25));opacity:0.9;}
 /* Pinned league logo (crossfades AL↔NL as the displayed set switches) */
 .mlb-subleague-row.single{flex:1;min-height:0;display:flex;align-items:stretch;overflow:hidden;}
 .mlb-league-logo{display:none!important;}
@@ -6137,7 +6145,19 @@ function mlbSubleagueRowsShellHtml() {
 const lastSubleagueGames = { AL: [], NL: [] };
 const lastSubleagueSig   = { AL: '', NL: '' };
 function subleagueSig(games) {
-  return games.map(g => `${g.id}:${g.gameStatus}:${g.awayScore}:${g.homeScore}:${g.timeLabel}`).join('|');
+  // r585: games can now include divider marker objects ({__divider:'NHL'}) mixed in with
+  // real game objects — sig each shape distinctly so a toggle flip (which changes WHICH
+  // dividers/leagues appear, not any individual game's own fields) is never mistaken for
+  // "nothing changed" and silently skipped.
+  return games.map(g => g.__divider ? `DIV:${g.__divider}`
+    : `${g.league||'MLB'}:${g.id}:${g.gameStatus}:${g.awayScore}:${g.homeScore}:${g.timeLabel}`).join('|');
+}
+function leagueLogoUrl(league) {
+  const key = ({MLB:'mlb',NHL:'nhl',NBA:'nba',NFL:'nfl'})[league] || String(league).toLowerCase();
+  return `https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/${key}.png&w=220&h=220`;
+}
+function _bigLeagueDividerHtml(league) {
+  return `<div class="mlb-lg-divider"><img class="mlb-lg-divider-logo" src="${leagueLogoUrl(league)}" alt="${league}" onerror="this.style.opacity=0"></div>`;
 }
 
 function setupSubleagueRow(key, games, force=false) {
@@ -6171,20 +6191,36 @@ function setupSubleagueRow(key, games, force=false) {
   // an interleague-heavy day), forcing a scroll just cycles the same couple
   // of matchups past repeatedly, which looks broken rather than smooth — if
   // it already fits on screen once, just show it centered and static.
-  // R41: in merged mode (phase LG holds mixed AL+NL), insert a thin colored
-  // seam at each league boundary and at the wrap point, so the two leagues stay
-  // visually grouped as they scroll. Phased AL/NL rows carry no band.
+  // R41: in merged mode (phase LG holds mixed AL+NL, and since r585 also NHL/NBA/NFL),
+  // insert a thin colored AL/NL seam within the MLB block, and a big league-logo divider
+  // (r585) at every MLB/NHL/NBA/NFL boundary — including the wrap point, pushed by
+  // updateSubleaguePhased itself so the loop never butts two blocks together with nothing
+  // marking the seam. Phased AL/NL rows (dead path since r581, kept for cheap revert)
+  // carry no band.
   const _merged = (key === 'LG' && _subPhase === 'LG');
   const _lgOf = g => (typeof NL_TEAMS!=='undefined' && NL_TEAMS.has(g.homeAbbr)) ? 'nl' : 'al';
   const _band = lg => `<div class="mlb-lg-band ${lg}"></div>`;
   let unitHtml;
   if (_merged && games.length){
-    let prev=null, parts=[];
-    for (const g of games){ const lg=_lgOf(g); if (prev && prev!==lg) parts.push(_band(lg)); parts.push(mlbCardHtml(g)); prev=lg; }
-    // wrap seam: if the loop's last league differs from its first, cap it so the
-    // repeat doesn't butt two same-side blocks together without a divider.
-    const firstLg=_lgOf(games[0]);
-    if (prev && prev!==firstLg) parts.push(_band(firstLg));
+    let prevSub=null, parts=[], sawDivider=false;
+    for (const g of games){
+      if (g.__divider){ parts.push(_bigLeagueDividerHtml(g.__divider)); prevSub=null; sawDivider=true; continue; }
+      if ((g.league||'MLB') === 'MLB'){
+        const sub = _lgOf(g);
+        if (prevSub && prevSub!==sub) parts.push(_band(sub));
+        prevSub = sub;
+      } else {
+        prevSub = null;   // r585: no thin-band seam between non-MLB games — the big divider owns those boundaries
+      }
+      parts.push(mlbCardHtml(g));
+    }
+    // r41's original wrap-seam cap only still applies when nothing else marked a boundary —
+    // i.e. the whole sequence is one homogeneous MLB AL/NL block (every other-league case
+    // already gets its wrap divider pushed explicitly by updateSubleaguePhased).
+    if (!sawDivider && (games[0].league||'MLB') === 'MLB'){
+      const firstSub=_lgOf(games[0]);
+      if (prevSub && prevSub!==firstSub) parts.push(_band(firstSub));
+    }
     unitHtml = parts.join('');
   } else {
     unitHtml = games.map(mlbCardHtml).join('');
@@ -6259,6 +6295,16 @@ function subleaguePhaseTick() {
   if ((_subGames[other] || []).length > 0) renderSubleaguePhase(other, true);
 }
 
+// r585: which of the 4 pro leagues render in the footer crawl. Mike's rule: fetch every
+// league unconditionally (see pollFooterCrawlOtherLeagues) — this toggle is a pure display
+// filter, never a re-fetch trigger. WWS.watch.crawlLeagues missing/not-an-array (a fresh
+// device, or selections.json published before this feature existed) means "all leagues on,"
+// not "all leagues off" — a brand-new device must not go dark on this feature.
+function _footerCrawlEnabledLeagues() {
+  const cl = WWS.watch && WWS.watch.crawlLeagues;
+  return Array.isArray(cl) ? new Set(cl) : new Set(['MLB','NHL','NBA','NFL']);
+}
+
 function updateSubleaguePhased(alGames, nlGames) {
   _subGames.AL = alGames || [];
   _subGames.NL = nlGames || [];
@@ -6270,24 +6316,34 @@ function updateSubleaguePhased(alGames, nlGames) {
   // alternation entirely. _subPhase/subleaguePhaseTick's alternation path is now dead code
   // (merged is always true) but left in place rather than ripped out — cheap to revert by
   // restoring the threshold line below if a future dense/wide slate wants the split back.
-  const _alN=_subGames.AL.length, _nlN=_subGames.NL.length;
-  const merged = (_alN+_nlN)>0;
-  _subGames.LG = merged ? [..._subGames.AL, ..._subGames.NL] : [];
-  if (merged) {
-    renderSubleaguePhase('LG', false);
-  } else {
-    if (_subPhase==='LG') _subPhase='AL';
-    // If the phase we're currently showing has emptied out, jump to whichever
-    // league has games (preferring AL) so we never sit on an empty panel.
-    if ((_subGames[_subPhase] || []).length === 0) {
-      _subPhase = _subGames.AL.length ? 'AL' : (_subGames.NL.length ? 'NL' : 'AL');
-    }
-    renderSubleaguePhase(_subPhase, false);
-  }
+  //
+  // r585: the merged bucket now folds in NHL/NBA/NFL too (self-polled cache, see
+  // pollFooterCrawlOtherLeagues) — one continuous footer crawl across all 4 pro leagues in a
+  // fixed order, filtered by the enabled-leagues toggle, with a big league-logo divider
+  // pushed at every boundary INCLUDING the wrap point (so the loop never butts two leagues'
+  // blocks together with nothing marking the seam).
+  const mlbGames = [..._subGames.AL, ..._subGames.NL];
+  mlbGames.forEach(g => { g.league = 'MLB'; });
+  const byLeague = { MLB: mlbGames, NHL: _footerCrawlCache.NHL, NBA: _footerCrawlCache.NBA, NFL: _footerCrawlCache.NFL };
+  const enabled = _footerCrawlEnabledLeagues();
+  const order = ['MLB','NHL','NBA','NFL'];
+  const activeLeagues = order.filter(lg => enabled.has(lg) && byLeague[lg].length);
+  const flat = [];
+  activeLeagues.forEach((lg,i) => {
+    if (i>0) flat.push({ __divider: lg });
+    flat.push(...byLeague[lg]);
+  });
+  if (activeLeagues.length > 1) flat.push({ __divider: activeLeagues[0] });   // wrap seam
+  _subGames.LG = flat;
+  renderSubleaguePhase('LG', false);
   if (!_subTimer) _subTimer = setInterval(subleaguePhaseTick, 14000);
 }
 
 function mlbCardHtml(g) {
+  const lg = g.league || 'MLB';   // r585: footer crawl now feeds NHL/NBA/NFL games through
+                                   // this same card renderer, tagged with g.league at fetch
+                                   // time (pollFooterCrawlOtherLeagues) — default MLB keeps
+                                   // every pre-r585 caller (which never set .league) unchanged.
   const live = g.gameStatus === 'live';
   const final = g.gameStatus === 'final';
   const upcoming = g.gameStatus === 'upcoming';
@@ -6304,11 +6360,11 @@ function mlbCardHtml(g) {
   // Stacked matchup: away team over home team, each row [logo][ABBR][score].
   // Winner bold/white, loser dimmed. Status sits to the right, centered.
   const teamRow = (abbr, score, win) => `<div class="mlb-card2-row">
-      <img class="mlb-card2-logo" src="${logoUrl('MLB', abbr)}" alt="${abbr}" onerror="this.style.opacity=0">
+      <img class="mlb-card2-logo" src="${logoUrl(lg, abbr)}" alt="${abbr}" onerror="this.style.opacity=0">
       <span class="mlb-card2-abbr${win ? ' w' : ''}">${abbr}</span>
       ${!upcoming ? `<span class="mlb-card2-score${win ? ' w' : ''}">${score ?? ''}</span>` : ''}
     </div>`;
-  const _homeDiv = getTeamColor("MLB", g.homeAbbr);   // R35: home-team separator color
+  const _homeDiv = getTeamColor(lg, g.homeAbbr);   // R35: home-team separator color
   return `<div class="mlb-card2${isDesig ? ' desig-game' : ''}${final ? ' is-final' : ''}" style="${_homeDiv?`--card-div:${_homeDiv}`:''}">
     <div class="mlb-card2-teams">
       ${teamRow(g.awayAbbr, g.awayScore, awayW)}
@@ -13482,7 +13538,11 @@ async function wwsPollEvents(){
         const bVenue = kind === 'golf' ? ((ev.courses && ev.courses[0] && ev.courses[0].name) || ven.fullName || '')
           : kind === 'soccer' ? ((ven.address && [ven.address.city, ven.address.state].filter(Boolean).join(', ')) || '')
           : kind === 'tennis' ? (ven.court || [ven.fullName, ven.address && (ven.address.city || ven.address.state)].filter(Boolean).join(' · '))   // r480: court name (e.g. "Louis Armstrong Stadium") over bare city, when ESPN sends it
-          : [ven.fullName, ven.address && (ven.address.city || ven.address.state)].filter(Boolean).join(' · ');
+          // r584: was city-OR-state (never both) — Mike wants "Newark, NJ", not just "Newark".
+          // ESPN's address.state is already abbreviated (confirmed live: "NJ", "ON", "QC", "MN" —
+          // covers Canadian provinces too, relevant for NHL), so no derivation needed, same
+          // city+state join the soccer branch above already uses.
+          : [ven.fullName, ven.address && [ven.address.city, ven.address.state].filter(Boolean).join(', ')].filter(Boolean).join(' · ');
         // r496: tennis's `ev` is the whole TOURNAMENT (e.g. "US Open", Aug 24-Sep 14) — ev.date is
         // the tournament's own start date, not this match's scheduled time. Confirmed live: Mike
         // saw "MONDAY 12:00 AM" for a match actually at 7:00 PM tonight; Aug 24 2026 (the US
@@ -15364,7 +15424,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r583-nhl-wws-mid-offset-measured';
+const BUILD_MARKER = 'r585-footer-crawl-multileague';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -16621,6 +16681,33 @@ async function fetchLeague(lg) {
     throw e;
   }
 }
+
+// r585: footer crawl — NHL/NBA/NFL games for the multi-league footer ticker (see
+// updateSubleaguePhased). Polled independently on its own timer rather than awaited inside
+// the MLB render cycle (renderMLBFullscreen stays synchronous — no 3-league fetch fan-out
+// gating every 30-60s MLB refresh tick), same self-contained-poller-into-a-cache pattern as
+// wwsPollWatchGolf/wwsPollWatchPlayers. Mirrors the MLB grid's own simple pre-noon-yesterday
+// heuristic (gridHour<12) rather than fetchNextGame's isBeforeCutover, which depends on
+// nextGameDate[league] — never populated for a league nothing else calls fetchNextGame for.
+const FOOTER_CRAWL_LEAGUES = [
+  { key:'NHL', sport:'hockey',     slug:'nhl' },
+  { key:'NBA', sport:'basketball', slug:'nba' },
+  { key:'NFL', sport:'football',   slug:'nfl' },
+];
+const _footerCrawlCache = { NHL: [], NBA: [], NFL: [] };
+async function pollFooterCrawlOtherLeagues() {
+  const gridHour = new URLSearchParams(location.search).get('lastfinal')==='1' ? 6 : nowET().getHours();
+  const preNoon = gridHour < 12;
+  await Promise.all(FOOTER_CRAWL_LEAGUES.map(async lg => {
+    try {
+      const games = preNoon ? await fetchLeagueYesterday(lg) : await fetchLeague(lg);
+      games.forEach(g => { g.league = lg.key; });
+      _footerCrawlCache[lg.key] = games;
+    } catch(_) { /* fails open — keep the previous cache rather than blanking this league out */ }
+  }));
+}
+setInterval(pollFooterCrawlOtherLeagues, 60000);
+pollFooterCrawlOtherLeagues();
 
 // getElementById only ever returns the first match in the document, but the
 // status-badge markup is intentionally duplicated — once inside the normal
