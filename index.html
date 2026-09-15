@@ -590,6 +590,7 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
    studio only for now); side() below skips the record span for wws-nhl specifically. */
 .wws-nhl .wws-tm-crest{width:24.2cqh;height:24.2cqh;border-radius:0;max-width:95%;}   /* r447: same de-circle gap as NFL */
 .wws-nhl .wws-tm-name{font-size:9.0cqh;}
+.wws-nhl .wws-tm-rec{font-size:6.0cqh;white-space:nowrap;}   /* r580: NHL never had a record row (r424) — pregame card's "Tonight" sat at a different vertical position than MLB's (which reserves the record row's height), causing a visual jump on crossfade. Scaled from NFL's crest:rec ratio (22.1:5.6) applied to NHL's 24.2cqh crest — first-pass estimate, not studio-verified; flag if it needs dialing in. */
 .wws-nhl .wws-tm-side{gap:0.0cqh;flex:0 0 24.5%;width:24.5%;}   /* r448: same lock as NFL */
 .wws-nhl .wws-hero{font-size:14.5cqh;}
 .wws-nhl .lf-wws-status{font-size:7.2cqh;}
@@ -6261,13 +6262,16 @@ function subleaguePhaseTick() {
 function updateSubleaguePhased(alGames, nlGames) {
   _subGames.AL = alGames || [];
   _subGames.NL = nlGames || [];
-  // R40 MERGE: on a sparse slate (either league <=2 games, or <=6 total) the
-  // 14s AL/NL alternation makes a lone game "linger" on an empty-feeling row.
-  // Merge both leagues into one 'LG' phase (AL first) — no alternation, league
-  // logo hidden, full-width crawl. Reverts to phased automatically when the
-  // slate fills back up.
+  // R40 MERGE, r580 ALWAYS-ON: was sparse-slate-only (either league <=2, or <=6 total) —
+  // on a normal 10-game slate split across both leagues, neither threshold hit, so the AL/NL
+  // 14s alternation kicked in and only ONE league was ever on screen at a time (Mike: "only
+  // three games rendering despite there having been 10 games yesterday" — the other 7 were
+  // sitting in the NL phase, not missing). Mike's call: always merge, drop the phase
+  // alternation entirely. _subPhase/subleaguePhaseTick's alternation path is now dead code
+  // (merged is always true) but left in place rather than ripped out — cheap to revert by
+  // restoring the threshold line below if a future dense/wide slate wants the split back.
   const _alN=_subGames.AL.length, _nlN=_subGames.NL.length;
-  const merged = (_alN+_nlN)>0 && (Math.min(_alN,_nlN)<=2 || (_alN+_nlN)<=6);
+  const merged = (_alN+_nlN)>0;
   _subGames.LG = merged ? [..._subGames.AL, ..._subGames.NL] : [];
   if (merged) {
     renderSubleaguePhase('LG', false);
@@ -13870,8 +13874,10 @@ function wwsTeamInner(d){
   // keeps its explicit !d.pre guard from r429 — belt-and-suspenders now that live data can
   // actually populate it (comp.situation is a live-only field, so this was already structurally
   // safe, but the guard stays explicit rather than relying on that incidentally).
-  const recordOk = x => x.record && sportClass !== 'wws-nhl'
-    && ((sportClass === 'wws-nfl' || sportClass === 'wws-nba') ? !!d.pre : true);
+  const recordOk = x => x.record
+    // r580: NHL joins NFL/NBA's pregame-only record (was fully suppressed since r424 — see
+    // CSS comment above for why: fixes the MLB<->NHL crossfade positioning jump).
+    && ((sportClass === 'wws-nfl' || sportClass === 'wws-nba' || sportClass === 'wws-nhl') ? !!d.pre : true);
   const side = x => `<div class="wws-tm-side">${wwsFace(x,'wws-tm-crest')}
     <div class="wws-nfl-abbrline"><span class="wws-tm-name">${x.name||''}</span>${(x.possession && !d.pre) ? `<span class="wws-nfl-poss">🏈</span>` : ''}</div>
     ${recordOk(x) ? `<span class="wws-tm-rec">${x.record}</span>` : ''}</div>`;   // r273: no data-fit (MLB) — CSS governs; r424: NHL card drops record; r429: NFL/NBA record pregame-only
@@ -15358,7 +15364,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r579-nyy-nym-mlbn-network-clobber-fix';
+const BUILD_MARKER = 'r581-crawl-always-merge-al-nl';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
