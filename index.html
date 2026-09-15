@@ -6325,6 +6325,26 @@ function updateSubleaguePhased(alGames, nlGames) {
   const mlbGames = [..._subGames.AL, ..._subGames.NL];
   mlbGames.forEach(g => { g.league = 'MLB'; });
   const byLeague = { MLB: mlbGames, NHL: _footerCrawlCache.NHL, NBA: _footerCrawlCache.NBA, NFL: _footerCrawlCache.NFL };
+  // r588: always-on next-game preview for a followed NHL/NBA/NFL team with no real game
+  // today. Fresh arrays only — NEVER mutate _footerCrawlCache itself (that cache is also
+  // read by the NEXT call to this function; pushing into it directly would accumulate
+  // duplicate preview cards every render pass).
+  ['NHL','NBA','NFL'].forEach(lg => {
+    const real = byLeague[lg];
+    const followed = _footerFollowedAbbrs(lg);
+    if (!followed.size) return;
+    const playingToday = new Set();
+    real.forEach(g => { playingToday.add(g.awayAbbr); playingToday.add(g.homeAbbr); });
+    const seen = new Set();
+    const previews = [];
+    followed.forEach(abbr => {
+      if (playingToday.has(abbr)) return;
+      const p = _footerNextGameFor(lg, abbr);
+      const k = p && p.awayAbbr + '@' + p.homeAbbr;
+      if (p && !seen.has(k)) { seen.add(k); previews.push(p); }
+    });
+    if (previews.length) byLeague[lg] = [...real, ...previews];
+  });
   const enabled = _footerCrawlEnabledLeagues();
   const order = ['MLB','NHL','NBA','NFL'];
   const activeLeagues = order.filter(lg => enabled.has(lg) && byLeague[lg].length);
@@ -15424,7 +15444,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r587-footer-crawl-r586-reverted';
+const BUILD_MARKER = 'r588-footer-crawl-league-range-nextgame';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -16708,6 +16728,87 @@ async function pollFooterCrawlOtherLeagues() {
 }
 setInterval(pollFooterCrawlOtherLeagues, 60000);
 pollFooterCrawlOtherLeagues();
+
+// r588: ALWAYS-ON next-game preview for followed NHL/NBA/NFL teams not playing today.
+// Take 2 — r586 fetched per FOLLOWED team from ESPN's team/schedule endpoint, keyed off
+// WWS.watch.teams at fetch time; that cache never populated in the live poll loop despite
+// the identical fetch working perfectly in isolation (console-replicated end to end,
+// 166 real events, correct parse) — root cause never found across 5 ruled-out theories.
+// Mike's call: stop chasing that path. Fetch the LEAGUE's scoreboard for the next several
+// days instead — same proven single-day proxyFetch+parseEvent call fetchLeague/
+// fetchLeagueYesterday already use, just looped over more days — so every team's data is
+// already sitting in cache by the time we need to look one up. WWS.watch.teams is read
+// only at RENDER time (updateSubleaguePhased), never at fetch time, which removes
+// whatever timing/shape dependency broke r586. "Redundant, but fine" (Mike).
+// MLB excluded on purpose: NYY/NYM already always show their next game via the anchor
+// pane (ensureNextGame/_nextGameCache) — this only fills the NHL/NBA/NFL gap.
+const FOOTER_NEXT_GAME_LOOKAHEAD_DAYS = 9;
+const _footerRangeGames = { NHL: [], NBA: [], NFL: [] };   // flat list per league, each event tagged .league
+async function fetchLeagueDay(lg, offsetDays) {
+  const d = new Date(); d.setDate(d.getDate() + offsetDays);
+  const url = `https://site.api.espn.com/apis/site/v2/sports/${lg.sport}/${lg.slug}/scoreboard?limit=100&dates=${localDateStr(d)}`;
+  try {
+    const data = await proxyFetch(url);
+    return (data.events || []).map(ev => parseEvent(ev, lg.key));
+  } catch (_) { return []; }   // fails open — one bad day just contributes nothing
+}
+async function pollFooterNextGameRange() {
+  await Promise.all(FOOTER_CRAWL_LEAGUES.map(async lg => {
+    try {
+      const days = await Promise.all(
+        Array.from({ length: FOOTER_NEXT_GAME_LOOKAHEAD_DAYS }, (_, i) => fetchLeagueDay(lg, i + 1))
+      );
+      const flat = days.flat();
+      flat.forEach(g => { g.league = lg.key; });
+      _footerRangeGames[lg.key] = flat;
+    } catch (_) { /* keep previous cache rather than blank it */ }
+  }));
+}
+setInterval(pollFooterNextGameRange, 15 * 60 * 1000);
+pollFooterNextGameRange();
+
+// r588: DAY-ONLY label — deliberately no ' · ' time suffix. mlbCardHtml's upcoming-status
+// line is `(g.timeLabel||'').split(' · ').pop()`; a label with no ' · ' passes through
+// untouched, so this is what makes the card show "WED" instead of a kickoff time for a
+// game that (per Mike's spec) is "tied to a day and not a time yet."
+function _footerDayOnlyLabel(d) {
+  const now = new Date(), tomorrow = new Date(now); tomorrow.setDate(now.getDate() + 1);
+  if (d.toDateString() === now.toDateString()) return 'TODAY';
+  if (d.toDateString() === tomorrow.toDateString()) return 'TOMORROW';
+  return d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+}
+function _footerNextGameFor(lgKey, abbr) {
+  const now = Date.now();
+  const games = (_footerRangeGames[lgKey] || []).filter(g => g && g.gameStatus === 'upcoming'
+                  && new Date(g.gameDate).getTime() > now
+                  && (g.awayAbbr === abbr || g.homeAbbr === abbr));
+  if (!games.length) return null;
+  games.sort((a, b) => new Date(a.gameDate) - new Date(b.gameDate));
+  const g = games[0];
+  return {
+    id: 'next-' + lgKey + '|' + abbr,
+    league: lgKey,
+    awayAbbr: g.awayAbbr, homeAbbr: g.homeAbbr,
+    awayScore: null, homeScore: null,
+    gameStatus: 'upcoming',
+    timeLabel: _footerDayOnlyLabel(new Date(g.gameDate)),
+    __nextGamePreview: true,
+  };
+}
+const FOOTER_WATCH_LEAGUE_MAP = { 'hockey/nhl': 'NHL', 'basketball/nba': 'NBA', 'football/nfl': 'NFL' };
+function _footerFollowedAbbrs(lgKey) {
+  const out = new Set();
+  try {
+    // WWS.watch.teams stores the RAW selector abbr (e.g. 'NJ'), but every game object in
+    // both _footerCrawlCache and _footerRangeGames went through parseEvent/normalizeAbbr
+    // (e.g. 'NJ' -> 'NJD'). Match on the SAME normalized form or a followed team whose
+    // abbr needs normalizing (NJ, TB, UTAH, GS, ...) would silently never match anything.
+    ((WWS.watch && WWS.watch.teams) || []).forEach(t => {
+      if (t && FOOTER_WATCH_LEAGUE_MAP[t.league] === lgKey) out.add(normalizeAbbr(lgKey, t.abbr));
+    });
+  } catch (_) {}
+  return out;
+}
 
 // getElementById only ever returns the first match in the document, but the
 // status-badge markup is intentionally duplicated — once inside the normal
