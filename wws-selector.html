@@ -65,7 +65,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Wide World of Sports — Day Selector <span style="font-size:12px;font-weight:400;opacity:.5;font-family:monospace">selector-r186</span></h1>
+  <h1>Wide World of Sports — Day Selector <span style="font-size:12px;font-weight:400;opacity:.5;font-family:monospace">selector-r188</span></h1>
   <p class="sub">Pick today's / this weekend's events for the panel. Output is <code>selections.json</code> — commit it to the repo root and the dashboard (phase 2) picks it up on its next poll.</p>
   <div class="bar">
     <select id="range">
@@ -348,6 +348,7 @@ function _adoptPublishedWatch(watch){
   for (const p of (watch.players || [])){
     if (!p || !p.sport || !p.name) continue;
     const key = `${p.sport}|${_fold(p.name)}`;
+    if (playersRemoved.has(key)) continue;   // r188: same guard as teams — don't resurrect a deliberate removal
     if (!players.has(key)){ players.set(key, { sport:p.sport, name:p.name }); changed = true; }
   }
   if (changed){
@@ -376,6 +377,13 @@ function _liveNotPicked(){
 const PLAYER_KEY = 'wws-players';
 const players = new Map(JSON.parse(localStorage.getItem(PLAYER_KEY) || '[]'));  // "sport|foldedname" -> {sport,name}
 function savePlayers(){ localStorage.setItem(PLAYER_KEY, JSON.stringify([...players])); }
+// selector-r188: same tombstone fix as r187's starsRemoved, for PLAYERS — _adoptPublishedWatch's
+// player loop (below) has the identical additive-only resurrection bug the teams side had. Every
+// place that removes a player (golfToggle, tennisToggle, removePlayer) must tombstone the key;
+// every place that adds one must clear it.
+const PLAYERS_REMOVED_KEY = 'wws-players-removed';
+const playersRemoved = new Set(JSON.parse(localStorage.getItem(PLAYERS_REMOVED_KEY) || '[]'));
+function savePlayersRemoved(){ localStorage.setItem(PLAYERS_REMOVED_KEY, JSON.stringify([...playersRemoved])); }
 // selector-r173: combined ★ FOLLOWING badge = teams + players, since the two are now one panel.
 function _cntFollow(){ const el = document.getElementById('cntFollow'); if (el) el.textContent = stars.size + players.size; }
 function _cntPlayers(){ const el = document.getElementById('cntPlayers'); if (el) el.textContent = players.size; _cntFollow(); }
@@ -448,9 +456,9 @@ function clearGolfFilter(){
 }
 function golfToggle(p, box){
   const key = _golfKey(p.name);
-  if (box.checked) players.set(key, { sport:'golf', name:p.name });
-  else players.delete(key);
-  savePlayers(); _cntPlayers();
+  if (box.checked){ players.set(key, { sport:'golf', name:p.name }); playersRemoved.delete(key); }
+  else { players.delete(key); playersRemoved.add(key); }
+  savePlayers(); savePlayersRemoved(); _cntPlayers();
   const row = box.closest('.ev'); if (row) row.classList.toggle('on', box.checked);
 }
 // selector-r175: live ATP+WTA field (today+2 days, unfiltered — no majors-only here, that's a
@@ -514,9 +522,9 @@ function clearTennisFilter(){
 }
 function tennisToggle(p, box){
   const key = _tennisKey(p.name);
-  if (box.checked) players.set(key, { sport:'tennis', name:p.name });
-  else players.delete(key);
-  savePlayers(); _cntPlayers(); drawPlayers();   // keep the "all followed" list below in sync too
+  if (box.checked){ players.set(key, { sport:'tennis', name:p.name }); playersRemoved.delete(key); }
+  else { players.delete(key); playersRemoved.add(key); }
+  savePlayers(); savePlayersRemoved(); _cntPlayers(); drawPlayers();   // keep the "all followed" list below in sync too
   const row = box.closest('.ev'); if (row) row.classList.toggle('on', box.checked);
 }
 function addPlayer(){
@@ -526,12 +534,14 @@ function addPlayer(){
   const key = `tennis|${_fold(name)}`;   // r172: this box is tennis-only now — golf moved to the checkbox grid above
   if (players.has(key)){ inp.value=''; return; }   // no dupes
   players.set(key, { sport:'tennis', name });
+  playersRemoved.delete(key); savePlayersRemoved();
   savePlayers(); _cntPlayers(); drawPlayers();
   if (_tennisField) drawTennisField();   // if she's already in the loaded field, show her checked there too
   inp.value = ''; inp.focus();
 }
 function removePlayer(key){
-  players.delete(key); savePlayers(); _cntPlayers(); drawPlayers();
+  players.delete(key); playersRemoved.add(key); savePlayersRemoved();
+  savePlayers(); _cntPlayers(); drawPlayers();
   if (_tennisField) drawTennisField();
 }
 function drawPlayers(){
