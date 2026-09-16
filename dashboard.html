@@ -9545,7 +9545,14 @@ async function findRecap(sourceId){
   if (src.require){ const _isFn=typeof src.require==='function'; const _rq=_isFn?src.require():src.require;
     // R135: for TEAM sources, admit a clip if it matches the require regex OR names a roster
     // player. Non-team sources (mlb-daily, nyy-win) are unaffected — _namesFavPlayer is false.
-    const f = items.filter(x => x.seed || _rq.test(x.title) || _namesFavPlayer(x.title));   // r597: extraIds seeds bypass content-relevance require (see the merge site above)
+    // r599: the roster-name bypass (R135, "AL"/"All-Star" case) was letting every NFL/NHL
+    // talk-show and presser through the r597 highlights-only gate whenever the segment named
+    // a player — "Khalil Shakir On Preparing For Home Opener" is Bills content BECAUSE it
+    // names a roster player, exactly what R135 intended, but it's still not a highlight. That
+    // bypass only makes sense for a loose regex-require (nyy/nym: "is this clip about my
+    // team at all"); a strict fn-require (r597's highlights-only gate) already means "must
+    // look like a highlight" — letting a name match skip that check defeats the gate entirely.
+    const f = items.filter(x => x.seed || _rq.test(x.title) || (!_isFn && _namesFavPlayer(x.title)));   // r597: extraIds seeds bypass; r599: name-bypass no longer overrides strict fn-require
     // regex-require (mlb-daily/pga/nyy-win): keep prior behavior — never filter to empty.
     // function-require (WC, R41): strict — empty pool → skip rather than fire a mismatched video.
     pool = f.length ? f : (_isFn ? [] : items);
@@ -9617,7 +9624,11 @@ async function findRecap(sourceId){
   // term in the scorer — otherwise a 7-year-old clip scores −5,500 and ranking collapses to
   // "whichever copy was uploaded most recently", which is how you end up with a karaoke version.
   const _windowH = src.evergreen ? Infinity : (typeof src.windowH === 'function' ? src.windowH() : (src.windowH ?? (src.timeless ? 72 : 36)));
-  { const _preWin = pool; pool = pool.filter(x => _ageH(x) <= _windowH);
+  // r599: extraIds seeds are hand-picked "always eligible" evergreen filler (see the merge
+  // site + nhl-fill's extraIds comment, r597) — the staleness window was never meant to apply
+  // to them, but nothing exempted them here, so an older seed silently never surfaced. Exempt,
+  // same as the require-gate bypass; still subject to reject/shorts/length/cooldown below.
+  { const _preWin = pool; pool = pool.filter(x => x.seed || _ageH(x) <= _windowH);
     _aud('WINDOW ' + _windowH + 'h', _preWin, pool, 'hard staleness gate' + (src.timeless ? ' (timeless source)' : '')); }
 
   // ── GATE 2: CONTENT GATES (fresh-but-wrong clips a time window can't catch) ──
@@ -15874,7 +15885,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r598-sny-leg-dormant';
+const BUILD_MARKER = 'r599-highlights-gate-name-bypass-fix';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
