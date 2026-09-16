@@ -1,9 +1,40 @@
 {
   "v": 1,
-  "updated": "2026-09-16T01:33:08.364Z",
+  "updated": "2026-09-16T01:33:52.224Z",
   "events": [],
   "watch": {
-    "teams": [],
+    "teams": [
+      {
+        "league": "baseball/mlb",
+        "abbr": "NYY",
+        "name": "New York Yankees"
+      },
+      {
+        "league": "hockey/nhl",
+        "abbr": "NYR",
+        "name": "New York Rangers"
+      },
+      {
+        "league": "basketball/nba",
+        "abbr": "NY",
+        "name": "New York Knicks"
+      },
+      {
+        "league": "football/nfl",
+        "abbr": "NYJ",
+        "name": "New York Jets"
+      },
+      {
+        "league": "football/nfl",
+        "abbr": "BUF",
+        "name": "Buffalo Bills"
+      },
+      {
+        "league": "football/nfl",
+        "abbr": "NYG",
+        "name": "New York Giants"
+      }
+    ],
     "players": [],
     "crawlLeagues": [
       "MLB",
