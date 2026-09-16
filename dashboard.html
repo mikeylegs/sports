@@ -8171,37 +8171,53 @@ const RECAP = {
                    label:'Mets Recap',    handle:'MLB', teamName:'Mets',    query:'Mets highlights',    titleHint:/mets/i,    require(){ return /mets/i; },   /* R126 STRICT: fade, don't serve opponent's clip */
                    reject: /reflects on|baseball memories|#?GloveStories|debut,? and more|sits down with|Q&A with|glove ?stories/i,   // r557
                    glow:'rgba(255,120,30,0.95)',  slot:'.mlb-feat-slot.yank' },
-    // r563: NFL team recaps — Bills/Jets/Giants. Same require/reject discipline as
-    // hoh-nyy/hoh-nym: strict fn-require on team name (empty pool ⇒ yield to filler,
-    // never serve the wrong team), reject presser/practice/podcast chatter. windowH is
-    // a FUNCTION (pipeline gate below now supports this, mirroring the existing
-    // function-reject pattern) — see _hoursSinceLastNflWeekStart above.
+    // r597 — HIGHLIGHTS-ONLY HARD GATE. Mike's recap probe: One Bills Live segments,
+    // Big Blue Kickoff Live pregame streams, Jets Overtime postgame shows, and Islanders
+    // Rookie Camp media availability all served despite the existing reject list — none of
+    // those phrases were in it, so the old "team name only" require let them straight
+    // through. Rather than keep chasing individual show names (a blacklist that only ever
+    // grows), require() now demands the team name AND a highlights-shaped word, via one
+    // lookahead regex (the existing require pipeline only supports a single regex, so both
+    // conditions have to live in it together — see the (?=...)(?=...) pair below). A talk
+    // show, live stream, or camp-availability video essentially never has "highlights" in
+    // its title, so this gates them out without naming each show. It's a STRICT fn-require
+    // (empty pool ⇒ source yields to filler, never serves the wrong thing) — same discipline
+    // hoh-nyy/hoh-nym already use. This also solves Islanders dormancy for free: before any
+    // real game has been played there ARE no highlight videos to match, so the source stays
+    // silent on its own — no separate schedule/preseason check needed.
     'nfl-bills':  { handle:'billsnfl', label:'Bills Recap', teamName:'Bills',
-                    query:'Bills highlights', titleHint:/bills/i, require(){ return /bills/i; },
-                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech/i,   // r575: "victory speech" garbage (Aaron Glenn/Jets) — gate speeches out entirely
+                    query:'Bills highlights', titleHint:/bills/i,
+                    require(){ return /(?=.*\bbills\b)(?=.*(highlights?|recap|top plays?|best plays?|touchdowns?))/i; },
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|one bills live|kickoff live|postgame show/i,
                     windowH: _hoursSinceLastNflWeekStart,
                     glow:'rgba(0,51,141,0.95)', slot:'.mlb-feat-slot.yank' },
     'nfl-jets':   { handle:'jetsnfl', label:'Jets Recap', teamName:'Jets',
-                    query:'Jets highlights', titleHint:/jets/i, require(){ return /jets/i; },
-                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech/i,   // r575: "victory speech" garbage (Aaron Glenn/Jets) — gate speeches out entirely
+                    query:'Jets highlights', titleHint:/jets/i,
+                    require(){ return /(?=.*\bjets\b)(?=.*(highlights?|recap|top plays?|best plays?|touchdowns?))/i; },
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|jets overtime|kickoff live|postgame show/i,
                     windowH: _hoursSinceLastNflWeekStart,
                     glow:'rgba(18,87,64,0.95)', slot:'.mlb-feat-slot.yank' },
     'nfl-giants': { handle:'giantsnfl', label:'Giants Recap', teamName:'Giants',
-                    query:'Giants highlights', titleHint:/giants/i, require(){ return /giants/i; },
-                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech/i,   // r575: "victory speech" garbage (Aaron Glenn/Jets) — gate speeches out entirely
+                    query:'Giants highlights', titleHint:/giants/i,
+                    require(){ return /(?=.*\bgiants\b)(?=.*(highlights?|recap|top plays?|best plays?|touchdowns?))/i; },
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|kickoff live|postgame show/i,
                     windowH: _hoursSinceLastNflWeekStart,
                     glow:'rgba(1,35,82,0.95)', slot:'.mlb-feat-slot.yank' },
     // r576: NHL team recaps — Rangers/Islanders (Mike-supplied channel IDs). Nightly
     // cadence like MLB, not weekly like NFL — no windowH override, same as hoh-nyy/hoh-nym
-    // (default gate applies). Same require/reject discipline as every recap source above:
-    // strict fn-require on team name, reject presser/practice/podcast chatter.
+    // (default gate applies). r597: same highlights-only require() as the NFL trio above —
+    // see that comment block. For Islanders specifically this is also the dormancy fix:
+    // "Rookie Camp | Media Availability" has no "highlights"/"goals"/"recap" in it, so it
+    // never matches and the source stays empty until real game highlights exist.
     'nhl-rangers':  { handle:'rangersnhl', label:'Rangers Recap', teamName:'Rangers',
-                    query:'Rangers highlights', titleHint:/rangers/i, require(){ return /rangers/i; },
+                    query:'Rangers highlights', titleHint:/rangers/i,
+                    require(){ return /(?=.*\brangers\b)(?=.*(highlights?|recap|top plays?|best plays?|goals?))/i; },
                     reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech/i,
                     glow:'rgba(0,56,168,0.95)', slot:'.mlb-feat-slot.yank' },
     'nhl-islanders': { handle:'islandersnhl', label:'Islanders Recap', teamName:'Islanders',
-                    query:'Islanders highlights', titleHint:/islanders/i, require(){ return /islanders/i; },
-                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech/i,
+                    query:'Islanders highlights', titleHint:/islanders/i,
+                    require(){ return /(?=.*\bislanders\b)(?=.*(highlights?|recap|top plays?|best plays?|goals?))/i; },
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|rookie camp|media availability/i,
                     glow:'rgba(0,83,155,0.95)', slot:'.mlb-feat-slot.yank' },
     // R59: "MLB TOP PLAYS" (relabeled). timeless:true → exempt from the hard date gate
     // (top plays / league-wide recaps / compilations are great filler regardless of age,
@@ -8556,7 +8572,22 @@ const RECAP = {
                                       // source's own best content ("Best Goal From Every Team" @ 168.6h).
                                       // Explicit windowH makes the 60-day intent actually apply.
                     require(){ return _leagueInSeason('NHL') ? null : /\bRangers\b|\bNYR\b|Best (?:Goal|Play)s? (?:From|of)|Every (?:NHL )?Team|Top \d+ (?:Goals|Plays)|Season Recap/i; },
-                    titleHint:/goal|highlight|save|recap|best/i, glow:'rgba(150,150,160,0.9)' },
+                    // r597: "FULL REPLAY: Game 7 OT | Capitals vs. Rangers | 2015 Stanley Cup
+                    // Playoffs" — an 11-year-old, 90+min full-game repost — got through. Its
+                    // upload timestamp is apparently recent enough to clear the windowH staleness
+                    // gate even though the FOOTAGE is over a decade old (a reupload's publish date
+                    // says nothing about its content's age), and the 15-min length cap (r537) is
+                    // soft, so on a thin pool it survived anyway. "FULL REPLAY" is an unambiguous
+                    // marker no real highlight reel uses — reject it outright rather than trying
+                    // to infer content age from title years (fragile: this source's OWN best
+                    // filler is legitimately titled "...in 2025-26").
+                    reject: /\bfull replay\b/i,
+                    titleHint:/goal|highlight|save|recap|best/i,
+                    // r597: Mike-picked seed clips, always eligible regardless of season/require
+                    // (see the extraIds merge + require-bypass in findRecap) — still subject to
+                    // reject/shorts/length/cooldown gates like everything else.
+                    extraIds:['fbPtFXiA7jo','h2LkZbDScko'],
+                    glow:'rgba(150,150,160,0.9)' },
     'nba-fill':   { label:'NBA',       handle:'NBA', query:'nba highlights', priority:3, timeless:true, maxAgeDays:60,
                     require(){ return _leagueInSeason('NBA') ? null : /\bKnicks\b|\bNYK\b/i; },
                     titleHint:/highlight|dunk|top play|recap|best/i, glow:'rgba(200,120,50,0.9)' },
@@ -9299,6 +9330,11 @@ async function fetchChannelLatest(channelId, tag){
    MLB statsapi path (mlbRecap, above) is "exact, queried not searched". */
 const RECAP_SNY_FRESH_MS = 20 * 3600e3;   // 20h — same-day/last-night game, not a stale one
 const RECAP_SNY_TITLE_RE = /^Mets vs .+\(\d{1,2}\/\d{1,2}\/\d{2}\)\s*\|\s*Mets Highlights/i;
+// r598 (Mike, 9/16): SNY leg duplicated hoh-nym's own MLB-channel Mets highlights — same
+// game, two independent sources firing back to back. "Make SNY dormant, NYM is a secondary
+// team and MLB should be able to cover them adequately." Function kept (harmless if ever
+// re-enabled), both call sites gated off below instead of deleting the leg outright.
+const SNY_LEG_DORMANT = true;
 async function snyMetsCondensed(){
   try {
     // r493: was fetchChannelRSS — RSS is dead, so this path had NO fallback at all and the
@@ -9446,6 +9482,31 @@ async function findRecap(sourceId){
       if (_AUD) _AUD.via = '⚠ FALLBACK (search failed or quota-latched) — ' + _fb.via;
       console.log('[recap] search unavailable → feed fallback for ' + sourceId); }
   }
+  // r597 — EXTRAIDS SEED POOL. Mike hand-picked specific videos to always be eligible for
+  // this source (nhl-fill's two NHL-filler links, for now). Merged in here — BEFORE the
+  // FEED-FAIL check, so seeds alone can sustain a source even if the real fetch came back
+  // empty — and hydrated via a real API call (title + publish date), never guessed: a
+  // require()/titleHint gate run against a placeholder title would silently reject the very
+  // clip Mike asked for. Tagged `seed:true` so the REQUIRE gate below can bypass content-
+  // relevance matching for these specifically (Mike already vetted them) while every other
+  // gate — reject, Shorts, length cap, cooldowns — still applies normally, same as any
+  // other candidate.
+  if (src.extraIds && src.extraIds.length){
+    const _haveIds = new Set((items || []).map(x => x.videoId));
+    const _seedIds = src.extraIds.filter(id => !_haveIds.has(id));
+    if (_seedIds.length){
+      try{
+        const _sv = await ytApi('videos', { part:'snippet', id:_seedIds.join(',') });
+        const _seeds = (_sv.items || []).map(v => ({
+          videoId: v.id,
+          title: (v.snippet && v.snippet.title) || '',
+          published: (v.snippet && v.snippet.publishedAt) || new Date().toISOString(),
+          seed: true
+        })).filter(x => x.title);   // a snippet with no title (deleted/private video) can't be scored — drop it
+        if (_seeds.length) items = (items || []).concat(_seeds);
+      }catch(e){ console.warn('[recap] extraIds seed hydrate failed for ' + sourceId + ':', e.message); }
+    }
+  }
   // R104: distinguish WHY a source yields nothing. "NO VIDEO" was ambiguous and it
   // misled diagnosis TWICE — an empty pool (gates did their job) looks identical to a
   // failed fetch (proxy/API died). Under ?ticks=1 we hammer the free CORS proxies with a
@@ -9484,7 +9545,7 @@ async function findRecap(sourceId){
   if (src.require){ const _isFn=typeof src.require==='function'; const _rq=_isFn?src.require():src.require;
     // R135: for TEAM sources, admit a clip if it matches the require regex OR names a roster
     // player. Non-team sources (mlb-daily, nyy-win) are unaffected — _namesFavPlayer is false.
-    const f = items.filter(x => _rq.test(x.title) || _namesFavPlayer(x.title));
+    const f = items.filter(x => x.seed || _rq.test(x.title) || _namesFavPlayer(x.title));   // r597: extraIds seeds bypass content-relevance require (see the merge site above)
     // regex-require (mlb-daily/pga/nyy-win): keep prior behavior — never filter to empty.
     // function-require (WC, R41): strict — empty pool → skip rather than fire a mismatched video.
     pool = f.length ? f : (_isFn ? [] : items);
@@ -9777,6 +9838,28 @@ async function findRecap(sourceId){
       const _noLong = pool.filter(x => !(x.mins > MAX_RECAP_MINS));
       if (_noLong.length) pool = _noLong;
       _aud('LENGTH ≤' + MAX_RECAP_MINS + 'm', _preLong, pool, 'over the length cap — long-form videos have no business in the rotation');
+      /* r597 — LONG-VIDEO REPEAT, HARD. Mike's recap probe: hoh-nym's 17+min "Cy Young"
+         video repeated 4x in one probe window, including back-to-back-ish. The existing
+         SEEN gate (line ~9558, "SEEN < Nm") is SOFT and keyed on a flat per-source cooldown
+         (12min normal / 35min timeless) that runs BEFORE x.mins exists — it has no idea this
+         clip is long, and being soft it can't stop a thin pool from replaying it anyway.
+         This runs down here (mins are known now) and is HARD, unconditional — unlike every
+         other gate in this pipeline: a long clip that already played inside the window
+         empties right out of the pool even if nothing replaces it, same as a strict
+         fn-require miss (source yields to filler that round). Short clips (≤12min) are
+         completely unaffected — this only targets the specific failure mode Mike reported,
+         not general repeat variety (the SEEN/SERVED/RECENT gates already soft-handle that).
+         Also fixes mlb-daily's "Top 5... repeating SEVEN times" complaint (#50) for free —
+         same mechanism, same shared pipeline, no per-source wiring needed. */
+      const LONG_REPEAT_MINS = 12, LONG_REPEAT_COOLDOWN_MS = 6 * 3600e3;
+      const _preLongRepeat = pool;
+      pool = pool.filter(x => {
+        if (!(x.mins > LONG_REPEAT_MINS)) return true;
+        const k = _servedKey(x);
+        return !k || !_recapShownAt[k] || (_nowMs - _recapShownAt[k]) > LONG_REPEAT_COOLDOWN_MS;
+      });
+      _aud('LONG-REPEAT 6h (>' + LONG_REPEAT_MINS + 'm)', _preLongRepeat, pool,
+           'a clip over ' + LONG_REPEAT_MINS + 'min already shown within 6h — HARD gate, may empty the pool (yields to filler)');
     } catch(e){ console.warn('[recap] view-count hydrate failed, scoring without it:', e.message); }
   }
 
@@ -11135,7 +11218,7 @@ if (TKO_MEASURE) {
         // Separate persisted key (':sny' suffix) tracks that independently; the early skip only
         // fires once BOTH are settled (or immediately for non-NYM, which has no SNY leg).
         const snyKey = pk + ':sny';
-        const needsSny = team === 'NYM';
+        const needsSny = team === 'NYM' && !SNY_LEG_DORMANT;
         if (done[pk] && (!needsSny || done[snyKey])) continue;   // nothing left to measure, survives reloads
         const w = _watching[pk];
         if (!w || !w.armed){
@@ -11172,7 +11255,7 @@ if (TKO_MEASURE) {
         // r488: NYM only — SNY (r487) races MLB for the same final. Measured independently
         // (own done flag) so MLB winning first doesn't suppress finding out whether/when SNY
         // would ALSO have been ready — that's the data needed to tell if the race is worth it.
-        if (needsSny && !done[snyKey] && !w.snyDone){
+        if (needsSny && !SNY_LEG_DORMANT && !done[snyKey] && !w.snyDone){
           try {
             const sny = await snyMetsCondensed();
             if (sny && sny.videoId){
@@ -11727,7 +11810,7 @@ async function resolveVideo(sourceId){
   // (it's the exact/canonical source) — SNY only fills the gap on ticks where MLB hasn't cut a
   // recap yet. Falls through to the existing generic YouTube search (hoh-nym) below if SNY also
   // has nothing, exactly as before this change.
-  if (team === 'NYM'){
+  if (team === 'NYM' && !SNY_LEG_DORMANT){
     try {
       const sny = await snyMetsCondensed();
       if (sny && sny.videoId){
@@ -15791,7 +15874,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r596-reconnecting-status-conflict';
+const BUILD_MARKER = 'r598-sny-leg-dormant';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
