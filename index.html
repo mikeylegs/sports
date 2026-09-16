@@ -3517,6 +3517,36 @@ function simTennisSplash(opt){
 }
 window.simTennisSplash = simTennisSplash;
 
+/* r593 — simNyyWin(): fires the exact same MLB "TEAM WIN" showTakeover() call the real
+   final-transition edge makes (~line 12710-12713), paired with playNyyWinSong() on the same
+   3.5s/!_recapActive-guarded delay (~line 12718), so Mike can preview the NYY-win splash +
+   Sinatra pairing on demand instead of waiting for a real Yankees final. Defaults to a NYY
+   win over BOS; pass {team:'NYM'} etc. to preview another team's ribbon color (song only
+   ever fires for NYY, matching the real gate). Kicker tagged '· SIM' per convention.
+   Usage: simNyyWin()  — or simNyyWin({team:'NYM', aAbbr:'NYM', hAbbr:'ATL', aScore:6, hScore:2, lit:'a'}) */
+function simNyyWin(opt){
+  opt = opt || {};
+  const team = opt.team || 'NYY';
+  const aAbbr = opt.aAbbr || team;
+  const hAbbr = opt.hAbbr || 'BOS';
+  const aScore = opt.aScore != null ? opt.aScore : 5;
+  const hScore = opt.hScore != null ? opt.hScore : 3;
+  const lit = opt.lit || (team === aAbbr ? 'a' : 'h');
+  const side = opt.side || 'right';
+  const rgb = (typeof GLOW_TEAM !== 'undefined' && GLOW_TEAM[team]) || '11,42,94';
+  if (typeof showTakeover !== 'function'){ console.log('[simNyyWin] showTakeover not available'); return 'no showTakeover'; }
+  showTakeover({ side, mlbTeam: team, a: {
+    accent: `rgb(${rgb})`, wash: `rgba(${rgb},0.9)`,
+    logo: (typeof logoUrl === 'function') ? logoUrl('MLB', team) : '', logoBg: `rgb(${rgb})`,
+    kicker: 'Final · SIM', headline: `${team} WIN`,
+    band: { aAbbr, aScore, hAbbr, hScore, lit } } });
+  const _recapWasActive = (typeof _recapActive !== 'undefined' && _recapActive === true);
+  if (team === 'NYY' && !_recapWasActive) setTimeout(() => { try{ playNyyWinSong(); }catch(_){} }, 3500);
+  console.log('[simNyyWin] fired —', team, 'WIN' + (team === 'NYY' ? (_recapWasActive ? ' (song SKIPPED — a recap was active, matching the real guard)' : ' + song in ~3.5s') : ' (no song — only NYY pairs with playNyyWinSong)'));
+  return 'fired';
+}
+window.simNyyWin = simNyyWin;
+
 /* r324 — simSequence(): a ONE-COMMAND scripted demo so you can eyes-on the full arc over VNC:
    montage beats → live Judge takeover CARD (with the LIVE badge) → montage beats → Judge
    companion CLIP → montage beats. It just drops real items into the montage queue at spaced
@@ -15520,7 +15550,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r592-wwspollselections-no-blind-wipe';
+const BUILD_MARKER = 'r593-simnyywin';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
