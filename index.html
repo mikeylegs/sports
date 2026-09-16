@@ -2638,6 +2638,31 @@ function mlbNetworkOverride(awayAbbr, homeAbbr){
 function normalizeAbbr(league, abbr) {
   return ABBR_NORMALIZE[`${league}:${abbr}`] || abbr;
 }
+// r591: r584 assumed "ESPN's address.state is already abbreviated (confirmed live: NJ, ON, QC,
+// MN)" and joined it as-is. Caught live 9/16: NYY@MIN's venue came back with state:"Minnesota",
+// full name, not "MN" — so that assumption only held for the specific games r584 happened to
+// check, not universally. Normalize instead of trusting the field's shape.
+const _STATE_ABBR = {
+  alabama:'AL', alaska:'AK', arizona:'AZ', arkansas:'AR', california:'CA', colorado:'CO',
+  connecticut:'CT', delaware:'DE', florida:'FL', georgia:'GA', hawaii:'HI', idaho:'ID',
+  illinois:'IL', indiana:'IN', iowa:'IA', kansas:'KS', kentucky:'KY', louisiana:'LA',
+  maine:'ME', maryland:'MD', massachusetts:'MA', michigan:'MI', minnesota:'MN',
+  mississippi:'MS', missouri:'MO', montana:'MT', nebraska:'NE', nevada:'NV',
+  'new hampshire':'NH', 'new jersey':'NJ', 'new mexico':'NM', 'new york':'NY',
+  'north carolina':'NC', 'north dakota':'ND', ohio:'OH', oklahoma:'OK', oregon:'OR',
+  pennsylvania:'PA', 'rhode island':'RI', 'south carolina':'SC', 'south dakota':'SD',
+  tennessee:'TN', texas:'TX', utah:'UT', vermont:'VT', virginia:'VA', washington:'WA',
+  'west virginia':'WV', wisconsin:'WI', wyoming:'WY', 'district of columbia':'DC',
+  // Canadian provinces — NHL/MLS venues
+  alberta:'AB', 'british columbia':'BC', manitoba:'MB', 'new brunswick':'NB',
+  'newfoundland and labrador':'NL', 'nova scotia':'NS', ontario:'ON',
+  'prince edward island':'PE', quebec:'QC', saskatchewan:'SK',
+};
+function stateAbbr(s){
+  if (!s) return s;
+  const hit = _STATE_ABBR[String(s).trim().toLowerCase()];
+  return hit || s;   // already-abbreviated or unrecognized — pass through unchanged
+}
 
 // ── Team primary colors — for subtle chip background tint + accent bar ──
 // Format: [r, g, b] — used at very low opacity for bg tint, higher for accent bar
@@ -13066,10 +13091,21 @@ async function wwsPollSelections(){
   try {
     const r = await fetch(`selections.json?t=${Date.now()}`);
     if (r.ok){ const j = await r.json();
-      WWS.sel = (j.events || []).filter(e => e.espnId && e.league);
+      const curated = (j.events || []).filter(e => e.espnId && e.league);
+      // r592: was a blind wipe — WWS.sel = curated, full stop — discarding every __watch/
+      // __watchPlayer/__watchGolf entry the OTHER three poll functions had already found in the
+      // previous 30s cycle. Those get rebuilt a beat later by wwsPollWatch() etc (now slower —
+      // r590's 7-day single-fetch loop), so any render landing in that gap saw an empty WWS.sel
+      // and renderWwsSlot fell back to the random-live-game filler (Mike: "flash... looks janky
+      // and broken"). Every OTHER poll function here already follows "only clear entries I own"
+      // (see wwsPollWatch's own comment) — this was the one that didn't. Preserve existing
+      // __watch-flagged entries across the rebuild; whichever poll owns them refreshes/prunes
+      // them on its own next tick, same as always. The wall now always shows last-known-good
+      // follows instead of ever regressing to blank mid-cycle.
+      WWS.sel = curated.concat(WWS.sel.filter(e => e.__watch));
       WWS.watch = (j.watch && typeof j.watch === 'object') ? j.watch : { teams: [] };  // R16
       window._selPollOk = true;                       // R98: monitor — fetch succeeded
-      window._selPollCount = WWS.sel.length;          // R98: how many events the PANEL actually sees
+      window._selPollCount = curated.length;          // R98: how many events the PANEL actually sees (curated only — matches what the selector itself reports publishing)
     } else { window._selPollOk = false; }
   } catch(_){ window._selPollOk = false; }
   WWS.lastSelAt = Date.now();
@@ -13351,7 +13387,7 @@ async function fetchGolfPreview(eventId, league){
         try { const c = await proxyFetch(c0.$ref.replace(/^http:/, 'https:')); out.course = (c && c.name) || null; } catch(_){}
       }
       const addr = c0.address;
-      if (addr) out.location = typeof addr === 'string' ? addr : [addr.city, addr.state].filter(Boolean).join(', ');
+      if (addr) out.location = typeof addr === 'string' ? addr : [addr.city, stateAbbr(addr.state)].filter(Boolean).join(', ');   // r591
       if (c0.shotsToPar != null) out.par = c0.shotsToPar;
       if (c0.totalYards) out.yards = c0.totalYards;
     }
@@ -13596,13 +13632,13 @@ async function wwsPollEvents(){
           : kind === 'tennis' ? `${wcYear || new Date().getFullYear()} ${(_tourn||'').replace(/\bATP\b|\bWTA\b|men'?s|women'?s/ig,'').replace(/\s+/g,' ').trim() || 'Wimbledon'}`
           : e.label || '';
         const bVenue = kind === 'golf' ? ((ev.courses && ev.courses[0] && ev.courses[0].name) || ven.fullName || '')
-          : kind === 'soccer' ? ((ven.address && [ven.address.city, ven.address.state].filter(Boolean).join(', ')) || '')
-          : kind === 'tennis' ? (ven.court || [ven.fullName, ven.address && (ven.address.city || ven.address.state)].filter(Boolean).join(' · '))   // r480: court name (e.g. "Louis Armstrong Stadium") over bare city, when ESPN sends it
+          : kind === 'soccer' ? ((ven.address && [ven.address.city, stateAbbr(ven.address.state)].filter(Boolean).join(', ')) || '')
+          : kind === 'tennis' ? (ven.court || [ven.fullName, ven.address && (ven.address.city || stateAbbr(ven.address.state))].filter(Boolean).join(' · '))   // r480: court name (e.g. "Louis Armstrong Stadium") over bare city, when ESPN sends it
           // r584: was city-OR-state (never both) — Mike wants "Newark, NJ", not just "Newark".
-          // ESPN's address.state is already abbreviated (confirmed live: "NJ", "ON", "QC", "MN" —
-          // covers Canadian provinces too, relevant for NHL), so no derivation needed, same
-          // city+state join the soccer branch above already uses.
-          : [ven.fullName, ven.address && [ven.address.city, ven.address.state].filter(Boolean).join(', ')].filter(Boolean).join(' · ');
+          // r591: r584 assumed ESPN's address.state always comes back abbreviated — it doesn't
+          // (NYY@MIN's venue sent "Minnesota" in full) — route through stateAbbr() instead of
+          // trusting the field's shape.
+          : [ven.fullName, ven.address && [ven.address.city, stateAbbr(ven.address.state)].filter(Boolean).join(', ')].filter(Boolean).join(' · ');
         // r496: tennis's `ev` is the whole TOURNAMENT (e.g. "US Open", Aug 24-Sep 14) — ev.date is
         // the tournament's own start date, not this match's scheduled time. Confirmed live: Mike
         // saw "MONDAY 12:00 AM" for a match actually at 7:00 PM tonight; Aug 24 2026 (the US
@@ -15484,7 +15520,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r590-wwspollwatch-singleday-fetch';
+const BUILD_MARKER = 'r592-wwspollselections-no-blind-wipe';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
