@@ -13129,21 +13129,32 @@ async function wwsPollWatch(){
   // near-daily slates (first proven with a same-day Blue Jays game, r451) but EPL fixtures run
   // about once a week, so a followed club's next match is very often 1-6 days out and a
   // same-day-only fetch could never discover it at all (Mike: "EPL followed team not making its
-  // way to WWS"). Widen to a 7-day lookahead via ESPN's dates=START-END range syntax — ONE fetch
-  // per league still, not a per-day loop, so poll cost is unchanged. Unverified against live
-  // ESPN (container can't reach it) — confirm an EPL follow surfaces on the wall.
+  // way to WWS"). Widen to a 7-day lookahead.
   // Widening the window means a league can now return several matches for one followed team
   // (e.g. a full week of MLB games) — only the single most relevant one per team should become
   // a WWS slide, not the whole week, so pick live > soonest-upcoming > most-recent-final per abbr.
-  const _wwsPlusDays = (n) => { const d = nowET(); d.setDate(d.getDate()+n);
+  // r590: r455's single `dates=START-END` range query was self-documented as "Unverified
+  // against live ESPN (container can't reach it)" — and it turned out never to have worked:
+  // caught live 9/16, this exact call 403s at BOTH the direct fetch AND the proxy fallback
+  // (ESPN/an intermediary rejecting the range syntax itself, not a capacity issue — `direct`
+  // was healthy for everything else at the same moment). Every OTHER fetch in this file
+  // (fetchLeague, fetchLeagueYesterday, r588's fetchLeagueDay) uses the single-day
+  // `dates=YYYYMMDD` form and has never had this problem. Replaced the one unproven range
+  // call with a loop of proven single-day calls over the same 7-day window, merged before
+  // matching — same fix shape as r588's footer-crawl rebuild.
+  const _wwsDateYmd = (n) => { const d = nowET(); d.setDate(d.getDate()+n);
     return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`; };
-  const dateRange = `${wwsToday()}-${_wwsPlusDays(6)}`;
   for (const [lg, abbrs] of Object.entries(byLeague)){
     try {
-      const data = await proxyFetch(`https://site.api.espn.com/apis/site/v2/sports/${lg}/scoreboard?dates=${dateRange}`);
-      _wwsNoteLeagueMeta(lg, data);   // r491: followed-club path can be the first to see a league
+      const days = await Promise.all(Array.from({length: 7}, (_, i) =>
+        proxyFetch(`https://site.api.espn.com/apis/site/v2/sports/${lg}/scoreboard?dates=${_wwsDateYmd(i)}`)
+          .catch(() => null)   // one bad day shouldn't blank the whole league
+      ));
+      const okDays = days.filter(Boolean);
+      if (okDays.length) _wwsNoteLeagueMeta(lg, okDays[0]);   // r491: followed-club path can be the first to see a league
+      const events = okDays.flatMap(d => (d && d.events) || []);
       const best = {};   // abbr -> { ev, rank, evDate } — single most relevant match for that team
-      for (const ev of (data && data.events) || []){
+      for (const ev of events){
         const comp = (ev.competitions || [])[0] || {};
         const cs = (comp.competitors || []).map(c => (c.team && c.team.abbreviation) || '');
         const hitAbbrs = abbrs.filter(a => cs.includes(a));
@@ -15473,7 +15484,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r589-wws-sync-dump';
+const BUILD_MARKER = 'r590-wwspollwatch-singleday-fetch';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
