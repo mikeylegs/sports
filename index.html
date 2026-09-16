@@ -3518,11 +3518,12 @@ function simTennisSplash(opt){
 window.simTennisSplash = simTennisSplash;
 
 /* r593 — simNyyWin(): fires the exact same MLB "TEAM WIN" showTakeover() call the real
-   final-transition edge makes (~line 12710-12713), paired with playNyyWinSong() on the same
-   3.5s/!_recapActive-guarded delay (~line 12718), so Mike can preview the NYY-win splash +
-   Sinatra pairing on demand instead of waiting for a real Yankees final. Defaults to a NYY
-   win over BOS; pass {team:'NYM'} etc. to preview another team's ribbon color (song only
-   ever fires for NYY, matching the real gate). Kicker tagged '· SIM' per convention.
+   final-transition edge makes (~line 12744-12747), paired with playNyyWinSong() fired
+   WITH the splash (matches r593's real-code change — was a 3.5s delay, now immediate),
+   still gated on !_recapActive same as the real trigger (~line 12752). Song also respects
+   the live mute toggle now (playNyyWinSong reads _userMuted at play time). Defaults to a
+   NYY win over BOS; pass {team:'NYM'} etc. to preview another team's ribbon color (song
+   only ever fires for NYY, matching the real gate). Kicker tagged '· SIM' per convention.
    Usage: simNyyWin()  — or simNyyWin({team:'NYM', aAbbr:'NYM', hAbbr:'ATL', aScore:6, hScore:2, lit:'a'}) */
 function simNyyWin(opt){
   opt = opt || {};
@@ -3541,8 +3542,8 @@ function simNyyWin(opt){
     kicker: 'Final · SIM', headline: `${team} WIN`,
     band: { aAbbr, aScore, hAbbr, hScore, lit } } });
   const _recapWasActive = (typeof _recapActive !== 'undefined' && _recapActive === true);
-  if (team === 'NYY' && !_recapWasActive) setTimeout(() => { try{ playNyyWinSong(); }catch(_){} }, 3500);
-  console.log('[simNyyWin] fired —', team, 'WIN' + (team === 'NYY' ? (_recapWasActive ? ' (song SKIPPED — a recap was active, matching the real guard)' : ' + song in ~3.5s') : ' (no song — only NYY pairs with playNyyWinSong)'));
+  if (team === 'NYY' && !_recapWasActive){ try{ playNyyWinSong(); }catch(_){} }
+  console.log('[simNyyWin] fired —', team, 'WIN' + (team === 'NYY' ? (_recapWasActive ? ' (song SKIPPED — a recap was active, matching the real guard)' : ' + song (immediate, respects mute)') : ' (no song — only NYY pairs with playNyyWinSong)'));
   return 'fired';
 }
 window.simNyyWin = simNyyWin;
@@ -7090,6 +7091,10 @@ function playNyyWinSong(){
     if(!window._nyyWinAudio){ window._nyyWinAudio = new Audio(); window._nyyWinAudio.preload='auto'; }
     var a = window._nyyWinAudio;
     if(a.src !== window.NYY_WIN_SONG_URL){ try{ a.src = window.NYY_WIN_SONG_URL; }catch(_){} }
+    // r593: respect the panel mute toggle (was its own channel, unlike the intentionally
+    // always-audible HR sting) — reads live _userMuted at play time; toggleAudio() below
+    // also flips this same element's .muted if it's already playing when the dot is tapped.
+    a.muted = (typeof _userMuted !== 'undefined') ? _userMuted : true;
     a.volume = 0.85; a.currentTime = 0;
     var p = a.play();
     if(p && p.catch){ p.then(function(){ window._nyyWinSongStatus='OK'; }).catch(function(e){ window._nyyWinSongStatus='failed: '+e.message; }); }
@@ -12745,7 +12750,9 @@ function checkBigMoments(games){
         // edge (prev!=='final'); rides the recap player (Premium session = no ads).
         // r571: audio-only now (see playNyyWinSong above) — no longer routes through
         // playRecap/the video takeover, so the panel keeps rotating normally underneath.
-        if(won && teamAbbr==='NYY' && !_recapActive) setTimeout(()=>{ try{ playNyyWinSong(); }catch(_){} }, 3500);
+        // r593: fires WITH the splash now (was a 3.5s setTimeout delay — Mike wants the
+        // song starting the instant the card loads, not lagging behind it).
+        if(won && teamAbbr==='NYY' && !_recapActive){ try{ playNyyWinSong(); }catch(_){} }
         // Round-10 note 14: NY final moved the rail record — refresh standings now.
         try{ fetchDivStandings('5','NYY','AL East'); fetchDivStandings('24','NYM','NL East'); }catch(_){}
       }
@@ -14586,7 +14593,25 @@ function wwsFillSlides(){
   });
 }
 if (new URLSearchParams(location.search).get('wws') !== '0'){
-  (async () => { await wwsPollSelections(); await wwsPollWatch(); await wwsPollWatchPlayers(); await wwsPollWatchGolf(); await wwsPollEvents(); })();
+  (async () => {
+    await wwsPollSelections(); await wwsPollWatch(); await wwsPollWatchPlayers(); await wwsPollWatchGolf(); await wwsPollEvents();
+    // r593 — COLD-LOAD BLANK-WWS FIX. fetchAll()'s very first render (bottom of file, fires
+    // synchronously at boot alongside this IIFE) always wins the race against these four polls
+    // — selections.json + the per-league scoreboard fetches take longer than a sync render —
+    // so the first paint runs with WWS.sel still empty. Nothing else repaints the WWS slot
+    // until fetchAll's NEXT tick, which is 60s later when no game is live (getRefreshRate()).
+    // Mike's report matched this exactly: blank/fallback on refresh, fixed itself at :60.
+    // One-shot fix: once this FIRST poll batch resolves, if the MLB fullscreen render already
+    // ran and cached its games (window._mlbGamesCache), repaint immediately with the same data
+    // instead of waiting for the next full fetchAll cycle. Guarded so it only ever fires once.
+    try{
+      if (!window._wwsColdLoadRepainted && typeof renderMLBFullscreen === 'function'
+          && getLayoutMode() === 'mlbFull' && window._mlbGamesCache){
+        window._wwsColdLoadRepainted = true;
+        renderMLBFullscreen(window._mlbGamesCache, window._mlbGamesCacheYesterday || []);
+      }
+    }catch(_){}
+  })();
   setInterval(async () => { await wwsPollSelections(); await wwsPollWatch(); await wwsPollWatchPlayers(); await wwsPollWatchGolf(); }, 30000);   // R84: 30s (was 5min — Mike: too slow, felt like refresh-only). Picks up selector changes in ~30s. r170: player-follows run same cadence as team-follows, before wwsPollEvents so a freshly-found match hydrates on the very next 60s tick rather than waiting a full cycle. r508: golf-follow runs same lane.
   setInterval(wwsPollEvents, 60000);
   // Round 11: 20s fast lane while any curated event is in-play (fixes the
@@ -15550,7 +15575,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r593-simnyywin';
+const BUILD_MARKER = 'r594-nyywinsong-mute-instant-wws-coldload';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -17020,6 +17045,10 @@ function toggleAudio(){
       }
     }
   } catch(_){}
+  // r593: NYY-win song is its own <audio> channel (like the mp4 companion above) — reach
+  // it live too, so toggling mid-song actually mutes/unmutes instead of only affecting
+  // the NEXT play.
+  try { if (window._nyyWinAudio) window._nyyWinAudio.muted = _userMuted; } catch(_){}
 }
 /* ★ r210 — THE MUTE FLAP. toggleAudio was bound to EVERY document click, so any stray
    click — a VNC focus tap, an accidental click, interaction during a montage — silently
@@ -17213,6 +17242,10 @@ async function fetchAll() {
           (g.awayAbbr==='NYY'||g.homeAbbr==='NYY'||g.awayAbbr==='NYM'||g.homeAbbr==='NYM')
           && g.gameStatus==='live');
         const mode = getLayoutMode();
+        // r593: stash the args this render used so the one-shot WWS-ready re-render
+        // (below, fired once the initial wws poll batch resolves) can repaint the
+        // WWS slot with the SAME games/yesterday data, not an empty/stale set.
+        window._mlbGamesCache = games; window._mlbGamesCacheYesterday = yesterday || [];
         if (mode === 'mlbFull') {
           renderMLBFullscreen(games, yesterday||[]);
         } else {
