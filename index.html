@@ -1374,6 +1374,100 @@ html.nomask #mlb-takeover.tko-full .tkoH-photo{ -webkit-mask:none !important; ma
    I'll measure the real padding instead of guessing. */
 #mlb-takeover.tko-wc.tkflag .tkoA-bgflag-bold{animation:none !important;opacity:0.6;transform:scale(var(--tn-flag-scale,1.3));}
 @keyframes tkoSweep{0%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+
+/* ═══ r595 — FLAGSHIP WIN SPLASH (.tko-win) ═══════════════════════════════════════════
+   Replaces the old circular-logo + stacked-text win card (which was the generic Design-A
+   .tkoA-* layout) with a giant bleed-through team crest, staged motion, and a big score band.
+   GEOMETRY IS STUDIO-OWNED: every value in the var block below is the verbatim copy-CSS
+   export from win-splash-studio.html (studio-r2). To re-dial, open the studio, drag/slide,
+   hit "Copy CSS vars", and replace the block — do NOT hand-tune numbers here, or the studio
+   and the wall drift apart (that drift is exactly what the studio exists to prevent).
+   Scoping: everything is under #mlb-takeover.tko-win with .tkw-* children. The HR hero
+   (.tkoH-*), Design-A (.tkoA-*), tennis and World Cup cards all share showTakeover() but
+   use different class families, so none of them can see a single rule below. showTakeover
+   also reassigns el.className wholesale on every fire, so .tko-win cannot leak to the next
+   card either. Container contract (padding/overflow/container-type) mirrors .tko-wc — the
+   container-type:size is what makes every cqh here resolve against the CARD, which is why
+   the studio stage and this card are the same coordinate space. */
+#mlb-takeover.tko-win{
+  padding:0; background:#05070d; overflow:hidden; container-type:size; backdrop-filter:none;
+  --rgb:11,42,94;                    /* overwritten per-fire from GLOW_TEAM[team] */
+  --winGold:#fbbf24;                 /* the panel's system gold — constant "win" signal */
+  /* ── studio-r2 export — begin (regenerate, don't hand-edit) ── */
+  --logoSize:122; --logoX:25; --logoY:44; --logoOpacity:0.13;
+  --logoBlur:0; --logoRot:0; --logoZ:1;
+  --kSize:8; --kX:3.5; --kY:21; --kTrack:0; --kWeight:900;
+  --hSize:18; --hX:3.5; --hY:33; --hWidth:100;
+  --hTrack:-0.3; --hLine:0.78; --hWeight:900;
+  --bandH:32; --bandY:-2.5; --bandScoreSize:19.5; --bandAbbrSize:11.8;
+  --bandGap:6; --bandBg:0.58;
+  --cSize:2.7; --cX:12.5; --cY:72; --cWidth:46;
+  --nSize:2.8; --nX:95; --nY:8;
+  --bgAngle:155; --bgIntensity:0.93; --scrimAngle:135; --scrimStrength:0.54;
+  --dur:860; --durLogo:1280; --logoFrom:0.6; --headFrom:-6;
+  --dlyLogo:0; --dlyKick:180; --dlyHead:300;
+  --dlyBand:480; --dlyChip:640; --dlyCorner:760;
+  --kAnchor:0%; --hAnchor:0%;
+  --cAnchor:0%; --nAnchor:-100%;
+  --hTextAlign:left;
+  /* ── studio-r2 export — end ── */
+}
+#mlb-takeover.tko-win .tkw-bg{position:absolute;inset:0;z-index:0;
+  background:linear-gradient(calc(var(--bgAngle)*1deg),
+    rgba(var(--rgb),var(--bgIntensity)) 0%,
+    rgba(var(--rgb),calc(var(--bgIntensity)*0.35)) 42%, #05070d 82%);}
+#mlb-takeover.tko-win .tkw-scrim{position:absolute;inset:0;z-index:2;
+  background:linear-gradient(calc(var(--scrimAngle)*1deg), rgba(5,8,16,0) 0%,
+    rgba(5,8,16,var(--scrimStrength)) 58%, rgba(5,8,16,calc(var(--scrimStrength)*1.12)) 100%);}
+#mlb-takeover.tko-win .tkw-el{position:absolute;z-index:4;}
+#mlb-takeover.tko-win .tkw-logo{left:calc(var(--logoX)*1%);top:calc(var(--logoY)*1%);
+  transform:translate(-50%,-50%);z-index:var(--logoZ);}
+#mlb-takeover.tko-win .tkw-crest{display:block;width:calc(var(--logoSize)*1cqh);height:auto;
+  opacity:var(--logoOpacity);filter:blur(calc(var(--logoBlur)*1px));
+  transform:rotate(calc(var(--logoRot)*1deg));}
+#mlb-takeover.tko-win .tkw-kick{left:calc(var(--kX)*1%);top:calc(var(--kY)*1%);
+  transform:translate(var(--kAnchor),-50%);line-height:1;white-space:nowrap;
+  font-size:calc(var(--kSize)*1cqh);font-weight:var(--kWeight);text-transform:uppercase;
+  letter-spacing:calc(var(--kTrack)*1cqh);color:var(--winGold);}
+#mlb-takeover.tko-win .tkw-head{left:calc(var(--hX)*1%);top:calc(var(--hY)*1%);
+  transform:translate(var(--hAnchor),-50%);width:calc(var(--hWidth)*1%);text-align:var(--hTextAlign);
+  font-size:calc(var(--hSize)*1cqh);font-weight:var(--hWeight);line-height:var(--hLine);
+  letter-spacing:calc(var(--hTrack)*1cqh);color:#fff;text-transform:uppercase;
+  text-shadow:0 1.2cqh 5cqh rgba(0,0,0,.7);overflow-wrap:break-word;}
+#mlb-takeover.tko-win .tkw-chips{left:calc(var(--cX)*1%);top:calc(var(--cY)*1%);
+  transform:translate(var(--cAnchor),-50%);width:calc(var(--cWidth)*1%);}
+#mlb-takeover.tko-win .tkw-chip{font-size:calc(var(--cSize)*1cqh);font-weight:700;color:#fff;
+  background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.2);border-radius:99px;
+  padding:calc(var(--cSize)*0.3cqh) calc(var(--cSize)*0.72cqh);white-space:nowrap;}
+#mlb-takeover.tko-win .tkw-chip.tkw-hot{background:var(--winGold);color:#05070d;border-color:transparent;}
+#mlb-takeover.tko-win .tkw-corner{left:calc(var(--nX)*1%);top:calc(var(--nY)*1%);
+  transform:translate(var(--nAnchor),-50%);font-size:calc(var(--nSize)*1cqh);font-weight:700;
+  color:rgba(255,255,255,.62);white-space:nowrap;}
+#mlb-takeover.tko-win .tkw-band{position:absolute;left:0;right:0;z-index:5;
+  bottom:calc(var(--bandY)*1cqh);height:calc(var(--bandH)*1cqh);
+  background:linear-gradient(to top, rgba(5,8,16,var(--bandBg)), rgba(5,8,16,0));}
+#mlb-takeover.tko-win .tkw-abbr{font-size:calc(var(--bandAbbrSize)*1cqh);font-weight:800;color:rgba(255,255,255,.55);}
+#mlb-takeover.tko-win .tkw-sc{font-size:calc(var(--bandScoreSize)*1cqh);font-weight:900;color:#fff;font-variant-numeric:tabular-nums;}
+#mlb-takeover.tko-win .tkw-sc.tkw-lit{color:var(--winGold);}
+#mlb-takeover.tko-win .tkw-dash{font-size:calc(var(--bandScoreSize)*0.7cqh);font-weight:800;color:rgba(255,255,255,.3);}
+/* motion — the .tkw-mo inner wrapper owns the animation so keyframe opacity/transform never
+   fights the static --logoOpacity / anchor-translate on the positioned parent (the exact
+   conflict the studio hit and solved the same way). Card is one-shot, so no replay gate. */
+#mlb-takeover.tko-win .tkw-mo{display:block;}
+#mlb-takeover.tko-win .tkw-chips .tkw-mo{display:flex;flex-wrap:wrap;gap:calc(var(--cSize)*0.42cqh);}
+#mlb-takeover.tko-win .tkw-band .tkw-mo{display:flex;align-items:center;justify-content:center;
+  gap:calc(var(--bandGap)*1cqh);width:100%;height:100%;}
+#mlb-takeover.tko-win .tkw-logo .tkw-mo{animation:tkwLogo calc(var(--durLogo)*1ms) cubic-bezier(.16,1,.3,1) calc(var(--dlyLogo)*1ms) both;}
+#mlb-takeover.tko-win .tkw-kick .tkw-mo{animation:tkwUp calc(var(--dur)*1ms) cubic-bezier(.16,1,.3,1) calc(var(--dlyKick)*1ms) both;}
+#mlb-takeover.tko-win .tkw-head .tkw-mo{animation:tkwSlide calc(var(--dur)*1ms) cubic-bezier(.16,1,.3,1) calc(var(--dlyHead)*1ms) both;}
+#mlb-takeover.tko-win .tkw-chips .tkw-mo{animation:tkwUp calc(var(--dur)*1ms) cubic-bezier(.16,1,.3,1) calc(var(--dlyChip)*1ms) both;}
+#mlb-takeover.tko-win .tkw-corner .tkw-mo{animation:tkwUp calc(var(--dur)*1ms) cubic-bezier(.16,1,.3,1) calc(var(--dlyCorner)*1ms) both;}
+#mlb-takeover.tko-win .tkw-band .tkw-mo{animation:tkwWipe calc(var(--dur)*1ms) cubic-bezier(.16,1,.3,1) calc(var(--dlyBand)*1ms) both;}
+@keyframes tkwLogo{0%{opacity:0;transform:scale(var(--logoFrom));}100%{opacity:1;transform:scale(1);}}
+@keyframes tkwUp{0%{opacity:0;transform:translateY(8%);}100%{opacity:1;transform:translateY(0);}}
+@keyframes tkwSlide{0%{opacity:0;transform:translateX(calc(var(--headFrom)*1%));}100%{opacity:1;transform:translateX(0);}}
+@keyframes tkwWipe{0%{opacity:0;transform:translateY(100%);}100%{opacity:1;transform:translateY(0);}}
+
 #mlb-takeover.left{left:0;}
 #mlb-takeover.right{left:50%;}
 #mlb-takeover .tko-team{font-size:4.4cqh;font-weight:800;letter-spacing:0.9cqh;margin-bottom:1cqh;}
@@ -1401,6 +1495,18 @@ html.nomask #mlb-takeover.tko-full .tkoH-photo{ -webkit-mask:none !important; ma
 .shell.stale .sb-stale{display:inline-block;}
 .shell.stale .sb-dot{background:#f59e0b !important;box-shadow:0 0 6px #f59e0b;}
 .shell.stale #row-MLB{opacity:0.5;filter:saturate(0.55);transition:opacity .6s ease,filter .6s ease;}
+/* r596 — RECONNECTING vs ESPN LIVE/countdown conflict. Mike's report: while stale, the
+   status-bug shows the amber dot + "⟳ RECONNECTING" (correct, r287-era) but ALSO keeps
+   showing the green-dot "ESPN LIVE" text + countdown + countdown-bar (stale data claiming
+   to be live, and it's not — updateStaleness() only toggled .shell.stale, nothing ever hid
+   these siblings). Same flex row, so the extra width pushes left and overlaps the header's
+   centered clock cluster (#hcTime) — exactly the visual collision in the screenshot.
+   Fix: while stale, hide the now-inaccurate live trio; only the dot + RECONNECTING show,
+   so the row shrinks back down and stops fighting the clock for space. */
+.shell.stale .sb-txt,.shell.stale .sb-cd,.shell.stale .sb-cd-bar{display:none;}
+/* only the FIRST .sb-sep (between sb-txt and sb-cd) — there's a second one between
+   sb-stale and the audio dot that must stay, so this can't be a blanket .sb-sep hide. */
+.shell.stale .sb-txt + .sb-sep{display:none;}
 #mlb-takeover .tko-statcast{margin-top:1.8cqh;display:flex;gap:1.2cqh;}
 #mlb-takeover .sc-chip{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:10px;padding:0.7cqh 1.6cqh;font-size:3.15cqh;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:0.5px;}
 
@@ -3536,10 +3642,17 @@ function simNyyWin(opt){
   const side = opt.side || 'right';
   const rgb = (typeof GLOW_TEAM !== 'undefined' && GLOW_TEAM[team]) || '11,42,94';
   if (typeof showTakeover !== 'function'){ console.log('[simNyyWin] showTakeover not available'); return 'no showTakeover'; }
+  /* r595: fires the flagship .tko-win layout. chips/corner are SIM-ONLY demo strings — the
+     real trigger passes none, because nothing plumbs series/walk-off/standings at final time
+     yet. Pass {chips:[], corner:''} to preview exactly what a real final renders today. */
   showTakeover({ side, mlbTeam: team, a: {
-    accent: `rgb(${rgb})`, wash: `rgba(${rgb},0.9)`,
-    logo: (typeof logoUrl === 'function') ? logoUrl('MLB', team) : '', logoBg: `rgb(${rgb})`,
-    kicker: 'Final · SIM', headline: `${team} WIN`,
+    winCard: true, mlbTeam: team,
+    accent: `rgb(${rgb})`,
+    logo: (typeof logoUrl === 'function') ? logoUrl('MLB', team) : '',
+    kicker: opt.kicker || 'Final · SIM',
+    headline: opt.headline || `${(typeof MLB_NICK !== 'undefined' && MLB_NICK[team]) || team} WIN`,
+    chips: opt.chips || ['WALK-OFF', 'Takes the series 2–1'],
+    corner: opt.corner != null ? opt.corner : 'AL EAST · 1st (+2.5)',
     band: { aAbbr, aScore, hAbbr, hScore, lit } } });
   const _recapWasActive = (typeof _recapActive !== 'undefined' && _recapActive === true);
   if (team === 'NYY' && !_recapWasActive){ try{ playNyyWinSong(); }catch(_){} }
@@ -7031,6 +7144,81 @@ function tkoABuild(o){
       </div>
     </div>${band}`;
 }
+/* r595 — MLB club nicknames, all 30 (+ the alias abbrs GLOW_TEAM already carries: CHW/WAS/
+   SDP/SFG/AZ/ATH). The two existing name maps in this file (~line 6052 and ~line 16413) only
+   cover AL East + NL East because they exist to label the two standings rails; the win splash
+   fires for ANY followed team, so it needs the full league. Falls back to the abbr. */
+const MLB_NICK = {
+  NYY:'Yankees', NYM:'Mets', BOS:'Red Sox', TOR:'Blue Jays', BAL:'Orioles', TB:'Rays',
+  CLE:'Guardians', DET:'Tigers', KC:'Royals', MIN:'Twins', CWS:'White Sox', CHW:'White Sox',
+  HOU:'Astros', SEA:'Mariners', TEX:'Rangers', LAA:'Angels', OAK:'Athletics', ATH:'Athletics',
+  ATL:'Braves', PHI:'Phillies', WSH:'Nationals', WAS:'Nationals', MIA:'Marlins',
+  MIL:'Brewers', CHC:'Cubs', CIN:'Reds', PIT:'Pirates', STL:'Cardinals',
+  LAD:'Dodgers', SD:'Padres', SDP:'Padres', SF:'Giants', SFG:'Giants',
+  ARI:'Diamondbacks', AZ:'Diamondbacks', COL:'Rockies'
+};
+/* r595 — FLAGSHIP WIN-SPLASH BUILDER. Sibling to tkoABuild above; showTakeover picks between
+   them on A.winCard. Pure markup — all geometry lives in the .tko-win CSS block (studio-owned,
+   see the comment there). Structure mirrors the studio 1:1, including the .tkw-mo motion
+   wrappers, so what Mike dials in the studio is literally what paints here.
+   chips/corner render ONLY when the caller supplies them. The real win trigger doesn't yet —
+   there's no plumbed source for "takes the series 2-1" / walk-off / standings at final-whistle
+   time, and I'm not inventing one. The geometry is wired and waiting; simNyyWin() passes demo
+   values so the full design is previewable today. */
+function tkoWinBuild(o){
+  const b = o.band || {};
+  const crest = o.logo
+    ? `<div class="tkw-el tkw-logo"><div class="tkw-mo"><img class="tkw-crest" src="${o.logo}" onerror="this.style.display='none'"></div></div>`
+    : '';
+  const chips = (o.chips && o.chips.length)
+    ? `<div class="tkw-el tkw-chips"><div class="tkw-mo">${o.chips.map((c,i) =>
+        `<span class="tkw-chip${i===0 && o.chipHot!==false ? ' tkw-hot' : ''}">${c}</span>`).join('')}</div></div>`
+    : '';
+  const corner = o.corner
+    ? `<div class="tkw-el tkw-corner"><div class="tkw-mo">${o.corner}</div></div>` : '';
+  return `<div class="tkw-bg"></div>${crest}<div class="tkw-scrim"></div>
+    ${o.kicker ? `<div class="tkw-el tkw-kick"><div class="tkw-mo">${o.kicker}</div></div>` : ''}
+    <div class="tkw-el tkw-head"><div class="tkw-mo">${o.headline||''}</div></div>
+    ${chips}${corner}
+    <div class="tkw-band"><div class="tkw-mo">
+      <span class="tkw-abbr">${b.aAbbr||''}</span><span class="tkw-sc${b.lit==='a'?' tkw-lit':''}">${b.aScore}</span>
+      <span class="tkw-dash">–</span>
+      <span class="tkw-sc${b.lit==='h'?' tkw-lit':''}">${b.hScore}</span><span class="tkw-abbr">${b.hAbbr||''}</span>
+    </div></div>`;
+}
+/* r595 — WIN-HEADLINE SHRINK-TO-FIT. The splash was dialed against "YANKEES WIN", which at
+   the studio-locked --hSize:18 fills the block almost exactly. Longer nicknames do NOT fit:
+   "DIAMONDBACKS WIN" is ~45% wider, and because .tkw-head allows overflow-wrap:break-word it
+   would break MID-WORD ("DIAMONDBAC / KS WIN") rather than clip — uglier than clipping, and it
+   would hit on some random Tuesday, not in testing. This measures the widest single WORD and
+   scales the headline down so that word fits its box on one line.
+   SHRINK-ONLY and deterministic: it can never grow past the studio-dialed --hSize, so the
+   dialed look is untouched for every team whose name already fits (Yankees, Mets, Reds, Cubs…)
+   and only long names are rescued. Deliberately NOT reusing fitText() — that engine derives its
+   cqh base from #row-MLB's height, but the takeover card is its own size container, so its cqh
+   resolves against the CARD; fitText would size this against the wrong box entirely.
+   (The probe carries computed tracking as a fixed px at a 100px reference, so the measurement
+   is ~1-2% conservative on heavily-tracked text. Conservative is the safe direction here.) */
+function _tkwFitHead(el){
+  try{
+    const h = el.querySelector('.tkw-head'); if (!h) return;
+    const cardH = el.clientHeight, boxW = h.clientWidth;
+    if (!cardH || !boxW) return;
+    const maxPx = (parseFloat(getComputedStyle(el).getPropertyValue('--hSize')) || 18) / 100 * cardH;
+    const words = (h.textContent || '').trim().split(/\s+/).filter(Boolean);
+    if (!words.length) return;
+    const cs = getComputedStyle(h);
+    const probe = document.createElement('span');
+    probe.style.cssText = 'position:absolute;visibility:hidden;left:-9999px;top:0;white-space:nowrap;'
+      + 'font-size:100px;font-weight:' + cs.fontWeight + ';font-family:' + cs.fontFamily
+      + ';letter-spacing:' + cs.letterSpacing + ';text-transform:' + cs.textTransform + ';';
+    h.appendChild(probe);
+    let widest = 0;
+    words.forEach(w => { probe.textContent = w; widest = Math.max(widest, probe.getBoundingClientRect().width); });
+    probe.remove();
+    if (widest > 0) h.style.fontSize = Math.floor(Math.min(maxPx, 100 * boxW / widest)) + 'px';
+  }catch(_){}
+}
 /* r320: single source of truth for the takeover-card on-screen duration (r203: 12s — long
    enough to read from the projector). Both the card hide-timer AND the montage seam-resume key
    off this, so they can never drift apart (magic-number coupling was the r320 near-miss). */
@@ -7300,8 +7488,19 @@ function showTakeover(opts){
     band:{aAbbr:opts.wc.aAbbr,aScore:opts.wc.aScore,hAbbr:opts.wc.hAbbr,hScore:opts.wc.hScore,lit:opts.wc.aWin?'a':opts.wc.hWin?'h':''}
   } : null);
   if (A){                                             // Design-A path
+    /* r595: the WIN splash is its own layout now (.tko-win / .tkw-*), not the generic
+       Design-A card. Everything else — HR, lead change, tennis, World Cup, montage beats —
+       is untouched and still takes the tkoABuild branch. Safe by construction: className was
+       reassigned wholesale a few lines up, so neither class can survive into the next card. */
+    if (A.winCard){
+      el.classList.add('tko-win');
+      try{ el.style.setProperty('--rgb', (typeof GLOW_TEAM!=='undefined' && GLOW_TEAM[A.mlbTeam||A.team]) || '11,42,94'); }catch(_){}
+      el.innerHTML = tkoWinBuild(A);
+      _tkwFitHead(el);   // r595: shrink-only rescue for long club nicknames (see fn comment)
+    } else {
     el.classList.add('tko-wc');
     el.innerHTML = tkoABuild(A);
+    }
     /* r327: breaking entrance — LIVE HR cards only. Add brk-live (scoped animation, studio-dialed)
        and fire the flash overlay. Montage replays (A.live falsy) keep the calm reveal. NOTE: this
        re-adds a scale animation to .tkoH-photo — the same element whose animation caused the
@@ -7435,6 +7634,7 @@ function showTakeover(opts){
     // fonts.ready is enough now that the fit is shrink-only (deterministic, no grow race).
   } else {
     el.classList.remove('tko-wc');
+    el.classList.remove('tko-win');   // r595: symmetric with tko-wc (belt-and-braces — className is already reassigned per fire)
     el.innerHTML=`<div class="tko-team" style="color:${opts.accent||'#fbbf24'}">${opts.team||''}</div>
       <div class="tko-headline">${opts.headline||''}</div>
       <div class="tko-sub1">${opts.sub1||''}</div>
@@ -12216,8 +12416,18 @@ function brainTakeoverPayload(c, g){
     case 'walkoff':        return { side, a:{ accent:`rgb(${TEAMRGB[teamOf]||'11,42,94'})`, wash, wm, headline:'WALK-OFF',   /* r337: team color (was hardcoded green #4ade80), from teamOf like the wash */
                                      sub: (c.meta.who||'').replace(/\([^)]*\)/g,'').trim(), band:{...band, lit:'h'} }};
     case 'lead_change_myteam': return { side, a:{ accent:'#60a5fa', wash, wm, headline:'LEAD CHANGE', band }};
-    case 'final_myteam':   return { side, a:{ accent:'#94a3b8', wash, wm,
-                                     headline: (band.lit==='h'?g.homeAbbr:g.awayAbbr)+' WIN', band }};
+    /* r595: route the BRAIN's win card through the SAME flagship .tko-win layout that
+       checkBigMoments' final-transition edge now uses. Without this, the identical event
+       renders two different ways on the wall depending on which detector happened to fire
+       it (Brain = old grey Design-A card, checkBigMoments = flagship crest card). Winner
+       abbr comes from band.lit exactly as before; showTakeover resolves the crest color
+       from GLOW_TEAM[mlbTeam]. */
+    case 'final_myteam':   { const _w = (band.lit==='h'?g.homeAbbr:g.awayAbbr);
+                             return { side, mlbTeam:_w, a:{ winCard:true, mlbTeam:_w,
+                                     accent:`rgb(${TEAMRGB[_w]||'11,42,94'})`, wash, wm,
+                                     logo:(typeof logoUrl==='function')?logoUrl('MLB',_w):'',
+                                     kicker:'Final',
+                                     headline:((typeof MLB_NICK!=='undefined' && MLB_NICK[_w]) || _w)+' WIN', band }}; }
     case 'milestone':      return hrCard('#e879f9', c.meta.label||'MILESTONE');
     default:               return null;   // non-takeover types (pins/mentions) → no payload
   }
@@ -12742,9 +12952,15 @@ function checkBigMoments(games){
           band:{aAbbr:g.awayAbbr,aScore:cur.as,hAbbr:g.homeAbbr,hScore:cur.hs,lit:(teamAbbr===g.awayAbbr?'a':'h')} }});
       } else if(cur.status==='final'&&prev.status!=='final'){
         const won=isHome?cur.hs>cur.as:cur.as>cur.hs;
-        if(won) showTakeover({side, mlbTeam:teamAbbr, a:{ accent:`rgb(${GLOW_TEAM[teamAbbr]||'11,42,94'})`, wash:`rgba(${GLOW_TEAM[teamAbbr]||'11,42,94'},0.9)`,   /* r336: ribbon = TEAM color, was hardcoded green #4ade80 regardless of team (the "Mets green ribbon" bug) */
-          logo:logoUrl('MLB',teamAbbr), logoBg:`rgb(${GLOW_TEAM[teamAbbr]||'11,42,94'})`,
-          kicker:'Final', headline:`${teamAbbr} WIN`,
+        /* r595: flagship win splash (.tko-win). winCard routes showTakeover to tkoWinBuild;
+           mlbTeam moves INSIDE `a` (the builder and the --rgb lookup both read A.mlbTeam —
+           the top-level opts.mlbTeam was never visible to the Design-A payload). Headline is
+           the club NICKNAME now ("YANKEES WIN"), which is what the splash was dialed against
+           in the studio; unknown abbrs fall back to the abbr, so it degrades to the old text. */
+        if(won) showTakeover({side, mlbTeam:teamAbbr, a:{ winCard:true, mlbTeam:teamAbbr,
+          accent:`rgb(${GLOW_TEAM[teamAbbr]||'11,42,94'})`,
+          logo:logoUrl('MLB',teamAbbr),
+          kicker:'Final', headline:`${MLB_NICK[teamAbbr]||teamAbbr} WIN`,
           band:{aAbbr:g.awayAbbr,aScore:cur.as,hAbbr:g.homeAbbr,hScore:cur.hs,lit:(teamAbbr===g.awayAbbr?'a':'h')} }});
         // Round-10 note 12: Yankees win → Sinatra. One-shot via the final-transition
         // edge (prev!=='final'); rides the recap player (Premium session = no ads).
@@ -15575,7 +15791,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r594-nyywinsong-mute-instant-wws-coldload';
+const BUILD_MARKER = 'r596-reconnecting-status-conflict';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
