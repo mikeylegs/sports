@@ -6616,6 +6616,35 @@ window.favDump = () => { try {
     } catch(_){ return '(err)'; } })()
   }, null, 2);
 } catch(e){ return 'err ' + e.message; } };
+// r589: COMPREHENSIVE selector<->panel sync dump. favDump() above is scoped to the MLB
+// home-run watchlist specifically (base pair + MLB-league follows) — it was never meant to
+// show "everything the panel got from the selector" and today's saga (footer-crawl vs.
+// wwsPollWatch vs. WWS.sel vs. the selector's own tombstone bug) kept tripping on that gap,
+// each time requiring a fresh ad-hoc console snippet. This is the single call that answers "what did
+// the panel actually receive, and what is it doing with it" end to end. Separate function,
+// not a favDump rewrite — anything that already expects favDump's narrow shape is untouched.
+window.wwsFullDump = () => { try {
+  const t = wwsToday();
+  return JSON.stringify({
+    selPoll: {
+      lastAgeS: WWS.lastSelAt ? Math.round((Date.now()-WWS.lastSelAt)/1000) : null,
+      ok: window._selPollOk, countReported: window._selPollCount ?? null,
+    },
+    // raw WWS.sel — literally what selections.json + wwsPollWatch's injections currently hold
+    sel: (WWS.sel||[]).map(e => ({
+      id: e.espnId, league: e.league, title: e.title,
+      showFrom: e.showFrom, showUntil: e.showUntil,
+      watch: !!e.__watch, live: !!e.__live,
+      activeNow: t <= _wwsPlusOneDay(e.showUntil),   // same test wwsActive() uses
+    })),
+    wwsActiveCount: wwsActive().length,
+    // when wwsActive() is empty, renderWwsSlot falls back to a random live-game filler —
+    // this makes that fallback visible instead of looking like a real selection.
+    renderingFallback: wwsActive().length === 0,
+    watchTeams: (WWS.watch && WWS.watch.teams) || [],
+    watchPlayers: (WWS.watch && WWS.watch.players) || [],
+  }, null, 2);
+} catch(e){ return 'err ' + e.message; } };
 /* back-compat shim: existing code reads _FAV_MLB.has(x). Make it a live proxy so every
    .has() consults the current watchlist without touching call sites. */
 const _FAV_MLB = { has:(x)=>_favMlbSet().has(x) };
@@ -15444,7 +15473,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r588-footer-crawl-league-range-nextgame';
+const BUILD_MARKER = 'r589-wws-sync-dump';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -17596,8 +17625,12 @@ window.CC = (function(){
    {g:'Maintenance',n:'cleardead',t:'action',d:'Clear dead-id list'}
   ];
   var TABS=[['now','Now'],['flags','Flags'],['report','Report'],['tko','Takeover'],
-            ['pipeline','Pipeline'],['montage','Montage'],['brain','Brain'],['watch','Watchlist']];
-  var DUMPS={now:'_now',montage:'_montage',brain:'_brain',tko:'tkoDump',watch:'favDump',pipeline:'poolsDump',debug:'dirDump'};   // P6: brain refreshes too
+            ['pipeline','Pipeline'],['montage','Montage'],['brain','Brain'],['watch','WWS Sync']];
+  // r589: 'watch' tab now shows wwsFullDump() (comprehensive selector<->panel sync state),
+  // not favDump() (which stayed scoped to the MLB HR-alert watchlist specifically — narrower
+  // on purpose, see its own comment). DUMPS' 'watch' entry is dead for this tab since _ccRead
+  // below special-cases id==='watch' directly; left as documentation of which function backs it.
+  var DUMPS={now:'_now',montage:'_montage',brain:'_brain',tko:'tkoDump',watch:'wwsFullDump',pipeline:'poolsDump',debug:'dirDump'};   // P6: brain refreshes too
   var stars=[],FSZ=14,open=false,PIPE_SUB='sources';   // P3: pipeline sub-tab
   // r522: Pipeline → Probes sub-tab. Mike: "Can we build these two into CC. I guess in
   // pipeline tab?" — window.montageProbe()/window.recapProbe() (r520/r521b) already exist as
@@ -17818,7 +17851,7 @@ window.CC = (function(){
           return String(e.t||'').slice(11,19)+'  '+String(e.reason||e.msg||JSON.stringify(e)).slice(0,90);
         }).join('\n');
       }
-      if(id==='watch' && typeof window.favDump==='function') return window.favDump();
+      if(id==='watch' && typeof window.wwsFullDump==='function') return window.wwsFullDump();
     }catch(e){ return 'read failed: '+(e&&e.message); }
     return null;
   }
