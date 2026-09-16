@@ -9658,7 +9658,15 @@ async function findRecap(sourceId){
     // was empty and hoh-nyy/hoh-nym went DEAD for a whole run (15x "NO VIDEO" each). A team
     // source with nothing fresh should reach BACK (up to 6 days) rather than show nothing
     // for days. Fresh is still strongly preferred by the scorer; this only adds a floor.
-    if (!_onTeam.length && Array.isArray(items)){
+    // r600: this widen reaches back into RAW items, bypassing whatever require just decided —
+    // fine for a loose regex-require (MLB drought case this was built for), but for a strict
+    // fn-require (r597's highlights-only gate) it was silently undoing the entire gate: every
+    // widen candidate names the team or a roster player by construction, so a talk segment or
+    // presser sailed right back in the moment the real require-filtered pool came up empty
+    // (which is the COMMON case for a low-volume team channel, not an edge case). _requireStrictEmpty
+    // already exists for exactly this "must stay empty" signal (r151, used by the reject gate below) —
+    // it was just never checked here.
+    if (!_onTeam.length && !_requireStrictEmpty && Array.isArray(items)){
       const _wide = items.filter(x => (_tn.test(x.title) || _namesFavPlayer(x.title)) && !_isAllGamesCompilation(x.title) && _ageH(x) <= 144);   // 6 days
       if (_wide.length) _onTeam = _wide;
     }
@@ -15885,7 +15893,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r599-highlights-gate-name-bypass-fix';
+const BUILD_MARKER = 'r600-team-widen-strict-empty-fix';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
