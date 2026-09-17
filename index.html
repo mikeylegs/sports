@@ -8198,19 +8198,19 @@ const RECAP = {
     // silent on its own — no separate schedule/preseason check needed.
     'nfl-bills':  { handle:'billsnfl', label:'Bills Recap', teamName:'Bills',
                     query:'Bills highlights', titleHint:/bills/i,
-                    require(){ return /(?=.*\bbills\b)(?=.*(highlights?|recap|top plays?|best plays?|touchdowns?))/i; },
+                    require(){ return /(?=.*\bbills\b)(?=.*\b(highlights?|recap|top plays?|best plays?|touchdowns?)\b)/i; },
                     reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|one bills live|kickoff live|postgame show/i,
                     windowH: _hoursSinceLastNflWeekStart,
                     glow:'rgba(0,51,141,0.95)', slot:'.mlb-feat-slot.yank' },
     'nfl-jets':   { handle:'jetsnfl', label:'Jets Recap', teamName:'Jets',
                     query:'Jets highlights', titleHint:/jets/i,
-                    require(){ return /(?=.*\bjets\b)(?=.*(highlights?|recap|top plays?|best plays?|touchdowns?))/i; },
+                    require(){ return /(?=.*\bjets\b)(?=.*\b(highlights?|recap|top plays?|best plays?|touchdowns?)\b)/i; },
                     reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|jets overtime|kickoff live|postgame show/i,
                     windowH: _hoursSinceLastNflWeekStart,
                     glow:'rgba(18,87,64,0.95)', slot:'.mlb-feat-slot.yank' },
     'nfl-giants': { handle:'giantsnfl', label:'Giants Recap', teamName:'Giants',
                     query:'Giants highlights', titleHint:/giants/i,
-                    require(){ return /(?=.*\bgiants\b)(?=.*(highlights?|recap|top plays?|best plays?|touchdowns?))/i; },
+                    require(){ return /(?=.*\bgiants\b)(?=.*\b(highlights?|recap|top plays?|best plays?|touchdowns?)\b)/i; },
                     reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|kickoff live|postgame show/i,
                     windowH: _hoursSinceLastNflWeekStart,
                     glow:'rgba(1,35,82,0.95)', slot:'.mlb-feat-slot.yank' },
@@ -8222,12 +8222,12 @@ const RECAP = {
     // never matches and the source stays empty until real game highlights exist.
     'nhl-rangers':  { handle:'rangersnhl', label:'Rangers Recap', teamName:'Rangers',
                     query:'Rangers highlights', titleHint:/rangers/i,
-                    require(){ return /(?=.*\brangers\b)(?=.*(highlights?|recap|top plays?|best plays?|goals?))/i; },
+                    require(){ return /(?=.*\brangers\b)(?=.*\b(highlights?|recap|top plays?|best plays?|goals?)\b)/i; },
                     reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech/i,
                     glow:'rgba(0,56,168,0.95)', slot:'.mlb-feat-slot.yank' },
     'nhl-islanders': { handle:'islandersnhl', label:'Islanders Recap', teamName:'Islanders',
                     query:'Islanders highlights', titleHint:/islanders/i,
-                    require(){ return /(?=.*\bislanders\b)(?=.*(highlights?|recap|top plays?|best plays?|goals?))/i; },
+                    require(){ return /(?=.*\bislanders\b)(?=.*\b(highlights?|recap|top plays?|best plays?|goals?)\b)/i; },
                     reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|rookie camp|media availability/i,
                     glow:'rgba(0,83,155,0.95)', slot:'.mlb-feat-slot.yank' },
     // R59: "MLB TOP PLAYS" (relabeled). timeless:true → exempt from the hard date gate
@@ -9639,6 +9639,21 @@ async function findRecap(sourceId){
   // site + nhl-fill's extraIds comment, r597) — the staleness window was never meant to apply
   // to them, but nothing exempted them here, so an older seed silently never surfaced. Exempt,
   // same as the require-gate bypass; still subject to reject/shorts/length/cooldown below.
+  /* r616 — THE WIDEN'S SECOND LEAK. r600 stopped the R109 team-widen from resurrecting raw
+     items when a strict fn-require emptied the pool (_requireStrictEmpty). But that flag is
+     ONLY set when require matched ZERO items. Field case (nfl-bills, 9/17): require matched
+     exactly one item ("Mitch Morse: RECAPping Win Over The Texans", 50.9h) so the flag stayed
+     FALSE — then the WINDOW gate below killed that lone survivor for being older than the NFL
+     week window (~40h), leaving the pool empty anyway. The widen then reached back into raw
+     `items`, which is pre-require AND pre-reject, and every presser naming the team flooded
+     back in ("Khalil Shakir On Preparing For Home Opener", and reject-matched titles like the
+     Jets' "locker room speech" / the Islanders' "Media Availability" — reject never applied to
+     them because they never came through the pool). Snapshot the pool HERE — after require,
+     reject and lang, before the staleness window — and widen from THAT, so the widen can only
+     ever relax the TIME window (its actual R109 purpose) and never the content gates. MLB's
+     drought behavior is unchanged: a loose regex-require that matched nothing already falls
+     back to the unfiltered pool above, so this snapshot equals `items` in exactly that case. */
+  const _poolPreWindow = pool;
   { const _preWin = pool; pool = pool.filter(x => x.seed || _ageH(x) <= _windowH);
     _aud('WINDOW ' + _windowH + 'h', _preWin, pool, 'hard staleness gate' + (src.timeless ? ' (timeless source)' : '')); }
 
@@ -9677,8 +9692,8 @@ async function findRecap(sourceId){
     // (which is the COMMON case for a low-volume team channel, not an edge case). _requireStrictEmpty
     // already exists for exactly this "must stay empty" signal (r151, used by the reject gate below) —
     // it was just never checked here.
-    if (!_onTeam.length && !_requireStrictEmpty && Array.isArray(items)){
-      const _wide = items.filter(x => (_tn.test(x.title) || _namesFavPlayer(x.title)) && !_isAllGamesCompilation(x.title) && _ageH(x) <= 144);   // 6 days
+    if (!_onTeam.length && !_requireStrictEmpty && Array.isArray(_poolPreWindow)){
+      const _wide = _poolPreWindow.filter(x => (_tn.test(x.title) || _namesFavPlayer(x.title)) && !_isAllGamesCompilation(x.title) && _ageH(x) <= 144);   // r616: was `items` (raw, pre-require/pre-reject) — see the r616 note at the WINDOW gate above. 6 days
       if (_wide.length) _onTeam = _wide;
     }
     if (_onTeam.length) pool = _onTeam;
@@ -15930,7 +15945,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r615-standings-wl-gb-gap';
+const BUILD_MARKER = 'r616-widen-respects-require-reject';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
