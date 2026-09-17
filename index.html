@@ -8199,19 +8199,19 @@ const RECAP = {
     'nfl-bills':  { handle:'billsnfl', label:'Bills Recap', teamName:'Bills',
                     query:'Bills highlights', titleHint:/bills/i,
                     require(){ return /(?=.*\bbills\b)(?=.*\b(highlights?|recap|top plays?|best plays?|touchdowns?)\b)/i; },
-                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|one bills live|kickoff live|postgame show/i,
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|one bills live|kickoff live|postgame show/i,
                     windowH: _hoursSinceLastNflWeekStart,
                     glow:'rgba(0,51,141,0.95)', slot:'.mlb-feat-slot.yank' },
     'nfl-jets':   { handle:'jetsnfl', label:'Jets Recap', teamName:'Jets',
                     query:'Jets highlights', titleHint:/jets/i,
                     require(){ return /(?=.*\bjets\b)(?=.*\b(highlights?|recap|top plays?|best plays?|touchdowns?)\b)/i; },
-                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|jets overtime|kickoff live|postgame show/i,
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|jets overtime|kickoff live|postgame show/i,
                     windowH: _hoursSinceLastNflWeekStart,
                     glow:'rgba(18,87,64,0.95)', slot:'.mlb-feat-slot.yank' },
     'nfl-giants': { handle:'giantsnfl', label:'Giants Recap', teamName:'Giants',
                     query:'Giants highlights', titleHint:/giants/i,
                     require(){ return /(?=.*\bgiants\b)(?=.*\b(highlights?|recap|top plays?|best plays?|touchdowns?)\b)/i; },
-                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|kickoff live|postgame show/i,
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|kickoff live|postgame show/i,
                     windowH: _hoursSinceLastNflWeekStart,
                     glow:'rgba(1,35,82,0.95)', slot:'.mlb-feat-slot.yank' },
     // r576: NHL team recaps — Rangers/Islanders (Mike-supplied channel IDs). Nightly
@@ -8223,12 +8223,12 @@ const RECAP = {
     'nhl-rangers':  { handle:'rangersnhl', label:'Rangers Recap', teamName:'Rangers',
                     query:'Rangers highlights', titleHint:/rangers/i,
                     require(){ return /(?=.*\brangers\b)(?=.*\b(highlights?|recap|top plays?|best plays?|goals?)\b)/i; },
-                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech/i,
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth/i,
                     glow:'rgba(0,56,168,0.95)', slot:'.mlb-feat-slot.yank' },
     'nhl-islanders': { handle:'islandersnhl', label:'Islanders Recap', teamName:'Islanders',
                     query:'Islanders highlights', titleHint:/islanders/i,
                     require(){ return /(?=.*\bislanders\b)(?=.*\b(highlights?|recap|top plays?|best plays?|goals?)\b)/i; },
-                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|rookie camp|media availability/i,
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|rookie camp|media availability/i,
                     glow:'rgba(0,83,155,0.95)', slot:'.mlb-feat-slot.yank' },
     // R59: "MLB TOP PLAYS" (relabeled). timeless:true → exempt from the hard date gate
     // (top plays / league-wide recaps / compilations are great filler regardless of age,
@@ -9552,6 +9552,16 @@ async function findRecap(sourceId){
     }
     return false;
   };
+  /* r617 — THE RULE, GENERALIZED. Three separate leaks now (r600, r616, and this one) were all
+     the same shape: a never-empty fallback rebuilding the pool from RAW `items`, which is
+     pre-require, so a source with a strict fn-require ("must look like a highlight") silently
+     served whatever it had just rejected. _requireStrictEmpty only ever covered ONE of the three
+     (require itself matching zero). The actual standing rule is Mike's: for a strict fn-require
+     source, an empty pool YIELDS TO FILLER — no matter which gate emptied it. So flag the source
+     once, here, and let every never-empty fallback below honour it. Loose regex-require sources
+     (mlb-daily/mlb-allgames/etc.) are completely unaffected: _strictRequire is false for them and
+     their "a bad match beats no match" behaviour is untouched. */
+  const _strictRequire = typeof src.require === 'function';
   let _requireStrictEmpty = false;   // r151: a strict fn-require that emptied the pool must STAY empty
   if (src.require){ const _isFn=typeof src.require==='function'; const _rq=_isFn?src.require():src.require;
     // R135: for TEAM sources, admit a clip if it matches the require regex OR names a roster
@@ -9595,7 +9605,7 @@ async function findRecap(sourceId){
     // Fix: the fallback only runs when the pool was non-empty BEFORE reject — i.e.
     // when reject itself did the emptying ("a bad match beat no match" preserved for
     // soft sources). A strict-require empty stays empty → source yields to filler.
-    if (!pool.length && !_requireStrictEmpty){ pool = _rj.length ? _rj : pool;
+    if (!pool.length && !_requireStrictEmpty && !_strictRequire){ pool = _rj.length ? _rj : pool;   // r617: `_rj` is built from RAW items (pre-require) — a strict source must never be refilled from it
       if (_AUD) _AUD.stages.push({ stage:'⚠ REJECT FELL BACK', in:_preRej.length, out:pool.length, killed:[],
         note:'reject would have emptied the pool → never-empty fallback restored rejected clips. A bad match beat no match.' }); }
     else if (!pool.length && _requireStrictEmpty && _AUD)
@@ -15945,7 +15955,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r616-widen-respects-require-reject';
+const BUILD_MARKER = 'r617-strict-require-yields';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
