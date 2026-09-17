@@ -694,12 +694,11 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 /* standings 3-col incl GB; cqw tracks match prod (full 1280 row) */
 .lf-stand3{display:flex;flex-direction:column;gap:0.5cqh;width:100%;flex:1;justify-content:stretch;}
 /* r279: fill the 640px stage, maximize font. rows flex:1 (equal fill), content vertically centered. */
-/*R43*/.lf-stand3-head,.lf-stand3-row{display:grid;grid-template-columns:43cqw 23cqw 25cqw;column-gap:2.5cqw;align-items:center;white-space:nowrap;}   /* r611 (Mike, 9/17): exact values tuned and verified by Mike in the standings studio against the real cq basis on both his work computer and the panel — pasted in verbatim, no changes. */
+/*R43*/.lf-stand3-head,.lf-stand3-row{display:grid;grid-template-columns:1fr 9cqw 6cqw;column-gap:2cqw;align-items:center;white-space:nowrap;}   /* r612: r611's studio-verified 43/23/25cqw was WORSE on the real panel than r610 (GB vanished entirely, header showed bare "W"), despite passing in the studio. That means the studio's "real cq basis" presets (back-solved from one-time console snapshots) don't hold — the container's actual width isn't a fixed per-device constant, it varies with the live page's real layout state, so no single static cqw value verified against a point-in-time measurement can be trusted to generalize. Reverted to r295/r603/r610's original values. Not touching this with another static number — see build.py/CSS discussion with Mike for the real fix (synchronous JS sizing, not cqw guessing). */
 .lf-stand3-head{padding:0 1.2cqh 0.4cqh;font-size:4.2cqh;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.4);flex-shrink:0;}   /* r291: reverted to r288 */
-.lf-stand3-head span:first-child{text-align:left;}   /* r611: studio export */
-/*R48*/.lf-stand3-head span:nth-child(2){text-align:right;letter-spacing:0;padding-right:0;}   /* r611: studio export — head nudge off */
-.lf-stand3-head span:nth-child(3){text-align:right;letter-spacing:0;padding-right:0;}   /* r611: studio export — head nudge off */
-/*R43*/.lf-stand3-row{padding:0 1.2cqh;border-radius:6px;font-size:7cqh;flex:1;min-height:0;}   /* r611: studio export */
+/*R48*/.lf-stand3-head span:nth-child(2){text-align:right;letter-spacing:0;padding-right:0.6cqh;}
+.lf-stand3-head span:nth-child(3){text-align:right;letter-spacing:0;padding-right:0.9cqh;}
+/*R43*/.lf-stand3-row{padding:0 1.2cqh;border-radius:6px;font-size:5cqh;flex:1;min-height:0;}   /* r291: reverted to r288 */
 .lf-stand3-row.me{background:linear-gradient(90deg,var(--me-tint,rgba(52,211,153,0.20)),transparent);border-left:4px solid var(--me-accent,#34d399);}
 .lf-stand3-team{font-weight:700;color:rgba(255,255,255,0.55);display:flex;align-items:center;gap:1.4cqh;min-width:0;overflow:hidden;}   /* r288: contain — truncate long names, don't bleed into W-L */
 .lf-stand3-rank{opacity:0.55;font-size:0.85em;flex-shrink:0;min-width:1.5em;}
@@ -13182,6 +13181,30 @@ function lfStand3Html(divCacheId) {
     }).join('');
 }
 
+function sizeStand3Cols(container){
+  // r613: synchronous, same-frame column sizing — replaces every guessed cqw width from
+  // r604-r612. Static cqw values kept failing because the real container this table renders
+  // in isn't a fixed size per device; a value verified against one snapshot (studio or a
+  // console dump) can't be trusted to hold. This instead reads the REAL width every W-L/GB
+  // value actually needs right now — scrollWidth reports the true content width even while
+  // overflow:hidden is clipping it, so this works correctly even starting from an undersized
+  // track — and sets an exact pixel grid-template-columns on the head AND every row, in the
+  // same task as the innerHTML write, before the browser paints this frame. No
+  // MutationObserver, no debounce, no delayed correction pass — there's nothing async left
+  // that could produce the clip-then-snap flash r606/r607 had to fix.
+  if (!container) return;
+  const recs = container.querySelectorAll('.lf-stand3-rec');
+  const gbs = container.querySelectorAll('.lf-stand3-gb');
+  if (!recs.length || !gbs.length) return;
+  let recMax = 0, gbMax = 0;
+  recs.forEach(el => { recMax = Math.max(recMax, el.scrollWidth); });
+  gbs.forEach(el => { gbMax = Math.max(gbMax, el.scrollWidth); });
+  if (!recMax || !gbMax) return;   // container has no real layout box yet (e.g. 0-width) — leave CSS default, the next paint() call retries
+  const PAD = 4;   // small safety margin against sub-pixel rounding
+  const cols = `1fr ${recMax + PAD}px ${gbMax + PAD}px`;
+  container.querySelectorAll('.lf-stand3-head, .lf-stand3-row').forEach(el => { el.style.gridTemplateColumns = cols; });
+}
+
 // ── 7b: StatsAPI layer for HR/ERA leaders + spotlight players ──
 // Routes JSON through the existing proxyFetch (direct -> CORS-proxy chain) so
 // statsapi.mlb.com works from the browser; headshots load via <img> (no proxy).
@@ -15119,7 +15142,7 @@ function startLfRotation(slotClass, divCacheId, teamMlbId, spotlights) {
     window._lfActiveKey[slotClass] = cur ? { key: _lfSlideKey(cur), type: cur.dataset.slide } : null;   // r531: baked into the next rebuild's markup directly (see renderLastFinalSlot's _lfActive)
     if (cur && cur.dataset.slide === 'stand') {
       const body = cur.querySelector('.lf-stand3');
-      if (body) body.innerHTML = lfStand3Html(cur.dataset.div || divCacheId);   // R12: merged stage carries AL+NL slides
+      if (body) { body.innerHTML = lfStand3Html(cur.dataset.div || divCacheId); sizeStand3Cols(body); }   // R12: merged stage carries AL+NL slides; r613: real-content column sizing, same frame
     }
     if (cur && cur.dataset.slide === 'next') {
       const recEl = cur.querySelector('.lf-next2-rec');
@@ -15904,7 +15927,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r611-standings-studio-verified';
+const BUILD_MARKER = 'r613-standings-sync-autofit';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
