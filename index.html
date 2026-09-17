@@ -704,8 +704,8 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .lf-stand3-rank{opacity:0.55;font-size:0.85em;flex-shrink:0;min-width:1.5em;}
 .lf-stand3-logo{width:7.5cqh;height:7.5cqh;object-fit:contain;flex-shrink:0;}   /* r279 */
 .lf-stand3-row.me .lf-stand3-team{color:#fff;}
-/*R43*/.lf-stand3-rec{color:rgba(255,255,255,0.55);font-weight:800;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;}
-/*R43*/.lf-stand3-gb{color:rgba(255,255,255,0.45);font-weight:800;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;}
+/*R43*/.lf-stand3-rec{color:rgba(255,255,255,0.55);font-weight:800;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;overflow:hidden;min-width:0;}   /* r604: overflow:hidden backstop — see data-fit note below */
+/*R43*/.lf-stand3-gb{color:rgba(255,255,255,0.45);font-weight:800;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;overflow:hidden;min-width:0;}   /* r604 (Mike, 9/17): "NYY/NYM standings are the only thing that renders unfaithfully on my phone" — screenshot shows W-L/GB digits overlapping ("89-63" over strikethrough-looking ghost text). Root cause: these two columns are fixed-width (9cqw/6cqw, R43) with no overflow protection and no shrink-to-fit — sized assuming this file's declared 'Inter' webfont; if Inter fails/hasn't loaded yet on a given device (iOS Safari's font-loading timing is stricter than desktop Chromium) the fallback system font renders these tabular-nums wider, and the text spills into the neighboring grid column with nothing to stop it. Rather than branch on navigator.userAgent (fragile, doesn't generalize, and the panel would still be WRONG on any other browser/font-substitution case with the same root cause), applied the same data-fit/data-fit-min shrink-to-fit safety net (fitText(), see ~line 17786) already used everywhere else in this file for exactly this class of "text might not fit its box" risk — plus overflow:hidden as a hard backstop. No explicit fitText() call needed: the #row-MLB MutationObserver (~line 17867) already re-fits on every DOM change, including this row's own innerHTML refresh (~line 15142).
 .lf-stand3-row.me .lf-stand3-rec,.lf-stand3-row.me .lf-stand3-gb{color:#fff;}
 /* player spotlight */
 .lf-player{display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:1.2cqh;width:100%;flex:1;padding:1.5cqh 0 0.5cqh;}
@@ -2670,6 +2670,33 @@ const APPLE_TV_FRIDAY = {
 // non-national pick for NYY/NYM, not just the empty/generic case. A genuine
 // national deal (FOX/ESPN/TBS/ABC) is filtered out before this runs (see
 // caller) so it always wins over this override.
+// r602 (Mike, 9/17): "NYM next game network showing FOX/FOX ONE. Drop the FOX ONE." —
+// ESPN/MLB can hand back a single broadcast NAME already compounded as "FOX/FOX ONE" (Fox's
+// streaming-simulcast brand riding along with the real channel, not a second broadcaster).
+// Same "drop the streaming-simulcast sibling" policy the golf feed already applies to
+// ESPN/ESPN+ (line ~13767, "per spec") — applied once at the network SOURCE so every
+// downstream consumer (netBug/networkClass/networkLogoSrc/resolveNetwork) sees the clean
+// value, rather than patching every render site that prints a raw network string.
+// r603 (Mike, 9/17): "isn't Peacock sometimes a genuine national carrier?" — yes: unlike FOX
+// ONE (a pure simulcast rebrand of the same FOX broadcast, no independent content), Peacock
+// carries MLB's Sunday-morning exclusive window — a game that airs ONLY on Peacock, nowhere
+// else. A compound "NBC/Peacock" isn't guaranteed to mean "same broadcast, ignore the second
+// half" the way "FOX/FOX ONE" is; it could mean Peacock is the real (exclusive) carrier.
+// Pulled off the auto-drop list rather than guessed at — same caution applies to any other
+// streaming brand that also carries real exclusives (not just simulcasts) if one shows up.
+// Explicit list covers only sibling brands confirmed to be pure simulcast rebrands; the
+// generic "<primary> ONE/+/PLUS" pattern catches the same "<X>/<X>-branded-streaming-app"
+// shape for a network not in that list yet, without guessing at every future rebrand.
+function _dropSimulcastSibling(name){
+  if (!name) return name;
+  const m = String(name).match(/^\s*([^/]+?)\s*\/\s*(.+?)\s*$/);
+  if (!m) return name;
+  const [, primary, sibling] = m;
+  const _s = sibling.trim();
+  const _known = /^(fox one|espn\+)$/i.test(_s);
+  const _generic = new RegExp('^' + primary.trim().replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\s*(one|\\+|plus)$', 'i').test(_s);
+  return (_known || _generic) ? primary.trim() : name;
+}
 function resolveNetwork(network, awayAbbr, homeAbbr, gameDateISO){
   try {
     const dateKey = gameDateISO ? new Date(gameDateISO).toLocaleDateString('en-CA',{timeZone:'America/New_York'}) : null;
@@ -2720,7 +2747,7 @@ async function mlbBroadcastNetwork(gamePk){
       // ABC). Excluding it so this only fires on a genuine national exclusive.
       const b = (g?.broadcasts || []).find(x => x.isNational && x.type === 'TV'
         && !/^mlbn$/i.test(x.callSign||'') && !/^mlb\s*network$/i.test(x.name||''));
-      network = b ? (b.callSign || b.name || null) : null;
+      network = b ? _dropSimulcastSibling(b.callSign || b.name || null) : null;
     }
   } catch(_){}
   _mlbNetworkCache.set(gamePk, network);
@@ -5500,7 +5527,7 @@ function parseEvent(ev, leagueKey) {
   // isn't reliable, and "MLB.TV" is a generic placeholder, not a real
   // broadcaster, so it doesn't count as national for this check.
   const _realNational = broadcasts.find(b => b?.market === 'national' && b.names?.[0] && !/^mlb\.?\s*tv$/i.test(b.names[0].trim()));
-  let network = _realNational?.names?.[0] || broadcasts?.[0]?.names?.[0] || broadcasts?.[0]?.market?.shortName || null;
+  let network = _dropSimulcastSibling(_realNational?.names?.[0] || broadcasts?.[0]?.names?.[0] || broadcasts?.[0]?.market?.shortName || null);
   // ESPN's public scoreboard API doesn't carry Apple TV+ national-exclusive
   // deals at all, and its regional (home/away RSN) entries aren't reliably
   // ordered — YES/SNY are the actual local broadcasters for every
@@ -13169,8 +13196,8 @@ function lfStand3Html(divCacheId) {
       const gb = ((lead.w - t.w) + (t.l - lead.l)) / 2;
       return `<div class="lf-stand3-row${t.abbr===meAbbr?' me':''}">
         <span class="lf-stand3-team">${_standLogosOn?`<img class="lf-stand3-logo" src="${logoUrl('MLB',t.abbr)}" alt="" onerror="this.style.opacity=0">`:''}${t.abbr}</span>
-        <span class="lf-stand3-rec">${t.w}–${t.l}</span>
-        <span class="lf-stand3-gb">${fmtGB(gb)}</span>
+        <span class="lf-stand3-rec" data-fit="5" data-fit-min="3.2">${t.w}–${t.l}</span>
+        <span class="lf-stand3-gb" data-fit="5" data-fit-min="3.2">${fmtGB(gb)}</span>
       </div>`;
     }).join('');
 }
@@ -15352,7 +15379,7 @@ function ensureNextGame(abbr, teamMlbId, g, nextGame, slotClass) {
         { const bc = Array.isArray(upcoming.broadcasts) ? upcoming.broadcasts : [];
           const tv = bc.filter(b => /tv/i.test(b.type || ''));
           const chosen = tv.find(b => b.isNational) || tv.find(b => b.homeAway === (isHome ? 'home' : 'away')) || tv[0];
-          nextNet = chosen ? (chosen.name || chosen.callSign || '') : ''; }
+          nextNet = chosen ? _dropSimulcastSibling(chosen.name || chosen.callSign || '') : ''; }
         _nextGameCache[abbr] = {
           opp: MLB_TEAM_ID_TO_ABBR[oppId] || '',
           side: isHome ? 'vs' : '@',
@@ -15902,7 +15929,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r601-nextgame-pill-full-weekday';
+const BUILD_MARKER = 'r604-standings-cols-shrink-to-fit';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -17079,7 +17106,7 @@ async function fetchNextGame(lg, awayAbbr, homeAbbr) {
         if (abbrs.includes(awayAbbr) && abbrs.includes(homeAbbr)) {
           const broadcasts = ev.competitions?.[0]?.broadcasts || [];
           const _realNational = broadcasts.find(b => b?.market === 'national' && b.names?.[0] && !/^mlb\.?\s*tv$/i.test(b.names[0].trim()));
-          let network = _realNational?.names?.[0] || broadcasts?.[0]?.names?.[0] || null;
+          let network = _dropSimulcastSibling(_realNational?.names?.[0] || broadcasts?.[0]?.names?.[0] || null);
           network = resolveNetwork(network, awayAbbr, homeAbbr, ev.date);
           const gameDate = new Date(ev.date);
           const tomorrow = new Date(now); tomorrow.setDate(now.getDate()+1);
