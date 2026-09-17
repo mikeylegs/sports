@@ -694,11 +694,12 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 /* standings 3-col incl GB; cqw tracks match prod (full 1280 row) */
 .lf-stand3{display:flex;flex-direction:column;gap:0.5cqh;width:100%;flex:1;justify-content:stretch;}
 /* r279: fill the 640px stage, maximize font. rows flex:1 (equal fill), content vertically centered. */
-/*R43*/.lf-stand3-head,.lf-stand3-row{display:grid;grid-template-columns:1fr 48cqw 29cqw;column-gap:2cqw;align-items:center;white-space:nowrap;}   /* r609 (Mike, 9/17): sized directly off two real getBoundingClientRect/scrollWidth dumps Mike pulled from his own work computer AND the physical panel on the CURRENT r603 deploy — not a guess, not a synthetic repro. Work computer: "92–59" needs 113px in a 48.52px (9cqw) box. Panel (the binding constraint — its cq basis resolves smaller than the computer's, even though the two numbers being compared are box-vs-content on the SAME device, not device-vs-device): needs 111px in a 28.56px (9cqw) box → 9*(111/28.56)=34.98cqw just to break even. Same for GB ("10.5"): panel needs 6*(79/19.04)=24.89cqw to break even. Both bumped further (48cqw/29cqw) for margin against a realistic 3-digit win total (e.g. "104–62") neither sample covers. */
+/*R43*/.lf-stand3-head,.lf-stand3-row{display:grid;grid-template-columns:43cqw 23cqw 25cqw;column-gap:2.5cqw;align-items:center;white-space:nowrap;}   /* r611 (Mike, 9/17): exact values tuned and verified by Mike in the standings studio against the real cq basis on both his work computer and the panel — pasted in verbatim, no changes. */
 .lf-stand3-head{padding:0 1.2cqh 0.4cqh;font-size:4.2cqh;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.4);flex-shrink:0;}   /* r291: reverted to r288 */
-/*R48*/.lf-stand3-head span:nth-child(2){text-align:right;letter-spacing:0;padding-right:0.6cqh;}
-.lf-stand3-head span:nth-child(3){text-align:right;letter-spacing:0;padding-right:0.9cqh;}
-/*R43*/.lf-stand3-row{padding:0 1.2cqh;border-radius:6px;font-size:5cqh;flex:1;min-height:0;}   /* r291: reverted to r288 */
+.lf-stand3-head span:first-child{text-align:left;}   /* r611: studio export */
+/*R48*/.lf-stand3-head span:nth-child(2){text-align:right;letter-spacing:0;padding-right:0;}   /* r611: studio export — head nudge off */
+.lf-stand3-head span:nth-child(3){text-align:right;letter-spacing:0;padding-right:0;}   /* r611: studio export — head nudge off */
+/*R43*/.lf-stand3-row{padding:0 1.2cqh;border-radius:6px;font-size:7cqh;flex:1;min-height:0;}   /* r611: studio export */
 .lf-stand3-row.me{background:linear-gradient(90deg,var(--me-tint,rgba(52,211,153,0.20)),transparent);border-left:4px solid var(--me-accent,#34d399);}
 .lf-stand3-team{font-weight:700;color:rgba(255,255,255,0.55);display:flex;align-items:center;gap:1.4cqh;min-width:0;overflow:hidden;}   /* r288: contain — truncate long names, don't bleed into W-L */
 .lf-stand3-rank{opacity:0.55;font-size:0.85em;flex-shrink:0;min-width:1.5em;}
@@ -15903,7 +15904,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r609-standings-measured-both-devices';
+const BUILD_MARKER = 'r611-standings-studio-verified';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
