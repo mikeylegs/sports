@@ -704,8 +704,8 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .lf-stand3-rank{opacity:0.55;font-size:0.85em;flex-shrink:0;min-width:1.5em;}
 .lf-stand3-logo{width:7.5cqh;height:7.5cqh;object-fit:contain;flex-shrink:0;}   /* r279 */
 .lf-stand3-row.me .lf-stand3-team{color:#fff;}
-/*R43*/.lf-stand3-rec{color:rgba(255,255,255,0.55);font-weight:800;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;overflow:hidden;min-width:0;}   /* r604: overflow:hidden backstop — see data-fit note below */
-/*R43*/.lf-stand3-gb{color:rgba(255,255,255,0.45);font-weight:800;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;overflow:hidden;min-width:0;}   /* r604 (Mike, 9/17): "NYY/NYM standings are the only thing that renders unfaithfully on my phone" — screenshot shows W-L/GB digits overlapping ("89-63" over strikethrough-looking ghost text). Root cause: these two columns are fixed-width (9cqw/6cqw, R43) with no overflow protection and no shrink-to-fit — sized assuming this file's declared 'Inter' webfont; if Inter fails/hasn't loaded yet on a given device (iOS Safari's font-loading timing is stricter than desktop Chromium) the fallback system font renders these tabular-nums wider, and the text spills into the neighboring grid column with nothing to stop it. Rather than branch on navigator.userAgent (fragile, doesn't generalize, and the panel would still be WRONG on any other browser/font-substitution case with the same root cause), applied the same data-fit/data-fit-min shrink-to-fit safety net (fitText(), see ~line 17786) already used everywhere else in this file for exactly this class of "text might not fit its box" risk — plus overflow:hidden as a hard backstop. No explicit fitText() call needed: the #row-MLB MutationObserver (~line 17867) already re-fits on every DOM change, including this row's own innerHTML refresh (~line 15142).
+/*R43*/.lf-stand3-rec{color:rgba(255,255,255,0.55);font-weight:800;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;}
+/*R43*/.lf-stand3-gb{color:rgba(255,255,255,0.45);font-weight:800;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;}
 .lf-stand3-row.me .lf-stand3-rec,.lf-stand3-row.me .lf-stand3-gb{color:#fff;}
 /* player spotlight */
 .lf-player{display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:1.2cqh;width:100%;flex:1;padding:1.5cqh 0 0.5cqh;}
@@ -13196,8 +13196,8 @@ function lfStand3Html(divCacheId) {
       const gb = ((lead.w - t.w) + (t.l - lead.l)) / 2;
       return `<div class="lf-stand3-row${t.abbr===meAbbr?' me':''}">
         <span class="lf-stand3-team">${_standLogosOn?`<img class="lf-stand3-logo" src="${logoUrl('MLB',t.abbr)}" alt="" onerror="this.style.opacity=0">`:''}${t.abbr}</span>
-        <span class="lf-stand3-rec" data-fit="5" data-fit-min="3.2">${t.w}–${t.l}</span>
-        <span class="lf-stand3-gb" data-fit="5" data-fit-min="3.2">${fmtGB(gb)}</span>
+        <span class="lf-stand3-rec">${t.w}–${t.l}</span>
+        <span class="lf-stand3-gb">${fmtGB(gb)}</span>
       </div>`;
     }).join('');
 }
@@ -15929,7 +15929,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r604-standings-cols-shrink-to-fit';
+const BUILD_MARKER = 'r605-revert-r604-standings';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
