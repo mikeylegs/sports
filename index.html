@@ -694,7 +694,7 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 /* standings 3-col incl GB; cqw tracks match prod (full 1280 row) */
 .lf-stand3{display:flex;flex-direction:column;gap:0.5cqh;width:100%;flex:1;justify-content:stretch;}
 /* r279: fill the 640px stage, maximize font. rows flex:1 (equal fill), content vertically centered. */
-/*R43*/.lf-stand3-head,.lf-stand3-row{display:grid;grid-template-columns:1fr 17cqw 12cqw;column-gap:2cqw;align-items:center;white-space:nowrap;}   /* r606 (Mike, 9/17): reproduced directly against the shipped lfStand3Html()+CSS in headless Chromium with real September W-L/GB values (88–64/4.5, 82–70/10.5, 76–77/17, 75–78/18) — the W-L box measured 80px while "88–64" needed ~150px (nearly 2x), same story for two-digit/decimal GB. r295's 9cqw/6cqw was sized for whatever record lengths existed at the time and was never revisited as the season produced wider W-L/GB values; not something r601-r605 touched (verified byte-identical against the project's own pre-session reference copy). Doubled roughly to the measured need. */
+/*R43*/.lf-stand3-head,.lf-stand3-row{display:grid;grid-template-columns:1fr 26cqw 18cqw;column-gap:2cqw;align-items:center;white-space:nowrap;}   /* r608 (Mike, 9/17): r606/r607's 17cqw/12cqw was verified against a Playwright repro that blocked all network — meaning the declared Inter webfont never loaded and every measurement was against Chromium's fallback font, not the real one. Mike pulled real getComputedStyle/getBoundingClientRect numbers off the actual live panel: font really was "Inter, sans-serif" but real Inter's tabular digits are WIDER than the fallback — "92–59" measured recScrollW:113 vs recClientW:92 at 17cqw, a real 1.23x deficit. Since these are cqw units, that ratio is container-size-invariant, so it's used directly: 17*1.23≈21, rounded up to 26cqw for margin against a 3-digit record (e.g. "104–62"); gb widened proportionally to 18cqw for margin against decimal GB (e.g. "18.5"), which wasn't in the sampled row but shares the same narrow-column risk. r604-607's mistake was verifying against a font that was never actually loaded — this fix is sized off a real on-panel measurement instead. */
 .lf-stand3-head{padding:0 1.2cqh 0.4cqh;font-size:4.2cqh;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.4);flex-shrink:0;}   /* r291: reverted to r288 */
 /*R48*/.lf-stand3-head span:nth-child(2){text-align:right;letter-spacing:0;padding-right:0.6cqh;}
 .lf-stand3-head span:nth-child(3){text-align:right;letter-spacing:0;padding-right:0.9cqh;}
@@ -15929,7 +15929,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r607-standings-no-async-refit';
+const BUILD_MARKER = 'r608-standings-real-inter-width-fix';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
