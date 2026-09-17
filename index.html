@@ -5481,7 +5481,11 @@ function parseEvent(ev, leagueKey) {
       const timeStr = gameDate.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
       if (gameDate.toDateString()===now.toDateString()) timeLabel=`Tonight · ${timeStr}`;
       else if (gameDate.toDateString()===tomorrow.toDateString()) timeLabel=`Tomorrow · ${timeStr}`;
-      else if (gameDate.toDateString()===dayAfter.toDateString()) timeLabel=`${gameDate.toLocaleDateString('en-US',{weekday:'short'})} · ${timeStr}`;
+      // r601 (Mike, 9/17): this feeds the next-game pill (renderLastFinalSlot → _pillText,
+      // ~line 15628) via yankNext/metNext — the actual path behind the screenshotted "FRI"
+      // pill (2 days out lands here, not the StatsAPI fallback). Spell the day out, matching
+      // the fmtNextGameTimeLabel fallback fix alongside this one.
+      else if (gameDate.toDateString()===dayAfter.toDateString()) timeLabel=`${gameDate.toLocaleDateString('en-US',{weekday:'long'})} · ${timeStr}`;
       else timeLabel=`${gameDate.toLocaleDateString('en-US',{month:'short',day:'numeric'})} · ${timeStr}`;
     } catch { timeLabel=detail; }
     // r152: ...but a postponed game must not advertise its dead first-pitch time.
@@ -15315,7 +15319,12 @@ function fmtNextGameTimeLabel(d) {
   const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   if (d.toDateString() === now.toDateString()) return `Tonight · ${timeStr}`;
   if (d.toDateString() === tomorrow.toDateString()) return `Tomorrow · ${timeStr}`;
-  return `${d.toLocaleDateString('en-US', { weekday: 'short' })} · ${timeStr}`;
+  // r601 (Mike, 9/17): the next-game pill (renderLastFinalSlot's timePillCls/_pillText) reads
+  // this label's day-part and uppercases it for display ("FRI") — spell it out ("FRIDAY") to
+  // match the panel's other weekday labels (r447/L14440 use 'long' for the same reason). The
+  // pill already auto-shrinks via data-fit/data-fit-min (fitText()), so a longer word here is
+  // not a new overflow risk.
+  return `${d.toLocaleDateString('en-US', { weekday: 'long' })} · ${timeStr}`;
 }
 
 function ensureNextGame(abbr, teamMlbId, g, nextGame, slotClass) {
@@ -15893,7 +15902,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r600-team-widen-strict-empty-fix';
+const BUILD_MARKER = 'r601-nextgame-pill-full-weekday';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
