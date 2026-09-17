@@ -694,11 +694,12 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 /* standings 3-col incl GB; cqw tracks match prod (full 1280 row) */
 .lf-stand3{display:flex;flex-direction:column;gap:0.5cqh;width:100%;flex:1;justify-content:stretch;}
 /* r279: fill the 640px stage, maximize font. rows flex:1 (equal fill), content vertically centered. */
-/*R43*/.lf-stand3-head,.lf-stand3-row{display:grid;grid-template-columns:1fr 9cqw 6cqw;column-gap:2cqw;align-items:center;white-space:nowrap;}   /* r612: r611's studio-verified 43/23/25cqw was WORSE on the real panel than r610 (GB vanished entirely, header showed bare "W"), despite passing in the studio. That means the studio's "real cq basis" presets (back-solved from one-time console snapshots) don't hold — the container's actual width isn't a fixed per-device constant, it varies with the live page's real layout state, so no single static cqw value verified against a point-in-time measurement can be trusted to generalize. Reverted to r295/r603/r610's original values. Not touching this with another static number — see build.py/CSS discussion with Mike for the real fix (synchronous JS sizing, not cqw guessing). */
-.lf-stand3-head{padding:0 2.8cqh 0.4cqh 1.2cqh;font-size:4.2cqh;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.4);flex-shrink:0;}   /* r614: right padding bumped 1.2->2.8cqh (asymmetric) to pull W-L/GB left off the edge and reserve breathing room for a 3-digit GB — matches .lf-stand3-row below */
+/*R43*/.lf-stand3-head,.lf-stand3-row{display:grid;grid-template-columns:1fr 9cqw 1.5cqw 6cqw;column-gap:2cqw;align-items:center;white-space:nowrap;}   /* r612: r611's studio-verified 43/23/25cqw was WORSE on the real panel than r610 (GB vanished entirely, header showed bare "W"), despite passing in the studio. That means the studio's "real cq basis" presets (back-solved from one-time console snapshots) don't hold — the container's actual width isn't a fixed per-device constant, it varies with the live page's real layout state, so no single static cqw value verified against a point-in-time measurement can be trusted to generalize. Reverted to r295/r603/r610's original values. Not touching this with another static number — see build.py/CSS discussion with Mike for the real fix (synchronous JS sizing, not cqw guessing). r615: added a 4th spacer column between rec and gb — this is the CSS fallback shown before sizeStand3Cols() runs; the real widths (including the spacer) are set synchronously by JS below. */
+.lf-stand3-gap{width:1px;}   /* r615: empty spacer column between W-L and GB — real width set by sizeStand3Cols(), not this */
+.lf-stand3-head{padding:0 1.2cqh 0.4cqh;font-size:4.2cqh;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.4);flex-shrink:0;}   /* r615: r614 misread the ask — Mike wanted MORE room between W-L and GB specifically, not the whole block pulled off the edge. Reverted to symmetric 1.2cqh padding (GB back near the edge like r613), gap added between rec/gb instead via a dedicated spacer column below. */
 /*R48*/.lf-stand3-head span:nth-child(2){text-align:right;letter-spacing:0;padding-right:0.6cqh;}
-.lf-stand3-head span:nth-child(3){text-align:right;letter-spacing:0;padding-right:0.9cqh;}
-/*R43*/.lf-stand3-row{padding:0 2.8cqh 0 1.2cqh;border-radius:6px;font-size:5cqh;flex:1;min-height:0;}   /* r614: same right-padding bump as the head row (1.2->2.8cqh) — the 1fr team column absorbs the extra room, so rec/gb shift left together with zero effect on their own exact-fit widths */
+.lf-stand3-head span:nth-child(4){text-align:right;letter-spacing:0;padding-right:0.9cqh;}   /* r615: was nth-child(3) — a spacer span is now nth-child(3), GB moved to nth-child(4) */
+/*R43*/.lf-stand3-row{padding:0 1.2cqh;border-radius:6px;font-size:5cqh;flex:1;min-height:0;}   /* r615: reverted to symmetric padding, see head rule above */
 .lf-stand3-row.me{background:linear-gradient(90deg,var(--me-tint,rgba(52,211,153,0.20)),transparent);border-left:4px solid var(--me-accent,#34d399);}
 .lf-stand3-team{font-weight:700;color:rgba(255,255,255,0.55);display:flex;align-items:center;gap:1.4cqh;min-width:0;overflow:hidden;}   /* r288: contain — truncate long names, don't bleed into W-L */
 .lf-stand3-rank{opacity:0.55;font-size:0.85em;flex-shrink:0;min-width:1.5em;}
@@ -13170,12 +13171,13 @@ function lfStand3Html(divCacheId) {
   // for any other division.
   const meAbbr = divCacheId === '5' ? 'NYY' : divCacheId === '24' ? 'NYM' : null;
   const fmtGB = gb => gb === 0 ? '—' : (gb % 1 === 0 ? gb.toFixed(0) : gb.toFixed(1));
-  return `<div class="lf-stand3-head"><span>Team</span><span>W-L</span><span>GB</span></div>` +
+  return `<div class="lf-stand3-head"><span>Team</span><span>W-L</span><span class="lf-stand3-gap"></span><span>GB</span></div>` +
     c.east.map((t, i) => {
       const gb = ((lead.w - t.w) + (t.l - lead.l)) / 2;
       return `<div class="lf-stand3-row${t.abbr===meAbbr?' me':''}">
         <span class="lf-stand3-team">${_standLogosOn?`<img class="lf-stand3-logo" src="${logoUrl('MLB',t.abbr)}" alt="" onerror="this.style.opacity=0">`:''}${t.abbr}</span>
         <span class="lf-stand3-rec">${t.w}–${t.l}</span>
+        <span class="lf-stand3-gap"></span>
         <span class="lf-stand3-gb">${fmtGB(gb)}</span>
       </div>`;
     }).join('');
@@ -13200,8 +13202,9 @@ function sizeStand3Cols(container){
   recs.forEach(el => { recMax = Math.max(recMax, el.scrollWidth); });
   gbs.forEach(el => { gbMax = Math.max(gbMax, el.scrollWidth); });
   if (!recMax || !gbMax) return;   // container has no real layout box yet (e.g. 0-width) — leave CSS default, the next paint() call retries
-  const PAD = 6;   // r614: small safety margin against sub-pixel rounding (was 4)
-  const cols = `1fr ${recMax + PAD}px ${gbMax + PAD}px`;
+  const PAD = 6;   // small safety margin against sub-pixel rounding
+  const GAP_WL_GB = 14;   // r615 (Mike, 9/17): dedicated extra breathing room between W-L and GB specifically — r614 wrongly moved the whole block (including W-L) by padding the row instead; this is a real 4th grid column (.lf-stand3-gap) so team/rec are completely unaffected and only the space between rec and gb grows.
+  const cols = `1fr ${recMax + PAD}px ${GAP_WL_GB}px ${gbMax + PAD}px`;
   container.querySelectorAll('.lf-stand3-head, .lf-stand3-row').forEach(el => { el.style.gridTemplateColumns = cols; });
 }
 
@@ -15927,7 +15930,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r614-standings-right-margin';
+const BUILD_MARKER = 'r615-standings-wl-gb-gap';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
