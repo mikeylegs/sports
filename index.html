@@ -694,7 +694,7 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 /* standings 3-col incl GB; cqw tracks match prod (full 1280 row) */
 .lf-stand3{display:flex;flex-direction:column;gap:0.5cqh;width:100%;flex:1;justify-content:stretch;}
 /* r279: fill the 640px stage, maximize font. rows flex:1 (equal fill), content vertically centered. */
-/*R43*/.lf-stand3-head,.lf-stand3-row{display:grid;grid-template-columns:1fr 9cqw 6cqw;column-gap:2cqw;align-items:center;white-space:nowrap;}   /* r295: numeric cols WIDE ENOUGH for the numbers at the big font (were too narrow → overlap); team abbr is short, fits easily */
+/*R43*/.lf-stand3-head,.lf-stand3-row{display:grid;grid-template-columns:1fr 48cqw 29cqw;column-gap:2cqw;align-items:center;white-space:nowrap;}   /* r609 (Mike, 9/17): sized directly off two real getBoundingClientRect/scrollWidth dumps Mike pulled from his own work computer AND the physical panel on the CURRENT r603 deploy — not a guess, not a synthetic repro. Work computer: "92–59" needs 113px in a 48.52px (9cqw) box. Panel (the binding constraint — its cq basis resolves smaller than the computer's, even though the two numbers being compared are box-vs-content on the SAME device, not device-vs-device): needs 111px in a 28.56px (9cqw) box → 9*(111/28.56)=34.98cqw just to break even. Same for GB ("10.5"): panel needs 6*(79/19.04)=24.89cqw to break even. Both bumped further (48cqw/29cqw) for margin against a realistic 3-digit win total (e.g. "104–62") neither sample covers. */
 .lf-stand3-head{padding:0 1.2cqh 0.4cqh;font-size:4.2cqh;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.4);flex-shrink:0;}   /* r291: reverted to r288 */
 /*R48*/.lf-stand3-head span:nth-child(2){text-align:right;letter-spacing:0;padding-right:0.6cqh;}
 .lf-stand3-head span:nth-child(3){text-align:right;letter-spacing:0;padding-right:0.9cqh;}
@@ -704,8 +704,8 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .lf-stand3-rank{opacity:0.55;font-size:0.85em;flex-shrink:0;min-width:1.5em;}
 .lf-stand3-logo{width:7.5cqh;height:7.5cqh;object-fit:contain;flex-shrink:0;}   /* r279 */
 .lf-stand3-row.me .lf-stand3-team{color:#fff;}
-/*R43*/.lf-stand3-rec{color:rgba(255,255,255,0.55);font-weight:800;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;}
-/*R43*/.lf-stand3-gb{color:rgba(255,255,255,0.45);font-weight:800;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;}
+/*R43*/.lf-stand3-rec{color:rgba(255,255,255,0.55);font-weight:800;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;overflow:hidden;min-width:0;}   /* r609: static safety net only — no data-fit/JS, that's what caused the earlier async snap */
+/*R43*/.lf-stand3-gb{color:rgba(255,255,255,0.45);font-weight:800;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;overflow:hidden;min-width:0;}   /* r609: same */
 .lf-stand3-row.me .lf-stand3-rec,.lf-stand3-row.me .lf-stand3-gb{color:#fff;}
 /* player spotlight */
 .lf-player{display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:1.2cqh;width:100%;flex:1;padding:1.5cqh 0 0.5cqh;}
@@ -15903,7 +15903,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r603-reverted-post-standings-safe';
+const BUILD_MARKER = 'r609-standings-measured-both-devices';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
