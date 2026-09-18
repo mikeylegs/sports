@@ -1,7 +1,17 @@
 {
   "v": 1,
-  "updated": "2026-09-16T12:16:22.282Z",
-  "events": [],
+  "updated": "2026-09-18T01:40:29.805Z",
+  "events": [
+    {
+      "league": "football/nfl",
+      "label": "NFL",
+      "espnId": "401872932",
+      "title": "Detroit Lions @ Buffalo Bills",
+      "showFrom": "20260917",
+      "showUntil": "20260917",
+      "rank": 1
+    }
+  ],
   "watch": {
     "teams": [
       {
@@ -21,13 +31,13 @@
       },
       {
         "league": "football/nfl",
-        "abbr": "BUF",
-        "name": "Buffalo Bills"
+        "abbr": "NYJ",
+        "name": "New York Jets"
       },
       {
         "league": "football/nfl",
-        "abbr": "NYJ",
-        "name": "New York Jets"
+        "abbr": "BUF",
+        "name": "Buffalo Bills"
       },
       {
         "league": "football/nfl",
