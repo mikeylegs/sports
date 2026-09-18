@@ -405,7 +405,7 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .lf-wws-name.w,.lf-wws-score.w{color:#fff;}
 .lf-wws-title{font-size:5cqh;font-weight:800;color:#fff;text-align:center;margin-top:2cqh;padding:0 2cqh;}
 .lf-wws-status{font-size:3.6cqh;font-weight:600;color:rgba(255,255,255,0.55);text-align:center;margin-top:1.6cqh;}
-.lf-wws-live{color:#34d399;font-size:0.85em;margin-left:0.8cqh;}
+.lf-wws-live{display:inline-block;width:1.2cqh;height:1.2cqh;border-radius:50%;background:#34d399;box-shadow:0 0 0.6cqh rgba(52,211,153,0.7);margin-left:0.8cqh;vertical-align:middle;flex-shrink:0;}   /* r619: was the text "LIVE", which had no reserved width and clipped to "LI..." behind the league logo. A fixed-size dot cannot truncate at any header width or league-name length. Static by choice (Mike: "simple green dot"); add `animation:pulse 2s infinite` to match .sb-dot's live grammar if wanted. */
 .wws-full{width:100%;height:100%;}
 .wws-full .lf-slide{padding:0.7cqh 1.5cqh;box-sizing:border-box;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;}
 /*R48*/.wws-full .lf-slide:has(.wws-soc-row){justify-content:flex-start;}
@@ -564,7 +564,7 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .wws-nfl .wws-tm-name{font-size:6.6cqh;}
 .wws-nfl .wws-tm-rec{font-size:5.6cqh;white-space:nowrap;}   /* r443: studio's showRecLive toggle is off, so record is dead CSS live-side (matches r429: pregame-only) — 5.6cqh is the studio's pregame value, the only state this ever renders in. white-space:nowrap preserved from r440. */
 .wws-nfl .wws-tm-side{gap:0.0cqh;flex:0 0 24.5%;width:24.5%;}   /* r448: MLB's proven percentage-lock (r278) — crest column can't be squeezed by a long day-word */
-.wws-nfl .wws-hero{font-size:12.5cqh;}
+.wws-nfl .wws-hero{font-size:11.9cqh;}   /* r620: -5%. Worst case we never tested was a two-digit score on BOTH sides (BUF 20) — 12.5cqh clipped the second digit. Mike's call: 5% is enough. */
 .wws-nfl .lf-wws-status{font-size:7.0cqh;}
 .wws-nfl .wws-sit{font-size:4.2cqh;}
 .wws-nfl .wws-tm-mid{gap:1.4cqh;flex:0 0 52%;width:52%;}   /* r448: matches MLB's mid-column lock */
@@ -1927,7 +1927,7 @@ html.logoscore-v1 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-status{max-width:min(
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
 .sb-txt{font-size:27px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.35);}
 .sb-sep{width:1px;height:18px;background:rgba(255,255,255,0.12);}
-.sb-cd{font-size:19px;font-weight:600;color:rgba(255,255,255,0.25);font-variant-numeric:tabular-nums;}
+.sb-cd{font-size:19px;font-weight:600;color:rgba(255,255,255,0.25);font-variant-numeric:tabular-nums;display:inline-block;min-width:3.2ch;text-align:right;}   /* r619: tabular-nums was already here and is NOT sufficient — it equalizes digit widths, but "60s"->"9s" drops a character, so the box itself shrank and the countdown bar after it jumped. Reserve the widest case ("60s") and right-align, so the trailing "s" and everything downstream stay pinned; only the leading digit's edge moves. */
 .sb-cd-bar{width:52px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;}
 .sb-cd-fill{height:100%;background:#3b82f6;border-radius:1px;transition:width 1s linear;}
 
@@ -14233,7 +14233,7 @@ function wwsBanner(d){
   // (Mike): the logo yields to the title, never the reverse. Guarantees no clip; logo shows when it fits.
   const logo = logoSrc
     ? `<img class="wws-banner-logo" src="${logoSrc}" alt="" onerror="this.style.display='none'">` : '';
-  const liveBadge = (d.live && !(_lg && !_lg.live)) ? ' <span class="lf-wws-live">LIVE</span>' : '';
+  const liveBadge = (d.live && !(_lg && !_lg.live)) ? ' <span class="lf-wws-live" role="img" aria-label="LIVE"></span>' : '';   // r619: dot, not text — see .lf-wws-live
   // r480: tennis-studio.html dialed the banner title/venue bigger than the 3.9/3.6 default —
   // fitText() sets el.style.fontSize straight from data-fit on every render (see fitText()),
   // overriding any CSS font-size rule, so the tennis bump has to land here, not in a CSS block.
@@ -15955,7 +15955,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r618-stand3-observer-resize';
+const BUILD_MARKER = 'r620-nfl-hero-fit';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
