@@ -1,9 +1,91 @@
 {
   "v": 1,
-  "updated": "2026-09-18T18:38:08.748Z",
-  "events": [],
+  "updated": "2026-09-18T18:40:09.976Z",
+  "events": [
+    {
+      "league": "football/nfl",
+      "label": "NFL",
+      "espnId": "401872946",
+      "title": "Pittsburgh Steelers @ New England Patriots",
+      "showFrom": "20260920",
+      "showUntil": "20260920",
+      "rank": 1
+    },
+    {
+      "league": "football/nfl",
+      "label": "NFL",
+      "espnId": "401872936",
+      "title": "Green Bay Packers @ New York Jets",
+      "showFrom": "20260920",
+      "showUntil": "20260920",
+      "rank": 2
+    },
+    {
+      "league": "hockey/nhl",
+      "label": "NHL",
+      "espnId": "401879644",
+      "title": "New York Islanders @ New Jersey Devils",
+      "showFrom": "20260920",
+      "showUntil": "20260920",
+      "rank": 3
+    },
+    {
+      "league": "football/nfl",
+      "label": "NFL",
+      "espnId": "401872947",
+      "title": "New York Giants @ Los Angeles Rams",
+      "showFrom": "20260921",
+      "showUntil": "20260921",
+      "rank": 4
+    },
+    {
+      "league": "hockey/nhl",
+      "label": "NHL",
+      "espnId": "401879450",
+      "title": "Detroit Red Wings @ Columbus Blue Jackets",
+      "showFrom": "20260921",
+      "showUntil": "20260921",
+      "rank": 5
+    }
+  ],
   "watch": {
-    "teams": [],
+    "teams": [
+      {
+        "league": "baseball/mlb",
+        "abbr": "NYY",
+        "name": "New York Yankees"
+      },
+      {
+        "league": "hockey/nhl",
+        "abbr": "NYR",
+        "name": "New York Rangers"
+      },
+      {
+        "league": "basketball/nba",
+        "abbr": "NY",
+        "name": "New York Knicks"
+      },
+      {
+        "league": "football/nfl",
+        "abbr": "NYJ",
+        "name": "New York Jets"
+      },
+      {
+        "league": "football/nfl",
+        "abbr": "BUF",
+        "name": "Buffalo Bills"
+      },
+      {
+        "league": "football/nfl",
+        "abbr": "NYG",
+        "name": "New York Giants"
+      },
+      {
+        "league": "baseball/mlb",
+        "abbr": "NYM",
+        "name": "New York Mets"
+      }
+    ],
     "players": [],
     "crawlLeagues": [
       "MLB",
