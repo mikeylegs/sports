@@ -1,17 +1,7 @@
 {
   "v": 1,
-  "updated": "2026-09-18T01:43:47.574Z",
-  "events": [
-    {
-      "league": "football/nfl",
-      "label": "NFL",
-      "espnId": "401872932",
-      "title": "Detroit Lions @ Buffalo Bills",
-      "showFrom": "20260917",
-      "showUntil": "20260917",
-      "rank": 1
-    }
-  ],
+  "updated": "2026-09-18T18:38:08.748Z",
+  "events": [],
   "watch": {
     "teams": [],
     "players": [],
