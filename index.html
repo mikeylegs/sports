@@ -15955,7 +15955,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r617-strict-require-yields';
+const BUILD_MARKER = 'r618-stand3-observer-resize';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -17874,6 +17874,22 @@ function fitText(scope){
       timeSpan.textContent = time;
       el.replaceWith(wordSpan, timeSpan);
     }
+  });
+
+  /* r618 — STANDINGS RE-SIZE, OBSERVER-BACKED. sizeStand3Cols() (r613) sets inline px
+     grid-template-columns on the head/rows; ANY rebuild of that markup wipes them and the
+     elements fall back to the CSS default (line ~697, 1fr 9cqw 1.5cqw 6cqw) — the old broken
+     view. paint() sizes its own write, but renderLastFinalSlot() emits the same markup as an
+     HTML STRING (~15754) with no sizer call, and the merged NYY/NYM anchor re-renders that
+     constantly (periodic fetch cycle + _anchorSwap outerHTML replacement, see r544) — so the
+     panel renders correctly and then snaps back. Rather than chase each injection site (the
+     bug exists because one was missed), hook the pass that ALREADY runs on every DOM change
+     under #row-MLB: fitText is driven by scheduleFit's MutationObserver (~17893), same
+     precedent as r517's stack-check. Idempotent and cheap by construction — the inline style
+     is the "already sized" marker, so a sized table costs one property read and no layout. */
+  document.querySelectorAll('.lf-stand3').forEach(_st3 => {
+    const _h = _st3.querySelector('.lf-stand3-head');
+    if (_h && !_h.style.gridTemplateColumns) sizeStand3Cols(_st3);
   });
 }
 let _fitTimer = null;
