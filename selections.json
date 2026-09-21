@@ -1,53 +1,7 @@
 {
   "v": 1,
-  "updated": "2026-09-18T18:40:09.976Z",
-  "events": [
-    {
-      "league": "football/nfl",
-      "label": "NFL",
-      "espnId": "401872946",
-      "title": "Pittsburgh Steelers @ New England Patriots",
-      "showFrom": "20260920",
-      "showUntil": "20260920",
-      "rank": 1
-    },
-    {
-      "league": "football/nfl",
-      "label": "NFL",
-      "espnId": "401872936",
-      "title": "Green Bay Packers @ New York Jets",
-      "showFrom": "20260920",
-      "showUntil": "20260920",
-      "rank": 2
-    },
-    {
-      "league": "hockey/nhl",
-      "label": "NHL",
-      "espnId": "401879644",
-      "title": "New York Islanders @ New Jersey Devils",
-      "showFrom": "20260920",
-      "showUntil": "20260920",
-      "rank": 3
-    },
-    {
-      "league": "football/nfl",
-      "label": "NFL",
-      "espnId": "401872947",
-      "title": "New York Giants @ Los Angeles Rams",
-      "showFrom": "20260921",
-      "showUntil": "20260921",
-      "rank": 4
-    },
-    {
-      "league": "hockey/nhl",
-      "label": "NHL",
-      "espnId": "401879450",
-      "title": "Detroit Red Wings @ Columbus Blue Jackets",
-      "showFrom": "20260921",
-      "showUntil": "20260921",
-      "rank": 5
-    }
-  ],
+  "updated": "2026-09-21T11:17:46.541Z",
+  "events": [],
   "watch": {
     "teams": [
       {
