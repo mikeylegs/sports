@@ -9595,6 +9595,11 @@ async function findRecap(sourceId){
      their "a bad match beats no match" behaviour is untouched. */
   const _strictRequire = typeof src.require === 'function';
   let _requireStrictEmpty = false;   // r151: a strict fn-require that emptied the pool must STAY empty
+  // r626: the SPECIFIC gate that emptied the pool, when it's a single clean cause worth
+  // naming plainly (vs. "GATED-EMPTY" generic) -- set at that gate, read at the final
+  // null-return. Mike: a 10-round live probe to discover "the one real match had embedding
+  // disabled by its owner" should have been a one-line log message.
+  let _specificFailReason = null;
   if (src.require){ const _isFn=typeof src.require==='function'; const _rq=_isFn?src.require():src.require;
     // R135: for TEAM sources, admit a clip if it matches the require regex OR names a roster
     // player. Non-team sources (mlb-daily, nyy-win) are unaffected — _namesFavPlayer is false.
@@ -9791,6 +9796,16 @@ async function findRecap(sourceId){
     const _preDead = pool;
     pool = pool.filter(x => !_recapDeadIds.has(x.videoId));
     _aud('DEAD 150/101', _preDead, pool, 'YouTube "embedding disabled by owner" — unplayable, skip not retry');
+    // r626: this specific gate is what emptied the pool -- name it plainly instead of
+    // falling through to a generic GATED-EMPTY. If a later gate empties an already-empty
+    // pool this stays accurate (nothing left to blame on that later gate); if pool was
+    // ALREADY empty before this ran, DEAD isn't the cause, so don't claim it.
+    if (_preDead.length && !pool.length){
+      const _deadTitles = _preDead.filter(x => _recapDeadIds.has(x.videoId)).map(x => x.title).slice(0,2);
+      _specificFailReason = 'DEAD-EMBED (the only real match — "' + _deadTitles.join('", "') +
+        '" — has embedding disabled by its owner, YouTube error 150/101. Not fixable in code; ' +
+        'will self-resolve if a different upload of the same content appears embeddable.)';
+    }
   }
   // ── A1 (r141) + A1b (r143): PORTRAIT GATE — oardefault + seam fallback ──
   // (r141's "6/6 sandbox-proven" claim was field-disproven; see discriminator notes.)
@@ -10166,12 +10181,16 @@ async function findRecap(sourceId){
   if (!window._auditing && pick && pick.videoId) _recapServedAt[pick.videoId] = Date.now();   // R92: stamp at return (cross-source dedup)
   if (!window._auditing && pick) _markServed(_servedKey(pick));   // global recent-served ring
   if (!pick){
-    console.warn('[recap] no video found for', sourceId);
+    console.warn('[recap] no video found for', sourceId, '—', _specificFailReason || '(no single specific cause)');
     // r625: this path returned null without ever setting/clearing _recapFailReason, so a
     // console check right after a live miss could print a STALE reason from an earlier
     // cached-empty call (Mike hit this diagnosing nfl-bills -- looked like the fix hadn't
     // run at all, when actually it had; the log line just lied about why).
-    window._recapFailReason = 'GATED-EMPTY (post-gate: require/reject/window/team all ran, nothing survived)';
+    // r626: prefer the SPECIFIC cause (e.g. DEAD-EMBED) when one gate cleanly emptied the
+    // pool -- that's the actual answer a live probe is trying to find. Generic GATED-EMPTY
+    // is the honest fallback when several gates each killed part of the pool and no single
+    // one is "the" reason.
+    window._recapFailReason = _specificFailReason || 'GATED-EMPTY (post-gate: require/reject/window/team all ran, nothing survived)';
   }
   return pick;
 }
@@ -15994,7 +16013,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r625-broad-search-failreason';
+const BUILD_MARKER = 'r626-specific-dead-embed-reason';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
