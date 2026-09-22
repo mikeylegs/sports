@@ -11952,18 +11952,28 @@ async function resolveVideo(sourceId){
   }
 
   // 2. YouTube — best-effort. The existing director, unchanged, just reached through here.
+  /* r629 (Mike, 9/22): "good only when a legit recap hasn't been cut yet. After it has,
+     there's no need for it, since the recap will almost always contain that one play +
+     the rest of the game's highlights." Generalizes r167 just below (which only killed
+     FULL-GAME-titled clips) to ANY YouTube fallback: by the time we reach this point,
+     _mp4RecapExists=true means leg 1 found a real recap for THIS game but the 12-min
+     MP4-COOLDOWN blocked serving it again (if it weren't in cooldown, leg 1 would already
+     have returned it above) — that's exactly the "Bellinger HR clip repeats 7 of 8 times
+     while the real 'Rodón dominates, Bellinger homers' recap sits in cooldown" complaint.
+     The old code let YouTube fill that cooldown gap with an inferior single-play highlight;
+     now it yields to filler instead, and the real recap reappears once cooldown clears. */
+  if (_mp4RecapExists){
+    window._recapFailReason = 'MP4-RECAP-EXISTS (a real recap was cut for this game — YouTube fallback superseded, r629; will return once its cooldown clears)';
+    return null;
+  }
   const v = await findRecap(sourceId);
   if (!v) return null;
   /* ★ r167 (Mike, 7/20): "never want the full length recap when the shorter one is
-     available." The MP4-COOLDOWN path was serving exactly that — the 3-minute MLB cut
-     plays, and two minutes later the same source falls through to YouTube and serves
-     "METS vs. PHILLIES: Official Full Game Highlights", 11.3 minutes of the same game.
-     Not a scoring bug: that clip won because WINDOW 36h had killed 9 of 10 items and it
-     was the last one standing, already carrying -4 and -6 penalties.
-     When a short MLB cut exists for this game, the long full-game version is never the
-     right answer — yield to filler and let the mp4 come back after its cooldown. Only
-     "Official Full Game Highlights" titles are suppressed; a punchy moment clip from the
-     same game (Chisholm's homer, 5.8m) still plays. */
+     available." Originally caught the case where a short MLB cut exists but is NOT in
+     cooldown-blocked (_mp4RecapExists false at this point would be impossible then — kept
+     here as a defensive backstop only; r629 above already returns before this is reached
+     whenever _mp4RecapExists is true, so this specific check is currently unreachable dead
+     code, left in place rather than deleted in case r629's condition is ever narrowed). */
   if (_mp4RecapExists && /official full game (?:two )?highlights/i.test(v.title || '')){
     window._recapFailReason = 'FULL-GAME SUPPRESSED (short MLB recap exists for this game — r167)';
     return null;
@@ -16023,7 +16033,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r628-nfl-viewcount-order';
+const BUILD_MARKER = 'r629-mp4-recap-supersedes-youtube';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
