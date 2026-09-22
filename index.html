@@ -8197,22 +8197,22 @@ const RECAP = {
     // hoh-nyy/hoh-nym already use. This also solves Islanders dormancy for free: before any
     // real game has been played there ARE no highlight videos to match, so the source stays
     // silent on its own — no separate schedule/preseason check needed.
-    'nfl-bills':  { handle:'billsnfl', label:'Bills Recap', teamName:'Bills', apiDrought:true,
+    'nfl-bills':  { handle:'billsnfl', label:'Bills Recap', teamName:'Bills', apiDrought:true, apiDroughtBroadSearch:true,
                     query:'Bills highlights', titleHint:/bills/i,
                     require(){ return /(?=.*\bbills\b)(?=.*\b(highlights?|recap|top plays?|best plays?|touchdowns?)\b)/i; },
-                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|postgame recap|analysis|🔴|one bills live|kickoff live|postgame show/i,
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|postgame recap|analysis|🔴|(?=(?:.*?#\w+){3,})|one bills live|kickoff live|postgame show/i,
                     windowH: _hoursSinceLastNflWeekStart,
                     glow:'rgba(0,51,141,0.95)', slot:'.mlb-feat-slot.yank' },
-    'nfl-jets':   { handle:'jetsnfl', label:'Jets Recap', teamName:'Jets', apiDrought:true,
+    'nfl-jets':   { handle:'jetsnfl', label:'Jets Recap', teamName:'Jets', apiDrought:true, apiDroughtBroadSearch:true,
                     query:'Jets highlights', titleHint:/jets/i,
                     require(){ return /(?=.*\bjets\b)(?=.*\b(highlights?|recap|top plays?|best plays?|touchdowns?)\b)/i; },
-                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|postgame recap|analysis|🔴|jets overtime|kickoff live|postgame show/i,
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|postgame recap|analysis|🔴|(?=(?:.*?#\w+){3,})|jets overtime|kickoff live|postgame show/i,
                     windowH: _hoursSinceLastNflWeekStart,
                     glow:'rgba(18,87,64,0.95)', slot:'.mlb-feat-slot.yank' },
-    'nfl-giants': { handle:'giantsnfl', label:'Giants Recap', teamName:'Giants', apiDrought:true,
+    'nfl-giants': { handle:'giantsnfl', label:'Giants Recap', teamName:'Giants', apiDrought:true, apiDroughtBroadSearch:true,
                     query:'Giants highlights', titleHint:/giants/i,
                     require(){ return /(?=.*\bgiants\b)(?=.*\b(highlights?|recap|top plays?|best plays?|touchdowns?)\b)/i; },
-                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|postgame recap|analysis|🔴|kickoff live|postgame show/i,
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|postgame recap|analysis|🔴|(?=(?:.*?#\w+){3,})|kickoff live|postgame show/i,
                     windowH: _hoursSinceLastNflWeekStart,
                     glow:'rgba(1,35,82,0.95)', slot:'.mlb-feat-slot.yank' },
     // r576: NHL team recaps — Rangers/Islanders (Mike-supplied channel IDs). Nightly
@@ -8221,15 +8221,15 @@ const RECAP = {
     // see that comment block. For Islanders specifically this is also the dormancy fix:
     // "Rookie Camp | Media Availability" has no "highlights"/"goals"/"recap" in it, so it
     // never matches and the source stays empty until real game highlights exist.
-    'nhl-rangers':  { handle:'rangersnhl', label:'Rangers Recap', teamName:'Rangers', apiDrought:true,
+    'nhl-rangers':  { handle:'rangersnhl', label:'Rangers Recap', teamName:'Rangers', apiDrought:true, apiDroughtBroadSearch:true,
                     query:'Rangers highlights', titleHint:/rangers/i,
                     require(){ return /(?=.*\brangers\b)(?=.*\b(highlights?|recap|top plays?|best plays?|goals?)\b)/i; },
-                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|postgame recap|analysis|🔴/i,
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|postgame recap|analysis|🔴|(?=(?:.*?#\w+){3,})/i,
                     glow:'rgba(0,56,168,0.95)', slot:'.mlb-feat-slot.yank' },
-    'nhl-islanders': { handle:'islandersnhl', label:'Islanders Recap', teamName:'Islanders', apiDrought:true,
+    'nhl-islanders': { handle:'islandersnhl', label:'Islanders Recap', teamName:'Islanders', apiDrought:true, apiDroughtBroadSearch:true,
                     query:'Islanders highlights', titleHint:/islanders/i,
                     require(){ return /(?=.*\bislanders\b)(?=.*\b(highlights?|recap|top plays?|best plays?|goals?)\b)/i; },
-                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|postgame recap|analysis|🔴|rookie camp|media availability/i,
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|postgame recap|analysis|🔴|(?=(?:.*?#\w+){3,})|rookie camp|media availability/i,
                     glow:'rgba(0,83,155,0.95)', slot:'.mlb-feat-slot.yank' },
     // R59: "MLB TOP PLAYS" (relabeled). timeless:true → exempt from the hard date gate
     // (top plays / league-wide recaps / compilations are great filler regardless of age,
@@ -9480,10 +9480,23 @@ async function findRecap(sourceId){
       console.log('[recap] API quota latched (429 cooldown) → skipping API search');
     } else {
       try {
+        // r625: MLB's apiDrought sources (hoh-nyy/hoh-nym) use handle:'MLB' -- a shared
+        // multi-team channel that genuinely posts the target content, just not always
+        // recently, so re-searching that SAME channel with different ordering rescues an
+        // older clip. NFL/NHL team sources (bills/jets/giants/rangers/islanders) use a
+        // SINGLE-TEAM channel as their handle -- if that channel's own uploads didn't have
+        // a real highlight (the drought that triggered this search), searching that exact
+        // same channel again is the same dead well, not a wider net (Mike, live audit:
+        // billsnfl's channel is 100% mic'd-up/shorts, zero real highlights -- searching it
+        // again finds nothing new). Real team highlight packages usually live on the
+        // league's own channel or elsewhere, not the team's channel -- apiDroughtBroadSearch
+        // drops the channelId restriction so the query actually reaches the wider web.
+        const _broadSearch = src.apiDroughtBroadSearch && _drought;
         const d = await ytApi('search', {
-          part:'snippet', ...(channelId ? { channelId } : {}), q, type:'video',
+          part:'snippet', ...((channelId && !_broadSearch) ? { channelId } : {}), q, type:'video',
           order: src.order || 'date', maxResults:'25', videoEmbeddable:'true'
         });
+        if (_AUD && _broadSearch) _AUD.via = (_AUD.via||'') + ' [broad search, no channelId]';
         RECAP_LAST_SEARCH[sourceId] = Date.now();   // R125: quota floor bookkeeping
         const _apiItems = (d.items || [])
           .filter(it => it.id && it.id.videoId)
@@ -10152,7 +10165,14 @@ async function findRecap(sourceId){
   if (!window._auditing) RECAP.videoCache[cacheKey] = { at: Date.now(), video: pick };
   if (!window._auditing && pick && pick.videoId) _recapServedAt[pick.videoId] = Date.now();   // R92: stamp at return (cross-source dedup)
   if (!window._auditing && pick) _markServed(_servedKey(pick));   // global recent-served ring
-  if (!pick) console.warn('[recap] no video found for', sourceId);
+  if (!pick){
+    console.warn('[recap] no video found for', sourceId);
+    // r625: this path returned null without ever setting/clearing _recapFailReason, so a
+    // console check right after a live miss could print a STALE reason from an earlier
+    // cached-empty call (Mike hit this diagnosing nfl-bills -- looked like the fix hadn't
+    // run at all, when actually it had; the log line just lied about why).
+    window._recapFailReason = 'GATED-EMPTY (post-gate: require/reject/window/team all ran, nothing survived)';
+  }
   return pick;
 }
 
@@ -15974,7 +15994,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r623-drought-fixes-nfl-fill';
+const BUILD_MARKER = 'r625-broad-search-failreason';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
