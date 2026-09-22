@@ -8131,13 +8131,8 @@ const RECAP = {
     'NHL':'UCqFMzb-4AUf6WAIbl132QKA',   // r538: Mike-supplied, real channel — the old id (r176) served a stale 2019 archive
     'NBA':'UCWJ2lWNubArHWmf3FIHbfcQ',
     'NFL':'UCDVYQ4Zhbm3S2dlz7P1GBDg', 'pgatour':'UCQl18L5vfX9hCSclV_F6XpQ',
-    // r564 (Mike-supplied, from a live pool-report sample: "Best Plays From Sunday! |
-    // 2026 NFL Season Week 1"): ⚠ differs from 'NFL' above by only a few characters
-    // (UCDVYQ4Zh-b-m3S2dlz7P1GBDg vs UCDVYQ4Zh-bjiuyXsvbnhQwrw) — flagged for Mike to
-    // double-check, not assumed to be the same channel. Wired into nfl-fill per Mike:
-    // "wire this in to NFL fill... will have to check back next week to see if this is
-    // standard style" — treated as a trial swap, easy to revert to 'NFL' if it doesn't pan out.
-    'nflsunday':'UCDVYQ4ZhbjiuyXsvbnhQwrw',
+    // r564's 'nflsunday' trial channel is DEAD — r623: Mike confirmed it merged into the
+    // flagship NFL channel above (same id). nfl-fill reverted to handle:'NFL'; killed here.
     'cbsgolf':'UCyeer4UbTK9pzZL9_hhCimA',
     // A5 (r141, Mike-supplied): The Open coverage. NBC Sports = US network-exclusive
     // broadcaster (primary during THE_OPEN LIVE); The R&A = tournament's own channel
@@ -8202,22 +8197,22 @@ const RECAP = {
     // hoh-nyy/hoh-nym already use. This also solves Islanders dormancy for free: before any
     // real game has been played there ARE no highlight videos to match, so the source stays
     // silent on its own — no separate schedule/preseason check needed.
-    'nfl-bills':  { handle:'billsnfl', label:'Bills Recap', teamName:'Bills',
+    'nfl-bills':  { handle:'billsnfl', label:'Bills Recap', teamName:'Bills', apiDrought:true,
                     query:'Bills highlights', titleHint:/bills/i,
                     require(){ return /(?=.*\bbills\b)(?=.*\b(highlights?|recap|top plays?|best plays?|touchdowns?)\b)/i; },
-                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|one bills live|kickoff live|postgame show/i,
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|postgame recap|analysis|🔴|one bills live|kickoff live|postgame show/i,
                     windowH: _hoursSinceLastNflWeekStart,
                     glow:'rgba(0,51,141,0.95)', slot:'.mlb-feat-slot.yank' },
-    'nfl-jets':   { handle:'jetsnfl', label:'Jets Recap', teamName:'Jets',
+    'nfl-jets':   { handle:'jetsnfl', label:'Jets Recap', teamName:'Jets', apiDrought:true,
                     query:'Jets highlights', titleHint:/jets/i,
                     require(){ return /(?=.*\bjets\b)(?=.*\b(highlights?|recap|top plays?|best plays?|touchdowns?)\b)/i; },
-                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|jets overtime|kickoff live|postgame show/i,
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|postgame recap|analysis|🔴|jets overtime|kickoff live|postgame show/i,
                     windowH: _hoursSinceLastNflWeekStart,
                     glow:'rgba(18,87,64,0.95)', slot:'.mlb-feat-slot.yank' },
-    'nfl-giants': { handle:'giantsnfl', label:'Giants Recap', teamName:'Giants',
+    'nfl-giants': { handle:'giantsnfl', label:'Giants Recap', teamName:'Giants', apiDrought:true,
                     query:'Giants highlights', titleHint:/giants/i,
                     require(){ return /(?=.*\bgiants\b)(?=.*\b(highlights?|recap|top plays?|best plays?|touchdowns?)\b)/i; },
-                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|kickoff live|postgame show/i,
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|postgame recap|analysis|🔴|kickoff live|postgame show/i,
                     windowH: _hoursSinceLastNflWeekStart,
                     glow:'rgba(1,35,82,0.95)', slot:'.mlb-feat-slot.yank' },
     // r576: NHL team recaps — Rangers/Islanders (Mike-supplied channel IDs). Nightly
@@ -8226,15 +8221,15 @@ const RECAP = {
     // see that comment block. For Islanders specifically this is also the dormancy fix:
     // "Rookie Camp | Media Availability" has no "highlights"/"goals"/"recap" in it, so it
     // never matches and the source stays empty until real game highlights exist.
-    'nhl-rangers':  { handle:'rangersnhl', label:'Rangers Recap', teamName:'Rangers',
+    'nhl-rangers':  { handle:'rangersnhl', label:'Rangers Recap', teamName:'Rangers', apiDrought:true,
                     query:'Rangers highlights', titleHint:/rangers/i,
                     require(){ return /(?=.*\brangers\b)(?=.*\b(highlights?|recap|top plays?|best plays?|goals?)\b)/i; },
-                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth/i,
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|postgame recap|analysis|🔴/i,
                     glow:'rgba(0,56,168,0.95)', slot:'.mlb-feat-slot.yank' },
-    'nhl-islanders': { handle:'islandersnhl', label:'Islanders Recap', teamName:'Islanders',
+    'nhl-islanders': { handle:'islandersnhl', label:'Islanders Recap', teamName:'Islanders', apiDrought:true,
                     query:'Islanders highlights', titleHint:/islanders/i,
                     require(){ return /(?=.*\bislanders\b)(?=.*\b(highlights?|recap|top plays?|best plays?|goals?)\b)/i; },
-                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|rookie camp|media availability/i,
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|postgame recap|analysis|🔴|rookie camp|media availability/i,
                     glow:'rgba(0,83,155,0.95)', slot:'.mlb-feat-slot.yank' },
     // R59: "MLB TOP PLAYS" (relabeled). timeless:true → exempt from the hard date gate
     // (top plays / league-wide recaps / compilations are great filler regardless of age,
@@ -8608,7 +8603,7 @@ const RECAP = {
     'nba-fill':   { label:'NBA',       handle:'NBA', query:'nba highlights', priority:3, timeless:true, maxAgeDays:60,
                     require(){ return _leagueInSeason('NBA') ? null : /\bKnicks\b|\bNYK\b/i; },
                     titleHint:/highlight|dunk|top play|recap|best/i, glow:'rgba(200,120,50,0.9)' },
-    'nfl-fill':   { label:'NFL',       handle:'nflsunday', priority:3, timeless:true, maxAgeDays:60,   // r564: trial-swapped from 'NFL' to the new "Best Plays From Sunday" channel, see channelIds note
+    'nfl-fill':   { label:'NFL',       handle:'NFL', priority:3, timeless:true, maxAgeDays:60,   // r623: nflsunday's separate channel died/merged into the flagship NFL channel (Mike-confirmed) -- reverted to 'NFL', same id channelIds.NFL already verifies live
                     query(){ return _leagueInSeason('NFL') ? 'nfl highlights' : null; },   // R93: no favorite NFL team → hard off out of season (null query = source skipped cleanly); still the fallback/API-search query alongside the RSS handle above
                     reject: /Top 100 Players/i,   // r539: nfl-top100 owns the countdown exclusively —
                                                    // without this, nfl-fill's generic query nets the
@@ -9456,9 +9451,27 @@ async function findRecap(sourceId){
   // fires on the days it's actually needed. NOT enabled on the -fb sources: House of
   // Highlights has no baseball, so searching it would burn quota to find nothing.
   let _drought = false;
-  if (src.apiDrought && items && items.length && src.teamName){
-    const _dtn = new RegExp(String(src.teamName).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'i');
-    _drought = !items.some(x => _dtn.test(x.title));
+  if (src.apiDrought && items && items.length){
+    // r623: drought used to mean "no item even mentions the team name" -- fine for
+    // hoh-nyy/hoh-nym (require is JUST the team name, so this test and require() agree).
+    // But nfl-bills/jets/giants and nhl-rangers/islanders run a STRICT fn-require (team name
+    // AND a highlights-shaped word -- r597), against their OWN channel, which mentions the
+    // team constantly (mic'd-up shorts, One Team Live, player-quote clips) without ever being
+    // a real highlight. The old test called that "not a drought" and never reached for the
+    // query search these sources already have configured (query:'<Team> highlights') -- so a
+    // real highlight sitting one search away never got found (Mike, live audit: billsnfl's
+    // last 100 uploads are 0% highlights, 100% shorts/mic'd-up, and require correctly starved
+    // -- but nothing ever supplemented it). Test the REQUIRE gate itself instead of the looser
+    // team-name proxy -- mirrors the exact test the REQUIRE gate below runs (line ~9572),
+    // just early enough to decide whether to supplement with a search.
+    if (src.require){
+      const _isFn = typeof src.require === 'function';
+      const _rq = _isFn ? src.require() : src.require;
+      _drought = _rq ? !items.some(x => _rq.test(x.title)) : false;
+    } else if (src.teamName){
+      const _dtn = new RegExp(String(src.teamName).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'i');
+      _drought = !items.some(x => _dtn.test(x.title));
+    }
   }
   // R63: only hit the API when RSS gave us nothing AND we're not in a quota latch.
   // Prevents the "RSS ok → discard → dead API 429" trap that was failing every tick.
@@ -15961,7 +15974,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r621-highlight-badge';
+const BUILD_MARKER = 'r623-drought-fixes-nfl-fill';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
