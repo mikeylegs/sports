@@ -7872,7 +7872,7 @@ function _leagueInSeason(lg){
   if (lg === 'NFL') return (m >= 9  || m <= 2);
   return true;
 }
-function recapBadgeLabel(sourceId){
+function recapBadgeLabel(sourceId, video){
   const src = RECAP.sources[sourceId];
   const abbr = sourceId === 'hoh-nyy' ? 'NYY' : sourceId === 'hoh-nym' ? 'NYM' : null;
   const g = abbr ? _lfRecapGame[abbr] : null;
@@ -7884,7 +7884,13 @@ function recapBadgeLabel(sourceId){
       const sc = (hs!=null&&as!=null) ? ` ${a} ${as}\u2013${hs} ${h}` : ` ${a} v ${h}`;
       return `${t.d.label} ·${sc} · FT`; } }
   const _lbl = src && (typeof src.label === 'function' ? src.label() : src.label);   // R91: fn-aware (golf day-of-week)
-  const base = (src && src.teamName ? `${src.teamName} Recap` : _lbl || 'Recap');
+  // r621: hoh-nyy/hoh-nym fall through to a generic YouTube search during the gap between
+  // final and the real recap being cut (r572). Mike likes that fresh clip playing there --
+  // it just can't call itself "Recap" when it's really just a highlight. Only the YouTube
+  // leg (video.source==='youtube') gets relabeled; the MLB mp4 exact recap and SNY's
+  // condensed recap keep saying "Recap", correctly.
+  const _isYtFill = abbr && video && video.source === 'youtube';
+  const base = (src && src.teamName ? `${src.teamName} ${_isYtFill ? 'Highlight' : 'Recap'}` : _lbl || 'Recap');
   if (!g) return base;
   const wl = g.won ? 'W' : 'L';
   return `${base}${g.dateStr ? ` · ${g.dateStr}` : ''} · ${wl} ${g.teamScore}\u2013${g.oppScore} ${g.side} ${g.oppAbbr}`;
@@ -7960,7 +7966,7 @@ async function recapBadgeLabelAsync(sourceId, video){
     const final = await _tennisFinalFromTitle(video && video.title);
     if (final) return `${final.winner} def. ${final.loser}, ${final.setLine}`;
   }
-  return recapBadgeLabel(sourceId);
+  return recapBadgeLabel(sourceId, video);
 }
 
 const RECAP_LAST_SEARCH = {};   // R125: sourceId → ts of last API search (quota floor)
@@ -11969,7 +11975,7 @@ async function playRecap(sourceId, opts){
        calls the async version once, bounded by the same fail-fast timeout resolveVideo
        uses so a slow/dead ESPN fetch can never stall the reveal (falls back to the plain
        sync label on timeout, same as any other miss inside recapBadgeLabelAsync). */
-    const badgeLabel = await _withResolveTimeout(recapBadgeLabelAsync(sourceId, video), RECAP_RESOLVE_TIMEOUT_MS, 'badgeLabel:'+sourceId) || recapBadgeLabel(sourceId);
+    const badgeLabel = await _withResolveTimeout(recapBadgeLabelAsync(sourceId, video), RECAP_RESOLVE_TIMEOUT_MS, 'badgeLabel:'+sourceId) || recapBadgeLabel(sourceId, video);
     ytltRecord({ source:sourceId, title:video.title, videoId:video.videoId,
                  bottom:badgeLabel, lengthSec:video.lengthSec||null,
                  published:video.published||null });   // R85 YTLT: log the chosen video
@@ -15955,7 +15961,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r620-nfl-hero-fit';
+const BUILD_MARKER = 'r621-highlight-badge';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
