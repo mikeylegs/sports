@@ -8197,19 +8197,19 @@ const RECAP = {
     // hoh-nyy/hoh-nym already use. This also solves Islanders dormancy for free: before any
     // real game has been played there ARE no highlight videos to match, so the source stays
     // silent on its own — no separate schedule/preseason check needed.
-    'nfl-bills':  { handle:'billsnfl', label:'Bills Recap', teamName:'Bills', apiDrought:true, apiDroughtBroadSearch:true,
+    'nfl-bills':  { handle:'billsnfl', label:'Bills Recap', teamName:'Bills', apiDrought:true, apiDroughtBroadSearch:true, order:'viewCount',
                     query:'Bills highlights', titleHint:/bills/i,
                     require(){ return /(?=.*\bbills\b)(?=.*\b(highlights?|recap|top plays?|best plays?|touchdowns?)\b)/i; },
                     reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|postgame recap|analysis|🔴|(?=(?:.*?#\w+){3,})|one bills live|kickoff live|postgame show/i,
                     windowH: _hoursSinceLastNflWeekStart,
                     glow:'rgba(0,51,141,0.95)', slot:'.mlb-feat-slot.yank' },
-    'nfl-jets':   { handle:'jetsnfl', label:'Jets Recap', teamName:'Jets', apiDrought:true, apiDroughtBroadSearch:true,
+    'nfl-jets':   { handle:'jetsnfl', label:'Jets Recap', teamName:'Jets', apiDrought:true, apiDroughtBroadSearch:true, order:'viewCount',
                     query:'Jets highlights', titleHint:/jets/i,
                     require(){ return /(?=.*\bjets\b)(?=.*\b(highlights?|recap|top plays?|best plays?|touchdowns?)\b)/i; },
                     reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|postgame recap|analysis|🔴|(?=(?:.*?#\w+){3,})|jets overtime|kickoff live|postgame show/i,
                     windowH: _hoursSinceLastNflWeekStart,
                     glow:'rgba(18,87,64,0.95)', slot:'.mlb-feat-slot.yank' },
-    'nfl-giants': { handle:'giantsnfl', label:'Giants Recap', teamName:'Giants', apiDrought:true, apiDroughtBroadSearch:true,
+    'nfl-giants': { handle:'giantsnfl', label:'Giants Recap', teamName:'Giants', apiDrought:true, apiDroughtBroadSearch:true, order:'viewCount',
                     query:'Giants highlights', titleHint:/giants/i,
                     require(){ return /(?=.*\bgiants\b)(?=.*\b(highlights?|recap|top plays?|best plays?|touchdowns?)\b)/i; },
                     reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|postgame recap|analysis|🔴|(?=(?:.*?#\w+){3,})|kickoff live|postgame show/i,
@@ -9834,6 +9834,16 @@ async function findRecap(sourceId){
                                return !c || c.ok !== false; });
     } catch (_) { pool = _preEmb; }
     _aud('EMBEDDABLE', _preEmb, pool, 'uploader forbids embedding (videos.list status.embeddable=false) — would throw player error 150 (r169)');
+    // r626: same specific-reason treatment as the DEAD 150/101 gate -- this is the SAME
+    // underlying story (uploader disabled embedding), just caught earlier via the API's own
+    // status field instead of a runtime player error. Name it plainly instead of falling
+    // through to generic GATED-EMPTY.
+    if (_preEmb.length && !pool.length){
+      const _embTitles = _preEmb.map(x => x.title).slice(0,2);
+      _specificFailReason = 'DEAD-EMBED (the only real match — "' + _embTitles.join('", "') +
+        '" — has embedding disabled by its owner (videos.list status.embeddable=false). Not ' +
+        'fixable in code; will self-resolve if a different upload of the same content appears embeddable.)';
+    }
   }
   // ── r144 TITLE-DATE gate (Mike, 7/18): MLB titles carry literal date stamps
   // ("Top 5 MLB Plays RANKED from 7/16/26!", "ALL GAMES on 7/17"). maxAgeDays keys
@@ -16013,7 +16023,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r626-specific-dead-embed-reason';
+const BUILD_MARKER = 'r628-nfl-viewcount-order';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
