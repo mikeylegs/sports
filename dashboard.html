@@ -5180,6 +5180,74 @@ async function nhlGoalHeroUrl(g){
 }
 window.nhlGoalHeroUrl = nhlGoalHeroUrl;
 
+// r648 -- GWG MONTAGE, part 1: the queue builder. Mirrors MLB's montageBuild() shape (two ET
+// days, one pass building an array of playable moments) so this slots into the same beat/
+// scheduling machinery later -- that's PART 2, not built yet, see the punchlist.
+//
+// nhlGwgPick: PURE. Picks the game-winning goal from a chronological goal list using the
+// standard hockey rule -- GWG is the goal that gives the eventual winner a lead the loser
+// never draws level with again for the rest of the game. Verified against a real completed
+// game (BUF 5, CBJ 1, 2026010024, fetched live 9/23/26): goals scored BUF,BUF,BUF,BUF,BUF,CBJ
+// -- BUF led from goal 1 and never lost it, so the correct GWG is BUF's FIRST goal (J. Norris),
+// not e.g. the last BUF goal before CBJ's -- confirmed by hand against the real scoring log.
+// Skips shootout-decided games entirely (periodType==='SO') -- Mike's call: a shootout winner
+// isn't a counted goal, NHL doesn't credit a real GWG for one, and (checked against a sample
+// game) there's usually no clip for it anyway, so it's not worth a special-cased card.
+function nhlGwgPick(goals, awayAbbr, homeAbbr, periodType){
+  if (periodType === 'SO') return null;
+  if (!goals || !goals.length) return null;
+  const last = goals[goals.length - 1];
+  if (last.awayScore == null || last.homeScore == null) return null;
+  const winner = last.awayScore > last.homeScore ? awayAbbr : (last.homeScore > last.awayScore ? homeAbbr : null);
+  if (!winner) return null;                 // no usable score info -- bail rather than guess
+  let gwgIdx = 0;
+  for (let i = goals.length - 1; i >= 0; i--){
+    const g = goals[i];
+    if (g.awayScore == null || g.homeScore == null) continue;
+    const leader = g.awayScore > g.homeScore ? awayAbbr : (g.homeScore > g.awayScore ? homeAbbr : null);
+    if (leader !== winner){ gwgIdx = i + 1; break; }   // last point the loser was level/ahead
+  }
+  return goals[gwgIdx] || null;
+}
+window.nhlGwgPick = nhlGwgPick;
+
+// nhlGwgMontageBuild(): builds the GWG queue -- one entry per eligible FINAL/OFF game over the
+// last two ET days (same window as MLB's montageBuild). Each queue entry is shaped exactly
+// like nhlLandingGoals' per-goal objects (playerId/fullName/team/strength/goalsToDate/
+// highlightClip) plus gameId/awayAbbr/homeAbbr/season stamped on -- so it drops straight into
+// the EXISTING nhlGoalTakeoverOpts/nhlGoalHeroUrl/nhlGoalClipBadge({montage:true}) pipeline
+// with zero new card code. Dedupes by gameId across the two-day window.
+async function nhlGwgMontageBuild(){
+  const dates = [_montageEtDay(-1), _montageEtDay(0)];
+  const games = [];
+  for (const ds of dates){
+    let sched; try{ sched = JSON.parse(await proxyFetchText('https://api-web.nhle.com/v1/schedule/' + ds)); }catch(_){ continue; }
+    (sched.gameWeek || []).forEach(day => (day.games || []).forEach(g => {
+      const st = g.gameState;
+      const periodType = (g.periodDescriptor && g.periodDescriptor.periodType) || '';
+      // r648: schedule already tells us SO vs REG/OT -- skip the landing fetch entirely for a
+      // shootout-decided game rather than fetching it and throwing the result away in nhlGwgPick.
+      if ((st === 'FINAL' || st === 'OFF') && periodType !== 'SO'){
+        games.push({ id: g.id,
+          awayAbbr: (g.awayTeam && g.awayTeam.abbrev) || '', homeAbbr: (g.homeTeam && g.homeTeam.abbrev) || '',
+          periodType });
+      }
+    }));
+  }
+  const seen = {}, q = [];
+  for (const g of games){
+    if (seen[g.id]) continue; seen[g.id] = 1;
+    let goals; try{ goals = await nhlLandingGoals(g.id); }catch(_){ continue; }
+    if (!goals) continue;
+    const awayAbbr = goals.awayAbbr || g.awayAbbr, homeAbbr = goals.homeAbbr || g.homeAbbr;
+    const gwg = nhlGwgPick(goals, awayAbbr, homeAbbr, g.periodType);
+    if (!gwg) continue;                      // SO-decided, or not enough data to pick one
+    q.push(Object.assign({}, gwg, { gameId: g.id, awayAbbr, homeAbbr, season: goals.season }));
+  }
+  return q;
+}
+window.nhlGwgMontageBuild = nhlGwgMontageBuild;
+
 // r645 -- FLAGSHIP HERO GOAL CARD. Replaces the r641 crest/circle payload: routes through
 // tkoABuild's EXISTING hero-photo branch (o.hero/o.head -- the same one MLB's HR card
 // already uses, zero new CSS) instead of the plain headwrap-circle branch. Values below are
@@ -5206,6 +5274,92 @@ function nhlGoalTakeoverOpts(g, hero){
     sub: name, live: true } };
 }
 window.nhlGoalTakeoverOpts = nhlGoalTakeoverOpts;
+
+// r649 -- GWG MONTAGE, part 2: lightweight beat loop. Deliberately NOT MLB's MONTAGE machinery
+// (seam-release, hrQueue, deferred cards) -- Mike's call: a GWG montage has exactly ONE moment
+// per game (unlike MLB, which can have several HRs queued behind each other in the same game),
+// so there's no queue-behind-a-live-card problem to solve. If something else already owns the
+// wall (a live NHL goal/win splash, or an active clip) when a beat is about to fire, this
+// montage just STOPS -- it does not queue itself behind the interruption or try to resume.
+window.GWG_MONTAGE = { queue: [], i: -1, on: false, builtAt: 0, _cardT: null, _cardIsOurs: false };
+
+// true if something else already owns the takeover card or the clip/recap overlay -- checked
+// at the start of every beat and again right before the clip step, since a live NHL goal card
+// or a real live-clip could grab either lane while our own card is holding on screen.
+function _gwgMontageBusy(){
+  try{
+    if (typeof _recapActive !== 'undefined' && _recapActive) return true;
+    const card = document.getElementById('mlb-takeover');
+    if (card && card.classList.contains('show') && !GWG_MONTAGE._cardIsOurs) return true;
+  }catch(_){}
+  return false;
+}
+
+function _gwgMontageBeat(){
+  if (!GWG_MONTAGE.on) return;
+  GWG_MONTAGE._cardIsOurs = false;
+  if (_gwgMontageBusy()){ console.log('[gwg-montage] wall busy -- stopping'); gwgMontageStop(); return; }
+  GWG_MONTAGE.i++;
+  if (GWG_MONTAGE.i >= GWG_MONTAGE.queue.length){ console.log('[gwg-montage] done'); gwgMontageStop(); return; }
+  const entry = GWG_MONTAGE.queue[GWG_MONTAGE.i];
+  (async () => {
+    let hero = null;
+    try{ hero = await nhlGoalHeroUrl(entry); }catch(_){}
+    if (!GWG_MONTAGE.on) return;               // stopped while the hero-photo probe was in flight
+    if (typeof nhlGoalTakeoverOpts !== 'function' || typeof showTakeover !== 'function') { gwgMontageStop(); return; }
+    const opts = nhlGoalTakeoverOpts(entry, hero);
+    opts.montage = true;                       // full-screen via the EXISTING montage flag -- no new CSS
+    opts.a.live = false;                       // r649: this game is OVER -- no LIVE badge on a montage card
+    GWG_MONTAGE._cardIsOurs = true;
+    showTakeover(opts);
+    const _ms = (typeof TKO_CARD_MS !== 'undefined') ? TKO_CARD_MS : 12000;
+    clearTimeout(GWG_MONTAGE._cardT);
+    GWG_MONTAGE._cardT = setTimeout(() => {
+      if (!GWG_MONTAGE.on) return;
+      if (_gwgMontageBusy()){ console.log('[gwg-montage] wall busy at clip step -- stopping'); gwgMontageStop(); return; }
+      // r649 fix: showTakeover's OWN auto-hide (dashboard.html's tko-out teardown) doesn't
+      // clear the card's classes until TKO_CARD_MS+300ms after it was shown -- calling the
+      // next beat immediately here (exactly at TKO_CARD_MS) caught the outgoing card still
+      // mid-fade and _gwgMontageBusy() read that as "something else has the wall", stopping
+      // the montage every time a GWG had no landed clip yet. 400ms clears that teardown with
+      // margin; the clip-step path never needed this because a real clip runs 30+ seconds,
+      // far longer than the 300ms teardown ever takes.
+      if (!entry.highlightClip){ setTimeout(_gwgMontageBeat, 400); return; }   // no clip landed yet -- skip to next
+      if (typeof RECAP === 'undefined' || typeof playGoalClip !== 'function'){ _gwgMontageBeat(); return; }
+      RECAP._onEnd = () => { RECAP._onEnd = null; _gwgMontageBeat(); };
+      // r649: NHL's landing payload never gives clip duration (confirmed r631/r645 -- same gap
+      // playGoalClip already accepts elsewhere), so this reuses the SAME fixed-length fallback
+      // simGoal's demo already relies on -- not a new limitation this build introduces.
+      playGoalClip({ account: '6415718365001', videoId: String(entry.highlightClip), lengthSec: 30,
+        source: 'nhl-gwg-montage',
+        title: (typeof nhlGoalClipBadge === 'function') ? nhlGoalClipBadge(Object.assign({}, entry, { montage: true })) : '' });
+    }, _ms);
+  })();
+}
+
+function gwgMontageStart(){
+  if (GWG_MONTAGE.on){ console.log('[gwg-montage] already running'); return 'already running'; }
+  if (typeof nhlGwgMontageBuild !== 'function'){ console.log('[gwg-montage] builder not available'); return 'no builder'; }
+  nhlGwgMontageBuild().then(q => {
+    GWG_MONTAGE.queue = q; GWG_MONTAGE.i = -1; GWG_MONTAGE.on = true; GWG_MONTAGE.builtAt = Date.now();
+    console.log('[gwg-montage] built', q.length, 'GWG(s)');
+    if (!q.length){ console.log('[gwg-montage] nothing to show'); GWG_MONTAGE.on = false; return; }
+    _gwgMontageBeat();
+  }).catch(e => { console.log('[gwg-montage] build failed:', e.message); GWG_MONTAGE.on = false; });
+  return 'building';
+}
+window.gwgMontageStart = gwgMontageStart;
+
+function gwgMontageStop(){
+  GWG_MONTAGE.on = false;
+  clearTimeout(GWG_MONTAGE._cardT);
+  try{ if (typeof RECAP !== 'undefined' && RECAP._onEnd) RECAP._onEnd = null; }catch(_){}
+  if (GWG_MONTAGE._cardIsOurs){
+    try{ const card = document.getElementById('mlb-takeover'); if (card) card.classList.remove('show'); }catch(_){}
+    GWG_MONTAGE._cardIsOurs = false;
+  }
+}
+window.gwgMontageStop = gwgMontageStop;
 
 // r641/r645: the real live wire. nhlGoalWatch's detector was already correct and already ran
 // every night (log-only) -- this just points its two callbacks at the real renderers instead
@@ -16864,7 +17018,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r647-name-size-winsplash-gap';
+const BUILD_MARKER = 'r649-gwg-montage-beat-loop';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -19061,7 +19215,10 @@ window.CC = (function(){
    // r632b: reads window._nhlWatchLog and renders the same text nhlWatchReport() would
    // console.log -- but into the CC panel'''s own <pre> output (CC.run'''s existing render
    // path), not the console. No new plumbing: nhlWatchReport() already returns a string.
-   {g:'Sim',n:'nhlreport',t:'action',fn:'nhlWatchReport',d:'NHL goal-watch report (clean, no console scroll)'}
+   {g:'Sim',n:'nhlreport',t:'action',fn:'nhlWatchReport',d:'NHL goal-watch report (clean, no console scroll)'},
+   // r649: same free-wiring pattern as nhlsim above -- CC.run() calls window[fn]() directly.
+   {g:'Sim',n:'gwgmontage',t:'action',fn:'gwgMontageStart',d:'Start GWG montage (last 2 ET days, one card+clip per game)'},
+   {g:'Sim',n:'gwgmontagestop',t:'action',fn:'gwgMontageStop',d:'Stop GWG montage'}
   ];
   var TABS=[['now','Now'],['flags','Flags'],['report','Report'],['tko','Takeover'],
             ['pipeline','Pipeline'],['montage','Montage'],['brain','Brain'],['watch','WWS Sync']];
