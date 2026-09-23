@@ -1421,6 +1421,11 @@ html.nomask #mlb-takeover.tko-full .tkoH-photo{ -webkit-mask:none !important; ma
 #mlb-takeover.tko-win .tkw-scrim{position:absolute;inset:0;z-index:2;
   background:linear-gradient(calc(var(--scrimAngle)*1deg), rgba(5,8,16,0) 0%,
     rgba(5,8,16,var(--scrimStrength)) 58%, rgba(5,8,16,calc(var(--scrimStrength)*1.12)) 100%);}
+/* r645 -- Mike: win splash is missing the colored left-edge band every other card type has
+   (.tkoA-accent, both tkoABuild branches). tkoWinBuild never had one. Same treatment, own
+   class since .tko-win's z-index stack (bg:0, scrim:2, el:4) differs from .tko-wc's -- sits
+   above the scrim (3) so it stays vibrant instead of getting dimmed with the background. */
+#mlb-takeover.tko-win .tkw-accent{position:absolute;left:0;top:0;height:100%;width:1.4cqh;z-index:3;background:rgb(var(--rgb));}
 #mlb-takeover.tko-win .tkw-el{position:absolute;z-index:4;}
 #mlb-takeover.tko-win .tkw-logo{left:calc(var(--logoX)*1%);top:calc(var(--logoY)*1%);
   transform:translate(-50%,-50%);z-index:var(--logoZ);}
@@ -3690,24 +3695,26 @@ window.simNyyWin = simNyyWin;
    proven playable live this session (real HLS manifest observed, real 30s clip).
    Usage: simGoal()  -- or simGoal({team:'FLA', away:'FLA', home:'CAR', aScore:1, hScore:0,
    scorer:'Matthew Tkachuk', videoId:'6405450716112', lengthSec:30}) for the other proven clip. */
+/* r645 -- rebuilt on the flagship HERO card (Mike's studio values, verbatim defaults below:
+   NYI@NYR, Zibanejad SHG #27, his real action-shot URL). Reuses nhlGoalTakeoverOpts -- the
+   EXACT function the real live trigger calls -- instead of a second hand-rolled payload, so
+   sim and live can never drift apart. Synchronous by design: the hero URL is either given or
+   defaults to a known-good literal, so there's nothing to probe here (nhlGoalHeroUrl's async
+   action-shot/headshot fallback is a live-trigger concern, arbitrary real scorers only). */
 function simGoal(opt){
   opt = opt || {};
   const away = opt.away || 'NYI', home = opt.home || 'NYR';
   const team = opt.team || home;                          // scoring team
   const aScore = opt.aScore != null ? opt.aScore : 0;
   const hScore = opt.hScore != null ? opt.hScore : 1;
-  const scorer = opt.scorer || 'Cole Beaudoin';
-  const side = opt.side || 'right';
+  const scorer = opt.scorer || 'Mika Zibanejad';
+  const strength = opt.strength || 'sh';
+  const goalsToDate = opt.goalsToDate != null ? opt.goalsToDate : 27;
+  const hero = opt.hero || 'https://assets.nhle.com/mugs/actionshots/1296x729/8476459.jpg';
   if (typeof showTakeover !== 'function'){ console.log('[simGoal] showTakeover not available'); return 'no showTakeover'; }
-  const rgb = teamGlowRgb('NHL', team);   // r639: was GLOW_TEAM-only -- always navy for NHL
-  const accent = (typeof TEAM_COLORS !== 'undefined' && TEAM_COLORS['NHL:'+team]) || `rgb(${rgb})`;
-  showTakeover({ side, a: {
-    accent, wash: `rgba(${rgb},0.95)`,
-    logo: (typeof logoUrl === 'function') ? logoUrl('NHL', team) : '',
-    kicker: opt.kicker || 'GOAL \u00b7 SIM',
-    headline: `${scorer.toUpperCase()} SCORES`,
-    sub: `${away} ${aScore} \u2013 ${hScore} ${home}`, subIcon: '\ud83c\udfd2',
-    band: { aAbbr:away, aScore, hAbbr:home, hScore, lit: team===home?'h':'a' } } });
+  const g = { team, awayAbbr: away, homeAbbr: home, awayScore: aScore, homeScore: hScore,
+              fullName: scorer, scorer, strength, goalsToDate };
+  showTakeover(nhlGoalTakeoverOpts(g, hero));
   clearTimeout(window._simGoalT);
   const videoId = opt.videoId || '6405449758112';   // real Beaudoin goal, proven playable 9/22/26
   const account = opt.account || '6415718365001';
@@ -3715,7 +3722,8 @@ function simGoal(opt){
   const _ms = (typeof TKO_CARD_MS !== 'undefined') ? TKO_CARD_MS : 12000;
   window._simGoalT = setTimeout(() => {
     try{
-      if (typeof playGoalClip === 'function') playGoalClip({ account, videoId, title: scorer + ' scores', lengthSec, source:'nhl-sim' });
+      if (typeof playGoalClip === 'function') playGoalClip({ account, videoId, lengthSec, source:'nhl-sim',
+        title: nhlGoalClipBadge({ scorer, goalsToDate, team, awayAbbr: away, homeAbbr: home, awayScore: aScore, homeScore: hScore }) });
       else console.log('[simGoal] playGoalClip not available');
     }catch(e){ console.log('[simGoal] playGoalClip failed:', e.message); }
   }, _ms);
@@ -4976,7 +4984,14 @@ async function nhlLandingGoals(gameId){
         // (nhlGoalWatch's clip-lag measurement, the manual latency timer) only read the
         // fields above and are unaffected. Confirmed live on a real goal object 9/23/26.
         strength: g.strength || '', goalsToDate: g.goalsToDate != null ? g.goalsToDate : null,
-        awayScore: g.awayScore != null ? g.awayScore : null, homeScore: g.homeScore != null ? g.homeScore : null
+        awayScore: g.awayScore != null ? g.awayScore : null, homeScore: g.homeScore != null ? g.homeScore : null,
+        // r645: for the hero-photo goal card. playerId drives the action-shot/headshot URLs
+        // (both are real, playerId-keyed NHL CDN paths, confirmed via WebFetch against this
+        // exact game 9/23/26); fullName is firstName+lastName ("Mika Zibanejad"), NOT g.name
+        // .default above which is the abbreviated broadcast form ("M. Zibanejad") -- Mike's
+        // studio headline wants the full name.
+        playerId: g.playerId || null,
+        fullName: ((g.firstName && g.firstName.default) || '') + ' ' + ((g.lastName && g.lastName.default) || '')
       }));
     });
     // r641: game-level abbrevs live at the TOP of the landing payload (awayTeam.abbrev /
@@ -4985,6 +5000,10 @@ async function nhlLandingGoals(gameId){
     // goals.awayAbbr/goals.homeAbbr for the takeover card's score line.
     out.awayAbbr = (j.awayTeam && j.awayTeam.abbrev) || '';
     out.homeAbbr = (j.homeTeam && j.homeTeam.abbrev) || '';
+    // r645: season string ("20262027"), also top-of-payload -- needed to build the guaranteed-
+    // available headshot fallback URL (assets.nhle.com/mugs/nhl/{season}/{team}/{playerId}.png)
+    // when a player has no marketing action shot yet.
+    out.season = j.season || '';
     return out;
   }catch(_){ return null; }
 }
@@ -5055,7 +5074,7 @@ function nhlGoalWatch(gameId, opts){
             // r641: the actual live trigger point -- brand new goal, no prior log, no clip yet
             // on first sight. This IS "caught in the act."
             else {
-              try{ onGoal(Object.assign({}, g, { awayAbbr: goals.awayAbbr, homeAbbr: goals.homeAbbr })); }
+              try{ onGoal(Object.assign({}, g, { awayAbbr: goals.awayAbbr, homeAbbr: goals.homeAbbr, season: goals.season })); }
               catch(e){ console.log('[nhlGoalWatch] onGoal failed:', e.message); }
             }
           }
@@ -5067,7 +5086,12 @@ function nhlGoalWatch(gameId, opts){
           const rec = { gameId, eventId: g.eventId, scorer: g.scorer, team: g.team,
                         period: g.period, timeInPeriod: g.timeInPeriod, firstSeenMs: t.firstSeenMs,
                         clipSeenMs: now, lagS, videoId: String(g.highlightClip), account: '6415718365001',
-                        restartArtifact: isRestartArtifact };
+                        restartArtifact: isRestartArtifact,
+                        // r645: additive -- for the clip badge's siren/score-line text (nhlGoalClipBadge).
+                        // Existing readers (nhlWatchReport, the saved log) only read the fields above.
+                        fullName: g.fullName, goalsToDate: g.goalsToDate,
+                        awayAbbr: goals.awayAbbr, homeAbbr: goals.homeAbbr,
+                        awayScore: g.awayScore, homeScore: g.homeScore };
           window._nhlWatchLog.push(rec); nhlSaveLog();
           onClip(rec);
         }
@@ -5091,43 +5115,115 @@ function nhlGoalKicker(strength){
 }
 window.nhlGoalKicker = nhlGoalKicker;
 
-// r641: pure -- builds the exact showTakeover({side, a:{...}}) payload simGoal() also builds,
-// from a REAL goal record (nhlGoalWatch's onGoal callback) instead of simGoal's hardcoded demo
-// values. Mirrors simGoal's own team-glow/accent derivation verbatim (teamGlowRgb, r639).
-function nhlGoalTakeoverOpts(g){
+// r645: pure -- clip-badge text for the companion overlay (Mike: drop the hockey-stick emoji
+// and the "GOAL"/"SCORES" words, siren instead). Live-clip format includes the score line;
+// the eventual montage badge (no live score context) omits it -- pass {montage:true} for that
+// once montage integration exists. No live/montage caller wired yet either way; this is pure
+// and testable now, wired into playGoalClip's badge below.
+function nhlGoalClipBadge(o){
+  o = o || {};
+  const name = o.scorer || '';
+  const countTxt = o.goalsToDate != null ? ` (${o.goalsToDate})` : '';
+  const base = `🚨 ${name}${countTxt}`;
+  if (o.montage) return base;
+  const scoringAbbr = o.team || '';
+  const oppAbbr = scoringAbbr === o.homeAbbr ? o.awayAbbr : o.homeAbbr;
+  const scoringScore = scoringAbbr === o.homeAbbr ? o.homeScore : o.awayScore;
+  const oppScore = scoringAbbr === o.homeAbbr ? o.awayScore : o.homeScore;
+  if (!scoringAbbr || !oppAbbr || scoringScore == null || oppScore == null) return base;
+  return `${base} - ${scoringAbbr} ${scoringScore} - ${oppAbbr} ${oppScore}`;
+}
+window.nhlGoalClipBadge = nhlGoalClipBadge;
+
+// r645: pure -- "GOAL (27)" / "POWER PLAY GOAL (27)" / "SHORTHANDED GOAL (27)". Mike's rule,
+// verbatim: kicker text + season goal count, no separate line for the count.
+function nhlGoalHeadline(strength, goalsToDate){
+  const kicker = nhlGoalKicker(strength);
+  return goalsToDate != null ? `${kicker} (${goalsToDate})` : kicker;
+}
+window.nhlGoalHeadline = nhlGoalHeadline;
+
+// r645: probes whether an image URL actually loads. Used to fall back from the marketing
+// action-shot (not guaranteed for every player -- rookies/depth guys may not have one yet)
+// to the season headshot (confirmed present on every real goal object pulled 9/23/26).
+// Never rejects -- a probe failure resolves false, it doesn't throw.
+function _imgProbeOk(url){
+  return new Promise((resolve) => {
+    if (!url) { resolve(false); return; }
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = url;
+  });
+}
+window._imgProbeOk = _imgProbeOk;
+
+// r645: resolves the hero photo for a goal record. Real, playerId-keyed NHL CDN paths,
+// both confirmed live via WebFetch against a real game 9/23/26 -- action shot is the
+// preferred "the feature" photo (Mike's studio values were dialed against one); headshot
+// is the guaranteed-available fallback when a player has no action shot yet. Returns null
+// (never throws) if there's not enough data to build either -- caller degrades to no hero.
+async function nhlGoalHeroUrl(g){
+  if (!g.playerId) return null;
+  const action = `https://assets.nhle.com/mugs/actionshots/1296x729/${g.playerId}.jpg`;
+  if (await _imgProbeOk(action)) return action;
+  if (g.season && g.team) return `https://assets.nhle.com/mugs/nhl/${g.season}/${g.team}/${g.playerId}.png`;
+  return null;
+}
+window.nhlGoalHeroUrl = nhlGoalHeroUrl;
+
+// r645 -- FLAGSHIP HERO GOAL CARD. Replaces the r641 crest/circle payload: routes through
+// tkoABuild's EXISTING hero-photo branch (o.hero/o.head -- the same one MLB's HR card
+// already uses, zero new CSS) instead of the plain headwrap-circle branch. Values below are
+// Mike's studio-dialed numbers, verbatim, for the ones that are fixed per his spec (logoX/Y/
+// Size/Glow, focus, duo, txtX/Y) -- only headline/sub/hero/accent/wash/logo/live vary per
+// goal. `hero` is the already-resolved URL from nhlGoalHeroUrl (pass null to fall back to
+// the plain crest layout -- tkoABuild only takes the hero branch when o.hero/o.head is set).
+function nhlGoalTakeoverOpts(g, hero){
   const team = g.team || '', homeAbbr = g.homeAbbr || '', awayAbbr = g.awayAbbr || '';
   const rgb = teamGlowRgb('NHL', team);
+  const [wr, wg, wb] = rgb.split(',').map(Number);
   const accent = (typeof TEAM_COLORS !== 'undefined' && TEAM_COLORS['NHL:'+team]) || `rgb(${rgb})`;
-  const kicker = nhlGoalKicker(g.strength);
-  const countTxt = g.goalsToDate != null ? ` (${g.goalsToDate})` : '';
   const side = team === homeAbbr ? 'right' : 'left';
+  const name = (g.fullName && g.fullName.trim()) || g.scorer || '';
   return { side, a: {
-    accent, wash: `rgba(${rgb},0.95)`,
+    accent, wash_r: wr, wash_g: wg, wash_b: wb,
+    hero: hero || null,
     logo: (typeof logoUrl === 'function') ? logoUrl('NHL', team) : '',
-    kicker,
-    headline: `${(g.scorer||'').toUpperCase()} SCORES${countTxt}`,
-    sub: `${awayAbbr} ${g.awayScore} – ${g.homeScore} ${homeAbbr}`, subIcon: '🏒',
-    band: { aAbbr: awayAbbr, aScore: g.awayScore, hAbbr: homeAbbr, hScore: g.homeScore, lit: team===homeAbbr?'h':'a' } } };
+    logoX: 1, logoY: 1, logoSize: 15.5, logoGlow: 4,
+    focusX: 41, focusY: 13, focusScale: 1.1, duo: 0.05,
+    txtX: 5, txtY: 3,
+    headline: nhlGoalHeadline(g.strength, g.goalsToDate),
+    sub: name, live: true } };
 }
 window.nhlGoalTakeoverOpts = nhlGoalTakeoverOpts;
 
-// r641: the real live wire. nhlGoalWatch's detector was already correct and already ran every
-// night (log-only) -- this just points its two callbacks at the real renderers instead of
-// console.log: onGoal -> showTakeover (the card, the moment the goal is seen), onClip ->
+// r641/r645: the real live wire. nhlGoalWatch's detector was already correct and already ran
+// every night (log-only) -- this just points its two callbacks at the real renderers instead
+// of console.log: onGoal -> showTakeover (the card, the moment the goal is seen), onClip ->
 // playGoalClip (whenever the clip actually lands, however long that takes -- no artificial
 // delay like simGoal's demo timer, since a real clip's lag is exactly what nhlGoalWatch
-// already measures via its own log).
+// already measures via its own log). onGoal is now async (r645) -- it awaits the hero-photo
+// probe before firing; that's milliseconds against the clip's own multi-second real lag.
 function nhlLiveGoalTrigger(gameId, opts){
   opts = opts || {};
   return nhlGoalWatch(gameId, {
     pollMs: opts.pollMs,
-    onGoal: (g) => {
-      if (typeof showTakeover !== 'function'){ console.log('[nhlLiveGoalTrigger] showTakeover not available'); return; }
-      showTakeover(nhlGoalTakeoverOpts(g));
+    onGoal: async (g) => {
+      try{
+        if (typeof showTakeover !== 'function'){ console.log('[nhlLiveGoalTrigger] showTakeover not available'); return; }
+        const hero = await nhlGoalHeroUrl(g);
+        showTakeover(nhlGoalTakeoverOpts(g, hero));
+      }catch(e){ console.log('[nhlLiveGoalTrigger] onGoal failed:', e.message); }
     },
     onClip: (rec) => {
       if (typeof playGoalClip !== 'function'){ console.log('[nhlLiveGoalTrigger] playGoalClip not available'); return; }
-      playGoalClip({ account: rec.account, videoId: rec.videoId, title: rec.scorer + ' scores', source: 'nhl-live' });
+      // r645: badge text now built by nhlGoalClipBadge (siren emoji, no "GOAL"/"SCORES",
+      // scorer + season count + live score line) -- see there for the exact format.
+      const name = (rec.fullName && rec.fullName.trim()) || rec.scorer || '';
+      playGoalClip({ account: rec.account, videoId: rec.videoId, source: 'nhl-live',
+        title: nhlGoalClipBadge({ scorer: name, goalsToDate: rec.goalsToDate, team: rec.team,
+          awayAbbr: rec.awayAbbr, homeAbbr: rec.homeAbbr, awayScore: rec.awayScore, homeScore: rec.homeScore }) });
     }
   });
 }
@@ -7724,7 +7820,7 @@ function tkoWinBuild(o){
     : '';
   const corner = o.corner
     ? `<div class="tkw-el tkw-corner"><div class="tkw-mo">${o.corner}</div></div>` : '';
-  return `<div class="tkw-bg"></div>${crest}<div class="tkw-scrim"></div>
+  return `<div class="tkw-bg"></div><div class="tkw-accent"></div>${crest}<div class="tkw-scrim"></div>
     ${o.kicker ? `<div class="tkw-el tkw-kick"><div class="tkw-mo">${o.kicker}</div></div>` : ''}
     <div class="tkw-el tkw-head"><div class="tkw-mo">${o.headline||''}</div></div>
     ${chips}${corner}
@@ -12157,7 +12253,9 @@ function playGoalClip(clip, callback){
     const badge = el.querySelector('.recap-badge');
     if (badge){
       badge.className = 'recap-badge recap-callback';
-      badge.textContent = '\ud83c\udfd2 GOAL \u2014 ' + String(clip.title||'').toUpperCase();
+      // r645: clip.title is now the fully-built badge text (nhlGoalClipBadge) -- siren emoji,
+      // scorer + season count + live score line, no "GOAL"/"SCORES" -- CSS still uppercases.
+      badge.textContent = String(clip.title||'').toUpperCase();
     }
     const host = document.getElementById('recap-player');
     if (!host){ _recapActive = false; window._recapActiveSince = 0; return; }
@@ -12165,15 +12263,30 @@ function playGoalClip(clip, callback){
       ytltRecord({ source: clip.source||'nhl-goal', title: clip.title||'', videoId: clip.videoId||null,
                    bottom: (badge&&badge.textContent)||'', lengthSec: clip.lengthSec||null });
     }catch(_){}
-    host.querySelectorAll('iframe,video').forEach(n => n.remove());
+    host.querySelectorAll('iframe,video,.recap-goal-catcher').forEach(n => n.remove());
     const muted = (typeof _userMuted !== 'undefined') ? _userMuted : true;
     const account = clip.account || '6415718365001';
     const src = `https://players.brightcove.net/${account}/default_default/index.html?videoId=${clip.videoId}&autoplay=true&muted=${muted}`;
     const f = document.createElement('iframe');
     f.src = src; f.allow = 'autoplay; fullscreen'; f.allowFullscreen = true; f.frameBorder = '0';
-    f.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0;background:#000;';
+    f.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0;background:#000;z-index:1;';
     el.classList.add('show');
     host.appendChild(f);
+    /* r644 -- Mike: "can't mute/unmute by clicking screen" during an NHL clip. Root cause: a
+       cross-origin iframe (Brightcove) swallows every click before it can bubble to document's
+       _audioGesture listener -- confirmed structurally, not guessed (same-origin overlays don't
+       have this problem, which is why the goal/win SPLASH CARDS were never affected, only the
+       clip itself). Fix: a transparent same-origin div on top of the iframe. It does nothing
+       itself -- a plain DOM click bubbles to document exactly like any other element, so the
+       EXISTING toggle path (_audioGesture -> toggleAudio) fires unchanged. toggleAudio() then
+       reloads this iframe's src with the new muted= value (see there) -- the one real
+       limitation, flagged in HANDOFF-r629-r631, is that a cross-origin Brightcove iframe can't
+       have its mute flipped live, so the clip restarts from 0 on toggle. Accepted tradeoff: a
+       working mute beats a decorative one. */
+    const catcher = document.createElement('div');
+    catcher.className = 'recap-goal-catcher';
+    catcher.style.cssText = 'position:absolute;inset:0;z-index:2;background:transparent;';
+    host.appendChild(catcher);
     window._recapGoalFrame = f;
     window._recapNowShowing = {what:'goal', title:(clip.title||'').slice(0,50), source:clip.source||'nhl', videoId:clip.videoId};
     clearTimeout(window._recapGoalRevealT);
@@ -16679,7 +16792,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r643-nhlsim-flag';
+const BUILD_MARKER = 'r645-goal-hero-card';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -18153,6 +18266,18 @@ function toggleAudio(){
   // it live too, so toggling mid-song actually mutes/unmutes instead of only affecting
   // the NEXT play.
   try { if (window._nyyWinAudio) window._nyyWinAudio.muted = _userMuted; } catch(_){}
+  /* r644 -- the NHL goal clip lives in a cross-origin Brightcove iframe (playGoalClip),
+     which has no live .muted property we can reach (HANDOFF-r629-r631's known gap #2).
+     Only real lever is the ?muted= query param, so re-mount with the flipped value --
+     the clip restarts from 0, which is the accepted tradeoff for a working toggle. Guarded
+     on .isConnected so a toggle after the clip's already gone (card cleared) is a no-op. */
+  try {
+    const gf = window._recapGoalFrame;
+    if (gf && gf.isConnected && typeof gf.src === 'string' && /muted=(true|false)/.test(gf.src)){
+      const next = gf.src.replace(/muted=(true|false)/, 'muted=' + _userMuted);
+      if (next !== gf.src) gf.src = next;
+    }
+  } catch(_){}
 }
 /* ★ r210 — THE MUTE FLAP. toggleAudio was bound to EVERY document click, so any stray
    click — a VNC focus tap, an accidental click, interaction during a montage — silently
