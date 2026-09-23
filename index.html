@@ -4878,8 +4878,30 @@ function mlbCompanionWatch(gamePk, sinceMs, onClip, onGiveUp, rec){
    goal's highlightClip is non-null." Said plainly in the log output, not hidden as false
    precision. `eventId` (confirmed present and stable on every goal, verified against the same
    real payload) is the tracking key -- not a period+time+player composite guess. */
-const NHL_WATCH_CFG = { POLL_MS: 4000, TIMEOUT_MS: 300000 };
-window._nhlWatchLog = window._nhlWatchLog || [];
+const NHL_WATCH_CFG = { POLL_MS: 4000, TIMEOUT_MS: 300000, STALE_S: 30 };
+const NHL_LOG_KEY = 'nhlWatchLog_v1';
+// r635: safeguard the capture -- a kiosk reload (deploy, crash, power blip) used to wipe
+// window._nhlWatchLog entirely, losing every real latency measurement gathered so far. Now
+// persisted to localStorage on every write and reloaded here, merge-on-write (per project
+// convention: multi-instance is normal, never blind-overwrite the other side's rows).
+function nhlLoadLog(){
+  try{
+    const raw = localStorage.getItem(NHL_LOG_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  }catch(_){ return []; }
+}
+function nhlSaveLog(){
+  try{ localStorage.setItem(NHL_LOG_KEY, JSON.stringify(window._nhlWatchLog)); }catch(_){}
+}
+function nhlLogFind(gameId, eventId){
+  const rows = window._nhlWatchLog || [];
+  for (let i = 0; i < rows.length; i++){ if (rows[i].gameId === gameId && rows[i].eventId === eventId) return rows[i]; }
+  return null;
+}
+window._nhlWatchLog = window._nhlWatchLog || nhlLoadLog();
+window._nhlWatchStatus = window._nhlWatchStatus || {};   // r635: per-game "is this actually polling" readout
 
 async function nhlLandingGoals(gameId){
   try{
@@ -4914,24 +4936,37 @@ function nhlGoalWatch(gameId, opts){
     if (dead) return;
     const goals = await nhlLandingGoals(gameId);
     const now = Date.now();
+    // r635: status readout so a person can tell this game is actually being polled, not
+    // silently stalled -- independent of whether this particular poll found anything.
+    const st = window._nhlWatchStatus[gameId];
+    if (st){ st.lastPollMs = now; st.pollCount = (st.pollCount || 0) + 1; st.lastOk = goals !== null; }
     if (goals){
       goals.forEach(g => {
         if (g.eventId == null) return;
         let t = tracked.get(g.eventId);
-        if (!t){ t = { firstSeenMs: now, goal: g, resolved: false, gaveUp: false }; tracked.set(g.eventId, t); }
+        if (!t){
+          // r635: a goal that already has a logged outcome (from a PRIOR watch, before a
+          // reload wiped the in-memory tracker) must not be re-recorded as a fresh 0s hit --
+          // that's exactly the false-"0s" artifact seen the first night out. Adopt the
+          // persisted verdict silently instead of re-measuring it.
+          const prior = nhlLogFind(gameId, g.eventId);
+          if (prior){ t = { firstSeenMs: prior.firstSeenMs || now, goal: g, resolved: !prior.gaveUp, gaveUp: !!prior.gaveUp }; }
+          else { t = { firstSeenMs: now, goal: g, resolved: false, gaveUp: false }; }
+          tracked.set(g.eventId, t);
+        }
         if (!t.resolved && g.highlightClip){
           t.resolved = true;
           const lagS = Math.round((now - t.firstSeenMs) / 1000);
           const rec = { gameId, eventId: g.eventId, scorer: g.scorer, team: g.team,
                         period: g.period, timeInPeriod: g.timeInPeriod, firstSeenMs: t.firstSeenMs,
                         clipSeenMs: now, lagS, videoId: String(g.highlightClip), account: '6415718365001' };
-          window._nhlWatchLog.push(rec);
+          window._nhlWatchLog.push(rec); nhlSaveLog();
           onClip(rec);
         } else if (!t.resolved && !t.gaveUp && (now - t.firstSeenMs) > timeoutMs){
           t.gaveUp = true;
           const rec = { gameId, eventId: g.eventId, scorer: g.scorer, team: g.team,
                         period: g.period, timeInPeriod: g.timeInPeriod, waitedS: Math.round((now - t.firstSeenMs) / 1000), gaveUp: true };
-          window._nhlWatchLog.push(rec);
+          window._nhlWatchLog.push(rec); nhlSaveLog();
           onGiveUp(rec);
         }
       });
@@ -4954,6 +4989,10 @@ async function nhlWatchTonight(){
     if (!games.length){ console.log('[nhlWatchTonight] no live/upcoming games right now'); return 'no games'; }
     window._nhlWatchCancels = window._nhlWatchCancels || {};
     games.forEach(g => {
+      window._nhlWatchStatus[g.id] = window._nhlWatchStatus[g.id] || {
+        away: (g.awayTeam&&g.awayTeam.abbrev)||'?', home: (g.homeTeam&&g.homeTeam.abbrev)||'?',
+        gameState: g.gameState, startedMs: Date.now(), lastPollMs: null, pollCount: 0, lastOk: null
+      };
       if (window._nhlWatchCancels[g.id]) return;   // already watching this one
       window._nhlWatchCancels[g.id] = nhlGoalWatch(g.id);
       console.log('[nhlWatchTonight] watching', (g.awayTeam&&g.awayTeam.abbrev), '@', (g.homeTeam&&g.homeTeam.abbrev), 'game', g.id, '(' + g.gameState + ')');
@@ -4965,11 +5004,29 @@ window.nhlWatchTonight = nhlWatchTonight;
 
 /* Readable dump of every measurement recorded so far, across every game watched this session. */
 function nhlWatchReport(){
+  const lines = [];
+  // r635: status block first -- proves the watch is actually alive (or shows it's gone
+  // stale/died) independent of whether any goal has happened yet.
+  const statusGames = Object.keys(window._nhlWatchStatus || {});
+  if (statusGames.length){
+    lines.push('WATCHING:');
+    statusGames.forEach(gid => {
+      const s = window._nhlWatchStatus[gid];
+      const stillRunning = !!(window._nhlWatchCancels && window._nhlWatchCancels[gid]);
+      const agoS = s.lastPollMs ? Math.round((Date.now() - s.lastPollMs)/1000) : null;
+      const flag = !stillRunning ? ' [STOPPED]' : (agoS === null ? ' [no poll yet]' : (agoS > NHL_WATCH_CFG.STALE_S ? ' [STALE]' : ''));
+      lines.push('  ' + s.away + ' @ ' + s.home + '  ' + gid + '  (' + s.gameState + ')  '
+        + s.pollCount + ' poll(s)  last ' + (agoS === null ? 'never' : agoS + 's ago') + flag);
+    });
+    lines.push('');
+  } else {
+    lines.push('WATCHING: nothing -- call nhlWatchTonight() first', '');
+  }
   const rows = window._nhlWatchLog || [];
-  if (!rows.length){ console.log('[nhlWatchReport] no goals measured yet'); return 'empty'; }
-  const lines = rows.map(r => r.gaveUp
+  if (!rows.length){ lines.push('(no goals measured yet)'); const out = lines.join('\n'); console.log(out); return out; }
+  lines.push.apply(lines, rows.map(r => r.gaveUp
     ? ('GAVE UP  ' + (r.team||'?') + ' ' + (r.scorer||'?') + ' P' + r.period + ' ' + r.timeInPeriod + ' -- no clip in ' + r.waitedS + 's')
-    : ('CLIP IN ' + String(r.lagS).padStart(4) + 's  ' + (r.team||'?') + ' ' + (r.scorer||'?') + ' P' + r.period + ' ' + r.timeInPeriod + ' -- videoId ' + r.videoId));
+    : ('CLIP IN ' + String(r.lagS).padStart(4) + 's  ' + (r.team||'?') + ' ' + (r.scorer||'?') + ' P' + r.period + ' ' + r.timeInPeriod + ' -- videoId ' + r.videoId)));
   const withLag = rows.filter(r => !r.gaveUp);
   if (withLag.length){
     const lags = withLag.map(r => r.lagS);
@@ -16298,7 +16355,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r634-cc-action-output-fix';
+const BUILD_MARKER = 'r635-nhl-watch-persist-status';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
