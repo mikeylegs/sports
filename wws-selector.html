@@ -8,10 +8,6 @@
   :root{--bg:#0b0f1a;--panel:#121a2b;--line:#22304c;--ink:#e7ecf5;--mut:#8da0c0;--acc:#34d399;--warn:#fbbf24}
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,Inter,system-ui,Arial,sans-serif}
-  /* selector-r163: 860 → 1180. Mike: "can you widen this window so we don't get scroll bars in
-     both directions?" The followed-teams grid is auto-fill minmax(150px,1fr), so extra width buys
-     more COLUMNS, which shortens the list and cuts the vertical scroll too. Phones are unaffected
-     (they were never near 860 and the padding still applies). */
   .wrap{max-width:1180px;margin:0 auto;padding:16px 14px 80px}
   h1{font-size:19px;margin:0 0 2px}
   .sub{color:var(--mut);font-size:12.5px;margin:0 0 12px}
@@ -21,18 +17,10 @@
   button:disabled{opacity:.4;cursor:default}
   .day{margin:18px 0 6px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--acc);font-weight:800}
   .lg{margin:10px 0 4px;font-size:12.5px;font-weight:800;color:var(--mut)}
-  /* selector-r163: Mike — "maybe a persistent header so I know which league I'm looking at
-     halfway through the scroll?" #teamgrid is the scroll container, so sticky pins to ITS top.
-     Opaque panel background + a hairline so rows pass cleanly underneath. Scoped to #teamgrid so
-     the events list (which scrolls with the PAGE, not in a box) is untouched. */
   #teamgrid .lgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:5px}
   #teamgrid .lg{position:sticky;top:0;z-index:3;background:var(--panel);display:flex;
     align-items:center;gap:8px;margin:0;padding:7px 4px;border-bottom:1px solid var(--line)}
   #teamgrid .lgsec{margin:0 0 10px}
-  /* selector-r163: .day (★ Following / All teams) deliberately NOT sticky. Both pinned at top:0
-     means the day header simply covers the league header mid-scroll — the opposite of the ask
-     ("so I know which league I'm looking at halfway through the scroll"). One sticky layer, and
-     it's the league. */
   #teamgrid .day{padding:6px 4px}
   .ev{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px;margin:5px 0}
   .ev input[type=checkbox]{width:19px;height:19px;accent-color:var(--acc);flex-shrink:0}
@@ -41,9 +29,6 @@
   .ev .d{font-size:12px;color:var(--mut)}
   .ev select{padding:6px 8px;font-size:12px}
   .ev.on{border-color:var(--acc)}
-  /* selector-r173: ★ TEAMS + ★ PLAYERS merged into one ★ FOLLOWING panel, each a collapsible
-     sub-pane — fixes the wrong-panel mixup Mike hit looking for the golf grid (two adjacent,
-     similarly-styled buttons). Studio-proven first (following-merge-studio.html) before this. */
   .subpane{border:1px solid var(--line);border-radius:8px;margin-bottom:10px;overflow:hidden}
   .subpane:last-child{margin-bottom:0}
   .subhd{display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;user-select:none;background:#0d1626;font-weight:700;font-size:13px}
@@ -65,7 +50,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Wide World of Sports — Day Selector <span style="font-size:12px;font-weight:400;opacity:.5;font-family:monospace">selector-r188</span></h1>
+  <h1>Wide World of Sports — Day Selector <span style="font-size:12px;font-weight:400;opacity:.5;font-family:monospace">selector-r189</span></h1>
   <p class="sub">Pick today's / this weekend's events for the panel. Output is <code>selections.json</code> — commit it to the repo root and the dashboard (phase 2) picks it up on its next poll.</p>
   <div class="bar">
     <select id="range">
@@ -75,44 +60,20 @@
     </select>
     <button class="primary" onclick="scan()">SCAN EVENTS</button>
     <button onclick="showOut()">REVIEW / EXPORT (<span id="cnt">0</span>)</button>
-    <!-- selector-r173: ★ FOLLOWING now covers BOTH teams and players — was two adjacent, visually
-         similar buttons (★ FOLLOWING / ★ PLAYERS) that Mike genuinely mixed up looking for the
-         golf grid. One button, badge = combined count; TEAMS/PLAYERS are collapsible sub-panes
-         inside (see #following below). Was selector-r167 (teams-only rename) + r172 (players). -->
     <button id="followBtn" onclick="toggleFollowing()">★ FOLLOWING (<span id="cntFollow">0</span>)</button>
-    <!-- selector-r174: Mike — "can the Selected tab turn green when chosen" — lights up green
-         whenever sel.size>0, independent of panel open/closed (different pattern than
-         ★ FOLLOWING's open-state highlight — this one signals "you have picks", not "panel is
-         open"). Synced from the same choke points as the r173 combined badge (count()/updCounts). -->
     <button id="selBtn" onclick="toggleSelected()">✓ SELECTED (<span id="cntSel">0</span>)</button>
   </div>
   <div style="position:relative;margin:0 0 4px">
-    <!-- selector-r165: the browser's own form-history dropdown was covering the results the
-         search is supposed to reveal (Mike: typing "H" popped a saved "hockey goal horn" over the
-         first fixture). autocomplete="off" suppresses saved-value suggestions on a text input —
-         Chrome only overrides "off" for credential/address autofill, which these aren't. The other
-         three are the same class of unwanted help: no auto-capitalising a team abbr, no red squiggle
-         under "Ipswich", no iOS autocorrect rewriting a player's name mid-type. -->
     <input id="q" placeholder="Search events (team, player, tournament)…" oninput="filterList()"
       autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
       style="width:100%;background:#05070d;color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:10px 46px 10px 12px;font:14px inherit">
-    <!-- selector-r160: X-clear, same pattern as the team filter's #tqClear (r461) -->
-    <!-- selector-r161: r160's × was a muted glyph on a transparent background at the box edge and
-         Mike couldn't see it at all on a phone. Now a filled circular button with real contrast and
-         a 30px tap target — visible first, tappable second, decorative never. -->
     <button id="qClear" onclick="clearEventFilter()" title="Clear search" aria-label="Clear search"
       style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);
              width:30px;height:30px;padding:0;border:none;border-radius:50%;
              background:rgba(255,255,255,0.14);color:#fff;font-size:19px;line-height:1;
              align-items:center;justify-content:center;cursor:pointer">×</button>
   </div>
-  <!-- selector-r158: says WHY a player query matched, so "messi" surfacing Genoa is explicable
-       (Junior Messias) rather than looking like a bug. Empty/hidden unless a player hit lands. -->
   <div id="qhint" style="display:none;margin:0 0 10px;font-size:12px;color:var(--acc)"></div>
-  <!-- r585: footer-crawl per-league visibility — always visible, not a collapsible panel like
-       ★ FOLLOWING (there's nothing to load/fetch here, just 4 checkboxes). Separate from lgOn's
-       event-scan chips above; see CRAWL_LEAGUES/drawCrawlChips for why they're deliberately not
-       the same toggle. -->
   <div style="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 12px">
     <div style="font-weight:800;margin-bottom:6px;font-size:13px">Footer Crawl <span class="d" style="font-weight:400">— which leagues' scores scroll in the dashboard's bottom ticker (fetched regardless; this only filters what's shown)</span></div>
     <div id="crawlchips" style="display:flex;flex-wrap:wrap;gap:6px"></div>
@@ -120,73 +81,34 @@
   <div id="following" style="display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin:0 0 12px">
     <div style="font-weight:800;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
       <span>★ Following <span class="d" style="font-weight:400">— shown in Wide World of Sports whenever they play, no re-scan needed</span></span>
-      <!-- selector-r168: catalog.yml/catalog.py died to an Akamai edge block on GitHub's
-           hosted-runner IPs (site.api.espn.com 403'd every roster/injuries call; browser
-           requests never hit that block all session). This runs the SAME harvest client-side,
-           in a real browser, and commits straight to team-catalog.json via the Contents API —
-           same auth pattern PUBLISH TO PANEL already uses. One click, no Claude round trip,
-           no server-side runner to keep alive. -->
       <button id="catRefreshBtn" onclick="refreshCatalog()" style="font-size:11px;padding:5px 10px;white-space:nowrap">🔄 Refresh Catalog</button>
     </div>
     <div id="catRefreshStatus" style="display:none;margin:0 0 8px;font-size:11px;color:var(--acc)"></div>
 
     <div class="subpane">
-      <!-- selector-r181: Mike — both TEAMS and PLAYERS should start collapsed. PLAYERS already
-           did (subhd-players has no "open" class, sub-players already has `hidden`); TEAMS was
-           the one left open by default — matching its markup to PLAYERS' is the whole fix. -->
       <div class="subhd" id="subhd-teams" onclick="toggleSub('teams')">
         <span class="chev">▶</span> TEAMS <span class="cnt" id="cntStar">0</span>
       </div>
       <div class="subbody" id="sub-teams" hidden>
         <div style="position:relative;margin:0 0 8px">
-          <!-- selector-r165: same suppression as #q above. -->
           <input id="tq" placeholder="Filter by team or player…" oninput="drawTeams()"
             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
             style="width:100%;background:#05070d;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 40px 8px 10px;font:13px inherit">
-          <!-- selector-r164: standardized on #qClear's treatment (Mike: "can we standardize these two
-               X's"). Same filled circle, same contrast, same glyph — only the diameter differs, scaled
-               to this box's smaller 13px/8px-padded input so the button doesn't crowd its own field.
-               display MUST be 'flex' (not 'block') for the centering to hold; drawTeams sets it. -->
           <button id="tqClear" onclick="clearTeamFilter()" title="Clear filter" aria-label="Clear filter"
             style="display:none;position:absolute;right:6px;top:50%;transform:translateY(-50%);
                    width:26px;height:26px;padding:0;border:none;border-radius:50%;
                    background:rgba(255,255,255,0.14);color:#fff;font-size:17px;line-height:1;
                    align-items:center;justify-content:center;cursor:pointer">×</button>
         </div>
-        <!-- selector-r163: overflow-x hidden (never a horizontal bar — the grid reflows instead),
-             overflow-y auto only. Height raised now that a wider window fits more columns per row.
-             scrollbar-gutter:stable is load-bearing, not polish: MEASURED at 900px the grid still
-             overflowed by 11px — auto-fill sizes its tracks BEFORE the vertical scrollbar appears,
-             then the scrollbar eats ~11px and the last column no longer fits. overflow-x:hidden was
-             merely CLIPPING that, silently cutting each card's right edge. Reserving the gutter up
-             front makes the track maths correct instead of hiding the symptom. -->
         <div id="teamgrid" style="max-height:380px;overflow-x:hidden;overflow-y:auto;scrollbar-gutter:stable"></div>
       </div>
     </div>
 
-    <!-- selector-r172: ★ Follow Players. Tennis stays free-text-and-ADD (ESPN gives no fixed
-         player list there — draws change weekly, nothing stable to seed a browsable grid from).
-         Golf gets the SAME treatment as the TEAMS grid above — scrollable/searchable checkbox
-         list, sourced from golf-catalog.json (static PGA TOUR roster Mike supplied 9/4, same
-         reasoning as team-catalog.json). r171 first tried a free-text input with a browser
-         <datalist> autocomplete for golf — wrong interaction model — replaced outright with this
-         grid rather than kept alongside it. r173: moved into its own collapsible sub-pane inside
-         the merged ★ FOLLOWING panel. -->
     <div class="subpane">
       <div class="subhd" id="subhd-players" onclick="toggleSub('players')">
         <span class="chev">▶</span> PLAYERS <span class="cnt" id="cntPlayers">0</span>
       </div>
       <div class="subbody" id="sub-players" hidden>
-        <!-- selector-r175: Mike — "wire up all tennis players so they can be followed", after
-             a manually-typed name silently missed a real match (root cause: never PUBLISHED to
-             selections.json, not a matching bug — see HANDOFF). Tennis has no fixed roster like
-             golf's catalog (draws change weekly), so instead of a static file this fetches the
-             ACTUAL current ATP+WTA field (today+2 days, unfiltered — majors-only is a separate,
-             deliberate curation choice for the events-tab BROWSE list, not for something you
-             specifically followed) and renders it as the same checkbox-grid UX as golf. Free-text
-             ADD is kept as the fallback for someone not yet in a published draw (e.g. next week's
-             event hasn't posted a bracket yet) — checking a grid box and typing a name both write
-             into the same `players` Map/key, so either path is followed identically. -->
         <div style="font-weight:800;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
           <span style="font-weight:700;font-size:12px;opacity:.8">TENNIS <span class="d" style="font-weight:400">— current ATP/WTA field, next 3 days</span></span>
           <button id="tnRefreshBtn" onclick="loadTennisField(true).then(drawTennisField)" style="font-size:11px;padding:5px 10px;white-space:nowrap">🔄 Refresh Field</button>
@@ -229,23 +151,6 @@
     <div style="font-weight:800;margin-bottom:8px">✓ Currently selected <span class="d" style="font-weight:400">— everything picked across all sports; tap ✕ to remove</span></div>
     <div id="selgrid" style="display:flex;flex-direction:column;gap:4px;max-height:360px;overflow:auto"></div>
   </div>
-  <!-- selector-r180: Mike — "every league comes up selected, I have to manually unselect 18
-       before picking the ones I want." lgOn's fallback default (line ~676) is intentionally
-       "all except MLB" for a brand-new device with no saved picks yet; the LEAGUE PERSISTENCE
-       itself (localStorage, per-device) was already correct and untouched — this just adds the
-       fast escape hatch he asked for instead of re-litigating the default. -->
-  <!-- selector-r183: nitpick — r182 still shipped TWO separate pills; the existing pattern
-       (#12a/r151, line ~852) is ONE toggle button, text "all / none", same element flipping
-       between select-all and select-none. Matching exactly means one button, not two —
-       lgToggleAll() below mirrors lgSelectAll's own "if all on, clear; else select all" logic.
-       r184: the style string is identical (`font:inherit` included), but the existing button
-       reads bold because it sits inside .lg (font-weight:800, line ~23) — this button sits in a
-       plain div with no such ambient weight, so `font:inherit` was inheriting regular. Dropped
-       the `font:inherit` SHORTHAND for separate `font-family:inherit` + explicit `font-weight:800`
-       longhands instead of stacking a longhand after the shorthand — a later font-weight is
-       supposed to win over an earlier font-shorthand by ordinary cascade rules, but that
-       interaction is inconsistent enough across engines/parsers that it's not worth relying on
-       for one button; two unambiguous longhands sidestep the question entirely. -->
   <div style="margin:0 0 6px">
     <button onclick="lgToggleAll()" style="background:#0f1a2a;border:1px solid var(--line);color:var(--acc);border-radius:5px;font-family:inherit;font-weight:800;font-size:11px;padding:2px 9px;cursor:pointer">all / none</button>
   </div>
@@ -273,14 +178,9 @@
 </div>
 
 <script>
-// League menu: ESPN scoreboard endpoints. Trim/extend freely.
 const LEAGUES = [
   ['soccer/fifa.world',      'World Cup',        '⚽'],
   ['soccer/eng.1',           'English Premier League',   '⚽'],
-  // selector-r156: five more soccer leagues (Mike, 9/2). Browsing a league costs one fetch per
-  // scan and adds NOTHING to the wall by itself — only ticked matches are pinned — so these are
-  // safe to leave on. Unchecked chips are never scanned (see lgOn), so switching a league off
-  // per-device is the cheap escape hatch.
   ['soccer/esp.1',           'LALIGA',                   '⚽'],
   ['soccer/ita.1',           'Serie A',                  '⚽'],
   ['soccer/ger.1',           'Bundesliga',               '⚽'],
@@ -288,9 +188,6 @@ const LEAGUES = [
   ['soccer/uefa.champions',  'Champions League',         '⚽'],
   ['soccer/usa.1',           'MLS',                      '⚽'],
   ['golf/pga',               'Golf (PGA)',       '⛳'],
-  // R71: unified TENNIS — fetches BOTH ATP+WTA under one chip (dual endpoint, split at
-  // fetch). Majors-only filter keeps just the Slams. Replaces separate ATP/WTA tabs
-  // (which cross-contaminated — WTA leaked into ATP).
   ['tennis/atp,tennis/wta',  'Tennis',           '🎾'],
   ['football/nfl',           'NFL',              '🏈'],
   ['football/college-football','NCAA Football',  '🏈'],
@@ -301,65 +198,44 @@ const LEAGUES = [
   ['mma/ufc',                'MMA',              '🥊'],
   ['boxing',                 'Boxing',           '🥊'],
 ];
-// R70: MLB added — lets Mike PIN a specific MLB game to the WWS pane (overrides the
-// board's Game-of-the-Day pick). Off by default via league chips if not wanted.
 
-// R97 SELECTOR MEMORY (Mike: "choose 5, refresh, they disappear — need a memory state that
-// shows what's actually published and physically on the panel").
-// Two distinct states, both now tracked:
-//   sel      = what's picked right now in this selector (persisted so a refresh doesn't wipe it)
-//   published = what's actually live in selections.json (fetched on load = ground truth)
-// Divergence between them = "unpublished changes" (shown in the UI so Mike knows to hit PUBLISH).
 const SEL_KEY = 'wws-sel-v1';
-const sel = new Map(JSON.parse(localStorage.getItem(SEL_KEY) || '[]'));   // eventKey -> selection record (PERSISTED)
+const sel = new Map(JSON.parse(localStorage.getItem(SEL_KEY) || '[]'));
 function saveSel(){ try{ localStorage.setItem(SEL_KEY, JSON.stringify([...sel])); }catch(_){} }
-let publishedKeys = new Set();   // eventIds currently live in selections.json (ground truth)
-let publishedMeta = new Map();   // R99: espnId -> {espnId,title,label} so we can SHOW what's live but not picked
-// Fetch what's ACTUALLY published so the selector reflects the panel, not just local clicks.
+let publishedKeys = new Set();
+let publishedMeta = new Map();
 async function loadPublished(){
   try {
     const r = await fetch(`https://raw.githubusercontent.com/mikeylegs/sports/main/selections.json?t=${Date.now()}`);
     if (!r.ok) return;
     const j = await r.json();
     publishedKeys = new Set((j.events||[]).map(e => e.espnId).filter(Boolean));
-    publishedMeta = new Map((j.events||[]).filter(e=>e.espnId).map(e => [e.espnId, e]));   // R99
-    _adoptPublishedWatch(j.watch);   // new: cross-device sync for ★ FOLLOWING teams/players
+    publishedMeta = new Map((j.events||[]).filter(e=>e.espnId).map(e => [e.espnId, e]));
+    _adoptPublishedWatch(j.watch);
     drawSelected();
-    _syncSelBtn();   // r177: harmless re-assert (highlight now tracks panel visibility, not this fetch)
-  } catch(_){ /* offline / not yet published — leave empty */ }
+    _syncSelBtn();
+  } catch(_){ }
 }
-// Cross-device sync for ★ FOLLOWING (teams/players): a fresh device's local stars/players start
-// empty, but selections.json's `watch` block already has whatever was last published from ANY
-// device. ADDITIVE ONLY — never removes a local entry, since a published snapshot can't tell us
-// "you unfollowed this on your phone" vs. "this device just hasn't picked it up yet". Un-following
-// still requires an explicit uncheck + Publish, same as before; this only kills the "re-add
-// everything on a new device" problem.
 function _adoptPublishedWatch(watch){
   if (!watch) return;
   let changed = false;
   for (const t of (watch.teams || [])){
     if (!t || !t.league || !t.abbr) continue;
     const key = `${t.league}|${t.abbr}`;
-    // r187: skip anything explicitly unfollowed on THIS device — a stale/lagged published
-    // snapshot must never override a deliberate local removal.
     if (starsRemoved.has(key)) continue;
     if (!stars.has(key)){ stars.set(key, { league:t.league, abbr:t.abbr, name:t.name }); changed = true; }
   }
   for (const p of (watch.players || [])){
     if (!p || !p.sport || !p.name) continue;
     const key = `${p.sport}|${_fold(p.name)}`;
-    if (playersRemoved.has(key)) continue;   // r188: same guard as teams — don't resurrect a deliberate removal
+    if (playersRemoved.has(key)) continue;
     if (!players.has(key)){ players.set(key, { sport:p.sport, name:p.name }); changed = true; }
   }
   if (changed){
     saveStars(); savePlayers();
-    updCounts();   // refresh ★ FOLLOWING/★ PLAYERS badges immediately, before either grid is opened
+    updCounts();
   }
 }
-// Is the current selection different from what's live on the panel?
-// R99 FIX: sel records are raw scan objects carrying `.id`; only the PUBLISHED json renames
-// it to `espnId` (see publish(): `espnId: r.id`). The old code read v.espnId → always undefined
-// → `cur` was always EMPTY → banner said UNPUBLISHED even when counts matched (Mike's bug).
 function _selIds(){ return new Set([...sel.values()].map(v => v.espnId || v.id).filter(Boolean)); }
 function hasUnpublishedChanges(){
   const cur = _selIds();
@@ -367,31 +243,18 @@ function hasUnpublishedChanges(){
   for (const k of cur) if (!publishedKeys.has(k)) return true;
   return false;
 }
-// R99: which events are live on the PANEL but NOT in the current picks (i.e. about to be dropped)?
 function _liveNotPicked(){
   const cur = _selIds();
   return [...publishedMeta.values()].filter(m => !cur.has(m.espnId));
 }
-// ── ★ Followed PLAYERS (selector-r170) — persist on device + published in selections.json.
-// Keyed by sport|fold(name) so "Alcaraz"/"alcaraz " typed twice don't create two entries.
 const PLAYER_KEY = 'wws-players';
-const players = new Map(JSON.parse(localStorage.getItem(PLAYER_KEY) || '[]'));  // "sport|foldedname" -> {sport,name}
+const players = new Map(JSON.parse(localStorage.getItem(PLAYER_KEY) || '[]'));
 function savePlayers(){ localStorage.setItem(PLAYER_KEY, JSON.stringify([...players])); }
-// selector-r188: same tombstone fix as r187's starsRemoved, for PLAYERS — _adoptPublishedWatch's
-// player loop (below) has the identical additive-only resurrection bug the teams side had. Every
-// place that removes a player (golfToggle, tennisToggle, removePlayer) must tombstone the key;
-// every place that adds one must clear it.
 const PLAYERS_REMOVED_KEY = 'wws-players-removed';
 const playersRemoved = new Set(JSON.parse(localStorage.getItem(PLAYERS_REMOVED_KEY) || '[]'));
 function savePlayersRemoved(){ localStorage.setItem(PLAYERS_REMOVED_KEY, JSON.stringify([...playersRemoved])); }
-// selector-r173: combined ★ FOLLOWING badge = teams + players, since the two are now one panel.
 function _cntFollow(){ const el = document.getElementById('cntFollow'); if (el) el.textContent = stars.size + players.size; }
 function _cntPlayers(){ const el = document.getElementById('cntPlayers'); if (el) el.textContent = players.size; _cntFollow(); }
-// selector-r173: ★ FOLLOWING is now one panel with two collapsible sub-panes (TEAMS/PLAYERS)
-// instead of two separate top-level buttons/panels. toggleFollowing shows/hides the whole
-// panel (same on-open lazy-load as before, for BOTH catalogs since either sub-pane might be
-// opened next); toggleSub only expands/collapses one sub-pane — cheap, no re-fetch (loadTeams/
-// loadGolfers both cache after their first call, drawTeams/drawGolfers are idempotent).
 async function toggleFollowing(){
   const box = document.getElementById('following');
   const show = box.style.display === 'none';
@@ -413,12 +276,6 @@ function toggleSub(which){
   body.hidden = open;
   hd.classList.toggle('open', !open);
 }
-// selector-r172: static golf roster (golf-catalog.json, mirrors team-catalog.json's
-// same-origin-fetch reasoning) — feeds a scrollable/searchable checkbox grid, same UX as
-// ★ FOLLOWING's team grid (Mike: "to select a player I dont have to have any dropdown set,
-// it's just a long scrollable/searchable list" — r171's free-text+datalist input was a
-// mismatched interaction model, replaced outright rather than kept alongside this). Warmed on
-// load alongside loadTeams() so the grid is ready before the panel's ever opened.
 let _golfCatalog = null;
 window.addEventListener('DOMContentLoaded', () => { try { loadGolfers(); } catch(_){} });
 async function loadGolfers(){
@@ -426,7 +283,7 @@ async function loadGolfers(){
   try {
     const r = await fetch('./golf-catalog.json');
     if (r.ok){ const d = await r.json(); if (Array.isArray(d) && d.length){ _golfCatalog = d; return d; } }
-  } catch(_){ /* grid just stays empty */ }
+  } catch(_){ }
   return _golfCatalog || [];
 }
 function _golfKey(name){ return `golf|${_fold(name)}`; }
@@ -461,12 +318,7 @@ function golfToggle(p, box){
   savePlayers(); savePlayersRemoved(); _cntPlayers();
   const row = box.closest('.ev'); if (row) row.classList.toggle('on', box.checked);
 }
-// selector-r175: live ATP+WTA field (today+2 days, unfiltered — no majors-only here, that's a
-// separate curation choice for the events-tab browse list). No static catalog is possible for
-// tennis the way golf-catalog.json is — draws genuinely change week to week — so this re-fetches
-// live instead of reading a committed file. Same j()-with-proxy-fallback pattern scan() already
-// uses for the same endpoints.
-let _tennisField = null;   // [{name}]
+let _tennisField = null;
 async function loadTennisField(force){
   if (_tennisField && !force) return _tennisField;
   const names = new Set();
@@ -488,13 +340,13 @@ async function loadTennisField(force){
             }
           }
         }
-      } catch(_){ /* one sub/day failing shouldn't blank the whole field */ }
+      } catch(_){ }
     }
   }
   _tennisField = [...names].sort().map(name => ({ name }));
   return _tennisField;
 }
-function _tennisKey(name){ return `tennis|${_fold(name)}`; }   // SAME key shape addPlayer() already uses — either path follows identically
+function _tennisKey(name){ return `tennis|${_fold(name)}`; }
 function _tennisRowHtml(p){
   const key = _tennisKey(p.name), on = players.has(key);
   return `<label class="ev ${on?'on':''}" data-key="${key}" style="margin:0;padding:7px 9px;gap:7px">
@@ -524,19 +376,19 @@ function tennisToggle(p, box){
   const key = _tennisKey(p.name);
   if (box.checked){ players.set(key, { sport:'tennis', name:p.name }); playersRemoved.delete(key); }
   else { players.delete(key); playersRemoved.add(key); }
-  savePlayers(); savePlayersRemoved(); _cntPlayers(); drawPlayers();   // keep the "all followed" list below in sync too
+  savePlayers(); savePlayersRemoved(); _cntPlayers(); drawPlayers();
   const row = box.closest('.ev'); if (row) row.classList.toggle('on', box.checked);
 }
 function addPlayer(){
   const inp = document.getElementById('playerName');
   const name = inp.value.trim();
   if (!name) return;
-  const key = `tennis|${_fold(name)}`;   // r172: this box is tennis-only now — golf moved to the checkbox grid above
-  if (players.has(key)){ inp.value=''; return; }   // no dupes
+  const key = `tennis|${_fold(name)}`;
+  if (players.has(key)){ inp.value=''; return; }
   players.set(key, { sport:'tennis', name });
   playersRemoved.delete(key); savePlayersRemoved();
   savePlayers(); _cntPlayers(); drawPlayers();
-  if (_tennisField) drawTennisField();   // if she's already in the loaded field, show her checked there too
+  if (_tennisField) drawTennisField();
   inp.value = ''; inp.focus();
 }
 function removePlayer(key){
@@ -545,8 +397,6 @@ function removePlayer(key){
   if (_tennisField) drawTennisField();
 }
 function drawPlayers(){
-  // r172: tennis-only chip list now — golf followers show as checked boxes in #golfgrid
-  // instead (same "no separate list, the checked state IS the list" pattern teams use).
   const grid = document.getElementById('playersList');
   const tennisPlayers = [...players.entries()].filter(([,p]) => p.sport === 'tennis');
   if (!tennisPlayers.length){ grid.innerHTML = '<p class="sub" style="margin:4px 0">No tennis players followed yet.</p>'; return; }
@@ -557,56 +407,27 @@ function drawPlayers(){
       <button onclick="removePlayer('${key}')" style="flex:none;background:#3a1214;color:#ff8a8a;border:1px solid #612;border-radius:6px;padding:4px 10px;font:700 14px inherit;cursor:pointer">✕</button>
     </div>`).join('');
 }
-// ── ★ Followed teams (persist on device + published in selections.json) ──
 const STAR_KEY = 'wws-stars';
-const stars = new Map(JSON.parse(localStorage.getItem(STAR_KEY) || '[]'));  // "lg|ABBR" -> {league,abbr,name}
+const stars = new Map(JSON.parse(localStorage.getItem(STAR_KEY) || '[]'));
 function saveStars(){ localStorage.setItem(STAR_KEY, JSON.stringify([...stars])); }
-// selector-r187: tombstone for explicitly-unfollowed teams. _adoptPublishedWatch (below) is
-// ADDITIVE-ONLY cross-device sync — it re-adds anything the published selections.json has that
-// local `stars` doesn't, with no way to tell "you unfollowed this" from "this device hasn't
-// synced yet." raw.githubusercontent.com has real propagation lag after a publish (publish()'s
-// own success text says "live in ~1 min") — Mike: unselect-all, publish (JSON preview correctly
-// empty), refresh within that window, and _adoptPublishedWatch fetches the STALE pre-clear json
-// and resurrects every team right back into stars, then persists that. This set records which
-// keys were just intentionally removed so the sync can skip them; starToggle clears a key's
-// tombstone the moment it's re-followed, so a genuine re-follow (on this or another device)
-// isn't blocked forever.
 const REMOVED_KEY = 'wws-stars-removed';
 const starsRemoved = new Set(JSON.parse(localStorage.getItem(REMOVED_KEY) || '[]'));
 function saveStarsRemoved(){ localStorage.setItem(REMOVED_KEY, JSON.stringify([...starsRemoved])); }
 const TEAM_LEAGUES = [
   ['baseball/mlb','MLB'], ['basketball/nba','NBA'],
   ['football/nfl','NFL'], ['hockey/nhl','NHL'],
-  ['soccer/eng.1','EPL'],   // selector-r152: follow-teams extended to Premier League clubs
-  // selector-r156: NOTE the UCL entry is not redundant with the domestic ones. wwsPollWatch
-  // fetches per league and matches by abbreviation, so a club starred under soccer/esp.1 only
-  // ever surfaces its LaLiga fixtures — never its European nights. Starring Real Madrid under
-  // BOTH esp.1 and uefa.champions is the intended way to catch them in both, and the
-  // `${league}|${abbr}` star key keeps those as two clean, independent entries.
+  ['soccer/eng.1','EPL'],
   ['soccer/esp.1','LALIGA'], ['soccer/ita.1','SERIE A'], ['soccer/ger.1','BUNDESLIGA'],
   ['soccer/fra.1','LIGUE 1'], ['soccer/uefa.champions','UCL'], ['soccer/usa.1','MLS'],
 ];
-let _teamCatalog = null;   // [{league,abbr,name}]
-// r446: was a live fetch to ESPN's /teams endpoint on every open of ★ FOLLOW TEAMS, through
-// the same 3-proxy CORS fallback chain scan() uses (site.api.espn.com has no CORS headers for
-// browser origins). Confirmed live (Mike, DevTools): direct fetch blocked by CORS as expected,
-// AND all 3 proxies were down/blocked (codetabs 522, allorigins 520, corsproxy.io 403) —
-// _teamCatalog stayed permanently empty, so the team filter always showed "No teams match."
-// regardless of query. Team ROSTERS (name+abbr per league) don't change mid-season like scores
-// do, so there's no reason to depend on a live fetch — or a proxy chain — for this at all.
-// Now reads a static team-catalog.json committed to the repo root (same-origin, zero CORS risk,
-// zero proxy dependency). Falls back to the old live-fetch path only if that file is ever
-// missing/stale, so this degrades instead of breaking outright.
-/* selector-r158: warm the catalog on load (same-origin, cached) so player search works in the
-   EVENTS tab without the user having opened ★ FOLLOW TEAMS first. Fire-and-forget: a failure
-   just leaves player-expansion inactive, and team/tournament search is unaffected. */
+let _teamCatalog = null;
 window.addEventListener('DOMContentLoaded', () => { try { loadTeams(); } catch(_){} });
 async function loadTeams(){
   if (_teamCatalog) return _teamCatalog;
   try {
     const r = await fetch('./team-catalog.json');
     if (r.ok) { const d = await r.json(); if (Array.isArray(d) && d.length) { _teamCatalog = d; return d; } }
-  } catch(_){ /* fall through to live fetch below */ }
+  } catch(_){ }
   const all = [];
   await Promise.all(TEAM_LEAGUES.map(async ([lg,tag])=>{
     const d = await j(`https://site.api.espn.com/apis/site/v2/sports/${lg}/teams`);
@@ -619,35 +440,7 @@ async function loadTeams(){
   all.sort((a,b)=> a.tag.localeCompare(b.tag) || a.name.localeCompare(b.name));
   _teamCatalog = all; return all;
 }
-// r460: was one flat unsorted grid (144 teams in raw catalog/league-block order, no separation
-// between followed/unfollowed) — Mike: "clean up the follow screen... move checked teams to
-// top... alphabetize but keep grouped by league". Re-sorts only on panel-open and on search
-// input (both already call drawTeams()), NOT on every checkbox click — live-reordering mid-click
-// would shift rows out from under a fast run of checks/unchecks.
-// selector-r157: fold accents on BOTH sides of every comparison. Seeding `aka` with real squads
-// (r493) made this a correctness bug, not a nicety: "vinicius" typed on a plain keyboard MISSED
-// Vinícius Júnior at Real Madrid while still matching other players literally spelled "Vinicius"
-// — it returned the WRONG clubs rather than none. Same for mbappe/mbappé, alvarez, muller.
-// selector-r158: hoisted to module scope — filterList() (events tab) now needs it too.
-const _fold = s => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-/* selector-r158: show WHICH squad name matched. Mike: "the Messi search just blindly brings up
-   his team matches. No indication that it's hitting on the correct player name at all." Now a
-   player-driven hit prints the matched token(s), which also makes the known substring noise
-   self-explaining — "messi" shows `Messi` under Inter Miami and `Messias` under Genoa, so a false
-   positive is obvious at a glance instead of looking like a bug. Tokens rather than full names
-   because `aka` is space-joined at harvest time and full names can't be recovered from it; see
-   the HANDOFF note about switching the harvest to a delimiter on the next refresh. */
-/* selector-r166: FULL NAMES in the hint. Mike: "how much work to get the full player name in
-   the search results instead of just last name?" — searching "fox" surfaced three clubs whose
-   hint read only "↳ Fox".
-   It was never a display bug. `aka` was a SPACE-JOINED blob of every squad name, so word
-   boundaries were gone and the only thing this function could hand back was a single token.
-   Reconstructing "Amon-Ra St. Brown" or "Keith Abney II" from that blob is guesswork, so the
-   catalog was re-harvested with names joined by ' · ' instead (r497).
-   The catalog is deliberately MIXED: the four pro leagues carry delimited names, the soccer
-   leagues still carry the legacy blob (their roster route 404s on abbr — open item). So this
-   splits on the delimiter WHEN PRESENT and falls back to the old whitespace behaviour when it
-   isn't. Coverage can only go up; nothing that worked before stops working. */
+const _fold = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 function _akaHits(t, q){
   if (!q || !t.aka) return [];
   const parts = t.aka.includes(' · ') ? t.aka.split(' · ') : t.aka.split(/\s+/);
@@ -663,28 +456,15 @@ function _akaHits(t, q){
 }
 function _teamRowHtml(t, q){
   const key = `${t.league}|${t.abbr}`, on = stars.has(key);
-  // only show the hint when the match came from the SQUAD, not from the club's own name/abbr/tag
   const nameHit = q && (_fold(t.name).includes(q) || _fold(t.abbr).includes(q) || _fold(t.tag).includes(q));
   const hits = nameHit ? [] : _akaHits(t, q);
   const hint = hits.length
     ? `<br><span class="d" style="color:var(--acc)">↳ ${hits.join(' · ')}</span>` : '';
-  // selector-r186: was JSON.stringify(t) (full catalog row incl. the aka roster string) inlined
-  // into a SINGLE-quoted onchange attr. Any apostrophe in aka/name (BUF: "Ar'maj", "O'Cyrus",
-  // "Te'Cory", "Ja'Mori"...) closed the attribute early, silently killing the handler for that
-  // row -- add/remove never reached starToggle. NYY happened to have no apostrophes, so it looked
-  // fine while BUF/NYJ/NYG/etc never stuck. Fix: only pass the 3 fields starToggle actually reads
-  // (aka isn't one of them), and escape any stray ' as a belt-and-suspenders.
   return `<label class="ev ${on?'on':''}" data-key="${key}" style="margin:0;padding:7px 9px;gap:7px">
     <input type="checkbox" ${on?'checked':''} onchange='starToggle(${JSON.stringify({league:t.league,abbr:t.abbr,name:t.name}).replace(/'/g,"&#39;")}, this)'>
     <span class="m"><span class="t" style="font-size:13px">${t.name}</span><br><span class="d">${t.tag} · ${t.abbr}</span>${hint}</span>
   </label>`;
 }
-/* selector-r163: one SECTION per league. Previously every `.lg` was a direct child of the single
-   #teamgrid grid, so making them sticky pinned them ALL at top:0 — they accumulated instead of
-   replacing each other (measured: at scrollTop 2200, five headers stacked; by the bottom it would
-   have been eleven, eating the panel). A sticky element only sticks while its own containing block
-   is in view, so giving each league its own <section> makes its header leave with its teams.
-   Each section carries its own identical grid, so column widths stay consistent across sections. */
 function _teamGroupHtml(list, q){
   const icon = Object.fromEntries(LEAGUES.map(([p,,ico])=>[p,ico]));
   return TEAM_LEAGUES.map(([lg,tag])=>{
@@ -696,13 +476,7 @@ function _teamGroupHtml(list, q){
 }
 function drawTeams(){
   const q = _fold(document.getElementById('tq').value);
-  document.getElementById('tqClear').style.display = q ? 'flex' : 'none';   // r164: flex, not block — the circular button centers its glyph with align/justify   // r461: X-clear button, synced here (single source of truth) rather than duplicated in every caller (oninput/clear/panel-open all already route through drawTeams)
-  // selector-r156: `aka` is an optional free-text alias field on a catalog entry — squad names,
-  // nicknames, anything worth finding a club BY. Mike: "search Messi and have it populate every
-  // squad he appears for". The matching is the whole mechanism; it is deliberately UNSEEDED,
-  // because ESPN's roster endpoints sit on the same /teams path family the worker 403s, and
-  // hand-typing squads from stale knowledge is exactly the mistake that nearly had us "fix" a
-  // worker that was never broken. Entries without `aka` behave exactly as before.
+  document.getElementById('tqClear').style.display = q ? 'flex' : 'none';
   const rows = (_teamCatalog || []).filter(t =>
     !q || _fold(t.name).includes(q) || _fold(t.abbr).includes(q) || _fold(t.tag).includes(q)
        || _fold(t.aka).includes(q));
@@ -728,55 +502,34 @@ function clearTeamFilter(){
 }
 function starToggle(t, box){
   const key = `${t.league}|${t.abbr}`;
-  // selector-r187: tombstone this key on remove so cross-device sync (_adoptPublishedWatch)
-  // doesn't resurrect it from a stale published snapshot; clear the tombstone on re-add so a
-  // genuine re-follow isn't permanently blocked.
   if (box.checked){ stars.set(key, {league:t.league, abbr:t.abbr, name:t.name}); starsRemoved.delete(key); }
   else { stars.delete(key); starsRemoved.add(key); }
   saveStars(); saveStarsRemoved(); count();
-  const row = box.closest('.ev'); if (row) row.classList.toggle('on', box.checked);   // instant border feedback; full re-group waits for next open/search per note above
+  const row = box.closest('.ev'); if (row) row.classList.toggle('on', box.checked);
 }
 
-// League filter — chips persist per device; unchecked leagues are never scanned.
 const LG_KEY='wws-leagues';
-const lgOn = new Set(JSON.parse(localStorage.getItem(LG_KEY) || 'null') || LEAGUES.map(l=>l[0]).filter(p=>p!=='baseball/mlb'));   // R70/71: MLB defaults OFF (pin-only; board owns MLB). F1 removed.
+const lgOn = new Set(JSON.parse(localStorage.getItem(LG_KEY) || 'null') || LEAGUES.map(l=>l[0]).filter(p=>p!=='baseball/mlb'));
 function drawChips(){
   document.getElementById('lgchips').innerHTML = LEAGUES.map(([p,label,ico])=>
     `<button onclick="lgToggle('${p}')" style="padding:7px 10px;font-size:12px;border-radius:16px;font-weight:700;
       ${lgOn.has(p)?'background:#0e3b2b;border:1px solid var(--acc);color:#fff':'background:transparent;border:1px solid var(--line);color:var(--mut)'}">${ico} ${label}</button>`).join('');
 }
 function lgToggle(p){ lgOn.has(p) ? lgOn.delete(p) : lgOn.add(p); localStorage.setItem(LG_KEY, JSON.stringify([...lgOn])); drawChips(); }
-// selector-r180: All/None escape hatch. None just empties the set. Same persistence path as
-// lgToggle — one localStorage write.
-// r550: Mike — "I want all/none to affect MLB as well." r180-183 originally excluded MLB from
-// All, mirroring the brand-new-device DEFAULT FALLBACK (R70/71: MLB stays off there — pin-only,
-// board owns MLB) — but that default-fallback convention is a separate mechanism (lgOn's initial
-// value when localStorage is empty, below) from this explicit bulk action. Mike wants the bulk
-// toggle itself to cover every league, MLB included; the R70/71 default-on-a-fresh-device
-// behavior is untouched.
 function lgSetAll(on){
   lgOn.clear();
   if (on) LEAGUES.forEach(([p]) => lgOn.add(p));
   localStorage.setItem(LG_KEY, JSON.stringify([...lgOn]));
   drawChips();
 }
-// selector-r183/r550: ONE toggle button (mirrors lgSelectAll's own "if all on, clear; else select
-// all" toggle logic, #12a/r151) instead of r182's two separate buttons. "All" now means literally
-// every league in LEAGUES, MLB included (r550).
 function lgToggleAll(){
   const scannable = LEAGUES.map(([p]) => p);
   const allOn = scannable.every(p => lgOn.has(p));
   lgSetAll(!allOn);
 }
-// r585: footer-crawl per-league visibility — a SEPARATE toggle from lgOn above. lgOn gates
-// which leagues get SCANNED for the events browse list; this gates which leagues the
-// dashboard's footer score crawl (MLB/NHL/NBA/NFL ticker) RENDERS. Deliberately decoupled —
-// turning a league off here must not also drop it from event browsing, and vice versa.
-// Mike's rule: the dashboard fetches every league unconditionally regardless of this setting;
-// it's a pure display filter published alongside watch.teams/watch.players.
 const CRAWL_LEAGUES = [['MLB','⚾ MLB'],['NHL','🏒 NHL'],['NBA','🏀 NBA'],['NFL','🏈 NFL']];
 const CRAWL_LG_KEY = 'wws-crawl-leagues';
-const crawlLgOn = new Set(JSON.parse(localStorage.getItem(CRAWL_LG_KEY) || 'null') || CRAWL_LEAGUES.map(l=>l[0]));   // default: all 4 on
+const crawlLgOn = new Set(JSON.parse(localStorage.getItem(CRAWL_LG_KEY) || 'null') || CRAWL_LEAGUES.map(l=>l[0]));
 function drawCrawlChips(){
   const el = document.getElementById('crawlchips');
   if (!el) return;
@@ -789,9 +542,8 @@ function crawlLgToggle(key){
   localStorage.setItem(CRAWL_LG_KEY, JSON.stringify([...crawlLgOn]));
   drawCrawlChips();
 }
-document.addEventListener('DOMContentLoaded', () => { drawChips(); drawCrawlChips(); loadPublished(); drawSelected(); updCounts(); });   // R97: restore persisted picks + fetch what's ACTUALLY live
+document.addEventListener('DOMContentLoaded', () => { drawChips(); drawCrawlChips(); loadPublished(); drawSelected(); updCounts(); });
 
-// Same proxy fallback chain the dashboard uses (proven on the panel).
 const PROXIES = [
   u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
   u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
@@ -813,6 +565,14 @@ async function j(u){
 const pad = n => String(n).padStart(2,'0');
 const ymd = d => `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`;
 const dayLabel = d => d.toLocaleDateString(undefined,{weekday:'long', month:'short', day:'numeric'});
+// selector-r189: per-event weekday+date, so a game line still carries its day context once its
+// league/day header has scrolled out of view. dk is the day-BUCKET key the event is grouped
+// under (YYYYMMDD) -- not a live per-event timestamp, but exactly right here: it's the day the
+// line is rendered under, same value dayLabel(d) already used for that day's own header.
+function dowDate(dk){
+  const y = +dk.slice(0,4), mo = +dk.slice(4,6) - 1, da = +dk.slice(6,8);
+  return new Date(y, mo, da).toLocaleDateString(undefined, {weekday:'long'}) + ' ' + (mo+1) + '/' + da;
+}
 
 let _fails = 0;
 async function scan(){
@@ -822,49 +582,33 @@ async function scan(){
   list.innerHTML = '<p class="sub">Scanning…</p>';
   const dates = [...Array(days)].map((_,i)=>{const d=new Date(); d.setDate(d.getDate()+i); return d;});
   const html = [];
-  const _seenMatch = new Set();   // R72: global dedup for tennis matches (id appears across day-fetches + ATP/WTA merge)
-  const _seenTourney = new Set();  // R100: golf dedup — a tournament is ONE multi-day event, but ESPN
-                                   // returns it on EVERY day it's running, so the per-day scan was
-                                   // listing "Genesis Scottish Open" under Sun AND Mon (Mike's bug).
-                                   // List it once, on the earliest scanned day it appears.
+  const _seenMatch = new Set();
+  const _seenTourney = new Set();
   for (const d of dates){
     const dk = ymd(d);
     const dayEvents = [];
     await Promise.all(LEAGUES.filter(([p])=>lgOn.has(p)).map(async ([path,label,ico])=>{
-      // R71: a path can be comma-joined (e.g. tennis/atp,tennis/wta) → fetch each, merge events.
       const subPaths = path.split(',');
       let data;
       if (subPaths.length > 1){
         const parts = await Promise.all(subPaths.map(sp => j(`https://site.api.espn.com/apis/site/v2/sports/${sp}/scoreboard?dates=${dk}`)));
-        // R72: tag each event with which sub-endpoint it came from (debug) + log counts.
         const evs = [];
         parts.forEach((pp,i)=>{ const es=(pp&&pp.events)||[]; if(window._tdebug) console.log(`[tennis] ${subPaths[i]} @ ${dk}: ${es.length} events`, es.map(e=>e.name||e.shortName)); evs.push(...es); });
         data = evs.length ? { events: evs } : null;
       } else {
         data = await j(`https://site.api.espn.com/apis/site/v2/sports/${path}/scoreboard?dates=${dk}`);
       }
-      // Golf/tennis/F1: multi-day "events"; team sports: games
       if (!data) _fails++;
       for (const ev of (data && data.events) || []){
         const comps = ev.competitions || [];
-        // Tennis: matches live in ev.groupings[].competitions[] (nCompetitions=0
-        // at event level). Flatten, prefer live/upcoming over completed, cap the
-        // list — a full draw is ~200+ matches. espnId = "eventId:compId".
         if (path.startsWith('tennis') && (ev.groupings||[]).length){
           const tourn = ev.shortName || ev.name || label;
-          // R70: MAJORS ONLY — Mike only wants the 4 Slams (tennis is secondary; the
-          // ATP 250s like Nordea Open are pure noise). Skip any non-Slam tournament.
-          // R71: majors-only — broadened to catch ESPN's naming variants. Also logs the
-          // tournament name when it's FILTERED so we can see mismatches in console.
           const tName = `${ev.name||''} ${ev.shortName||''} ${tourn}`;
           const isMajor = /wimbledon|championships|us open|u\.s\. open|french open|roland[- ]?garros|australian open/i.test(tName);
           if (!isMajor){ if (window._tdebug) console.log('[tennis] skipped non-major:', tName.trim()); continue; }
           const matches = [];
           for (const g of ev.groupings){
             for (const comp of (g.competitions||[])){
-              // R70: capture name + world rank/seed (ESPN exposes these inconsistently —
-              // try curatedRank.current, then seed; omit silently if absent). Mike wants
-              // rankings since he doesn't follow tennis closely — helps gauge who matters.
               const players = (comp.competitors||[]).map(c=>{
                 const a=c.athlete||{}; const name=(a.shortName||a.displayName)||'';
                 const rk = (c.curatedRank&&c.curatedRank.current) || c.seed || (a.rank) || null;
@@ -873,27 +617,18 @@ async function scan(){
               }).filter(p=>p.name);
               const nm = players.map(p=>p.name);
               if (nm.length !== 2) continue;
-              // R70: skip TBD bracket slots (not a real matchup yet) + doubles (name has "/").
               if (nm.some(x => /^\s*tbd\s*$/i.test(x) || x.includes('/'))) continue;
               const nmR = players.map(p => p.rk ? `${p.name} (#${p.rk})` : p.name);
               const stt = (comp.status&&comp.status.type) || {};
-              const rank = stt.state==='in' ? 0 : stt.state==='pre' ? 1 : 2;   // live, upcoming, done
-              // R72: DATE-MATCH — only list this match under the day-header matching its
-              // actual date (ESPN returns the whole draw per fetch → was bleeding across days).
-              // selector-r179: exempt LIVE matches — a match that started yesterday and is
-              // still going past midnight has comp.date=yesterday, so this filter discarded it
-              // from today's scan even though it's happening right now. Mike: "tennis match
-              // that started yesterday but is still going." Only pre/post matches get the
-              // strict date check; a live one shows on whichever scanned day surfaces it.
+              const rank = stt.state==='in' ? 0 : stt.state==='pre' ? 1 : 2;
               const mDate = comp.date || ev.date;
               if (mDate && stt.state !== 'in'){ const mk = ymd(new Date(mDate)); if (mk !== dk) continue; }
-              // R72: DEDUP — same match id can arrive via multiple day-fetches + ATP/WTA merge.
               if (_seenMatch.has(comp.id)) continue;
               _seenMatch.add(comp.id);
               matches.push({ compId:comp.id, nm, nmR, rank,
                 time: (comp.date||ev.date) ? new Date(comp.date||ev.date).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}) : '',
                 note: stt.shortDetail || stt.description || '',
-                state: stt.state || '' });   // selector-r175: captured for the SELECTED live-badge, see below
+                state: stt.state || '' });
             }
           }
           matches.sort((a,b)=> a.rank-b.rank || a.time.localeCompare(b.time));
@@ -905,22 +640,15 @@ async function scan(){
           continue;
         }
         const comp = comps[0] || {};
-        // R100: GOLF — a tournament spans Thu-Sun and ESPN returns it on each day of the range,
-        // so the per-day loop created a duplicate row per day (key includes dk). Golf events also
-        // carry a meaningless 12:00 AM time, so nothing distinguished them. List each tournament
-        // ONCE (earliest scanned day). Other sports are genuinely per-day, so they're untouched.
         if (path === 'golf/pga'){
           if (_seenTourney.has(ev.id)) continue;
           _seenTourney.add(ev.id);
         }
-        // R80: prefer FULL team name (Mike: "New York Yankees" > "NYY"). ESPN team obj:
-        // displayName = "New York Yankees", shortDisplayName = "Yankees", abbreviation = "NYY".
-        // Fall back gracefully abbreviation-ward if displayName absent.
         const teams = (comp.competitors||[]).map(c=>c.team? (c.team.displayName||c.team.shortDisplayName||c.team.abbreviation) : (c.athlete&&c.athlete.shortName)||'').filter(Boolean);
         const title = teams.length===2 ? `${teams[1]} @ ${teams[0]}` : (ev.shortName || ev.name || label);
         const time = ev.date ? new Date(ev.date).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}) : '';
         const note = (ev.status&&ev.status.type&&ev.status.type.shortDetail) || '';
-        const state = (ev.status&&ev.status.type&&ev.status.type.state) || '';   // selector-r175
+        const state = (ev.status&&ev.status.type&&ev.status.type.state) || '';
         dayEvents.push({key:`${path}|${ev.id}|${dk}`, path, league:label, ico, id:ev.id, title, time, note, date:dk, state});
       }
     }));
@@ -930,27 +658,27 @@ async function scan(){
     dayEvents.sort((a,b)=> a.league.localeCompare(b.league) || a.time.localeCompare(b.time));
     for (const e of dayEvents){
       if (e.league!==lastLg){
-        // #12a (r151): per-league Select-All/None toggle. data-lg groups the day's league
-        // events so lgSelectAll() can flip them all via the SAME toggle path as single rows.
         var _lgId = cssId(e.league+'|'+e.date);
         html.push(`<div class="lg" style="display:flex;align-items:center;gap:8px">${e.ico} ${e.league}`
           + `<button onclick="lgSelectAll('${_lgId}')" style="margin-left:auto;background:#0f1a2a;border:1px solid var(--line);color:var(--acc);border-radius:5px;font:inherit;font-size:11px;padding:2px 9px;cursor:pointer">all / none</button></div>`);
         lastLg=e.league;
       }
-      e._lgId = cssId(e.league+'|'+e.date);   // stamp each event with its league-day group
+      e._lgId = cssId(e.league+'|'+e.date);
       const on = sel.has(e.key);
-      // selector-r175: a scan re-fetches fresh live/pre/post state for every event, but an
-      // ALREADY-selected pick's `sel` entry otherwise keeps whatever state it had when first
-      // toggled on — stale the moment the game's status changes. Refresh it here so the
-      // SELECTED live-badge (see _syncSelBtn) reflects reality as of THIS scan, not the
-      // original pick time. (saveSel() happens once, after the render loop below.)
       if (on){ const rec = sel.get(e.key); if (rec) rec.state = e.state; }
       const cid = cssId(e.key); _evReg.set(cid, e);
       const esc = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
       const _srch = `${e.league} ${e.title} ${e.time} ${e.note||''}`.toLowerCase();
+      // selector-r189: Mike -- put a day of week on each game line; drop the redundant
+      // "9/24 - 8:15 PM EDT" tail ESPN's shortDetail carries for SCHEDULED games (a pure repeat
+      // of the time already shown to its left). A live/final game's shortDetail is real status
+      // ("Final", period info) -- not a repeat -- so that's kept, just with the weekday+date
+      // ahead of it instead of behind the redundant clock string.
+      const _dow = dowDate(e.date);
+      const _lineNote = e.state === 'pre' ? _dow : (e.note ? `${_dow} · ${e.note}` : _dow);
       html.push(`<label class="ev ${on?'on':''}" id="ev-${cid}" data-lg="${e._lgId}" data-cid="${cid}" data-search="${_srch.replace(/"/g,'')}">
         <input type="checkbox" ${on?'checked':''} onchange="toggle('${cid}', this)">
-        <span class="m"><span class="t">${esc(e.title)}</span><br><span class="d">${esc(e.time)}${e.note?' · '+esc(e.note):''}</span></span>
+        <span class="m"><span class="t">${esc(e.title)}</span><br><span class="d">${esc(e.time)} · ${esc(_lineNote)}</span></span>
         <select onchange="setWin('${cid}', this.value)" onclick="event.preventDefault()">
           <option value="day">show that day</option>
           <option value="weekend">show thru Sunday</option>
@@ -958,33 +686,16 @@ async function scan(){
       </label>`);
     }
   }
-  /* selector-r160: distinguish "nothing was even asked for" from "asked and found nothing".
-     With every chip off this printed "No events found in range. 0 of 0 league-day fetches
-     failed" — technically true, actively misleading, and it names no remedy. */
   list.innerHTML = html.join('') || (lgOn.size === 0
     ? `<p class="sub">No leagues are switched on — tap a league chip above, then press SCAN.</p>`
     : `<p class="sub">No events found in range. ${_fails} of ${lgOn.size*days} league-day fetches failed${_fails?' — likely CORS-proxy trouble; retry in a minute':''}.</p>`);
-  /* selector-r161 — THE BUG behind "I'm still not getting an easy way to select a game by player".
-     scan() rebuilds #list wholesale and previously stopped here, so every row rendered VISIBLE no
-     matter what was in the search box — the filter was working, the scan was discarding it. Typing
-     "haala" then scanning gave the entire EPL slate, forcing exactly the scroll-hunt Mike
-     described. Re-apply the active filter to the freshly-built list. */
   filterList();
-  saveSel();   // selector-r175: persist the refreshed live/pre/post state stamped onto sel entries above
+  saveSel();
   count();
 }
 function cssId(s){ return s.replace(/[^a-z0-9]/gi,'_'); }
-const _selCid = new Map();  // R140: cssId -> eventKey for currently-SELECTED rows (incl. expired,
-                            // which _evReg lacks) so removeSel can always resolve & remove them.
-const _evReg = new Map();   // R40: cssId -> event; inline JSON in quoted attrs broke on apostrophes (O'Connell, "Men's") — handler never attached, checkbox ticked but sel/count never updated
-// Live search over the rendered rows (title + sub-line + league header context).
-/* selector-r158 — PLAYER SEARCH IN THE EVENTS TAB. Mike: "is it possible to also search in the
-   general events tab so I can add individual games by player?" Event rows only carry
-   league+title+time+note (see _srch), and titles are TEAM names — no player ever appears in them.
-   So instead of trying to put squads on every row, resolve the query through the catalog first:
-   "messi" → the clubs whose `aka` contains it → match those club names against the rows. Reuses
-   the same catalog the follow-teams panel loads, so there is no new data and no new fetch.
-   The 3-char floor keeps short queries ("de", "jr") from resolving half the league. */
+const _selCid = new Map();
+const _evReg = new Map();
 function _playerClubs(qf){
   if (!qf || qf.length < 3 || !Array.isArray(_teamCatalog)) return [];
   return _teamCatalog.filter(t => t.aka && _fold(t.aka).includes(qf)
@@ -994,15 +705,7 @@ function filterList(){
   const raw = (document.getElementById('q').value || '').toLowerCase();
   const q = _fold(raw);
   const clubs = _playerClubs(q);
-  // club NAMES only, not abbrs — a 2-3 letter abbr ("LA", "NE") matches far too much row text
   const clubTerms = clubs.map(t => _fold(t.name)).filter(Boolean);
-  /* selector-r159 — PAIR each matched name with ITS club, ranked. Mike: "any way to more
-     elegantly match the name to the game?" r158 printed two DISCONNECTED lists (tokens on one
-     line, clubs on another), so you couldn't tell which name belonged to which club — and a
-     slice(0,3) on the token list dropped "Messi" itself, showing only the three false positives.
-     Now each entry is `name → club`, ordered by how well the token matches what was typed:
-     exact first, then prefix, then by length. So "Messi" leads with Inter Miami and the
-     Messias/Messick noise sorts below it, self-evidently secondary. */
   const rank = w => { const f = _fold(w); return (f === q ? 0 : f.startsWith(q) ? 1 : 2) * 100 + f.length; };
   const pairs = clubs.map(t => {
     const best = _akaHits(t, q).sort((a,b) => rank(a) - rank(b))[0] || '';
@@ -1011,11 +714,6 @@ function filterList(){
   const hint = document.getElementById('qhint');
   if (hint){
     if (pairs.length){
-      /* selector-r161: name → club (LEAGUE). Mike: "should we add the league to the player search
-         results? i.e. Messi - Inter Miami - MLS". Yes — and it earns its place beyond labelling:
-         it's what makes the duplicate entries legible. "Haaland → Manchester City · Haaland →
-         Manchester City" looked like a rendering bug; "Manchester City (EPL)" vs "(UCL)" is
-         visibly two distinct follow targets, which is exactly what they are. */
       const shown = pairs.slice(0, 4)
         .map(x => `<b style="font-weight:700">${x.tok}</b> → ${x.club.name} <span class="d">(${x.club.tag})</span>`)
         .join('&nbsp; · &nbsp;');
@@ -1023,21 +721,8 @@ function filterList(){
       hint.style.display = '';
     } else { hint.style.display = 'none'; hint.innerHTML = ''; }
   }
-  /* selector-r159: collapse the league chips while a search is active. On a phone the chip block
-     is five rows tall and pushed every matching fixture below the fold — Mike: "the games render
-     lower on screen and it makes it tough to go back and forth." Hiding it while filtering puts
-     results immediately under the search bar; clearing the box restores them. Purely visual, and
-     the chips' own on/off state (lgOn) is untouched, so scan scope is unaffected. */
-  /* selector-r160: only collapse when the search actually HAS results to make room for.
-     r159 hid the chips on any keystroke — including when the list was empty, which hid the one
-     control that fixes an empty list. Mike hit exactly that: every chip was toggled off
-     (lgOn.size === 0, so nothing was ever fetched), and with "Messi" typed the chips were
-     invisible, so the remedy was unreachable. Chips now stay put unless hiding them buys
-     something. */
   let _shown = 0;
   document.querySelectorAll('#list .ev').forEach(row=>{
-    // R80: match the row's data-search (league + title + time) so "Wimb" finds Wimbledon
-    // matches even though the visible row text is just player names.
     const hay = _fold(row.getAttribute('data-search') || row.textContent);
     const hit = !q || hay.includes(q) || clubTerms.some(c => hay.includes(c));
     row.style.display = hit ? '' : 'none';
@@ -1045,22 +730,13 @@ function filterList(){
   });
   const qc = document.getElementById('qClear');
   if (qc) qc.style.display = raw ? 'flex' : 'none';
-  /* selector-r162 — MUST stay below the loop: this reads _shown, and r160 placed it ABOVE the
-     `let _shown = 0` declaration. `let` hoists into the temporal dead zone, so the read threw
-     ReferenceError and aborted filterList right after the hint was written — killing the row
-     filtering, the X-clear and the header collapse in r160 AND r161. node --check can't see it
-     (runtime, not syntax) and neither could the regex/extract-a-fragment verification I was
-     using; only executing filterList as a whole catches it, which the harness now does. */
   const chips = document.getElementById('lgchips');
   if (chips) chips.style.display = (raw && _shown > 0) ? 'none' : '';
-  /* selector-r161: now that scan() re-applies the filter, a search that matches nothing leaves a
-     list full of hidden rows — visually just blank, with no explanation. Say so. */
   if (hint && raw && _shown === 0 && document.querySelectorAll('#list .ev').length){
     hint.innerHTML = (pairs.length ? hint.innerHTML + '<br>' : '')
-      + `<span class="d">No scanned games match “${raw.replace(/</g,'')}” — widen the range or SCAN more leagues.</span>`;
+      + `<span class="d">No scanned games match "${raw.replace(/</g,'')}" — widen the range or SCAN more leagues.</span>`;
     hint.style.display = '';
   }
-  // hide day/league headers with no visible rows under them
   document.querySelectorAll('#list .day, #list .lg').forEach(h=>{
     let n = h.nextElementSibling, any = false;
     while (n && !n.classList.contains('day') && !n.classList.contains('lg')){
@@ -1074,18 +750,15 @@ function toggle(cid, box){
   const e = _evReg.get(cid); if(!e) return;
   if (box.checked) sel.set(e.key, {...e, window:'day'});
   else sel.delete(e.key);
-  saveSel();   // R97: persist so a refresh doesn't wipe the picks
+  saveSel();
   document.getElementById('ev-'+cid).classList.toggle('on', box.checked);
   count();
 }
 function setWin(cid,v){ const e=_evReg.get(cid); const r=e&&sel.get(e.key); if(r) r.window=v; }
-// #12a (r151): select/deselect every event in a league-day group in one tap. Reuses the exact
-// single-row primitives (sel.set/delete + saveSel + count) so bulk can't drift from single.
 function lgSelectAll(lgId){
   const rows = [...document.querySelectorAll('.ev[data-lg="'+lgId+'"]')];
   if(!rows.length) return;
   const cids = rows.map(r=>r.getAttribute('data-cid'));
-  // if ALL are currently selected → clear the group; otherwise select the whole group.
   const allOn = cids.every(cid=>{ const e=_evReg.get(cid); return e && sel.has(e.key); });
   cids.forEach(cid=>{
     const e=_evReg.get(cid); if(!e) return;
@@ -1095,18 +768,6 @@ function lgSelectAll(lgId){
   });
   saveSel(); count();
 }
-// selector-r176: r175 read "actually shown on screen" as "ESPN says it's live right now" — wrong
-// guess, corrected by Mike with a screenshot of the ALREADY-EXISTING "✓ IN SYNC" banner (R97's
-// hasUnpublishedChanges()/publishedKeys machinery below). That banner is exactly "shown on
-// screen": it compares your local picks against the ACTUAL selections.json the dashboard reads,
-// fetched as ground truth by loadPublished(). Green iff there's at least one selection AND it
-// exactly matches what's currently published (nothing to publish, nothing stale) — reusing that
-// real comparison instead of a second, invented one. The (n) count itself is untouched either
-// way — always shows the real number, 0 included, independent of the highlight.
-// selector-r177: Mike corrected r176 — green should track ONLY whether the games list is
-// currently expanded on screen (panel open), not publish-sync state. "When I click it the list
-// populates and button remains green (only time it should be green). Click again, list
-// disappears, button unlights." The IN-SYNC banner inside the panel already covers publish state.
 function _syncSelBtn(){
   const b = document.getElementById('selBtn'); if (!b) return;
   const open = document.getElementById('selected').style.display !== 'none';
@@ -1115,32 +776,27 @@ function _syncSelBtn(){
 function count(){ const n = sel.size + stars.size;
   document.getElementById('cnt').textContent = document.getElementById('cnt2').textContent = n;
   const cs = document.getElementById('cntSel'); if (cs) cs.textContent = sel.size;
-  const cst = document.getElementById('cntStar'); if (cst) cst.textContent = stars.size;   // r167
-  _cntFollow();   // r173: combined badge
+  const cst = document.getElementById('cntStar'); if (cst) cst.textContent = stars.size;
+  _cntFollow();
   _syncSelBtn();
   if (document.getElementById('selected').style.display !== 'none') drawSelected();
 }
-// R70: "Selected" tab — consolidated cross-sport list of current picks w/ remove buttons.
 function toggleSelected(){
   const el = document.getElementById('selected');
   const show = el.style.display === 'none';
   el.style.display = show ? '' : 'none';
   if (show) drawSelected();
-  _syncSelBtn();   // r177: re-derive the highlight from panel visibility right away
+  _syncSelBtn();
 }
-// R97: keep the counters in sync (callable from startup, not just after a scan)
 function updCounts(){
   const c1=document.getElementById('cnt'), c2=document.getElementById('cnt2'), cs=document.getElementById('cntSel');
   if (c1) c1.textContent = sel.size;
   if (c2) c2.textContent = sel.size;
   if (cs) cs.textContent = sel.size;
-  // r167: updCounts is the STARTUP path (R97) — without this the new ★ FOLLOWING badge would
-  // read 0 on load until the first star toggle, i.e. exactly when the wall is being read.
   const cst = document.getElementById('cntStar'); if (cst) cst.textContent = stars.size;
-  _cntPlayers();   // r170: same startup-badge-reads-0 gotcha r167 already fixed for teams (also updates combined badge)
-  _syncSelBtn();    // r174: same startup gotcha for the SELECTED highlight
+  _cntPlayers();
+  _syncSelBtn();
 }
-// #12b (r151): clear the entire selection. Two-tap confirm (kiosk-friendly, guards the wipe).
 let _rmArm=false, _rmT=null;
 function removeAll(){
   const btn=document.getElementById('rmAllBtn'); if(!btn) return;
@@ -1152,14 +808,11 @@ function removeAll(){
   }
   clearTimeout(_rmT); _rmArm=false;
   sel.clear(); saveSel(); count(); drawSelected();
-  // also clear the main list's checkmarks
   document.querySelectorAll('.ev.on').forEach(el=>{ el.classList.remove('on'); const b=el.querySelector('input[type=checkbox]'); if(b) b.checked=false; });
 }
 function drawSelected(){
   const grid = document.getElementById('selgrid');
   updCounts();
-  // R97: PUBLISHED-STATE BANNER — the whole point of Mike's ask: show what's ACTUALLY
-  // live on the panel vs. what's merely picked here. Divergence = "unpublished changes".
   const box = document.getElementById('selected');
   if (box && sel.size){
     let st = document.getElementById('pubstate');
@@ -1170,8 +823,6 @@ function drawSelected(){
       const drop = _liveNotPicked();
       const esc2 = t => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
       st.style.background='rgba(210,153,34,0.15)'; st.style.color='#d29922'; st.style.border='1px solid #d29922';
-      // R99: clearer wording (the old copy read like the SELECTOR held 5) + SHOW what's
-      // live-but-unpicked, so Mike can see exactly which events publishing will drop.
       st.innerHTML = `⚠ NOT YET PUBLISHED — the panel is currently running <b>${publishedKeys.size}</b> event(s). `
         + `Publish to replace with your <b>${sel.size}</b>.`
         + (drop.length ? `<div style="font-weight:400;margin-top:5px;opacity:.9">Will be REMOVED from the panel: `
@@ -1183,15 +834,12 @@ function drawSelected(){
   }
   if (!sel.size){ grid.innerHTML = '<p class="sub" style="margin:4px 0">Nothing selected yet.</p>'; const st=document.getElementById('pubstate'); if(st) st.remove(); return; }
   const esc = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-  // R143: FLAT, RANK-ORDERED list (no league grouping — order IS the priority). Each row
-  // carries its sport emoji (e.ico) so the sport stays legible without header grouping.
-  // ≡ handle (left) drags to reorder · ✕ (right) removes. Top = rank 1 = highest priority.
-  const rows = [...sel.values()];   // sel order = priority order (NOT re-sorted)
+  const rows = [...sel.values()];
   const html = [
     `<button id="rmAllBtn" onclick="removeAll()" style="width:100%;margin:0 0 8px;background:#2a0f14;border:1px solid #7e2b3a;color:#f8a0b0;border-radius:7px;font:inherit;font-weight:700;padding:9px;cursor:pointer">Remove ALL</button>`,
     `<div class="d" style="margin:2px 0 6px;opacity:.75">≡ drag to reorder — <b>top = highest priority</b></div>`];
   rows.forEach((e, i) => {
-    _selCid.set(cssId(e.key), e.key);   // R140: cssId→key so removeSel works for expired rows too
+    _selCid.set(cssId(e.key), e.key);
     html.push(`<div class="selrow" draggable="false" data-cid="${cssId(e.key)}" data-idx="${i}"
         style="display:flex;align-items:center;gap:6px;padding:7px 8px;margin:4px 0;background:#05070d;border:1px solid var(--line);border-radius:7px;touch-action:pan-y">
       <span class="draghandle" style="cursor:grab;touch-action:none;user-select:none;font-size:18px;color:#5b6472;padding:2px 6px;line-height:1;flex:none">&#9776;</span>
@@ -1201,82 +849,55 @@ function drawSelected(){
     </div>`);
   });
   grid.innerHTML = html.join('');
-  wireDrag(grid);   // R143: attach pointer-events drag after render
+  wireDrag(grid);
 }
 
-// ── R143 DRAG-TO-REORDER (Pointer Events → works on iPhone Safari AND desktop Chrome) ──
-// Grab the ≡ handle, drag the row, drop → reorderSel rewrites `sel`, saveSel persists,
-// drawSelected re-renders. touch-action:none on the handle only, so the list still scrolls
-// when you touch anywhere else. Logic proven in scratch-reorder.js (11/11).
 function reorderSel(from, to){
   const entries = [...sel];
   if (from < 0 || from >= entries.length || to < 0 || to >= entries.length || from === to) return;
   const [moved] = entries.splice(from, 1);
   entries.splice(to, 0, moved);
   sel.clear(); for (const [k,v] of entries) sel.set(k,v);
-  saveSel();          // persist new order (Map order = priority)
-  drawSelected();     // re-render with updated ranks + IN-SYNC banner recompute
+  saveSel();
+  drawSelected();
 }
 
-// R149: drag-reorder via SortableJS (embedded below). Replaces 4 rounds of hand-rolled
-// pointer-drag (r143–r148) that kept failing on settle/cleanup edge cases — overlapping
-// "suspended" rows, drop-fall, stutter. SortableJS handles touch/pointer/scroll/settle
-// natively. We keep the data layer (reorderSel, rank, publish) which always tested fine;
-// Sortable just gives us the correct onEnd(from,to) indices.
 let _sortable = null;
 function wireDrag(grid){
   if (typeof Sortable === 'undefined'){ console.warn('[selector] Sortable not loaded'); return; }
   if (_sortable){ try { _sortable.destroy(); } catch(_){} _sortable = null; }
   _sortable = Sortable.create(grid, {
-    handle: '.draghandle',       // only the ≡ grip starts a drag (taps elsewhere scroll)
-    draggable: '.selrow',        // r150 FIX: only rows are sortable. Without this, Sortable's
-                                 // default '>*' counted the "≡ drag to reorder" HINT DIV as
-                                 // index 0 — every reported index was OFF BY ONE vs `sel`,
-                                 // and drops to the bottom hit reorderSel's bounds guard and
-                                 // silently bailed. THAT was the r149 "order reverts" bug.
-    animation: 180,              // native-feel slide of siblings
+    handle: '.draghandle',
+    draggable: '.selrow',
+    animation: 180,
     easing: 'cubic-bezier(0.22,0.61,0.36,1)',
-    forceFallback: true,         // use Sortable's own drag (consistent across iOS Safari)
-    fallbackTolerance: 4,        // ignore micro-jitter so a tap isn't a drag
-    delay: 80, delayOnTouchOnly: true,   // tiny hold so scrolling the list doesn't grab a row
+    forceFallback: true,
+    fallbackTolerance: 4,
+    delay: 80, delayOnTouchOnly: true,
     ghostClass: 'sortable-ghost',
     chosenClass: 'sortable-chosen',
     dragClass: 'sortable-drag',
     onEnd: (evt) => {
-      // r150: use *DraggableIndex — counts ONLY .selrow elements, so indices line up 1:1
-      // with `sel`. (evt.oldIndex/newIndex count ALL children incl. the hint div.)
       const from = evt.oldDraggableIndex, to = evt.newDraggableIndex;
-      // r150: defer past Sortable's own drop cleanup — reorderSel→drawSelected→wireDrag
-      // destroys this Sortable instance, and destroying it from INSIDE onEnd re-enters
-      // _onDrop mid-drop. innerHTML rebuild from `sel` remains the single source of truth.
       setTimeout(() => {
         if (from == null || to == null || from === to){ drawSelected(); return; }
-        reorderSel(from, to);    // commit to sel + persist + re-render (re-wires Sortable)
+        reorderSel(from, to);
       }, 0);
     },
   });
 }
 function removeSel(cid){
-  // R140: an expired event is no longer in _evReg (the current-scan registry), so the old
-  // `_evReg.get(cid); if(!e) return;` bailed silently — the ✕ did nothing and stale/expired
-  // games were un-removable, jamming the panel with unhydratable slides. Resolve the key from
-  // _evReg if present, else from the _selCid map built by drawSelected, so ANY selected row
-  // (live, future, OR expired) can always be removed.
   const e = _evReg.get(cid);
   const key = e ? e.key : _selCid.get(cid);
   console.log('[selector] removeSel cid=', cid, '→ key=', key, '| had?', key ? sel.has(key) : 'n/a');
   if (!key){
-    // R141: last-resort — cid couldn't resolve to a key via either map. Brute-force match:
-    // find the sel entry whose cssId(key) equals this cid and delete it directly. This makes
-    // the ✕ work even if the row-registration path was somehow missed.
     let hit=null;
     for (const k of sel.keys()){ if (cssId(k) === cid){ hit=k; break; } }
     if (hit){ sel.delete(hit); saveSel(); console.log('[selector] removeSel brute-forced', hit); count(); drawSelected(); return; }
     console.warn('[selector] removeSel: NO key AND no brute-force match for', cid, '— keys:', [...sel.keys()]);
     return;
   }
-  sel.delete(key); saveSel();   // R97: persist
-  // sync the main-list checkbox if it's rendered
+  sel.delete(key); saveSel();
   const box = document.querySelector(`#ev-${cid} input[type=checkbox]`);
   if (box){ box.checked = false; const row = document.getElementById('ev-'+cid); if (row) row.classList.remove('on'); }
   count(); drawSelected();
@@ -1286,16 +907,15 @@ function endDate(rec){
   if (rec.window==='weekend'){ const d=new Date(); const add=(7-d.getDay())%7; d.setDate(d.getDate()+add); return ymd(d); }
   return rec.date;
 }
-// R141: single source of truth for the published JSON, built LIVE from `sel` every time.
 function buildSelJson(){
   const out = {
     v: 1,
     updated: new Date().toISOString(),
     events: [...sel.values()].map((r,i)=>({
       league: r.path, label: r.league, espnId: r.id, title: r.title,
-      showFrom: r.date, showUntil: endDate(r), rank: i+1   // R143: priority rank (1 = highest)
+      showFrom: r.date, showUntil: endDate(r), rank: i+1
     })),
-    watch: { teams: [...stars.values()], players: [...players.values()], crawlLeagues: [...crawlLgOn] }   // ★ persistent — shown whenever they play/take the court; crawlLeagues r585
+    watch: { teams: [...stars.values()], players: [...players.values()], crawlLeagues: [...crawlLgOn] }
   };
   return JSON.stringify(out, null, 2);
 }
@@ -1316,10 +936,8 @@ async function publish(){
     let sha;
     try{ const r=await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE}`,{headers:H});
          if(r.ok) sha=(await r.json()).sha; }catch(_){}
-    // R141: regenerate from `sel` NOW — do not trust the textarea (a stale REVIEW/EXPORT
-    // snapshot was publishing removed games back onto the panel).
     const _json = buildSelJson();
-    document.getElementById('json').value = _json;   // keep the textarea honest too
+    document.getElementById('json').value = _json;
     const body={message:'selections '+new Date().toISOString().slice(0,16),
       content:btoa(unescape(encodeURIComponent(_json)))};
     if(sha) body.sha=sha;
@@ -1327,18 +945,13 @@ async function publish(){
       {method:'PUT',headers:H,body:JSON.stringify(body)});
     if(!r.ok) throw new Error('HTTP '+r.status);
     btn.textContent='✓ PUBLISHED (live in ~1 min)';
-    setTimeout(loadPublished, 1500);   // R97: re-fetch ground truth so the banner flips to IN SYNC
+    setTimeout(loadPublished, 1500);
   }catch(e){ btn.textContent='FAILED: '+e.message; }
   finally{ btn.disabled=false; setTimeout(()=>btn.textContent='PUBLISH TO PANEL',4000); }
 }
-/* selector-r168: client-side catalog refresh — see comment above the button.
-   Ports catalog.py's exact logic (fold/roster-parse/replace vs merge semantics) to run here
-   instead, because THIS host was never blocked. Fetches the CURRENT team-catalog.json straight
-   from GitHub (not the cached same-origin copy) so the sha used for the PUT is the real one and
-   two concurrent refreshes can't silently clobber each other. */
-const CAT_D = ' \u00b7 ';
+const CAT_D = ' · ';
 function _catFold(s){
-  return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+  return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
 }
 function _catNamesFromRoster(d){
   const out=[];
@@ -1352,12 +965,6 @@ function _catNamesFromRoster(d){
   return uniq;
 }
 async function _catJson(url){
-  // selector-r169: ESPN's core-API $ref links come back as literal http:// even though the
-  // teams-list endpoint itself is https. This selector runs on https://mikeylegs.github.io —
-  // fetch() to an http:// URL from an https page is mixed content and the browser silently
-  // rejects it (no useful console error). That's why every soccer league resolved
-  // ids_resolved:0 on refreshCatalog: pro leagues never hit this ($ref-free roster-by-abbr),
-  // soccer's id-resolution step follows $ref for every single team and got blocked every time.
   const u = String(url||'').replace(/^http:\/\//i, 'https://');
   try{ const r=await fetch(u); if(!r.ok) return null; return await r.json(); }
   catch(_){ return null; }
@@ -1465,7 +1072,7 @@ async function refreshCatalog(){
     const r1=await fetch(`https://api.github.com/repos/${REPO}/contents/${CFILE}`,
       {method:'PUT',headers:H,body:JSON.stringify(body)});
     if(!r1.ok) throw new Error('commit failed (HTTP '+r1.status+')');
-    _teamCatalog=cat;   // reflect it locally without a reload
+    _teamCatalog=cat;
     const failLeagues=Object.entries(stats).filter(([,v])=>(v.roster_ok||0)===0).map(([k])=>k);
     st.style.color = failLeagues.length ? '#fc5' : '#7dd3fc';
     st.textContent = failLeagues.length
@@ -1487,7 +1094,6 @@ function dl(){
 }
 </script>
 <style>
-/* R149 SortableJS drag states — native-feel lift + gap */
 .sortable-ghost { opacity: 0.35; }
 .sortable-chosen { background:#12203a !important; box-shadow:0 10px 28px rgba(0,0,0,0.6); }
 .sortable-drag { opacity: 1 !important; scale: 1.03; }
