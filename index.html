@@ -1264,6 +1264,10 @@ html.nomask #mlb-takeover.tko-full .tkoH-photo{ -webkit-mask:none !important; ma
   font-family:'Archivo Black',Arial,sans-serif;text-shadow:0 0.2cqh 1.8cqh rgba(0,0,0,.6);}
 #mlb-takeover.tko-wc .tkoH-name{font-size:15cqh;font-weight:900;text-transform:uppercase;margin-top:1.4cqh;letter-spacing:.01em;   /* r226: 13->15cqh bigger bottom text (Mike) */
   color:#fff;text-shadow:0 0.2cqh 2cqh rgba(0,0,0,.7);white-space:nowrap;}   /* r226: 13→15cqh bigger bottom text (Mike) */
+/* r647 -- Mike: scorer name still reads too small on the goal card. Scoped to sport-nhl (see
+   showTakeover) so MLB's dialed 15cqh HR-card name is completely untouched -- not a studio
+   pass, an explicit live bump per Mike's ask. First-pass number; flag if it needs retuning. */
+#mlb-takeover.tko-wc.sport-nhl .tkoH-name{font-size:17cqh;}
 /* ★ r226 — Statcast pill: single rounded chip under the name, EV · dist · LA. Sits in the
    lower third, glassy dark so it reads over the photo without competing with the name. */
 #mlb-takeover.tko-wc .tkoH-statcast{display:inline-block;margin-top:1.8cqh;
@@ -1399,7 +1403,7 @@ html.nomask #mlb-takeover.tko-full .tkoH-photo{ -webkit-mask:none !important; ma
   --logoSize:122; --logoX:25; --logoY:44; --logoOpacity:0.13;
   --logoBlur:0; --logoRot:0; --logoZ:1;
   --kSize:11.8; --kX:3.5; --kY:21; --kTrack:0.35; --kWeight:900;
-  --hSize:20.4; --hX:3.5; --hY:33; --hWidth:100;
+  --hSize:20.4; --hX:3.5; --hY:37; --hWidth:100;
   --hTrack:-0.2; --hLine:0.96; --hWeight:900;
   --bandH:38; --bandY:-2.5; --bandScoreSize:24; --bandAbbrSize:17;
   --bandGap:7; --bandBg:0.56;
@@ -1413,6 +1417,10 @@ html.nomask #mlb-takeover.tko-full .tkoH-photo{ -webkit-mask:none !important; ma
   --cAnchor:0%; --nAnchor:-100%;
   --hTextAlign:left;
   /* ── studio-r3 export — end ── */
+  /* r647 -- Mike, live hand-tune (explicitly NOT a studio pass): --hY bumped 33->37 for more
+     air between FINAL and the headline below it. Diverges from the studio-r3 export above --
+     if the win-splash studio gets reopened/regenerated later, this value needs to be re-applied
+     or re-dialed there, or a future export will silently revert it. */
 }
 #mlb-takeover.tko-win .tkw-bg{position:absolute;inset:0;z-index:0;
   background:linear-gradient(calc(var(--bgAngle)*1deg),
@@ -8189,6 +8197,7 @@ function showTakeover(opts){
       _tkwFitHead(el);   // r595: shrink-only rescue for long club nicknames (see fn comment)
     } else {
     el.classList.add('tko-wc');
+    if (A.sport === 'NHL') el.classList.add('sport-nhl');   // r647: scopes the name-size bump below to NHL only -- MLB's dialed look stays untouched
     el.innerHTML = tkoABuild(A);
     if (A.hero || A.head) _tkoHFitHead(el);   // r646: shrink-only rescue, hero branch only
     }
@@ -8298,7 +8307,7 @@ function showTakeover(opts){
            minus a right margin, so the name fits the real space, not its own width. */
         const cardW = el.clientWidth || 1600;
         var _leftPct = 5; try{ _leftPct = parseFloat(txt.style.left) || 5; }catch(_){}
-        const avail = cardW * (1 - (_leftPct/100) - 0.06);   // minus left inset, minus ~6% right margin
+        const avail = cardW * (1 - (_leftPct/100) - 0.06);
         if(!avail || avail<50) return;
         /* r332 — SHRINK-ONLY, SINGLE-RUN. The old fit GREW short names up to fill (fs*=1.04)
            AND ran twice (once on fonts.ready, once at 380ms), resetting fontSize between runs.
@@ -8306,11 +8315,30 @@ function showTakeover(opts){
            the "grows then snaps" bug. The grow-to-fill was the dramatic visible scaling; it's
            not needed (the CSS base size is already tuned). We only need to PREVENT OVERFLOW on
            long names. So: shrink-only (never grow), run once. Stable, no snap. */
+        /* r647 — REAL FIX #2. node.scrollWidth never measured the name's TEXT width: .tkoH-name
+           is a block with no explicit width, so it always fills its parent (.tkoH-txt, which itself
+           shrink-wraps to the HEADLINE's width, the widest sibling) — scrollWidth reported the
+           headline's width every time, constant across every shrink iteration, so the loop always
+           "overflowed" and ran to the guard limit (24 * 0.94 ≈ collapses to ~35px regardless of
+           name length — reproduced and confirmed via instrumented run). Fix: measure the NAME's
+           actual rendered text width with an offscreen probe span (same technique as
+           _tkoHFitHead below), never the box's scrollWidth. Single-shot, shrink-only (Math.min
+           caps at the CSS base size, so a short name is never enlarged past its dialed size). */
         const fitLine=(node, minPx)=>{
           if(!node) return;
-          node.style.fontSize='';                 // reset to CSS base, then only ever shrink from there
-          let fs=parseFloat(getComputedStyle(node).fontSize), guard=24;
-          while(guard-- && node.scrollWidth>avail-2 && fs>minPx){ fs*=0.94; node.style.fontSize=fs+'px'; }
+          node.style.fontSize='';                 // reset to CSS base
+          const cs = getComputedStyle(node);
+          const baseSizePx = parseFloat(cs.fontSize); if(!baseSizePx) return;
+          const text = (node.textContent || '').trim(); if(!text) return;
+          const probe = document.createElement('span');
+          probe.style.cssText = 'position:absolute;visibility:hidden;left:-9999px;top:0;white-space:nowrap;'
+            + 'font-size:100px;font-weight:' + cs.fontWeight + ';font-family:' + cs.fontFamily
+            + ';letter-spacing:' + cs.letterSpacing + ';text-transform:' + cs.textTransform + ';';
+          probe.textContent = text;
+          document.body.appendChild(probe);
+          const lineWidth = probe.getBoundingClientRect().width;
+          probe.remove();
+          if (lineWidth > 0) node.style.fontSize = Math.max(minPx, Math.floor(Math.min(baseSizePx, 100 * avail / lineWidth))) + 'px';
         };
         // headline row and name fit independently; caps keep proportions sane on the card.
         const H=el.clientHeight||820;
@@ -16836,7 +16864,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r646-goal-headline-fit-sting-fix';
+const BUILD_MARKER = 'r647-name-size-winsplash-gap';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
