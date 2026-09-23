@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Goal Latency Timer</title>
+<style>
+  html,body{margin:0;background:#05070d;color:#e6e9ef;font-family:-apple-system,Segoe UI,Arial,sans-serif;
+    height:100%;overscroll-behavior:none;}
+  #app{display:flex;flex-direction:column;height:100vh;box-sizing:border-box;padding:14px;gap:10px;}
+  #title{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#7d8aa8;text-align:center;}
+  #gameRow{display:flex;gap:8px;align-items:center;}
+  #gameRow select{flex:1;background:#1a2030;border:1px solid #2c3450;color:#e6e9ef;border-radius:6px;
+    padding:8px;font-size:13px;min-width:0;}
+  #refreshGames{flex:0 0 auto;background:#1a2030;border:1px solid #2c3450;color:#e6e9ef;border-radius:6px;
+    padding:8px 12px;font-size:15px;cursor:pointer;}
+  #gameStatus{font-size:11.5px;color:#7d8aa8;line-height:1.35;}
+  #mainBtn{min-height:150px;border:none;border-radius:16px;font-size:min(9vw,46px);font-weight:900;
+    text-transform:uppercase;letter-spacing:.02em;cursor:pointer;color:#05070d;
+    background:linear-gradient(180deg,#ff5252,#e63946);box-shadow:0 8px 0 #a01818,0 12px 20px rgba(0,0,0,.5);
+    transition:transform .05s;}
+  #mainBtn:active{transform:translateY(6px);box-shadow:0 2px 0 #a01818,0 6px 14px rgba(0,0,0,.5);}
+  #cancelBtn{width:100%;min-height:56px;border-radius:12px;border:1px solid #2c3450;background:#11151d;
+    color:#aab2c5;font-size:16px;font-weight:700;cursor:pointer;margin-top:8px;}
+  #cancelBtn:disabled{opacity:.35;cursor:default;}
+  #cancelBtn:active:not(:disabled){transform:translateY(2px);}
+  #hint{text-align:center;font-size:11.5px;color:#556;}
+  #pendingWrap{display:flex;flex-direction:column;gap:6px;}
+  .pendingRow{background:#171c28;border:1px solid #2a3a2a;border-radius:8px;padding:8px 10px;
+    font-size:12.5px;display:flex;justify-content:space-between;align-items:center;}
+  .pendingRow .clk{font-family:monospace;font-weight:800;color:#5ecb7a;}
+  .pendingRow .stage{color:#8891a3;}
+  #logWrap{background:#11151d;border:1px solid #232838;border-radius:10px;padding:10px 12px;
+    max-height:34vh;overflow-y:auto;flex:1;}
+  #logWrap h2{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#7d8aa8;margin:0 0 8px;
+    display:flex;justify-content:space-between;align-items:center;}
+  #logWrap h2 button{background:none;border:none;color:#e08;font-size:11px;cursor:pointer;padding:2px 6px;}
+  #logList{display:flex;flex-direction:column;gap:6px;}
+  .logRow{border-bottom:1px solid #1a2030;padding-bottom:6px;display:flex;flex-direction:column;gap:3px;}
+  .logRow .top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12.5px;}
+  .logRow .badge{font-weight:800;padding:1px 6px;border-radius:4px;font-size:10.5px;letter-spacing:.03em;}
+  .logRow .badge.score{background:#2c3450;color:#8fb3ff;}
+  .logRow .badge.clip{background:#1e6b37;color:#8fe3a8;}
+  .logRow .lag{font-family:monospace;font-weight:800;color:#5ecb7a;}
+  .logRow .ts{color:#556;font-size:11px;margin-left:auto;}
+  .logRow button.del{background:none;border:none;color:#e08;cursor:pointer;font-size:13px;padding:0 4px;}
+  .logRow .noteRow input{width:100%;box-sizing:border-box;padding:6px 8px;border-radius:6px;
+    border:1px solid #2c3450;background:#0d1119;color:#e6e9ef;font-size:12px;}
+  #empty{color:#556;font-size:12px;text-align:center;padding:8px;}
+  #statsRow{font-size:11.5px;color:#7d8aa8;text-align:center;margin-top:6px;}
+  #copyBtn{width:100%;padding:10px;border-radius:8px;border:1px solid #2c3450;background:#1a2030;color:#cdd4e3;
+    font-size:12.5px;cursor:pointer;margin-top:8px;}
+  #copyFeedback{text-align:center;font-size:11px;color:#5ecb7a;height:14px;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="title">Goal → Score/Clip Latency Timer</div>
+  <div id="gameRow">
+    <select id="selGame"><option value="">Loading today's games...</option></select>
+    <button id="refreshGames" title="Refresh today's games">&#8635;</button>
+  </div>
+  <div id="gameStatus">Not watching a game yet.</div>
+  <button id="mainBtn">GOAL!</button>
+  <button id="cancelBtn" disabled>Cancel last (mis-tap)</button>
+  <div id="hint">Tap GOAL! the instant you see the puck cross the line — that's the only input. Space bar / Enter work too. The page polls on its own from there and logs the score update and the clip landing as separate rows.</div>
+  <div id="pendingWrap"></div>
+  <div id="logWrap">
+    <h2>Log <button id="clearLog">clear all</button></h2>
+    <div id="logList"></div>
+    <div id="empty">No measurements yet.</div>
+    <div id="statsRow"></div>
+    <button id="copyBtn">Copy log as text</button>
+    <div id="copyFeedback"></div>
+  </div>
+</div>
+<script>
+// ══════════════════════════════════════════════════════════════════════════
+// PURE LOGIC (no fetch, no DOM) -- unit-tested verbatim in verify_timer_unit.js
+// ══════════════════════════════════════════════════════════════════════════
+function formatLag(sec){
+  if (sec < 60) return sec + 's';
+  const m = Math.floor(sec/60), s = sec % 60;
+  return m + 'm' + String(s).padStart(2,'0') + 's';
+}
+function formatClockHMS(ms){
+  const s = Math.max(0, ms) / 1000;
+  const m = Math.floor(s / 60), rem = Math.floor(s - m*60);
+  return String(m).padStart(2,'0') + ':' + String(rem).padStart(2,'0');
+}
+// Matches freshly-polled `goals` against the pending press queue and the running
+// `knownGoals` map, logging a SCORE entry the first time a goal is seen at all, and a
+// CLIP entry the first time that same goal gains a highlightClip. FIFO: the oldest
+// press still waiting for a score match gets the next new goal. Pure and side-effect-only
+// on the plain objects passed in (no fetch/DOM) so it's fully unit-testable.
+// Returns the list of newly-created log entries this tick.
+function processPoll(goals, presses, knownGoals, nowMs){
+  const newEntries = [];
+  (goals || []).forEach(g => {
+    if (g.eventId == null) return;
+    let k = knownGoals[g.eventId];
+    if (!k){
+      k = knownGoals[g.eventId] = { firstSeenMs: nowMs, hasClip: false, matchedPressId: null };
+      const press = presses.find(p => !p.canceled && p.matchedEventId == null);
+      if (press){
+        press.matchedEventId = g.eventId;
+        k.matchedPressId = press.id;
+        const entry = { type: 'score', pressId: press.id, ts: nowMs, lagS: Math.round((nowMs - press.tStart)/1000) };
+        press.scoreEntryId = entry;
+        newEntries.push(entry);
+      }
+    }
+    if (!k.hasClip && g.highlightClip){
+      k.hasClip = true;
+      const press = presses.find(p => p.matchedEventId === g.eventId);
+      if (press && !press.clipLogged){
+        press.clipLogged = true;
+        newEntries.push({ type: 'clip', pressId: press.id, ts: nowMs, lagS: Math.round((nowMs - press.tStart)/1000) });
+      }
+    }
+  });
+  return newEntries;
+}
+window._timerInternals = { formatLag, formatClockHMS, processPoll }; // exposed for the verify harnesses
+
+// ══════════════════════════════════════════════════════════════════════════
+// CORS PROXY LAYER -- verbatim from dashboard.html's PROXIES/proxyFetchText (r632b/R107),
+// ported so this standalone page doesn't depend on the dashboard being open. NHL's
+// api-web.nhle.com has no CORS header (confirmed live), so skipDirect goes straight to
+// the proxy chain, worker first.
+// ══════════════════════════════════════════════════════════════════════════
+const PROXIES = [
+  u => `https://sports.michael-legra.workers.dev/?url=${encodeURIComponent(u)}`,
+  u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+  u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+  u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+  u => `https://proxy.corsfix.com/?${u}`,
+];
+function fetchWithTimeout(url, ms){
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  return fetch(url, { signal: controller.signal }).then(r => { clearTimeout(timer); return r; })
+    .catch(e => { clearTimeout(timer); throw e; });
+}
+async function proxyFetchText(url){
+  for (const proxy of PROXIES){
+    try{
+      const res = await fetchWithTimeout(proxy(url), 10000);
+      if (!res.ok) continue;
+      const text = await res.text();
+      try{ const w = JSON.parse(text); if (w && typeof w.contents === 'string') return w.contents; }catch(_){}
+      return text;
+    }catch(e){}
+  }
+  return null;
+}
+async function fetchScoreNow(){
+  try{
+    const raw = await proxyFetchText('https://api-web.nhle.com/v1/score/now');
+    if (!raw) return null;
+    return JSON.parse(raw);
+  }catch(_){ return null; }
+}
+// Pure formatter (unit-tested) -- one place that turns a raw /score/now game object into the
+// label used BOTH in the picker dropdown and in the "currently polling" status line, so the
+// two can never say different things about the same game.
+function describeGame(g){
+  const away = (g.awayTeam && g.awayTeam.abbrev) || '?', home = (g.homeTeam && g.homeTeam.abbrev) || '?';
+  const aScore = g.awayTeam && g.awayTeam.score, hScore = g.homeTeam && g.homeTeam.score;
+  const state = g.gameState;
+  let tail;
+  if (state === 'LIVE' || state === 'CRIT'){
+    tail = `LIVE  ${aScore != null ? aScore : '?'}-${hScore != null ? hScore : '?'}`;
+  } else if (state === 'FINAL' || state === 'OFF'){
+    tail = `FINAL  ${aScore != null ? aScore : '?'}-${hScore != null ? hScore : '?'}`;
+  } else if (g.startTimeUTC){
+    try{
+      tail = new Date(g.startTimeUTC).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    }catch(_){ tail = state || '?'; }
+  } else {
+    tail = state || '?';
+  }
+  return `${away} @ ${home} — ${tail}`;
+}
+window._timerInternals.describeGame = describeGame;
+async function fetchLandingGoals(gameId){
+  try{
+    const raw = await proxyFetchText('https://api-web.nhle.com/v1/gamecenter/' + gameId + '/landing');
+    if (!raw) return null;
+    const j = JSON.parse(raw);
+    const periods = (j.summary && j.summary.scoring) || [];
+    const out = [];
+    periods.forEach(p => (p.goals || []).forEach(g => out.push({
+      eventId: g.eventId, highlightClip: g.highlightClip || null
+    })));
+    return out;
+  }catch(_){ return null; }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// STATE + STORAGE
+// ══════════════════════════════════════════════════════════════════════════
+const STORE_KEY = 'goalLatencyLog_v2';
+function loadLog(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); }catch(_){ return []; } }
+function saveLog(l){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(l)); }catch(_){} }
+
+let log = loadLog();
+let presses = [];       // pending + resolved presses this session (not persisted -- log rows are what persist)
+let knownGoals = {};    // eventId -> {firstSeenMs, hasClip, matchedPressId}
+let gameId = null;
+let games = [];         // last-fetched /score/now games list, cached for the dropdown + status line
+let pressSeq = 1;
+let pollTimer = null;
+const POLL_MS = window.__TEST_POLL_MS || 5000;   // override hook for the e2e harness only; real use always 5000
+const GAMES_REFRESH_MS = window.__TEST_GAMES_REFRESH_MS || 60000;   // FUT -> LIVE transitions, new day's slate
+
+const el = {
+  selGame: document.getElementById('selGame'),
+  refreshGames: document.getElementById('refreshGames'),
+  gameStatus: document.getElementById('gameStatus'),
+  mainBtn: document.getElementById('mainBtn'),
+  cancelBtn: document.getElementById('cancelBtn'),
+  pendingWrap: document.getElementById('pendingWrap'),
+  logList: document.getElementById('logList'),
+  empty: document.getElementById('empty'),
+  statsRow: document.getElementById('statsRow'),
+  copyBtn: document.getElementById('copyBtn'),
+  copyFeedback: document.getElementById('copyFeedback'),
+  clearLog: document.getElementById('clearLog')
+};
+
+// ══════════════════════════════════════════════════════════════════════════
+// GAME LIST -- fetches ALL of today's games once (plus a periodic refresh) and lets Mike
+// pick the one he's watching directly, instead of guessing it from a team. Retried
+// automatically by the poll loop whenever gameId is still null (e.g. page opened before the
+// slate loads), and re-fetched periodically so a FUT game's label flips to LIVE on its own.
+// ══════════════════════════════════════════════════════════════════════════
+async function refreshGamesList(){
+  const data = await fetchScoreNow();
+  if (!data){
+    if (!games.length) el.gameStatus.textContent = `Couldn't reach the NHL score endpoint (proxy down?). Retrying...`;
+    return;
+  }
+  games = data.games || [];
+  const keepId = gameId;
+  el.selGame.innerHTML = '';
+  if (!games.length){
+    el.selGame.innerHTML = '<option value="">No games today</option>';
+    gameId = null;
+    renderGameStatus();
+    return;
+  }
+  games.forEach(g => {
+    const o = document.createElement('option');
+    o.value = g.id;
+    o.textContent = describeGame(g);
+    el.selGame.appendChild(o);
+  });
+  // Keep the current selection if that game is still in today's slate; otherwise default to
+  // the first LIVE/CRIT game, else just the first game listed.
+  const stillThere = keepId != null && games.some(g => g.id === keepId);
+  if (stillThere){
+    gameId = keepId;
+  } else {
+    const live = games.find(g => g.gameState === 'LIVE' || g.gameState === 'CRIT');
+    gameId = (live || games[0]).id;
+  }
+  el.selGame.value = String(gameId);
+  renderGameStatus();
+}
+function renderGameStatus(){
+  const g = games.find(x => x.id === gameId);
+  el.gameStatus.textContent = g ? `Watching: ${describeGame(g)}  (game ${gameId})` : 'Not watching a game yet.';
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// POLL LOOP -- fetch + call the pure processPoll(), then persist/render any new entries.
+// No timeout, ever (matches the dashboard's own r636 "no give-up" rule): a slow clip is
+// still a real, useful number.
+// ══════════════════════════════════════════════════════════════════════════
+async function pollTick(){
+  if (gameId == null){ await refreshGamesList(); }
+  if (gameId != null){
+    const goals = await fetchLandingGoals(gameId);
+    if (goals){
+      const newEntries = processPoll(goals, presses, knownGoals, Date.now());
+      if (newEntries.length){
+        newEntries.forEach(e => {
+          log.unshift({ ts: e.ts, type: e.type, lagS: e.lagS, note: '' });
+        });
+        saveLog(log);
+        renderLog();
+      }
+    }
+  }
+  renderPending();
+  pollTimer = setTimeout(pollTick, POLL_MS);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// UI: press / cancel
+// ══════════════════════════════════════════════════════════════════════════
+function pressGoal(){
+  presses.push({ id: pressSeq++, tStart: Date.now(), matchedEventId: null, clipLogged: false, canceled: false });
+  renderPending();
+}
+function cancelLast(){
+  // Cancels the most recently added press that hasn't matched a goal yet -- an already-
+  // matched press has already produced log rows, which the log's own delete button handles.
+  for (let i = presses.length - 1; i >= 0; i--){
+    if (!presses[i].canceled && presses[i].matchedEventId == null){
+      presses[i].canceled = true;
+      renderPending();
+      return;
+    }
+  }
+}
+el.mainBtn.addEventListener('click', pressGoal);
+el.cancelBtn.addEventListener('click', cancelLast);
+el.selGame.addEventListener('change', e => {
+  gameId = e.target.value ? parseInt(e.target.value, 10) : null;
+  renderGameStatus();
+});
+el.refreshGames.addEventListener('click', () => { el.gameStatus.textContent = 'Refreshing...'; refreshGamesList(); });
+setInterval(refreshGamesList, GAMES_REFRESH_MS);
+document.addEventListener('keydown', e => {
+  if (e.target && e.target.tagName === 'INPUT') return;
+  if (e.code === 'Space' || e.code === 'Enter'){ e.preventDefault(); pressGoal(); }
+  if (e.code === 'Escape'){ e.preventDefault(); cancelLast(); }
+});
+
+function renderPending(){
+  const active = presses.filter(p => !p.canceled && !(p.matchedEventId != null && p.clipLogged));
+  el.cancelBtn.disabled = !presses.some(p => !p.canceled && p.matchedEventId == null);
+  el.pendingWrap.innerHTML = active.map(p => {
+    const stage = p.matchedEventId == null ? 'waiting for score update' : 'score in, waiting for clip';
+    return `<div class="pendingRow"><span class="clk">${formatClockHMS(Date.now() - p.tStart)}</span><span class="stage">${stage}</span></div>`;
+  }).join('');
+}
+setInterval(() => { if (presses.some(p => !p.canceled)) renderPending(); }, 1000);
+
+// ══════════════════════════════════════════════════════════════════════════
+// UI: log
+// ══════════════════════════════════════════════════════════════════════════
+function renderLog(){
+  el.logList.innerHTML = '';
+  el.empty.style.display = log.length ? 'none' : 'block';
+  log.forEach((row, i) => {
+    const div = document.createElement('div');
+    div.className = 'logRow';
+    const time = new Date(row.ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    const badgeClass = row.type === 'clip' ? 'clip' : 'score';
+    const badgeText = row.type === 'clip' ? 'CLIP LANDED' : 'SCORE UPDATE';
+    div.innerHTML = `<div class="top">
+        <span class="badge ${badgeClass}">${badgeText}</span>
+        <span class="lag">${formatLag(row.lagS)}</span>
+        <span class="ts">${time}</span>
+        <button class="del" data-i="${i}">×</button>
+      </div>
+      <div class="noteRow"><input type="text" placeholder="note (team, period)..." data-note="${i}" value="${(row.note||'').replace(/"/g,'&quot;')}"></div>`;
+    el.logList.appendChild(div);
+  });
+  el.logList.querySelectorAll('button.del').forEach(btn => {
+    btn.addEventListener('click', e => { log.splice(+e.target.dataset.i, 1); saveLog(log); renderLog(); });
+  });
+  el.logList.querySelectorAll('input[data-note]').forEach(inp => {
+    inp.addEventListener('input', e => { log[+e.target.dataset.note].note = e.target.value; saveLog(log); });
+  });
+  if (log.length){
+    const lags = log.map(r => r.lagS);
+    const sorted = lags.slice().sort((a,b) => a-b);
+    const median = sorted[Math.floor(sorted.length/2)];
+    el.statsRow.textContent = `n=${lags.length}  median=${formatLag(median)}  min=${formatLag(Math.min(...lags))}  max=${formatLag(Math.max(...lags))}`;
+  } else {
+    el.statsRow.textContent = '';
+  }
+}
+el.clearLog.addEventListener('click', () => {
+  if (!log.length) return;
+  if (!confirm('Clear all ' + log.length + ' logged entrie(s)?')) return;
+  log = []; saveLog(log); renderLog();
+});
+el.copyBtn.addEventListener('click', async () => {
+  const lines = log.map(r => {
+    const time = new Date(r.ts).toLocaleString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    const label = r.type === 'clip' ? 'CLIP LANDED' : 'SCORE UPDATE';
+    return `${label} ${String(r.lagS).padStart(4)}s  ${time}${r.note ? '  -- ' + r.note : ''}`;
+  });
+  const lags = log.map(r => r.lagS);
+  if (lags.length){
+    const sorted = lags.slice().sort((a,b) => a-b);
+    lines.push('---', `n=${lags.length} median=${sorted[Math.floor(sorted.length/2)]}s min=${Math.min(...lags)}s max=${Math.max(...lags)}s`);
+  }
+  const text = lines.length ? lines.join('\n') : '(no measurements yet)';
+  try{ await navigator.clipboard.writeText(text); flash('Copied'); }
+  catch(_){ flash('copy failed (clipboard blocked) -- select log manually'); }
+});
+function flash(msg){
+  el.copyFeedback.textContent = msg;
+  setTimeout(() => { if (el.copyFeedback.textContent === msg) el.copyFeedback.textContent = ''; }, 1600);
+}
+
+renderLog();
+renderPending();
+pollTick();
+</script>
+</body>
+</html>
