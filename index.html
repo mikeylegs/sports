@@ -4957,7 +4957,11 @@ function nhlGoalWatch(gameId, opts){
           // that's exactly the false-"0s" artifact seen the first night out. Adopt the
           // persisted verdict silently instead of re-measuring it.
           const prior = nhlLogFind(gameId, g.eventId);
-          if (prior){ t = { firstSeenMs: prior.firstSeenMs || now, goal: g, resolved: !prior.gaveUp }; }
+          // r638: ANY existing row for this goal -- a real measurement OR a legacy garbage
+          // row from before r636 (old-shape "gave up", no lagS/firstSeenMs) -- means don't
+          // touch it again. Re-deriving from a fabricated "now" baseline is exactly what
+          // produced tonight's spurious 0s duplicates.
+          if (prior){ t = { firstSeenMs: prior.firstSeenMs || now, goal: g, resolved: true }; }
           else { t = { firstSeenMs: now, goal: g, resolved: false };
             // r636: this exact goal has NEVER been seen or logged before, yet it already has a
             // clip on the very FIRST poll we ever ran for it -- the goal happened before this
@@ -5057,16 +5061,36 @@ function nhlWatchReport(){
     lines.push('PENDING (seen, no clip yet): none', '');
   }
   const allRows = window._nhlWatchLog || [];
+  // r638: legacy rows from before r636 (old "gave up" shape) have no recoverable lagS at all
+  // -- that's the source of tonight's "undefineds"/"videoId undefined" lines and the NaN in
+  // min/max (a single non-finite value poisons Math.min/max over the whole array). Drop those
+  // first, before anything else.
+  const withRealLag = allRows.filter(r => Number.isFinite(r.lagS));
+  const corruptCount = allRows.length - withRealLag.length;
+  // r638: dedupe by (gameId,eventId) -- a goal can have more than one row if an earlier
+  // deploy tonight produced a stray duplicate (e.g. a spurious 0s hit alongside the real
+  // measurement). Keep only the largest finite lagS per goal; that's always the real one,
+  // since a duplicate artifact is always <= the true wait.
+  const bestByKey = new Map();
+  withRealLag.forEach(r => {
+    const key = r.gameId + ':' + r.eventId;
+    const cur = bestByKey.get(key);
+    if (!cur || r.lagS > cur.lagS) bestByKey.set(key, r);
+  });
+  const deduped = Array.from(bestByKey.values());
+  const dupCount = withRealLag.length - deduped.length;
   // r636: restart-artifact rows (goal already had a clip before this watch ever started --
   // not a real measurement) are hidden from the readable list AND excluded from the stats,
   // per Mike's request. Nothing is deleted from the underlying log, just not shown here.
-  const rows = allRows.filter(r => !r.restartArtifact && !(r.restartArtifact === undefined && r.lagS === 0));
-  // ^ r636: rows written before this flag existed (tonight's first 3 hits) have no
-  //   restartArtifact field at all -- lagS===0 is the same tell (no real clip lands the
-  //   instant a goal is scored), so treat an unflagged 0s row as legacy-artifact too.
-  const hiddenCount = allRows.length - rows.length;
+  const rows = deduped.filter(r => !r.restartArtifact && !(r.restartArtifact === undefined && r.lagS === 0));
+  const artifactCount = deduped.length - rows.length;
+  const hiddenNote = [
+    artifactCount ? artifactCount + ' restart-artifact' : null,
+    dupCount ? dupCount + ' duplicate' : null,
+    corruptCount ? corruptCount + ' legacy-corrupt' : null
+  ].filter(Boolean).join(', ');
   if (!rows.length){
-    lines.push('(no real goals measured yet)' + (hiddenCount ? '  (' + hiddenCount + ' restart-artifact row(s) hidden)' : ''));
+    lines.push('(no real goals measured yet)' + (hiddenNote ? '  (' + hiddenNote + ' row(s) hidden)' : ''));
     const out = lines.join('\n'); console.log(out); return out;
   }
   lines.push.apply(lines, rows.map(r =>
@@ -5074,7 +5098,7 @@ function nhlWatchReport(){
   const lags = rows.map(r => r.lagS);
   lines.push('---', 'n=' + lags.length + ' median=' + lags.slice().sort((a,b)=>a-b)[Math.floor(lags.length/2)] + 's'
     + ' min=' + Math.min(...lags) + 's max=' + Math.max(...lags) + 's'
-    + (hiddenCount ? '  (' + hiddenCount + ' restart-artifact row(s) hidden)' : ''));
+    + (hiddenNote ? '  (' + hiddenNote + ' row(s) hidden)' : ''));
   console.log(lines.join('\n'));
   return lines.join('\n');
 }
@@ -16397,7 +16421,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r637-nhl-watch-pending-goals';
+const BUILD_MARKER = 'r638-nhl-watch-cleanup-legacy';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
