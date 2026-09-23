@@ -16298,7 +16298,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r633-nhl-watch-cc-clean-log';
+const BUILD_MARKER = 'r634-cc-action-output-fix';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -18341,6 +18341,9 @@ body.ccopen #ccdot{top:5px;right:6px}   /* r259: stays in the corner, open or cl
 #ccp .probe-run:disabled{opacity:.5;cursor:default}
 #ccp .fbtn.act{background:#3a2416;border:1px solid #7e5a2b;color:#f8c98a;border-radius:5px;padding:3px 11px;font:inherit;cursor:pointer}
 #ccp .offd{color:#5b6b80;font-style:italic;font-size:calc(var(--fs) - 3px);margin-left:4px}
+/* r634: action-flag output. Empty <pre> takes zero space until CC.run() fills it. */
+#ccp .ccout{margin:2px 0 8px 22px;padding:6px 8px;background:#000;color:#9f9;font:11px/1.4 monospace;white-space:pre-wrap;word-break:break-word;border-radius:4px;max-height:240px;overflow:auto}
+#ccp .ccout:empty{display:none;margin:0;padding:0}
 #ccp .rlbar{display:flex;align-items:center;gap:9px;padding:9px 13px;border-bottom:1px solid #22303f;flex-wrap:wrap}
 #ccp .rlbtn{background:#12324a;border:1px solid #2b5a7e;color:#7dd3fc;border-radius:6px;padding:6px 12px;font:inherit;font-weight:600;cursor:pointer}
 #ccp .rlbtn:hover{background:#164060}
@@ -18618,10 +18621,15 @@ window.CC = (function(){
          + '" placeholder="'+(f.ph||f.def||'')+'" onchange="CC.setVal(\''+f.n+'\',this.value)">';
     }
     var offhint = (f.t!=='toggle'&&f.t!=='action'&&!on) ? '<span class="offd">off · default</span>' : '';
+    // r633c: action flags render their result into #ccout-<name>. CC.run() looked for this
+    // element but row() never emitted it -- the button fired the fn and the return value had
+    // nowhere to go. Masked until now because tkodump/etc. have a side effect (clipboard copy)
+    // or a real on-screen effect (simgoal); nhlreport has neither, which is what exposed it.
+    var outph = (f.t==='action') ? '<pre id="ccout-'+f.n+'" class="ccout"></pre>' : '';
     return '<div class="fr"><span class="st'+(st?' on':'')+'" onclick="CC.star(\''+f.n+'\')">'
          + (st?'\u2605':'\u2606')+'</span>'
          + '<span class="nm" onclick="CC.copy(\''+f.n+'\')" title="copy a URL with this flag flipped">?'+f.n+'</span>'
-         + '<span class="ds">'+f.d+' '+offhint+'</span>'+ctrl+'</div>';
+         + '<span class="ds">'+f.d+' '+offhint+'</span>'+ctrl+'</div>'+outph;
   }
   function renderFlags(){
     var act=activeFlags();
@@ -19288,9 +19296,9 @@ window.CC = (function(){
       }catch(e){} },
     run:function(id,fn){ try{
         var out=window[fn](); var el=$('ccout-'+id);
-        if(el) el.outerHTML='<pre>'+String(typeof out==='string'?out:JSON.stringify(out,null,1)||'(no return value — check the console)')
+        if(el) el.outerHTML='<pre id="ccout-'+id+'" class="ccout">'+String(typeof out==='string'?out:JSON.stringify(out,null,1)||'(no return value — check the console)')
           .replace(/</g,'&lt;')+'</pre>';
-      }catch(e){ var el2=$('ccout-'+id); if(el2) el2.innerHTML='<b>read failed:</b> '+String(e.message||e); } },
+      }catch(e){ var el2=$('ccout-'+id); if(el2) el2.outerHTML='<pre id="ccout-'+id+'" class="ccout"><b>read failed:</b> '+String(e.message||e).replace(/</g,'&lt;')+'</pre>'; } },
     refresh:renderAll
   };
   try{
