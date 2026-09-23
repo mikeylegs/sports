@@ -5187,6 +5187,7 @@ function nhlGoalTakeoverOpts(g, hero){
   const side = team === homeAbbr ? 'right' : 'left';
   const name = (g.fullName && g.fullName.trim()) || g.scorer || '';
   return { side, a: {
+    sport: 'NHL', team,   // r646: sport gates the MLB-only HR sting/telemetry in showTakeover
     accent, wash_r: wr, wash_g: wg, wash_b: wb,
     hero: hero || null,
     logo: (typeof logoUrl === 'function') ? logoUrl('NHL', team) : '',
@@ -7875,6 +7876,39 @@ function _tkwFitHead(el){
     if (lineWidth > 0) h.style.fontSize = Math.floor(Math.min(maxPx, 100 * availPx / lineWidth)) + 'px';
   }catch(_){}
 }
+/* r646 -- SHRINK-ONLY RESCUE for the hero-photo headline (.tkoH-head), same technique as
+   _tkwFitHead above (measure at a 100px reference, scale down to fit, never grow past the
+   studio-dialed 17cqh). Mike: "SHORTHANDED GOAL" ran off the card edge -- .tkoH-head was
+   dialed against "HOME RUN" (8 chars) with fixed font-size + white-space:nowrap and no
+   fit-to-width logic at all, unlike .tkw-head which already had this. Shrink-only means MLB's
+   "HOME RUN"/"GRAND SLAM" etc, which already fit, are mathematically unaffected -- this can
+   only ever make a headline SMALLER than the dialed 17cqh, never bigger. Scoped to the
+   .tkoH-hltxt span only (not the whole .tkoH-head), so an HR-count tag (.tkoH-hr, MLB only,
+   never present on an NHL goal) keeps its own fixed 14cqh untouched. */
+function _tkoHFitHead(el){
+  try{
+    const head = el.querySelector('.tkoH-head'); const hl = el.querySelector('.tkoH-hltxt');
+    const txt = el.querySelector('.tkoH-txt');
+    if (!head || !hl || !txt) return;
+    const cardW = el.clientWidth; if (!cardW) return;
+    const text = (hl.textContent || '').trim(); if (!text) return;
+    const cs = getComputedStyle(head);
+    const baseSizePx = parseFloat(cs.fontSize) || 0; if (!baseSizePx) return;
+    const probe = document.createElement('span');
+    probe.style.cssText = 'position:absolute;visibility:hidden;left:-9999px;top:0;white-space:nowrap;'
+      + 'font-size:100px;font-weight:' + cs.fontWeight + ';font-family:' + cs.fontFamily
+      + ';letter-spacing:' + cs.letterSpacing + ';text-transform:' + cs.textTransform + ';';
+    probe.textContent = text;
+    document.body.appendChild(probe);
+    const lineWidth = probe.getBoundingClientRect().width;
+    probe.remove();
+    // .tkoH-txt's own inline left% (o.txtX) is the card's real left inset for this text block --
+    // same "fit against the visible remaining width" idea _tkwFitHead uses for --hX.
+    const leftPct = parseFloat(txt.style.left) || 0;
+    const availPx = cardW * (1 - leftPct/100) - cardW * 0.03;
+    if (lineWidth > 0) hl.style.fontSize = Math.floor(Math.min(baseSizePx, 100 * availPx / lineWidth)) + 'px';
+  }catch(_){}
+}
 /* r320: single source of truth for the takeover-card on-screen duration (r203: 12s — long
    enough to read from the projector). Both the card hide-timer AND the montage seam-resume key
    off this, so they can never drift apart (magic-number coupling was the r320 near-miss). */
@@ -8156,6 +8190,7 @@ function showTakeover(opts){
     } else {
     el.classList.add('tko-wc');
     el.innerHTML = tkoABuild(A);
+    if (A.hero || A.head) _tkoHFitHead(el);   // r646: shrink-only rescue, hero branch only
     }
     /* r327: breaking entrance — LIVE HR cards only. Add brk-live (scoped animation, studio-dialed)
        and fire the flash overlay. Montage replays (A.live falsy) keep the calm reveal. NOTE: this
@@ -8165,8 +8200,17 @@ function showTakeover(opts){
     if (A.live){
       el.classList.remove('brk-live'); void el.offsetWidth;   // reflow so the animation restarts each fire
       el.classList.add('brk-live');
-      try{ playSting(); }catch(_){}   // r331: audio sting, synced with the breaking entrance (live HR only)
-      try{ if(window.nightEvent){ var _tm=(A.mlbTeam||A.team||''); nightEvent('hr','fire',{batter:(A.sub||A.headline||A.batter||'?'), team:_tm, hr:(A._hrNum!=null?A._hrNum:A.hrNum), live:true, fav:(_tm==='NYY'||_tm==='NYM'), montage:!!A.montage}); } }catch(_){}
+      // r646 -- Mike: NHL goal cards (also A.live) were firing the MLB "HR" audio sting
+      // (STING_DEFAULT_URL is literally wiiHR.wav) and logging themselves as nightEvent('hr',
+      // ...). Neither makes sense for a goal. A.sport is the ONE new field nhlGoalTakeoverOpts
+      // sets; no existing MLB caller sets it, so this gate is a no-op for every MLB card --
+      // confirmed by reading every A.live caller, not assumed.
+      if (A.sport !== 'NHL'){
+        try{ playSting(); }catch(_){}   // r331: audio sting, synced with the breaking entrance (live HR only)
+        try{ if(window.nightEvent){ var _tm=(A.mlbTeam||A.team||''); nightEvent('hr','fire',{batter:(A.sub||A.headline||A.batter||'?'), team:_tm, hr:(A._hrNum!=null?A._hrNum:A.hrNum), live:true, fav:(_tm==='NYY'||_tm==='NYM'), montage:!!A.montage}); } }catch(_){}
+      } else {
+        try{ if(window.nightEvent) nightEvent('goal','fire',{scorer:(A.sub||'?'), team:A.team||'', headline:A.headline||''}); }catch(_){}
+      }
       try{ let bf=document.getElementById('brk-flash');
         if(!bf){ bf=document.createElement('div'); bf.id='brk-flash'; bf.className='brk-flash'; el.appendChild(bf); }
         bf.classList.remove('fire'); void bf.offsetWidth; bf.classList.add('fire');
@@ -16792,7 +16836,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r645-goal-hero-card';
+const BUILD_MARKER = 'r646-goal-headline-fit-sting-fix';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
