@@ -1544,6 +1544,11 @@ html.nomask #mlb-takeover.tko-full .tkoH-photo{ -webkit-mask:none !important; ma
    title flash is accepted in exchange for no black-screen delay). */
 #mlb-recap.show .recap-frame{transform:scale(1);opacity:1;}
 #mlb-recap .recap-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+/* r650: fills the host exactly like the iframe rule above -- the SDK's <video-js> element
+   otherwise sizes itself off the video's own intrinsic dimensions, not the container. */
+#mlb-recap .recap-frame .video-js{position:absolute !important;inset:0 !important;
+  width:100% !important;height:100% !important;background:#000;}
+#mlb-recap .recap-frame .video-js video{object-fit:contain;}
 #mlb-recap .recap-cap{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;gap:1.6vh;
   padding:4vh 3vh 2.2vh;background:linear-gradient(to top,rgba(0,0,0,0.78),transparent);
   pointer-events:none;opacity:0;transition:opacity 0.5s ease 0.3s;}
@@ -12489,41 +12494,146 @@ function playGoalClip(clip, callback){
       ytltRecord({ source: clip.source||'nhl-goal', title: clip.title||'', videoId: clip.videoId||null,
                    bottom: (badge&&badge.textContent)||'', lengthSec: clip.lengthSec||null });
     }catch(_){}
-    host.querySelectorAll('iframe,video,.recap-goal-catcher').forEach(n => n.remove());
+    host.querySelectorAll('iframe,video,video-js,.recap-goal-catcher').forEach(n => n.remove());
     const muted = (typeof _userMuted !== 'undefined') ? _userMuted : true;
     const account = clip.account || '6415718365001';
-    const src = `https://players.brightcove.net/${account}/default_default/index.html?videoId=${clip.videoId}&autoplay=true&muted=${muted}`;
-    const f = document.createElement('iframe');
-    f.src = src; f.allow = 'autoplay; fullscreen'; f.allowFullscreen = true; f.frameBorder = '0';
-    f.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0;background:#000;z-index:1;';
-    el.classList.add('show');
-    host.appendChild(f);
-    /* r644 -- Mike: "can't mute/unmute by clicking screen" during an NHL clip. Root cause: a
-       cross-origin iframe (Brightcove) swallows every click before it can bubble to document's
-       _audioGesture listener -- confirmed structurally, not guessed (same-origin overlays don't
-       have this problem, which is why the goal/win SPLASH CARDS were never affected, only the
-       clip itself). Fix: a transparent same-origin div on top of the iframe. It does nothing
-       itself -- a plain DOM click bubbles to document exactly like any other element, so the
-       EXISTING toggle path (_audioGesture -> toggleAudio) fires unchanged. toggleAudio() then
-       reloads this iframe's src with the new muted= value (see there) -- the one real
-       limitation, flagged in HANDOFF-r629-r631, is that a cross-origin Brightcove iframe can't
-       have its mute flipped live, so the clip restarts from 0 on toggle. Accepted tradeoff: a
-       working mute beats a decorative one. */
-    const catcher = document.createElement('div');
-    catcher.className = 'recap-goal-catcher';
-    catcher.style.cssText = 'position:absolute;inset:0;z-index:2;background:transparent;';
-    host.appendChild(catcher);
-    window._recapGoalFrame = f;
-    window._recapNowShowing = {what:'goal', title:(clip.title||'').slice(0,50), source:clip.source||'nhl', videoId:clip.videoId};
-    clearTimeout(window._recapGoalRevealT);
-    window._recapGoalRevealT = setTimeout(() => { if (_recapActive) revealRecap(); }, 900);
-    const dur = (isFinite(clip.lengthSec) && clip.lengthSec > 0) ? clip.lengthSec : 30;
-    clearTimeout(window._recapGoalEndT);
-    window._recapGoalEndT = setTimeout(() => {
-      if (_recapActive && window._recapGoalFrame === f) endRecap();
-    }, (dur + 2) * 1000);
+    // r650: try the same-origin Player SDK first (real controls(false)/muted() control --
+    // see _playGoalClipSDK's own header comment for why and what's unverified). ANY failure
+    // there falls back to the proven iframe path below, unchanged.
+    _playGoalClipSDK(clip, host, el, muted, account, () => _playGoalClipIframe(clip, host, el, muted, account));
     try{ if(window.nightEvent) nightEvent('goalclip','play',{title:clip.title||null, videoId:clip.videoId||null}); }catch(_){}
   } catch(e){ _recapActive = false; window._recapActiveSince = 0; }
+}
+
+// r650 -- ORIGINAL proven path, extracted verbatim (unchanged) as the fallback for
+// _playGoalClipSDK. Cross-origin iframe, no live controls/mute control -- see r644's own
+// comment below for that accepted tradeoff, which only applies when this fallback is in use.
+function _playGoalClipIframe(clip, host, el, muted, account){
+  const src = `https://players.brightcove.net/${account}/default_default/index.html?videoId=${clip.videoId}&autoplay=true&muted=${muted}`;
+  const f = document.createElement('iframe');
+  f.src = src; f.allow = 'autoplay; fullscreen'; f.allowFullscreen = true; f.frameBorder = '0';
+  f.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0;background:#000;z-index:1;';
+  el.classList.add('show');
+  host.appendChild(f);
+  /* r644 -- Mike: "can't mute/unmute by clicking screen" during an NHL clip. Root cause: a
+     cross-origin iframe (Brightcove) swallows every click before it can bubble to document's
+     _audioGesture listener -- confirmed structurally, not guessed (same-origin overlays don't
+     have this problem, which is why the goal/win SPLASH CARDS were never affected, only the
+     clip itself). Fix: a transparent same-origin div on top of the iframe. It does nothing
+     itself -- a plain DOM click bubbles to document exactly like any other element, so the
+     EXISTING toggle path (_audioGesture -> toggleAudio) fires unchanged. toggleAudio() then
+     reloads this iframe's src with the new muted= value (see there) -- the one real
+     limitation, flagged in HANDOFF-r629-r631, is that a cross-origin Brightcove iframe can't
+     have its mute flipped live, so the clip restarts from 0 on toggle. Accepted tradeoff: a
+     working mute beats a decorative one. r650: this is now only reached when the SDK path
+     (which doesn't have this limitation) fails to load. */
+  const catcher = document.createElement('div');
+  catcher.className = 'recap-goal-catcher';
+  catcher.style.cssText = 'position:absolute;inset:0;z-index:2;background:transparent;';
+  host.appendChild(catcher);
+  window._recapGoalFrame = f;
+  window._recapGoalPlayer = null;
+  window._recapNowShowing = {what:'goal', title:(clip.title||'').slice(0,50), source:clip.source||'nhl', videoId:clip.videoId};
+  clearTimeout(window._recapGoalRevealT);
+  window._recapGoalRevealT = setTimeout(() => { if (_recapActive) revealRecap(); }, 900);
+  const dur = (isFinite(clip.lengthSec) && clip.lengthSec > 0) ? clip.lengthSec : 30;
+  clearTimeout(window._recapGoalEndT);
+  window._recapGoalEndT = setTimeout(() => {
+    if (_recapActive && window._recapGoalFrame === f) endRecap();
+  }, (dur + 2) * 1000);
+}
+
+// r650 -- lazy-loads Brightcove's Player SDK script once per account, cached as a promise so
+// a second clip in the same session doesn't re-fetch/re-run it. Confirmed real and loadable
+// (fetched live, saw the UMD wrapper exposing window.bc) -- but players.brightcove.net is
+// blocked from this dev sandbox's own network, so the ACTUAL script-load timing on the real
+// kiosk is unverified; that's exactly what the 4s timeout in _playGoalClipSDK guards against.
+function _bcLoadScript(account){
+  window._bcLoadPromise = window._bcLoadPromise || {};
+  if (window._bcLoadPromise[account]) return window._bcLoadPromise[account];
+  window._bcLoadPromise[account] = new Promise((resolve, reject) => {
+    if (typeof window.bc === 'function' && window._bcLoadedAccount === account){ resolve(); return; }
+    const s = document.createElement('script');
+    s.src = `https://players.brightcove.net/${account}/default_default/index.min.js`;
+    s.onload = () => { window._bcLoadedAccount = account; resolve(); };
+    s.onerror = () => reject(new Error('bc script failed to load'));
+    document.head.appendChild(s);
+  });
+  return window._bcLoadPromise[account];
+}
+
+// r650 -- FLAGSHIP: the same-origin Player SDK path. Loads Brightcove's own player.js (their
+// public "advanced/in-page" embed method, not their iframe embed), initializes it on a
+// dynamically-created <video-js> element via their documented bc(elementId) call, then uses
+// the real Player API -- player.controls(false) to kill the scrubber/play-pause bar Mike
+// flagged, player.muted()/play(), and player.on('ended') for a real end-of-clip signal instead
+// of guessing a duration. Every step is guarded: bc() not ready, script load failure, or
+// player.ready() never firing within 4s all call onFail() to hand off to the iframe fallback,
+// removing any stale <video-js> element first so the two paths never both render at once.
+function _playGoalClipSDK(clip, host, el, muted, account, onFail){
+  const PLAYER_EL_ID = 'nhl-clip-player';
+  let settled = false;
+  const fail = (why) => {
+    if (settled) return; settled = true;
+    try{ const stale = document.getElementById(PLAYER_EL_ID); if (stale) stale.remove(); }catch(_){}
+    console.log('[playGoalClip] SDK path failed, falling back to iframe --', why);
+    onFail();
+  };
+  const timeoutT = setTimeout(() => fail('ready timeout'), 4000);
+  _bcLoadScript(account).then(() => {
+    if (settled) return;
+    try{
+      if (typeof window.bc !== 'function'){ fail('window.bc not a function after script load'); return; }
+      const v = document.createElement('video-js');
+      v.id = PLAYER_EL_ID;
+      v.setAttribute('data-account', account);
+      v.setAttribute('data-player', 'default_default');
+      v.setAttribute('data-embed', 'default');
+      v.setAttribute('data-video-id', String(clip.videoId));
+      v.setAttribute('data-application-id', '');
+      host.appendChild(v);
+      const player = window.bc(PLAYER_EL_ID);
+      if (!player || typeof player.ready !== 'function'){ fail('bc() returned no usable player'); return; }
+      player.ready(() => {
+        if (settled) return;
+        clearTimeout(timeoutT);
+        settled = true;
+        try{ player.controls(false); }catch(_){}
+        try{ player.muted(muted); }catch(_){}
+        try{ player.play(); }catch(_){}
+        el.classList.add('show');
+        // r650: same-origin now, so clicks should bubble to document's toggle listener on
+        // their own -- but can't verify from this sandbox whether video.js's OWN internal
+        // click handling (even with controls off) calls stopPropagation somewhere. Cheap
+        // insurance: the exact same transparent catcher r644 already proved works.
+        try{
+          const catcher = document.createElement('div');
+          catcher.className = 'recap-goal-catcher';
+          catcher.style.cssText = 'position:absolute;inset:0;z-index:2;background:transparent;';
+          host.appendChild(catcher);
+        }catch(_){}
+        window._recapGoalPlayer = player;
+        window._recapGoalFrame = null;
+        window._recapNowShowing = {what:'goal', title:(clip.title||'').slice(0,50), source:clip.source||'nhl', videoId:clip.videoId};
+        clearTimeout(window._recapGoalRevealT);
+        window._recapGoalRevealT = setTimeout(() => { if (_recapActive) revealRecap(); }, 900);
+        // r650: the SAFETY-NET timer -- same fixed-duration guess as the iframe path used
+        // exclusively before this (NHL's landing payload still never gives a real duration).
+        // player.on('ended') below should always fire first now that we have a real player;
+        // this only fires if that event is somehow missed.
+        const dur = (isFinite(clip.lengthSec) && clip.lengthSec > 0) ? clip.lengthSec : 30;
+        clearTimeout(window._recapGoalEndT);
+        window._recapGoalEndT = setTimeout(() => {
+          if (_recapActive && window._recapGoalPlayer === player) endRecap();
+        }, (dur + 2) * 1000);
+        try{
+          player.on('ended', () => { if (_recapActive && window._recapGoalPlayer === player) endRecap(); });
+          player.on('error', () => { if (_recapActive && window._recapGoalPlayer === player) endRecap(); });
+        }catch(_){}
+        try{ if(window.nightEvent) nightEvent('goalclip','play',{title:clip.title||null, videoId:clip.videoId||null, via:'sdk'}); }catch(_){}
+      });
+    }catch(e){ fail(e.message); }
+  }).catch((e) => fail(e.message));
 }
 
 function endRecap(){
@@ -12549,6 +12659,10 @@ function endRecap(){
   try { _recapPlayer && _recapPlayer.stopVideo && _recapPlayer.stopVideo(); } catch(_){}
   try { _recapPlayer && _recapPlayer.destroy && _recapPlayer.destroy(); } catch(_){}
   _recapPlayer = null;
+  // r650: dispose the SDK player BEFORE _resetRecapHost() wipes its element out from under it
+  // (video.js's own recommended cleanup) -- harmless no-op when the iframe fallback was used.
+  try { if (window._recapGoalPlayer && typeof window._recapGoalPlayer.dispose === 'function') window._recapGoalPlayer.dispose(); } catch(_){}
+  window._recapGoalPlayer = null;
   _resetRecapHost();
   clearTimeout(window._recapEndGuard);   // r206: don't let a stale guard end a future clip
   window._audioTxnAt = Date.now();       // r212: mark clip-end transition for the toggle debounce
@@ -17018,7 +17132,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r649-gwg-montage-beat-loop';
+const BUILD_MARKER = 'r650-nhl-clip-sdk-controls-off';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -18492,16 +18606,28 @@ function toggleAudio(){
   // it live too, so toggling mid-song actually mutes/unmutes instead of only affecting
   // the NEXT play.
   try { if (window._nyyWinAudio) window._nyyWinAudio.muted = _userMuted; } catch(_){}
+  // r650: the SDK player (see _playGoalClipSDK) has a REAL .muted() -- live, no restart.
+  // Checked first; only falls through to the r644 iframe-reload trick below when the SDK
+  // path wasn't in use for this clip (fallback case, or no clip playing at all).
+  let _sdkMuteHandled = false;
+  try {
+    const gp = window._recapGoalPlayer;
+    if (gp && typeof gp.muted === 'function'){ gp.muted(_userMuted); _sdkMuteHandled = true; }
+  } catch(_){}
   /* r644 -- the NHL goal clip lives in a cross-origin Brightcove iframe (playGoalClip),
      which has no live .muted property we can reach (HANDOFF-r629-r631's known gap #2).
      Only real lever is the ?muted= query param, so re-mount with the flipped value --
      the clip restarts from 0, which is the accepted tradeoff for a working toggle. Guarded
-     on .isConnected so a toggle after the clip's already gone (card cleared) is a no-op. */
+     on .isConnected so a toggle after the clip's already gone (card cleared) is a no-op.
+     r650: this whole branch is now only the FALLBACK path, skipped whenever the SDK player
+     above already handled the toggle live. */
   try {
-    const gf = window._recapGoalFrame;
-    if (gf && gf.isConnected && typeof gf.src === 'string' && /muted=(true|false)/.test(gf.src)){
-      const next = gf.src.replace(/muted=(true|false)/, 'muted=' + _userMuted);
-      if (next !== gf.src) gf.src = next;
+    if (!_sdkMuteHandled){
+      const gf = window._recapGoalFrame;
+      if (gf && gf.isConnected && typeof gf.src === 'string' && /muted=(true|false)/.test(gf.src)){
+        const next = gf.src.replace(/muted=(true|false)/, 'muted=' + _userMuted);
+        if (next !== gf.src) gf.src = next;
+      }
     }
   } catch(_){}
 }
