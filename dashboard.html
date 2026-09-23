@@ -4878,7 +4878,10 @@ function mlbCompanionWatch(gamePk, sinceMs, onClip, onGiveUp, rec){
    goal's highlightClip is non-null." Said plainly in the log output, not hidden as false
    precision. `eventId` (confirmed present and stable on every goal, verified against the same
    real payload) is the tracking key -- not a period+time+player composite guess. */
-const NHL_WATCH_CFG = { POLL_MS: 4000, TIMEOUT_MS: 300000, STALE_S: 30 };
+const NHL_WATCH_CFG = { POLL_MS: 4000, STALE_S: 30 };
+// r636: TIMEOUT_MS/give-up removed on request -- Mike: "better to know when clips
+// are landing even if it's 5-10-15 min later." A clip that takes a while is still a
+// real, useful number; there's no reason to stop measuring at an arbitrary 5min mark.
 const NHL_LOG_KEY = 'nhlWatchLog_v1';
 // r635: safeguard the capture -- a kiosk reload (deploy, crash, power blip) used to wipe
 // window._nhlWatchLog entirely, losing every real latency measurement gathered so far. Now
@@ -4927,9 +4930,7 @@ async function nhlLandingGoals(gameId){
 function nhlGoalWatch(gameId, opts){
   opts = opts || {};
   const pollMs = opts.pollMs || NHL_WATCH_CFG.POLL_MS;
-  const timeoutMs = opts.timeoutMs || NHL_WATCH_CFG.TIMEOUT_MS;
   const onClip = opts.onClip || function(rec){ console.log('[nhlGoalWatch] clip landed --', rec.scorer, rec.lagS + 's'); };
-  const onGiveUp = opts.onGiveUp || function(rec){ console.log('[nhlGoalWatch] gave up --', rec.scorer, 'no clip in', rec.waitedS + 's'); };
   const tracked = new Map();
   let dead = false;
   const tick = async () => {
@@ -4944,14 +4945,21 @@ function nhlGoalWatch(gameId, opts){
       goals.forEach(g => {
         if (g.eventId == null) return;
         let t = tracked.get(g.eventId);
+        let isRestartArtifact = false;
         if (!t){
           // r635: a goal that already has a logged outcome (from a PRIOR watch, before a
           // reload wiped the in-memory tracker) must not be re-recorded as a fresh 0s hit --
           // that's exactly the false-"0s" artifact seen the first night out. Adopt the
           // persisted verdict silently instead of re-measuring it.
           const prior = nhlLogFind(gameId, g.eventId);
-          if (prior){ t = { firstSeenMs: prior.firstSeenMs || now, goal: g, resolved: !prior.gaveUp, gaveUp: !!prior.gaveUp }; }
-          else { t = { firstSeenMs: now, goal: g, resolved: false, gaveUp: false }; }
+          if (prior){ t = { firstSeenMs: prior.firstSeenMs || now, goal: g, resolved: !prior.gaveUp }; }
+          else { t = { firstSeenMs: now, goal: g, resolved: false };
+            // r636: this exact goal has NEVER been seen or logged before, yet it already has a
+            // clip on the very FIRST poll we ever ran for it -- the goal happened before this
+            // watch started (the game's own history, not something caught in the act). Tag it
+            // so the report can separate "real, watched" numbers from this restart noise.
+            if (g.highlightClip) isRestartArtifact = true;
+          }
           tracked.set(g.eventId, t);
         }
         if (!t.resolved && g.highlightClip){
@@ -4959,16 +4967,14 @@ function nhlGoalWatch(gameId, opts){
           const lagS = Math.round((now - t.firstSeenMs) / 1000);
           const rec = { gameId, eventId: g.eventId, scorer: g.scorer, team: g.team,
                         period: g.period, timeInPeriod: g.timeInPeriod, firstSeenMs: t.firstSeenMs,
-                        clipSeenMs: now, lagS, videoId: String(g.highlightClip), account: '6415718365001' };
+                        clipSeenMs: now, lagS, videoId: String(g.highlightClip), account: '6415718365001',
+                        restartArtifact: isRestartArtifact };
           window._nhlWatchLog.push(rec); nhlSaveLog();
           onClip(rec);
-        } else if (!t.resolved && !t.gaveUp && (now - t.firstSeenMs) > timeoutMs){
-          t.gaveUp = true;
-          const rec = { gameId, eventId: g.eventId, scorer: g.scorer, team: g.team,
-                        period: g.period, timeInPeriod: g.timeInPeriod, waitedS: Math.round((now - t.firstSeenMs) / 1000), gaveUp: true };
-          window._nhlWatchLog.push(rec); nhlSaveLog();
-          onGiveUp(rec);
         }
+        // r636: no more give-up/timeout -- keep polling this goal's landing entry every tick
+        // until it actually gets a clip, however long that takes. A slow clip is still a real,
+        // useful number (per Mike): 5, 10, 15+ minutes all get recorded, not discarded.
       });
     }
     if (!dead){ window._nhlWatchT_ = window._nhlWatchT_ || {}; window._nhlWatchT_[gameId] = setTimeout(tick, pollMs); }
@@ -5022,17 +5028,25 @@ function nhlWatchReport(){
   } else {
     lines.push('WATCHING: nothing -- call nhlWatchTonight() first', '');
   }
-  const rows = window._nhlWatchLog || [];
-  if (!rows.length){ lines.push('(no goals measured yet)'); const out = lines.join('\n'); console.log(out); return out; }
-  lines.push.apply(lines, rows.map(r => r.gaveUp
-    ? ('GAVE UP  ' + (r.team||'?') + ' ' + (r.scorer||'?') + ' P' + r.period + ' ' + r.timeInPeriod + ' -- no clip in ' + r.waitedS + 's')
-    : ('CLIP IN ' + String(r.lagS).padStart(4) + 's  ' + (r.team||'?') + ' ' + (r.scorer||'?') + ' P' + r.period + ' ' + r.timeInPeriod + ' -- videoId ' + r.videoId)));
-  const withLag = rows.filter(r => !r.gaveUp);
-  if (withLag.length){
-    const lags = withLag.map(r => r.lagS);
-    lines.push('---', 'n=' + lags.length + ' median=' + lags.slice().sort((a,b)=>a-b)[Math.floor(lags.length/2)] + 's'
-      + ' min=' + Math.min(...lags) + 's max=' + Math.max(...lags) + 's');
+  const allRows = window._nhlWatchLog || [];
+  // r636: restart-artifact rows (goal already had a clip before this watch ever started --
+  // not a real measurement) are hidden from the readable list AND excluded from the stats,
+  // per Mike's request. Nothing is deleted from the underlying log, just not shown here.
+  const rows = allRows.filter(r => !r.restartArtifact && !(r.restartArtifact === undefined && r.lagS === 0));
+  // ^ r636: rows written before this flag existed (tonight's first 3 hits) have no
+  //   restartArtifact field at all -- lagS===0 is the same tell (no real clip lands the
+  //   instant a goal is scored), so treat an unflagged 0s row as legacy-artifact too.
+  const hiddenCount = allRows.length - rows.length;
+  if (!rows.length){
+    lines.push('(no real goals measured yet)' + (hiddenCount ? '  (' + hiddenCount + ' restart-artifact row(s) hidden)' : ''));
+    const out = lines.join('\n'); console.log(out); return out;
   }
+  lines.push.apply(lines, rows.map(r =>
+    'CLIP IN ' + String(r.lagS).padStart(4) + 's  ' + (r.team||'?') + ' ' + (r.scorer||'?') + ' P' + r.period + ' ' + r.timeInPeriod + ' -- videoId ' + r.videoId));
+  const lags = rows.map(r => r.lagS);
+  lines.push('---', 'n=' + lags.length + ' median=' + lags.slice().sort((a,b)=>a-b)[Math.floor(lags.length/2)] + 's'
+    + ' min=' + Math.min(...lags) + 's max=' + Math.max(...lags) + 's'
+    + (hiddenCount ? '  (' + hiddenCount + ' restart-artifact row(s) hidden)' : ''));
   console.log(lines.join('\n'));
   return lines.join('\n');
 }
@@ -16355,7 +16369,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r635-nhl-watch-persist-status';
+const BUILD_MARKER = 'r636-nhl-watch-no-timeout-filter';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
