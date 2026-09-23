@@ -4905,6 +4905,11 @@ function nhlLogFind(gameId, eventId){
 }
 window._nhlWatchLog = window._nhlWatchLog || nhlLoadLog();
 window._nhlWatchStatus = window._nhlWatchStatus || {};   // r635: per-game "is this actually polling" readout
+// r637: goal-level tracking state, keyed by gameId -> eventId -> {firstSeenMs, goal, resolved}.
+// Was a private Map() inside nhlGoalWatch's closure -- nothing outside it could see a goal
+// that had been SEEN but had no clip yet. Promoted to window state so nhlWatchReport() can
+// show those as PENDING instead of the goal being invisible until it resolves.
+window._nhlWatchTracked = window._nhlWatchTracked || {};
 
 async function nhlLandingGoals(gameId){
   try{
@@ -4931,7 +4936,7 @@ function nhlGoalWatch(gameId, opts){
   opts = opts || {};
   const pollMs = opts.pollMs || NHL_WATCH_CFG.POLL_MS;
   const onClip = opts.onClip || function(rec){ console.log('[nhlGoalWatch] clip landed --', rec.scorer, rec.lagS + 's'); };
-  const tracked = new Map();
+  const tracked = window._nhlWatchTracked[gameId] = window._nhlWatchTracked[gameId] || {};
   let dead = false;
   const tick = async () => {
     if (dead) return;
@@ -4944,7 +4949,7 @@ function nhlGoalWatch(gameId, opts){
     if (goals){
       goals.forEach(g => {
         if (g.eventId == null) return;
-        let t = tracked.get(g.eventId);
+        let t = tracked[g.eventId];
         let isRestartArtifact = false;
         if (!t){
           // r635: a goal that already has a logged outcome (from a PRIOR watch, before a
@@ -4960,7 +4965,7 @@ function nhlGoalWatch(gameId, opts){
             // so the report can separate "real, watched" numbers from this restart noise.
             if (g.highlightClip) isRestartArtifact = true;
           }
-          tracked.set(g.eventId, t);
+          tracked[g.eventId] = t;
         }
         if (!t.resolved && g.highlightClip){
           t.resolved = true;
@@ -5027,6 +5032,29 @@ function nhlWatchReport(){
     lines.push('');
   } else {
     lines.push('WATCHING: nothing -- call nhlWatchTonight() first', '');
+  }
+  // r637: goals we've SEEN but that don't have a clip yet -- shown the moment they're
+  // detected, not just once they resolve. Per Mike: the goal should log regardless, with the
+  // clip match filled in later.
+  const pending = [];
+  Object.keys(window._nhlWatchTracked || {}).forEach(gid => {
+    const forGame = window._nhlWatchTracked[gid] || {};
+    Object.keys(forGame).forEach(eid => {
+      const t = forGame[eid];
+      if (t && !t.resolved){
+        pending.push({ gameId: gid, waitedS: Math.round((Date.now() - t.firstSeenMs) / 1000), goal: t.goal });
+      }
+    });
+  });
+  if (pending.length){
+    lines.push('PENDING (seen, no clip yet):');
+    pending.sort((a,b) => b.waitedS - a.waitedS).forEach(p => {
+      lines.push('  ' + (p.goal.team||'?') + ' ' + (p.goal.scorer||'?') + ' P' + p.goal.period + ' ' + p.goal.timeInPeriod
+        + '  -- waiting ' + p.waitedS + 's');
+    });
+    lines.push('');
+  } else {
+    lines.push('PENDING (seen, no clip yet): none', '');
   }
   const allRows = window._nhlWatchLog || [];
   // r636: restart-artifact rows (goal already had a clip before this watch ever started --
@@ -16369,7 +16397,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r636-nhl-watch-no-timeout-filter';
+const BUILD_MARKER = 'r637-nhl-watch-pending-goals';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
