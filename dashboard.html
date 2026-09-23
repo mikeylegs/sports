@@ -3672,6 +3672,51 @@ function simNyyWin(opt){
 }
 window.simNyyWin = simNyyWin;
 
+/* r631 -- simGoal(): proves the NHL goal splash+video sequence end to end, no live
+   trigger wired yet (that's separate, gated on a real poller -- see the 9/23 plan).
+   Same shape as simNyyWin() above: showTakeover() with a plain (non-hero) Design-A
+   card -- team crest via logo, kicker/headline/sub+icon/band, all fields tkoABuild
+   already supports, zero new CSS. After the card's normal TKO_CARD_MS dwell, hands off
+   to playGoalClip() (below playCompanionClip) for the fullscreen video step.
+   Default payload is REAL data, not invented: Cole Beaudoin's NYI@NYR preseason goal,
+   9/22/26 -- highlightClip 6405449758112 on NHL's own Brightcove account 6415718365001,
+   proven playable live this session (real HLS manifest observed, real 30s clip).
+   Usage: simGoal()  -- or simGoal({team:'FLA', away:'FLA', home:'CAR', aScore:1, hScore:0,
+   scorer:'Matthew Tkachuk', videoId:'6405450716112', lengthSec:30}) for the other proven clip. */
+function simGoal(opt){
+  opt = opt || {};
+  const away = opt.away || 'NYI', home = opt.home || 'NYR';
+  const team = opt.team || home;                          // scoring team
+  const aScore = opt.aScore != null ? opt.aScore : 0;
+  const hScore = opt.hScore != null ? opt.hScore : 1;
+  const scorer = opt.scorer || 'Cole Beaudoin';
+  const side = opt.side || 'right';
+  if (typeof showTakeover !== 'function'){ console.log('[simGoal] showTakeover not available'); return 'no showTakeover'; }
+  const rgb = (typeof GLOW_TEAM !== 'undefined' && GLOW_TEAM[team]) || '11,42,94';
+  const accent = (typeof TEAM_COLORS !== 'undefined' && TEAM_COLORS['NHL:'+team]) || `rgb(${rgb})`;
+  showTakeover({ side, a: {
+    accent, wash: `rgba(${rgb},0.95)`,
+    logo: (typeof logoUrl === 'function') ? logoUrl('NHL', team) : '',
+    kicker: opt.kicker || 'GOAL \u00b7 SIM',
+    headline: `${scorer.toUpperCase()} SCORES`,
+    sub: `${away} ${aScore} \u2013 ${hScore} ${home}`, subIcon: '\ud83c\udfd2',
+    band: { aAbbr:away, aScore, hAbbr:home, hScore, lit: team===home?'h':'a' } } });
+  clearTimeout(window._simGoalT);
+  const videoId = opt.videoId || '6405449758112';   // real Beaudoin goal, proven playable 9/22/26
+  const account = opt.account || '6415718365001';
+  const lengthSec = opt.lengthSec != null ? opt.lengthSec : 30;
+  const _ms = (typeof TKO_CARD_MS !== 'undefined') ? TKO_CARD_MS : 12000;
+  window._simGoalT = setTimeout(() => {
+    try{
+      if (typeof playGoalClip === 'function') playGoalClip({ account, videoId, title: scorer + ' scores', lengthSec, source:'nhl-sim' });
+      else console.log('[simGoal] playGoalClip not available');
+    }catch(e){ console.log('[simGoal] playGoalClip failed:', e.message); }
+  }, _ms);
+  console.log('[simGoal] fired --', team, 'GOAL, video in', (_ms/1000)+'s');
+  return 'fired';
+}
+window.simGoal = simGoal;
+
 /* r324 — simSequence(): a ONE-COMMAND scripted demo so you can eyes-on the full arc over VNC:
    montage beats → live Judge takeover CARD (with the LIVE badge) → montage beats → Judge
    companion CLIP → montage beats. It just drops real items into the montage queue at spaced
@@ -11582,6 +11627,62 @@ function playCompanionClip(clip, callback){
   } catch(e){ _recapActive = false; window._recapActiveSince = 0; }
 }
 
+/* r631 -- GOAL CLIP PLAYBACK LANE (Brightcove iframe). Mirrors playCompanionClip's
+   choreography above -- same #mlb-recap fullscreen slot, same suspend/badge/reveal/end
+   handoff -- but the source is different in KIND, not just brand: MLB companion clips are
+   plain mp4 (<video src>); Brightcove serves signed HLS (master.m3u8, fastly_token) that
+   Chrome cannot play in a bare <video> tag (confirmed live, 9/22/26 probe -- Safari can,
+   the kiosk's Chrome cannot). The public embed iframe (players.brightcove.net/.../index.html
+   ?videoId=) sidesteps that: it's Brightcove's own player, keyed by the exact numeric id
+   NHL's own game-landing API hands us as `highlightClip`.
+   Two real differences from the mp4 path, both because the player lives in a cross-origin
+   iframe we cannot inspect or drive:
+     1. No real 'playing'/'ended' event -- reveal fires on a short fixed delay instead of
+        onplaying (same fallback idea the YT iframe path already uses elsewhere), and end
+        fires off a DECLARED clip.lengthSec + buffer instead of a real 'ended'/end-guard.
+     2. No live mute-toggle wiring -- passed once via the iframe's own ?muted= query param
+        at mount time; can't be flipped mid-play like the mp4 <video>'s .muted property.
+   Fine for now -- only simGoal() calls this. A real live trigger needs its own look at #1/#2. */
+function playGoalClip(clip, callback){
+  if (!clip || !clip.videoId){ try{ if(window.nightEvent) nightEvent('goalclip','miss',{reason:(!clip?'no clip object':'no videoId')}); }catch(_){} return; }
+  if (_recapActive) _recapPreempt();
+  _recapActive = true; _recapRevealed = false; window._recapActiveSince = Date.now();
+  _armRevealDeadline();
+  try {
+    const el = recapOverlay();
+    const badge = el.querySelector('.recap-badge');
+    if (badge){
+      badge.className = 'recap-badge recap-callback';
+      badge.textContent = '\ud83c\udfd2 GOAL \u2014 ' + String(clip.title||'').toUpperCase();
+    }
+    const host = document.getElementById('recap-player');
+    if (!host){ _recapActive = false; window._recapActiveSince = 0; return; }
+    try{
+      ytltRecord({ source: clip.source||'nhl-goal', title: clip.title||'', videoId: clip.videoId||null,
+                   bottom: (badge&&badge.textContent)||'', lengthSec: clip.lengthSec||null });
+    }catch(_){}
+    host.querySelectorAll('iframe,video').forEach(n => n.remove());
+    const muted = (typeof _userMuted !== 'undefined') ? _userMuted : true;
+    const account = clip.account || '6415718365001';
+    const src = `https://players.brightcove.net/${account}/default_default/index.html?videoId=${clip.videoId}&autoplay=true&muted=${muted}`;
+    const f = document.createElement('iframe');
+    f.src = src; f.allow = 'autoplay; fullscreen'; f.allowFullscreen = true; f.frameBorder = '0';
+    f.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0;background:#000;';
+    el.classList.add('show');
+    host.appendChild(f);
+    window._recapGoalFrame = f;
+    window._recapNowShowing = {what:'goal', title:(clip.title||'').slice(0,50), source:clip.source||'nhl', videoId:clip.videoId};
+    clearTimeout(window._recapGoalRevealT);
+    window._recapGoalRevealT = setTimeout(() => { if (_recapActive) revealRecap(); }, 900);
+    const dur = (isFinite(clip.lengthSec) && clip.lengthSec > 0) ? clip.lengthSec : 30;
+    clearTimeout(window._recapGoalEndT);
+    window._recapGoalEndT = setTimeout(() => {
+      if (_recapActive && window._recapGoalFrame === f) endRecap();
+    }, (dur + 2) * 1000);
+    try{ if(window.nightEvent) nightEvent('goalclip','play',{title:clip.title||null, videoId:clip.videoId||null}); }catch(_){}
+  } catch(e){ _recapActive = false; window._recapActiveSince = 0; }
+}
+
 function endRecap(){
   _mtrace('endRecap','teardown');
   clearTimeout(window._recapCapT);
@@ -11590,6 +11691,7 @@ function endRecap(){
   if (!el) return;
   _recapActive = false;
   clearTimeout(_recapTimer); clearTimeout(_recapRevealTimer); clearTimeout(_recapKick); _recapRevealed = false;
+  clearTimeout(window._recapGoalRevealT); clearTimeout(window._recapGoalEndT);   // r631: goal-clip iframe lane timers
   el.classList.remove('show'); el.classList.remove('playing');
   /* ★ r158 — ONE PLAYER FOR THE WHOLE SESSION WAS THE BUG. new YT.Player() ran once and
      every later clip went through loadVideoById on that same instance, so its onReady/
@@ -11619,6 +11721,7 @@ function endRecap(){
     }
   } catch(_){}
   try { if (window._recapMp4){ window._recapMp4.pause(); window._recapMp4.remove(); window._recapMp4 = null; } } catch(_){}
+  try { window._recapGoalFrame = null; } catch(_){}   // r631: node itself already gone via _resetRecapHost()'s innerHTML clear above
   if (typeof RECAP._onEnd === 'function'){ const cb = RECAP._onEnd; RECAP._onEnd = null; setTimeout(cb, 650); }
 }
 /* r158: YT.Player REPLACES its target element with an iframe, and destroy() removes that
@@ -16072,7 +16175,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r630-giants-second-chance-search';
+const BUILD_MARKER = 'r631-nhl-goal-sim-flag';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -18245,7 +18348,12 @@ window.CC = (function(){
    {g:'Brain',n:'brainfire',t:'toggle',d:'Allow Brain to fire takeovers'},
    {g:'Maintenance',n:'tkoclear',t:'action',d:'Clear takeover log'},
    {g:'Maintenance',n:'tkodump',t:'action',d:'Copy takeover log JSON'},
-   {g:'Maintenance',n:'cleardead',t:'action',d:'Clear dead-id list'}
+   {g:'Maintenance',n:'cleardead',t:'action',d:'Clear dead-id list'},
+   // r631: NOT read-only like the actions above -- fires a real splash+video, same as
+   // simNyyWin()/simSequence() already do from the console. CC.run() just calls
+   // window[fn]() directly, so wiring a console-only sim helper to a panel button is
+   // free -- no new mechanism, only a new row.
+   {g:'Sim',n:'simgoal',t:'action',fn:'simGoal',d:'Simulate NHL goal: splash then fullscreen video (r631)'}
   ];
   var TABS=[['now','Now'],['flags','Flags'],['report','Report'],['tko','Takeover'],
             ['pipeline','Pipeline'],['montage','Montage'],['brain','Brain'],['watch','WWS Sync']];
