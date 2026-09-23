@@ -4924,10 +4924,42 @@ async function nhlLandingGoals(gameId){
       (p.goals || []).forEach(g => out.push({
         eventId: g.eventId, period: periodNum, timeInPeriod: g.timeInPeriod,
         scorer: (g.name && g.name.default) || '', team: (g.teamAbbrev && g.teamAbbrev.default) || '',
-        highlightClip: g.highlightClip || null
+        highlightClip: g.highlightClip || null,
+        // r641: added for the live goal-takeover trigger's headline rule (GOAL / POWER PLAY
+        // GOAL / SHORTHANDED GOAL + season goal count). Additive -- existing consumers
+        // (nhlGoalWatch's clip-lag measurement, the manual latency timer) only read the
+        // fields above and are unaffected. Confirmed live on a real goal object 9/23/26.
+        strength: g.strength || '', goalsToDate: g.goalsToDate != null ? g.goalsToDate : null,
+        awayScore: g.awayScore != null ? g.awayScore : null, homeScore: g.homeScore != null ? g.homeScore : null
       }));
     });
+    // r641: game-level abbrevs live at the TOP of the landing payload (awayTeam.abbrev /
+    // homeTeam.abbrev), not per-goal -- stamped onto the array itself (arrays are objects) so
+    // existing `goals.forEach(...)` callers are untouched, while a new caller can read
+    // goals.awayAbbr/goals.homeAbbr for the takeover card's score line.
+    out.awayAbbr = (j.awayTeam && j.awayTeam.abbrev) || '';
+    out.homeAbbr = (j.homeTeam && j.homeTeam.abbrev) || '';
     return out;
+  }catch(_){ return null; }
+}
+
+// r642: game-STATE fetch for the win-splash live trigger -- deliberately separate from
+// nhlLandingGoals above (different lifecycle: a goal watch runs the whole game and fires many
+// times, a win watch runs until one FINAL edge and then stops). Same landing endpoint, same
+// proxy chain, different top-level fields read off the same real payload confirmed via WebFetch
+// 9/23/26 (gameState, periodDescriptor.periodType, awayTeam/homeTeam.abbrev+score).
+async function nhlLandingState(gameId){
+  try{
+    const raw = await proxyFetchText('https://api-web.nhle.com/v1/gamecenter/' + gameId + '/landing', true);
+    if (!raw) return null;
+    const j = JSON.parse(raw);
+    return {
+      gameState: j.gameState || '',
+      periodType: (j.periodDescriptor && j.periodDescriptor.periodType) || '',
+      awayAbbr: (j.awayTeam && j.awayTeam.abbrev) || '', homeAbbr: (j.homeTeam && j.homeTeam.abbrev) || '',
+      awayScore: (j.awayTeam && j.awayTeam.score != null) ? j.awayTeam.score : null,
+      homeScore: (j.homeTeam && j.homeTeam.score != null) ? j.homeTeam.score : null
+    };
   }catch(_){ return null; }
 }
 
@@ -4937,6 +4969,11 @@ function nhlGoalWatch(gameId, opts){
   opts = opts || {};
   const pollMs = opts.pollMs || NHL_WATCH_CFG.POLL_MS;
   const onClip = opts.onClip || function(rec){ console.log('[nhlGoalWatch] clip landed --', rec.scorer, rec.lagS + 's'); };
+  // r641: fires once per goal caught HAPPENING LIVE -- excludes backfilled history from before
+  // this watch started, via the same isRestartArtifact test already used below to separate the
+  // two cases (a goal that already has its clip on the very first poll we ever run for it is
+  // old news, not something to pop a takeover card for now).
+  const onGoal = opts.onGoal || function(){};
   const tracked = window._nhlWatchTracked[gameId] = window._nhlWatchTracked[gameId] || {};
   let dead = false;
   const tick = async () => {
@@ -4969,6 +5006,12 @@ function nhlGoalWatch(gameId, opts){
             // watch started (the game's own history, not something caught in the act). Tag it
             // so the report can separate "real, watched" numbers from this restart noise.
             if (g.highlightClip) isRestartArtifact = true;
+            // r641: the actual live trigger point -- brand new goal, no prior log, no clip yet
+            // on first sight. This IS "caught in the act."
+            else {
+              try{ onGoal(Object.assign({}, g, { awayAbbr: goals.awayAbbr, homeAbbr: goals.homeAbbr })); }
+              catch(e){ console.log('[nhlGoalWatch] onGoal failed:', e.message); }
+            }
           }
           tracked[g.eventId] = t;
         }
@@ -4993,6 +5036,144 @@ function nhlGoalWatch(gameId, opts){
   return () => { dead = true; };
 }
 window.nhlGoalWatch = nhlGoalWatch;
+
+// r641: pure -- no DOM, no fetch. Testable in isolation (unit harness extracts this verbatim).
+function nhlGoalKicker(strength){
+  if (strength === 'pp') return 'POWER PLAY GOAL';
+  if (strength === 'sh') return 'SHORTHANDED GOAL';
+  return 'GOAL';
+}
+window.nhlGoalKicker = nhlGoalKicker;
+
+// r641: pure -- builds the exact showTakeover({side, a:{...}}) payload simGoal() also builds,
+// from a REAL goal record (nhlGoalWatch's onGoal callback) instead of simGoal's hardcoded demo
+// values. Mirrors simGoal's own team-glow/accent derivation verbatim (teamGlowRgb, r639).
+function nhlGoalTakeoverOpts(g){
+  const team = g.team || '', homeAbbr = g.homeAbbr || '', awayAbbr = g.awayAbbr || '';
+  const rgb = teamGlowRgb('NHL', team);
+  const accent = (typeof TEAM_COLORS !== 'undefined' && TEAM_COLORS['NHL:'+team]) || `rgb(${rgb})`;
+  const kicker = nhlGoalKicker(g.strength);
+  const countTxt = g.goalsToDate != null ? ` (${g.goalsToDate})` : '';
+  const side = team === homeAbbr ? 'right' : 'left';
+  return { side, a: {
+    accent, wash: `rgba(${rgb},0.95)`,
+    logo: (typeof logoUrl === 'function') ? logoUrl('NHL', team) : '',
+    kicker,
+    headline: `${(g.scorer||'').toUpperCase()} SCORES${countTxt}`,
+    sub: `${awayAbbr} ${g.awayScore} – ${g.homeScore} ${homeAbbr}`, subIcon: '🏒',
+    band: { aAbbr: awayAbbr, aScore: g.awayScore, hAbbr: homeAbbr, hScore: g.homeScore, lit: team===homeAbbr?'h':'a' } } };
+}
+window.nhlGoalTakeoverOpts = nhlGoalTakeoverOpts;
+
+// r641: the real live wire. nhlGoalWatch's detector was already correct and already ran every
+// night (log-only) -- this just points its two callbacks at the real renderers instead of
+// console.log: onGoal -> showTakeover (the card, the moment the goal is seen), onClip ->
+// playGoalClip (whenever the clip actually lands, however long that takes -- no artificial
+// delay like simGoal's demo timer, since a real clip's lag is exactly what nhlGoalWatch
+// already measures via its own log).
+function nhlLiveGoalTrigger(gameId, opts){
+  opts = opts || {};
+  return nhlGoalWatch(gameId, {
+    pollMs: opts.pollMs,
+    onGoal: (g) => {
+      if (typeof showTakeover !== 'function'){ console.log('[nhlLiveGoalTrigger] showTakeover not available'); return; }
+      showTakeover(nhlGoalTakeoverOpts(g));
+    },
+    onClip: (rec) => {
+      if (typeof playGoalClip !== 'function'){ console.log('[nhlLiveGoalTrigger] playGoalClip not available'); return; }
+      playGoalClip({ account: rec.account, videoId: rec.videoId, title: rec.scorer + ' scores', source: 'nhl-live' });
+    }
+  });
+}
+window.nhlLiveGoalTrigger = nhlLiveGoalTrigger;
+
+// r642 -- WIN SPLASH LIVE TRIGGER. Nothing plumbed this before now: unlike the goal path
+// (nhlGoalWatch already ran every night, log-only), there was no poller watching for game-end
+// at all. This is the new piece, not just a rewire.
+//
+// litFor/kickerFor ported VERBATIM from nhl-win-splash-studio.html (Mike-approved studio-r3
+// build) -- same functions, same behavior, now with a real poller to call them from instead of
+// the studio's manual endType selector.
+function kickerFor(endType){ return endType === 'OT' ? 'Final/OT' : endType === 'SO' ? 'Final/SO' : 'Final'; }
+function litFor(s){ return s.aAbbr === s.team ? 'a' : (s.hAbbr === s.team ? 'h' : ''); }
+window.kickerFor = kickerFor; window.litFor = litFor;
+
+window._nhlWinTracked = window._nhlWinTracked || {};   // gameId -> {prevFinal, fired}
+
+// Polls one game until it hits a FINAL/OFF edge (or is told to stop) -- then fires ONCE and
+// stops polling on its own (unlike nhlGoalWatch, which must keep running for every goal in the
+// game, a win only ever happens once).
+function nhlWinWatch(gameId, opts){
+  opts = opts || {};
+  const pollMs = opts.pollMs || NHL_WATCH_CFG.POLL_MS;
+  const team = opts.team || 'NYR';
+  const onFinal = opts.onFinal || function(s){ console.log('[nhlWinWatch] final --', s.awayAbbr, s.awayScore, '-', s.homeScore, s.homeAbbr); };
+  const rec = window._nhlWinTracked[gameId] = window._nhlWinTracked[gameId] || { prevFinal: false, fired: false };
+  let dead = false;
+  const tick = async () => {
+    if (dead || rec.fired) return;
+    const s = await nhlLandingState(gameId);
+    if (s){
+      const isFinal = s.gameState === 'FINAL' || s.gameState === 'OFF';
+      if (isFinal && !rec.prevFinal){
+        rec.fired = true;
+        try{ onFinal(Object.assign({}, s, { team })); }
+        catch(e){ console.log('[nhlWinWatch] onFinal failed:', e.message); }
+      }
+      rec.prevFinal = isFinal;
+    }
+    if (!dead && !rec.fired){ window._nhlWinT_ = window._nhlWinT_ || {}; window._nhlWinT_[gameId] = setTimeout(tick, pollMs); }
+  };
+  tick();
+  return () => { dead = true; };
+}
+window.nhlWinWatch = nhlWinWatch;
+
+// r642: only the Rangers splash has been studio-approved so far (Mike's r640 CSS dial-in was
+// against "RANGERS WIN" specifically). Any other team degrades to "${abbr} WIN" -- same
+// graceful-fallback convention MLB_NICK already uses for an unmapped team.
+function nhlWinHeadline(team){
+  if (team === 'NYR') return 'RANGERS WIN';
+  return `${team} WIN`;
+}
+window.nhlWinHeadline = nhlWinHeadline;
+
+// Pure -- builds the showTakeover({winCard:true, mlbTeam, a:{...}}) payload from a real final
+// game-state record (nhlWinWatch's onFinal callback). Returns null when the followed team
+// LOST -- the splash only ever celebrates a win, never a loss.
+function nhlWinTakeoverOpts(s){
+  const team = s.team || 'NYR';
+  if (s.awayScore == null || s.homeScore == null || !s.awayAbbr || !s.homeAbbr) return null;
+  const won = team === s.homeAbbr ? (s.homeScore > s.awayScore) : (s.awayScore > s.homeScore);
+  if (!won) return null;
+  const rgb = teamGlowRgb('NHL', team);
+  const lit = litFor({ aAbbr: s.awayAbbr, hAbbr: s.homeAbbr, team });
+  const side = team === s.homeAbbr ? 'right' : 'left';
+  return { side, mlbTeam: team, a: {
+    winCard: true, mlbTeam: team,
+    accent: `rgb(${rgb})`,
+    logo: (typeof logoUrl === 'function') ? logoUrl('NHL', team) : '',
+    kicker: kickerFor(s.periodType),
+    headline: nhlWinHeadline(team),
+    band: { aAbbr: s.awayAbbr, aScore: s.awayScore, hAbbr: s.homeAbbr, hScore: s.homeScore, lit } } };
+}
+window.nhlWinTakeoverOpts = nhlWinTakeoverOpts;
+
+// The real live wire: onFinal -> build the payload -> showTakeover, or log-and-skip when the
+// followed team lost (no splash for a loss).
+function nhlLiveWinTrigger(gameId, opts){
+  opts = opts || {};
+  return nhlWinWatch(gameId, {
+    pollMs: opts.pollMs, team: opts.team,
+    onFinal: (s) => {
+      const payload = nhlWinTakeoverOpts(s);
+      if (!payload){ console.log('[nhlLiveWinTrigger] game final -- followed team did not win, no splash'); return; }
+      if (typeof showTakeover !== 'function'){ console.log('[nhlLiveWinTrigger] showTakeover not available'); return; }
+      showTakeover(payload);
+    }
+  });
+}
+window.nhlLiveWinTrigger = nhlLiveWinTrigger;
 
 /* Discovers tonight's live/upcoming NHL games and starts a watch on each -- no need to hand-copy
    gameIds off the score endpoint. Call once; each game gets its own independent watch/cancel. */
@@ -16452,7 +16633,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r640-win-splash-studio-r3-geometry';
+const BUILD_MARKER = 'r642-live-win-trigger';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
