@@ -1380,7 +1380,8 @@ html.nomask #mlb-takeover.tko-full .tkoH-photo{ -webkit-mask:none !important; ma
    Replaces the old circular-logo + stacked-text win card (which was the generic Design-A
    .tkoA-* layout) with a giant bleed-through team crest, staged motion, and a big score band.
    GEOMETRY IS STUDIO-OWNED: every value in the var block below is the verbatim copy-CSS
-   export from win-splash-studio.html (studio-r2). To re-dial, open the studio, drag/slide,
+   export from win-splash-studio.html (studio-r3, r640 -- Mike-approved, bigger kicker/
+   headline/band than r595's original studio-r2 dial-in). To re-dial, open the studio, drag/slide,
    hit "Copy CSS vars", and replace the block — do NOT hand-tune numbers here, or the studio
    and the wall drift apart (that drift is exactly what the studio exists to prevent).
    Scoping: everything is under #mlb-takeover.tko-win with .tkw-* children. The HR hero
@@ -1394,14 +1395,14 @@ html.nomask #mlb-takeover.tko-full .tkoH-photo{ -webkit-mask:none !important; ma
   padding:0; background:#05070d; overflow:hidden; container-type:size; backdrop-filter:none;
   --rgb:11,42,94;                    /* overwritten per-fire from GLOW_TEAM[team] */
   --winGold:#fbbf24;                 /* the panel's system gold — constant "win" signal */
-  /* ── studio-r2 export — begin (regenerate, don't hand-edit) ── */
+  /* ── studio-r3 export — begin (regenerate, don't hand-edit) ── */
   --logoSize:122; --logoX:25; --logoY:44; --logoOpacity:0.13;
   --logoBlur:0; --logoRot:0; --logoZ:1;
-  --kSize:8; --kX:3.5; --kY:21; --kTrack:0; --kWeight:900;
-  --hSize:18; --hX:3.5; --hY:33; --hWidth:100;
-  --hTrack:-0.3; --hLine:0.78; --hWeight:900;
-  --bandH:32; --bandY:-2.5; --bandScoreSize:19.5; --bandAbbrSize:11.8;
-  --bandGap:6; --bandBg:0.58;
+  --kSize:11.8; --kX:3.5; --kY:21; --kTrack:0.35; --kWeight:900;
+  --hSize:20.4; --hX:3.5; --hY:33; --hWidth:100;
+  --hTrack:-0.2; --hLine:0.96; --hWeight:900;
+  --bandH:38; --bandY:-2.5; --bandScoreSize:24; --bandAbbrSize:17;
+  --bandGap:7; --bandBg:0.56;
   --cSize:2.7; --cX:12.5; --cY:72; --cWidth:46;
   --nSize:2.8; --nX:95; --nY:8;
   --bgAngle:155; --bgIntensity:0.93; --scrimAngle:135; --scrimStrength:0.54;
@@ -1411,7 +1412,7 @@ html.nomask #mlb-takeover.tko-full .tkoH-photo{ -webkit-mask:none !important; ma
   --kAnchor:0%; --hAnchor:0%;
   --cAnchor:0%; --nAnchor:-100%;
   --hTextAlign:left;
-  /* ── studio-r2 export — end ── */
+  /* ── studio-r3 export — end ── */
 }
 #mlb-takeover.tko-win .tkw-bg{position:absolute;inset:0;z-index:0;
   background:linear-gradient(calc(var(--bgAngle)*1deg),
@@ -3698,7 +3699,7 @@ function simGoal(opt){
   const scorer = opt.scorer || 'Cole Beaudoin';
   const side = opt.side || 'right';
   if (typeof showTakeover !== 'function'){ console.log('[simGoal] showTakeover not available'); return 'no showTakeover'; }
-  const rgb = (typeof GLOW_TEAM !== 'undefined' && GLOW_TEAM[team]) || '11,42,94';
+  const rgb = teamGlowRgb('NHL', team);   // r639: was GLOW_TEAM-only -- always navy for NHL
   const accent = (typeof TEAM_COLORS !== 'undefined' && TEAM_COLORS['NHL:'+team]) || `rgb(${rgb})`;
   showTakeover({ side, a: {
     accent, wash: `rgba(${rgb},0.95)`,
@@ -6969,6 +6970,24 @@ const GLOW_TEAM={
   LAD:'0,90,156', SD:'47,36,29', SDP:'47,36,29', SF:'253,90,30', SFG:'253,90,30',
   ARI:'167,25,48', AZ:'167,25,48', COL:'51,0,111'
 };
+/* r639 — GLOW_TEAM is MLB-only: every NHL team fell through to the generic navy fallback
+   ('11,42,94') at every call site that read GLOW_TEAM[team] for an NHL abbr, because the
+   object simply has no NHL keys (confirmed by inspection, not assumed). teamGlowRgb() tries
+   GLOW_TEAM[team] first -- so every existing MLB call site (hand-tuned values) is completely
+   unchanged -- and only for a miss derives the wash/--rgb color from the real per-team
+   TEAM_COLORS hex via hexToRgb(). Ports the fix proven in the goal-takeover and win-splash
+   studios into the two real NHL call sites (simGoal, tko-win's --rgb). */
+function hexToRgb(hex){
+  const h = (hex || '').replace('#', '');
+  if (h.length !== 6) return null;
+  const r = parseInt(h.substr(0,2),16), g = parseInt(h.substr(2,2),16), b = parseInt(h.substr(4,2),16);
+  return `${r},${g},${b}`;
+}
+function teamGlowRgb(league, team){
+  if (typeof GLOW_TEAM !== 'undefined' && GLOW_TEAM[team]) return GLOW_TEAM[team];
+  const hex = (typeof TEAM_COLORS !== 'undefined') && TEAM_COLORS[`${league}:${team}`];
+  return (hex && hexToRgb(hex)) || '11,42,94';
+}
 /* ★ r180 — LEAGUE-WIDE HR SCOPE (MLB-only, reversible, editorial). Until now HR
    takeovers were gated to ['NYY','NYM'] in TWO places (checkBigMoments + mlbPbpHrWatch).
    The games array is already the FULL league scoreboard (ESPN limit=100), so widening is
@@ -7504,21 +7523,33 @@ function tkoWinBuild(o){
 function _tkwFitHead(el){
   try{
     const h = el.querySelector('.tkw-head'); if (!h) return;
-    const cardH = el.clientHeight, boxW = h.clientWidth;
-    if (!cardH || !boxW) return;
+    const cardH = el.clientHeight, cardW = el.clientWidth;
+    if (!cardH || !cardW) return;
     const maxPx = (parseFloat(getComputedStyle(el).getPropertyValue('--hSize')) || 18) / 100 * cardH;
-    const words = (h.textContent || '').trim().split(/\s+/).filter(Boolean);
-    if (!words.length) return;
+    const hX = parseFloat(getComputedStyle(el).getPropertyValue('--hX')) || 0;
+    const text = (h.textContent || '').trim();
+    if (!text) return;
     const cs = getComputedStyle(h);
     const probe = document.createElement('span');
     probe.style.cssText = 'position:absolute;visibility:hidden;left:-9999px;top:0;white-space:nowrap;'
       + 'font-size:100px;font-weight:' + cs.fontWeight + ';font-family:' + cs.fontFamily
       + ';letter-spacing:' + cs.letterSpacing + ';text-transform:' + cs.textTransform + ';';
-    h.appendChild(probe);
-    let widest = 0;
-    words.forEach(w => { probe.textContent = w; widest = Math.max(widest, probe.getBoundingClientRect().width); });
+    probe.textContent = text;
+    document.body.appendChild(probe);   // r639b: not h -- see studio comment; avoids any future ancestor-transform trap
+    // r639: measure the WHOLE line, not just the widest word (was: per-word max, which only
+    // guarded a mid-word break). Because .tkw-head is vertically centered on --hY, a headline
+    // that wraps to 2 lines grows UPWARD into the kicker above it -- verified via headless
+    // render in the win-splash studio with a 2-word nickname + "WIN" ("FINAL"/"BLUE JACKETS"
+    // literally overlapped). Fitting the full line guarantees single-line, so it can't happen.
+    const lineWidth = probe.getBoundingClientRect().width;
     probe.remove();
-    if (widest > 0) h.style.fontSize = Math.floor(Math.min(maxPx, 100 * boxW / widest)) + 'px';
+    // r639c: fit against the visible remaining width (cardW minus the box's own --hX% left
+    // offset, minus a small margin) -- .tkw-head is intentionally --hX% wider than the visible
+    // card (hWidth:100 starting hX% in) and gets clipped by overflow:hidden, so fitting to the
+    // box's own clientWidth sized text to run exactly into that clipped strip (verified in the
+    // win-splash studio: the last letter of "WIN" was cut off at the card edge).
+    const availPx = cardW * (1 - hX/100) - cardW * 0.03;
+    if (lineWidth > 0) h.style.fontSize = Math.floor(Math.min(maxPx, 100 * availPx / lineWidth)) + 'px';
   }catch(_){}
 }
 /* r320: single source of truth for the takeover-card on-screen duration (r203: 12s — long
@@ -7796,7 +7827,7 @@ function showTakeover(opts){
        reassigned wholesale a few lines up, so neither class can survive into the next card. */
     if (A.winCard){
       el.classList.add('tko-win');
-      try{ el.style.setProperty('--rgb', (typeof GLOW_TEAM!=='undefined' && GLOW_TEAM[A.mlbTeam||A.team]) || '11,42,94'); }catch(_){}
+      try{ el.style.setProperty('--rgb', teamGlowRgb('NHL', A.mlbTeam||A.team)); }catch(_){}   // r639: NHL fallback, MLB unchanged
       el.innerHTML = tkoWinBuild(A);
       _tkwFitHead(el);   // r595: shrink-only rescue for long club nicknames (see fn comment)
     } else {
@@ -16421,7 +16452,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r638-nhl-watch-cleanup-legacy';
+const BUILD_MARKER = 'r640-win-splash-studio-r3-geometry';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
