@@ -1549,6 +1549,15 @@ html.nomask #mlb-takeover.tko-full .tkoH-photo{ -webkit-mask:none !important; ma
 #mlb-recap .recap-frame .video-js{position:absolute !important;inset:0 !important;
   width:100% !important;height:100% !important;background:#000;}
 #mlb-recap .recap-frame .video-js video{object-fit:contain;}
+/* r651 -- Mike: "red warning bar" on deploy. Confirmed via video.js's own source: ErrorDisplay
+   (classes vjs-error-display + inherited vjs-modal-dialog) opens itself on the player's
+   'error' event -- exactly what the console showed (ima-sdk-load-error / ads-before-preroll-
+   error, from an ad blocker killing imasdk.googleapis.com). This is the SAME "ad blocked -> no
+   ad -> plays through clean" behavior r631 already found and relies on; it was just invisible
+   before, sandboxed inside Brightcove's own iframe page. Hidden here, not fixed upstream --
+   we don't own the account's ad config, and playback already recovers fine regardless. */
+#mlb-recap .recap-frame .video-js .vjs-modal-dialog,
+#mlb-recap .recap-frame .video-js .vjs-error-display{display:none !important;}
 #mlb-recap .recap-cap{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;gap:1.6vh;
   padding:4vh 3vh 2.2vh;background:linear-gradient(to top,rgba(0,0,0,0.78),transparent);
   pointer-events:none;opacity:0;transition:opacity 0.5s ease 0.3s;}
@@ -3736,7 +3745,7 @@ function simGoal(opt){
   window._simGoalT = setTimeout(() => {
     try{
       if (typeof playGoalClip === 'function') playGoalClip({ account, videoId, lengthSec, source:'nhl-sim',
-        title: nhlGoalClipBadge({ scorer, goalsToDate, team, awayAbbr: away, homeAbbr: home, awayScore: aScore, homeScore: hScore }) });
+        title: nhlGoalClipBadge({ scorer, fullName: scorer, strength, goalsToDate, team, awayAbbr: away, homeAbbr: home, awayScore: aScore, homeScore: hScore }) });
       else console.log('[simGoal] playGoalClip not available');
     }catch(e){ console.log('[simGoal] playGoalClip failed:', e.message); }
   }, _ms);
@@ -5104,7 +5113,10 @@ function nhlGoalWatch(gameId, opts){
                         // Existing readers (nhlWatchReport, the saved log) only read the fields above.
                         fullName: g.fullName, goalsToDate: g.goalsToDate,
                         awayAbbr: goals.awayAbbr, homeAbbr: goals.homeAbbr,
-                        awayScore: g.awayScore, homeScore: g.homeScore };
+                        awayScore: g.awayScore, homeScore: g.homeScore,
+                        // r652: additive -- badge's PP/SH tag (nhlGoalStrengthTag) needs this now
+                        // that it moved off the card headline. Same additive-only guarantee as above.
+                        strength: g.strength };
           window._nhlWatchLog.push(rec); nhlSaveLog();
           onClip(rec);
         }
@@ -5121,6 +5133,8 @@ function nhlGoalWatch(gameId, opts){
 window.nhlGoalWatch = nhlGoalWatch;
 
 // r641: pure -- no DOM, no fetch. Testable in isolation (unit harness extracts this verbatim).
+// r653: back in use -- the LIVE takeover headline keeps POWER PLAY / SHORTHANDED GOAL. Only the
+// MONTAGE headline is standard "GOAL (n)" (Mike, r653 clarification of r652).
 function nhlGoalKicker(strength){
   if (strength === 'pp') return 'POWER PLAY GOAL';
   if (strength === 'sh') return 'SHORTHANDED GOAL';
@@ -5128,16 +5142,33 @@ function nhlGoalKicker(strength){
 }
 window.nhlGoalKicker = nhlGoalKicker;
 
+// r652 -- Mike: PP/SH no longer distinguishes the CARD headline (see nhlGoalHeadline below,
+// now always "GOAL (n)"); it shows up ONLY in the clip badge's bottom text instead, as plain
+// "Power Play" / "Shorthanded" (title case, no "GOAL" suffix -- that word already lives in
+// the headline). Even-strength returns '' so the badge adds nothing for the common case.
+function nhlGoalStrengthTag(strength){
+  if (strength === 'pp') return 'Power Play';
+  if (strength === 'sh') return 'Shorthanded';
+  return '';
+}
+window.nhlGoalStrengthTag = nhlGoalStrengthTag;
+
 // r645: pure -- clip-badge text for the companion overlay (Mike: drop the hockey-stick emoji
 // and the "GOAL"/"SCORES" words, siren instead). Live-clip format includes the score line;
-// the eventual montage badge (no live score context) omits it -- pass {montage:true} for that
-// once montage integration exists. No live/montage caller wired yet either way; this is pure
-// and testable now, wired into playGoalClip's badge below.
+// the montage badge (no live score context) omits it -- pass {montage:true} for that.
+// r652 -- two fixes: (1) prefers fullName over the abbreviated broadcast form (o.scorer,
+// "M. Zibanejad") the same way nhlGoalTakeoverOpts's card text already does -- this was the
+// one place still reading the short form; (2) inserts the PP/SH strength tag (now dropped
+// from the card headline) right after the name+count, e.g. "🚨 Mika Zibanejad (1) - Power
+// Play" for a montage badge, or "...- Power Play - NYR 1 - NYI 0" once the score segment
+// below is appended for a live (non-montage) card.
 function nhlGoalClipBadge(o){
   o = o || {};
-  const name = o.scorer || '';
+  const name = (o.fullName && o.fullName.trim()) || o.scorer || '';
   const countTxt = o.goalsToDate != null ? ` (${o.goalsToDate})` : '';
-  const base = `🚨 ${name}${countTxt}`;
+  const strengthTag = o.montage ? nhlGoalStrengthTag(o.strength) : '';   // r653: montage-only -- live headline already says it
+  const tagTxt = strengthTag ? ` - ${strengthTag}` : '';
+  const base = `🚨 ${name}${countTxt}${tagTxt}`;
   if (o.montage) return base;
   const scoringAbbr = o.team || '';
   const oppAbbr = scoringAbbr === o.homeAbbr ? o.awayAbbr : o.homeAbbr;
@@ -5148,8 +5179,10 @@ function nhlGoalClipBadge(o){
 }
 window.nhlGoalClipBadge = nhlGoalClipBadge;
 
-// r645: pure -- "GOAL (27)" / "POWER PLAY GOAL (27)" / "SHORTHANDED GOAL (27)". Mike's rule,
-// verbatim: kicker text + season goal count, no separate line for the count.
+// r645: pure -- season goal count appended to the headline.
+// r653 -- restored to r651 behavior (live card: "POWER PLAY GOAL (n)" etc). r652 had flattened
+// it for every card; Mike wanted that for the MONTAGE only -- _gwgMontageBeat passes '' as the
+// strength so its headline is always plain "GOAL (n)".
 function nhlGoalHeadline(strength, goalsToDate){
   const kicker = nhlGoalKicker(strength);
   return goalsToDate != null ? `${kicker} (${goalsToDate})` : kicker;
@@ -5226,7 +5259,11 @@ async function nhlGwgMontageBuild(){
   const dates = [_montageEtDay(-1), _montageEtDay(0)];
   const games = [];
   for (const ds of dates){
-    let sched; try{ sched = JSON.parse(await proxyFetchText('https://api-web.nhle.com/v1/schedule/' + ds)); }catch(_){ continue; }
+    // r651: skipDirect=true -- every other api-web.nhle.com call in this file already passes
+    // this (confirmed no CORS header, r632b); this one call site was missed, which is exactly
+    // the two CORS console errors Mike saw on deploy. Cosmetic-only (the proxy fallback still
+    // succeeded, 8 GWGs built that same run) but avoidable noise.
+    let sched; try{ sched = JSON.parse(await proxyFetchText('https://api-web.nhle.com/v1/schedule/' + ds, true)); }catch(_){ continue; }
     (sched.gameWeek || []).forEach(day => (day.games || []).forEach(g => {
       const st = g.gameState;
       const periodType = (g.periodDescriptor && g.periodDescriptor.periodType) || '';
@@ -5286,7 +5323,8 @@ window.nhlGoalTakeoverOpts = nhlGoalTakeoverOpts;
 // so there's no queue-behind-a-live-card problem to solve. If something else already owns the
 // wall (a live NHL goal/win splash, or an active clip) when a beat is about to fire, this
 // montage just STOPS -- it does not queue itself behind the interruption or try to resume.
-window.GWG_MONTAGE = { queue: [], i: -1, on: false, builtAt: 0, _cardT: null, _cardIsOurs: false };
+const GWG_MONTAGE = { queue: [], i: -1, on: false, builtAt: 0, _cardT: null, _cardIsOurs: false };
+window.GWG_MONTAGE = GWG_MONTAGE; // r652: match MONTAGE's const+expose pattern (was window-only, which is why eslint no-undef flagged every bare reference below -- worked in-browser via global-object leak, but inconsistent and noisy)
 
 // true if something else already owns the takeover card or the clip/recap overlay -- checked
 // at the start of every beat and again right before the clip step, since a live NHL goal card
@@ -5300,6 +5338,33 @@ function _gwgMontageBusy(){
   return false;
 }
 
+// r653: mirrors MLB r231 -- resolve AND decode the hero before the card mounts, so text and
+// photo reveal together out of the black. Both steps capped (probe 1.5s, decode 1.2s): the
+// probe (_imgProbeOk) has no timeout of its own and a hung image used to stall the montage
+// with the fade already lifted. Never rejects; null = card without a hero.
+function _gwgHeroPrep(entry){
+  return (async () => {
+    let url = null;
+    try{ url = await Promise.race([ nhlGoalHeroUrl(entry), new Promise(r => setTimeout(() => r(null), 1500)) ]); }catch(_){}
+    if (url){
+      try{
+        const im = new Image(); im.src = url;
+        await Promise.race([
+          (im.decode ? im.decode() : new Promise(r => { im.onload = r; im.onerror = r; })).catch(() => {}),
+          new Promise(r => setTimeout(r, 1200))
+        ]);
+      }catch(_){}
+    }
+    return url;
+  })();
+}
+// r653: card hold before the clip step. Was TKO_CARD_MS, i.e. the SAME tick as the card's own
+// tko-out fade + tko-scrim drop -- card faded out while the black faded in, panel peeked
+// through mid-crossfade. MLB avoids it by starting its clip while the card is fully opaque
+// (5s). Keep GWG's longer read time but raise the black 700ms before the card's auto-hide
+// (> the 280ms fade + a rAF), so the black always lands on a solid card.
+const GWG_CLIP_LEAD_MS = 700;
+
 function _gwgMontageBeat(){
   if (!GWG_MONTAGE.on) return;
   GWG_MONTAGE._cardIsOurs = false;
@@ -5309,15 +5374,17 @@ function _gwgMontageBeat(){
   const entry = GWG_MONTAGE.queue[GWG_MONTAGE.i];
   (async () => {
     let hero = null;
-    try{ hero = await nhlGoalHeroUrl(entry); }catch(_){}
+    try{ hero = await (entry._heroP || (entry._heroP = _gwgHeroPrep(entry))); }catch(_){}   // r653: usually prefetched during the previous clip
     if (!GWG_MONTAGE.on) return;               // stopped while the hero-photo probe was in flight
     if (typeof nhlGoalTakeoverOpts !== 'function' || typeof showTakeover !== 'function') { gwgMontageStop(); return; }
     const opts = nhlGoalTakeoverOpts(entry, hero);
     opts.montage = true;                       // full-screen via the EXISTING montage flag -- no new CSS
     opts.a.live = false;                       // r649: this game is OVER -- no LIVE badge on a montage card
+    opts.a.headline = nhlGoalHeadline('', entry.goalsToDate);   // r653: montage headline always plain "GOAL (n)"; PP/SH lives in the clip badge
     GWG_MONTAGE._cardIsOurs = true;
     showTakeover(opts);
     const _ms = (typeof TKO_CARD_MS !== 'undefined') ? TKO_CARD_MS : 12000;
+    const _hold = _ms - GWG_CLIP_LEAD_MS;      // r653: clip step fires while the card is still fully opaque
     clearTimeout(GWG_MONTAGE._cardT);
     GWG_MONTAGE._cardT = setTimeout(() => {
       if (!GWG_MONTAGE.on) return;
@@ -5329,16 +5396,37 @@ function _gwgMontageBeat(){
       // the montage every time a GWG had no landed clip yet. 400ms clears that teardown with
       // margin; the clip-step path never needed this because a real clip runs 30+ seconds,
       // far longer than the 300ms teardown ever takes.
-      if (!entry.highlightClip){ setTimeout(_gwgMontageBeat, 400); return; }   // no clip landed yet -- skip to next
+      // r653: hold now ends GWG_CLIP_LEAD_MS early, so add it back -- next beat still lands 400ms
+      // after the card's own teardown, same as r649 intended.
+      if (!entry.highlightClip){ setTimeout(_gwgMontageBeat, GWG_CLIP_LEAD_MS + 400); return; }   // no clip landed yet -- skip to next
       if (typeof RECAP === 'undefined' || typeof playGoalClip !== 'function'){ _gwgMontageBeat(); return; }
-      RECAP._onEnd = () => { RECAP._onEnd = null; _gwgMontageBeat(); };
+      // r652 -- Mike: "a lot of seams" vs HR montage's clean transitions. Root cause: the
+      // whole black-cover mechanism (raise before swap, hold, lower once real content is
+      // confirmed painted -- see endRecap/revealRecap/_montageFade) was gated on MLB's
+      // MONTAGE.on only; GWG_MONTAGE never got it, so every card<->clip swap here was a bare
+      // cut. Fixed at the source (the two gates above), plus mirroring MLB's own r313 pattern
+      // for the CARD->CLIP direction specifically: raise black now, mount the clip under it --
+      // revealRecap (now real 'playing'-event driven, not a blind timer) lifts it once the
+      // frame is actually on screen, symmetric with the CLIP->CARD direction below.
+      try{
+        let f = document.getElementById('mlb-fade');
+        if (!f){ f = document.createElement('div'); f.id = 'mlb-fade'; (document.querySelector('.shell') || document.body).appendChild(f); }
+        f.classList.add('show'); requestAnimationFrame(() => { f.classList.add('on'); });
+      }catch(_){}
+      // CLIP->CARD direction: same _montageFade helper MLB's own beat loop uses (raise, swap
+      // while black, hold for paint, lower) -- it's sport-agnostic, never touched MONTAGE
+      // itself, so reusing it here needed no changes to it at all.
+      RECAP._onEnd = GWG_MONTAGE._onEnd = () => { RECAP._onEnd = null; _montageFade(() => { _gwgMontageBeat(); }); };
+      // r653: prefetch + decode the NEXT card's hero during this clip, so after the clip the card
+      // mounts inside _montageFade's 200ms black hold instead of after the black has lifted.
+      try{ const nx = GWG_MONTAGE.queue[GWG_MONTAGE.i + 1]; if (nx && !nx._heroP) nx._heroP = _gwgHeroPrep(nx); }catch(_){}
       // r649: NHL's landing payload never gives clip duration (confirmed r631/r645 -- same gap
       // playGoalClip already accepts elsewhere), so this reuses the SAME fixed-length fallback
       // simGoal's demo already relies on -- not a new limitation this build introduces.
       playGoalClip({ account: '6415718365001', videoId: String(entry.highlightClip), lengthSec: 30,
         source: 'nhl-gwg-montage',
         title: (typeof nhlGoalClipBadge === 'function') ? nhlGoalClipBadge(Object.assign({}, entry, { montage: true })) : '' });
-    }, _ms);
+    }, _hold);
   })();
 }
 
@@ -5349,6 +5437,9 @@ function gwgMontageStart(){
     GWG_MONTAGE.queue = q; GWG_MONTAGE.i = -1; GWG_MONTAGE.on = true; GWG_MONTAGE.builtAt = Date.now();
     console.log('[gwg-montage] built', q.length, 'GWG(s)');
     if (!q.length){ console.log('[gwg-montage] nothing to show'); GWG_MONTAGE.on = false; return; }
+    // r653: MLB r208's sequence scrim -- the real reason HR never shows panel bleed: any gap in
+    // the black cover reveals a dimmed blur, not the live panel. GWG never raised it.
+    try{ _montageScrim(true); }catch(_){}
     _gwgMontageBeat();
   }).catch(e => { console.log('[gwg-montage] build failed:', e.message); GWG_MONTAGE.on = false; });
   return 'building';
@@ -5356,15 +5447,278 @@ function gwgMontageStart(){
 window.gwgMontageStart = gwgMontageStart;
 
 function gwgMontageStop(){
+  // r652: if a manual/external stop lands between the CARD->CLIP fade-raise (in
+  // _gwgMontageBeat's clip-step) and the eventual revealRecap() lower, GWG_MONTAGE.on
+  // is already false by the time revealRecap's gate runs -- so its gate (which now
+  // OR's in GWG_MONTAGE.on) reads false and never lowers #mlb-fade, leaving the wall
+  // stuck black. Force it down here as a safety net, unless MLB's own MONTAGE is
+  // mid-fade right now (its gate covers that case).
+  try{
+    if (!(window.MONTAGE && MONTAGE.on)){
+      const f = document.getElementById('mlb-fade');
+      if (f && (f.classList.contains('on') || f.classList.contains('show'))){
+        f.classList.remove('on');
+        setTimeout(()=>{ try{ f.classList.remove('show'); }catch(_){} }, 340);
+      }
+    }
+  }catch(_){}
+  try{ if (!(window.MONTAGE && MONTAGE.on)) _montageScrim(false); }catch(_){}   // r653: drop the sequence scrim (not MLB's)
   GWG_MONTAGE.on = false;
   clearTimeout(GWG_MONTAGE._cardT);
-  try{ if (typeof RECAP !== 'undefined' && RECAP._onEnd) RECAP._onEnd = null; }catch(_){}
+  // r653: only clear the shared callback if it's OURS -- a busy-stop means another owner has
+  // the wall, and it may have set its own RECAP._onEnd (r652 wiped it unconditionally).
+  try{ if (typeof RECAP !== 'undefined' && RECAP._onEnd && RECAP._onEnd === GWG_MONTAGE._onEnd) RECAP._onEnd = null; }catch(_){}
+  GWG_MONTAGE._onEnd = null;
   if (GWG_MONTAGE._cardIsOurs){
     try{ const card = document.getElementById('mlb-takeover'); if (card) card.classList.remove('show'); }catch(_){}
     GWG_MONTAGE._cardIsOurs = false;
   }
 }
 window.gwgMontageStop = gwgMontageStop;
+
+// ★ r654 -- SPEC-nhl-followed-goals §1: NHL goal ELIGIBILITY. Pure plumbing only -- nothing
+// calls these yet (r655 auto-watch does, in dry mode first). Mirrors MLB's r180-r183 HR scope
+// (_favMlbSet/_hrGameWatched/_hrEligible) and carries its lessons forward:
+//  - WWS.watch.teams entries are OBJECTS {league:'hockey/nhl', abbr, name} with the RAW ESPN abbr
+//    (NJ, TB, LA, SJ, UTAH) -- normalized via normalizeAbbr('NHL', ...) to the NHL API's own
+//    3-letter form (NJD, TBL, LAK, SJS, UTA), which is what landing/score payloads carry.
+//  - selector-picked GAMES never land in watch.teams; they're curated WWS.sel entries whose
+//    espnId is an ESPN id -- NOT the NHL API's gameId (SPEC-followed-players §4 id-space trap).
+//    Matched instead on ET day (selector's showFrom) + BOTH team abbrs, taken from the ESPN
+//    hydration (WWS.events[espnId].sides[].name, already normalizeAbbr'd). Day matters: NHL
+//    home-and-home pairs play on consecutive days.
+// Read live every call, so a selector republish takes effect with no reload.
+const NHL_FAV_BASE = ['NYR'];
+function _favNhlSet(){
+  const s = new Set(NHL_FAV_BASE);
+  const add = a => { if (!a) return; const u = normalizeAbbr('NHL', String(a).trim().toUpperCase());
+                     if (u.length >= 2 && u.length <= 4) s.add(u); };
+  try { ((WWS.watch && WWS.watch.teams) || []).forEach(t => {
+          if (t && typeof t === 'object' && /nhl|hockey/i.test(String(t.league || ''))) add(t.abbr);
+        }); } catch(_){}
+  try { const q = new URLSearchParams(location.search).get('nhlteams');
+        if (q) q.split(',').forEach(add); } catch(_){}
+  return s;
+}
+// Curated (non-__watch) NHL picks -> [{espnId, day:'YYYYMMDD', abbrs:[a,b]|null}]. abbrs null =
+// not hydrated yet (can't match until wwsPollEvents has fetched it; reported, never guessed).
+function _selectedNhlGames(){
+  const out = [];
+  try { (WWS.sel || []).forEach(e => {
+    if (!e || e.__watch || !e.espnId || !/nhl|hockey/i.test(String(e.league || ''))) return;
+    const ev = WWS.events && WWS.events[e.espnId];
+    const abbrs = (ev && Array.isArray(ev.sides) && ev.sides.length === 2)
+      ? ev.sides.map(x => String(x.name || '').toUpperCase()) : null;
+    out.push({ espnId: String(e.espnId), day: String(e.showFrom || ''), abbrs });
+  }); } catch(_){}
+  return out;
+}
+// PURE from here down. game = {awayAbbr, homeAbbr, day:'YYYYMMDD'} (NHL API side).
+function _nhlGameSelected(game, selected){
+  if (!game || !game.awayAbbr || !game.homeAbbr) return false;
+  return (selected || []).some(sel => sel && sel.abbrs && sel.day === game.day
+    && sel.abbrs.includes(game.awayAbbr) && sel.abbrs.includes(game.homeAbbr));
+}
+// Worth POLLING at all? A followed team plays, or Mike picked the game.
+function _nhlGameWatched(game, fav, selected){
+  if (!game) return false;
+  return fav.has(game.awayAbbr) || fav.has(game.homeAbbr) || _nhlGameSelected(game, selected);
+}
+// Priority tier for THIS goal (r656's governor ranks on it). 0 = not eligible.
+//  1 = base team (NYR) · 2 = other followed team · 3 = any goal in a selector-picked game.
+// Team-level for follows (a goal AGAINST a followed team doesn't fire -- same as MLB), game-wide
+// for a picked game (the point of picking it).
+function _nhlGoalTier(scoringAbbr, game, fav, selected){
+  if (scoringAbbr && NHL_FAV_BASE.includes(scoringAbbr)) return 1;
+  if (scoringAbbr && fav.has(scoringAbbr)) return 2;
+  if (_nhlGameSelected(game, selected)) return 3;
+  return 0;
+}
+function _nhlGoalEligible(scoringAbbr, game, fav, selected){ return _nhlGoalTier(scoringAbbr, game, fav, selected) > 0; }
+// ET YYYYMMDD from an NHL API game (score/schedule payloads carry gameDate 'YYYY-MM-DD' in ET).
+function _nhlGameDay(g){ return String((g && g.gameDate) || '').replace(/-/g, ''); }
+// CC readout -- "did my selections register?" without waiting for a goal (MLB favDump lesson).
+function nhlFavDump(){
+  const fav = _favNhlSet(), selected = _selectedNhlGames();
+  const lines = ['NHL FOLLOWED SET (r654 -- eligibility only, nothing fires yet)',
+    'teams: ' + [...fav].sort().join(', '),
+    'picked games: ' + (selected.length ? '' : 'none')];
+  selected.forEach(x => lines.push('  ' + x.day + '  ' + (x.abbrs ? x.abbrs.join(' v ') : '(not hydrated yet -- cannot match)') + '  espn ' + x.espnId));
+  return lines.join('\n');
+}
+window._favNhlSet = _favNhlSet; window._selectedNhlGames = _selectedNhlGames;
+window._nhlGameSelected = _nhlGameSelected; window._nhlGameWatched = _nhlGameWatched;
+window._nhlGoalTier = _nhlGoalTier; window._nhlGoalEligible = _nhlGoalEligible;
+window._nhlGameDay = _nhlGameDay; window.nhlFavDump = nhlFavDump;
+
+// ★ r655 -- SPEC-nhl-followed-goals §2: AUTO-WATCH, DRY MODE. Boots itself, rescans the NHL
+// score feed every RESCAN_MS, and watches ONLY eligible games (r654 _nhlGameWatched) that are
+// actually LIVE -- a PRE game is picked up on the rescan after puck drop instead of polling its
+// landing feed at 4s for hours. Nothing is shown: every goal/clip is scored (tier 0-3) and logged
+// to localStorage so one real night gives true overload numbers (nhlDryReport, CC Sim -> nhldry)
+// before r656's governor lets anything onto the wall.
+//   ?nhlgoals=off  -> no auto-watch at all · default / ?nhlgoals=dry -> this · 'on' (r656)
+//   feeds goals into the r656 WALL (falls back to dry under ?wall=off, so nothing fires ungoverned).
+// A game is kept GRACE_MS past FINAL so late-landing clips still get measured.
+// Takes over a manual nhlWatchTonight() watch on the same game: both share
+// _nhlWatchTracked[gameId], so whichever polled first would swallow the goal and the other's
+// onGoal would never fire (the manual one has no callbacks).
+const NHL_AUTO_CFG = { RESCAN_MS: 3 * 60000, BOOT_DELAY_MS: 8000, GRACE_MS: 20 * 60000,
+                       DRY_KEY: 'nhlDryLog_v1', DRY_CAP: 600, CARD_MS: 12000, CLIP_MS: 30000 };
+function nhlGoalsMode(){
+  let q = null; try{ q = new URLSearchParams(location.search).get('nhlgoals'); }catch(_){}
+  if (q === 'off') return 'off';
+  // r656: 'on' is real now -- goals feed the WALL (dry logging continues alongside). Without the
+  // wall (?wall=off) there's nothing to govern them, so 'on' still falls back to dry.
+  if (q === 'on') return (typeof WALL !== 'undefined' && WALL) ? 'on' : 'dry';
+  return 'dry';
+}
+// PURE: what to start/stop this scan. games = normalized score-feed rows
+// {id, state, gameType, awayAbbr, homeAbbr, day}; watching = {id: {finalAt}}.
+function _nhlAutoPlan(games, fav, selected, watching, now, graceMs){
+  const byId = {}; (games || []).forEach(g => { byId[String(g.id)] = g; });
+  const start = [], stop = [], markFinal = [];
+  (games || []).forEach(g => {
+    if ((g.state === 'LIVE' || g.state === 'CRIT') && !watching[String(g.id)] && _nhlGameWatched(g, fav, selected)) start.push(g);
+  });
+  Object.keys(watching || {}).forEach(id => {
+    const w = watching[id], g = byId[id];
+    if (!g){ stop.push(id); return; }                                  // dropped off the feed
+    if (g.state === 'FINAL' || g.state === 'OFF'){
+      if (!w.finalAt) markFinal.push(id);
+      else if (now - w.finalAt >= graceMs) stop.push(id);              // clip grace over
+      return;
+    }
+    if (!_nhlGameWatched(g, fav, selected)) stop.push(id);             // unfollowed mid-game
+  });
+  return { start, stop, markFinal };
+}
+// Merge-on-write (multi-instance rule): re-read, dedupe on key, append, cap.
+function _nhlDryRecord(r){
+  const key = r.gameId + ':' + r.eventId + ':' + r.kind;
+  let arr = [];
+  try{ arr = JSON.parse(localStorage.getItem(NHL_AUTO_CFG.DRY_KEY) || '[]'); if (!Array.isArray(arr)) arr = []; }catch(_){ arr = []; }
+  if (arr.some(x => x && x.key === key)) return false;
+  arr.push(Object.assign({ key }, r));
+  if (arr.length > NHL_AUTO_CFG.DRY_CAP) arr = arr.slice(-NHL_AUTO_CFG.DRY_CAP);
+  try{ localStorage.setItem(NHL_AUTO_CFG.DRY_KEY, JSON.stringify(arr)); }catch(_){}
+  return true;
+}
+function _nhlDryRows(){ try{ const a = JSON.parse(localStorage.getItem(NHL_AUTO_CFG.DRY_KEY) || '[]'); return Array.isArray(a) ? a : []; }catch(_){ return []; } }
+// PURE: per-ET-day overload numbers from dry rows. "Would fire" = tier > 0, excluding restart
+// artifacts (goals that predate the watch). Card pressure is simulated as one card at a time,
+// queued: a goal arriving while a card is still up waits -- maxWaitS shows how bad the line
+// gets. Clip pressure: same idea with CLIP_MS per clip. peak10 = most non-NYR would-fire goals
+// in any rolling 10 minutes (the number r656's rate cap gets set against).
+function _nhlDrySummary(rows, cardMs, clipMs){
+  const days = {};
+  (rows || []).forEach(r => { if (r && r.day) (days[r.day] = days[r.day] || []).push(r); });
+  const out = {};
+  Object.keys(days).sort().forEach(day => {
+    const rs = days[day].slice().sort((a, b) => a.t - b.t);
+    const goals = rs.filter(r => r.kind === 'goal' && !r.restart);
+    const fire = goals.filter(r => r.tier > 0);
+    const tiers = { 1: 0, 2: 0, 3: 0, 0: 0 }; goals.forEach(r => { tiers[r.tier] = (tiers[r.tier] || 0) + 1; });
+    const nonNyr = fire.filter(r => r.tier > 1).map(r => r.t);
+    let peak10 = 0;
+    nonNyr.forEach((t, i) => { let n = 0; for (let k = i; k < nonNyr.length && nonNyr[k] - t < 600000; k++) n++; peak10 = Math.max(peak10, n); });
+    const queueSim = (ts, dur) => { let busy = 0, waited = 0, maxWait = 0;
+      ts.forEach(t => { if (t < busy){ waited++; maxWait = Math.max(maxWait, busy - t); busy += dur; } else busy = t + dur; });
+      return { waited, maxWaitS: Math.round(maxWait / 1000) }; };
+    const clips = rs.filter(r => r.kind === 'clip' && !r.restart && r.tier > 0);
+    const lags = clips.map(r => r.lagS).filter(x => x != null).sort((a, b) => a - b);
+    out[day] = { games: new Set(rs.map(r => r.gameId)).size, goals: goals.length, wouldFire: fire.length, tiers, peak10,
+      cards: queueSim(fire.map(r => r.t), cardMs), clips: clips.length,
+      clipQueue: queueSim(clips.map(r => r.t), clipMs),
+      medianLagS: lags.length ? lags[Math.floor(lags.length / 2)] : null, maxLagS: lags.length ? lags[lags.length - 1] : null };
+  });
+  return out;
+}
+window._nhlAuto = window._nhlAuto || { mode: null, watching: {}, lastScanMs: 0, lastScanOk: null, scans: 0, timer: null };
+function _nhlDryTier(game, teamAbbr){
+  try{ return _nhlGoalTier(teamAbbr, game, _favNhlSet(), _selectedNhlGames()); }catch(_){ return 0; }
+}
+async function _nhlAutoScan(){
+  const A = window._nhlAuto; A.scans++;
+  let j = null;
+  try{ const raw = await proxyFetchText('https://api-web.nhle.com/v1/score/now', true); j = raw ? JSON.parse(raw) : null; }catch(_){ j = null; }
+  const now = Date.now(); A.lastScanMs = now; A.lastScanOk = !!j;
+  if (!j) return;
+  const games = (j.games || []).map(g => ({ id: g.id, state: g.gameState, gameType: g.gameType,
+    awayAbbr: (g.awayTeam && g.awayTeam.abbrev) || '', homeAbbr: (g.homeTeam && g.homeTeam.abbrev) || '',
+    day: _nhlGameDay(g) || String(j.currentDate || '').replace(/-/g, '') }));
+  const plan = _nhlAutoPlan(games, _favNhlSet(), _selectedNhlGames(), A.watching, now, NHL_AUTO_CFG.GRACE_MS);
+  plan.markFinal.forEach(id => { if (A.watching[id]) A.watching[id].finalAt = now; });
+  plan.stop.forEach(id => { try{ A.watching[id].cancel(); }catch(_){} delete A.watching[id];
+    console.log('[nhlAuto] stop watching', id); });
+  plan.start.forEach(g => {
+    const id = String(g.id);
+    try{ if (window._nhlWatchCancels && window._nhlWatchCancels[id]){ window._nhlWatchCancels[id](); delete window._nhlWatchCancels[id];
+      console.log('[nhlAuto] took over manual watch on', id); } }catch(_){}
+    window._nhlWatchStatus[id] = window._nhlWatchStatus[id] || { away: g.awayAbbr, home: g.homeAbbr, gameState: g.state,
+      startedMs: now, lastPollMs: null, pollCount: 0, lastOk: null };
+    const cancel = nhlGoalWatch(g.id, {
+      onGoal: (x) => { if (window._nhlAuto.mode === 'on') _nhlWallGoal(g, x);   // r656
+        _nhlDryRecord({ kind: 'goal', t: Date.now(), day: g.day, gameId: id, gameType: g.gameType, eventId: x.eventId,
+        team: x.team, scorer: x.fullName || x.scorer, strength: x.strength || '', tier: _nhlDryTier(g, x.team), restart: false }); },
+      onClip: (rec) => { if (window._nhlAuto.mode === 'on' && !rec.restartArtifact) _nhlWallClip(g, rec);   // r656
+        _nhlDryRecord({ kind: 'clip', t: Date.now(), day: g.day, gameId: id, gameType: g.gameType, eventId: rec.eventId,
+        team: rec.team, scorer: rec.fullName || rec.scorer, lagS: rec.lagS, tier: _nhlDryTier(g, rec.team), restart: !!rec.restartArtifact }); }
+    });
+    A.watching[id] = { cancel, game: g, since: now, finalAt: null };
+    console.log('[nhlAuto] DRY watching', g.awayAbbr, '@', g.homeAbbr, id, '(type ' + g.gameType + ')');
+  });
+}
+// r656: live NHL goal -> the shared WALL line. Hero resolved+decoded BEFORE joining (r653's
+// _gwgHeroPrep, capped ~2.7s) so the card never mounts photo-less. Tier 0 = not eligible, dropped.
+async function _nhlWallGoal(game, x){
+  const tier = _nhlDryTier(game, x.team); if (!tier || !window.WALL) return;
+  let hero = null; try{ hero = await _gwgHeroPrep(x); }catch(_){}
+  WALL.card({ id: 'nhl:' + game.id + ':' + x.eventId, tier, sport: 'nhl',
+    show: () => showTakeover(Object.assign(nhlGoalTakeoverOpts(x, hero), { _wall: true })) });
+}
+function _nhlWallClip(game, rec){
+  const tier = _nhlDryTier(game, rec.team); if (!tier || !window.WALL) return;
+  const name = (rec.fullName && rec.fullName.trim()) || rec.scorer || '';
+  WALL.clip({ id: 'nhl:' + game.id + ':' + rec.eventId, tier, sport: 'nhl',
+    play: (done) => {
+      playGoalClip({ account: rec.account, videoId: rec.videoId, source: 'nhl-live',
+        title: nhlGoalClipBadge({ scorer: name, fullName: name, strength: rec.strength, goalsToDate: rec.goalsToDate, team: rec.team,
+          awayAbbr: rec.awayAbbr, homeAbbr: rec.homeAbbr, awayScore: rec.awayScore, homeScore: rec.homeScore }) });
+      window._wallClipDone = done;
+    },
+    cancel: () => { try{ _recapPreempt(); }catch(_){} } });
+}
+function nhlAutoWatchStart(){
+  const A = window._nhlAuto;
+  A.mode = nhlGoalsMode();
+  if (A.mode === 'off'){ console.log('[nhlAuto] off (?nhlgoals=off)'); return 'off'; }
+  if (A.timer) return 'already running';
+  _nhlAutoScan();
+  A.timer = setInterval(_nhlAutoScan, NHL_AUTO_CFG.RESCAN_MS);
+  return 'dry';
+}
+function nhlDryReport(){
+  const A = window._nhlAuto, lines = [];
+  lines.push('NHL AUTO-WATCH -- mode: ' + (A.mode || 'not started') + ' · scans ' + A.scans
+    + ' · last ' + (A.lastScanMs ? Math.round((Date.now() - A.lastScanMs) / 1000) + 's ago (' + (A.lastScanOk ? 'ok' : 'FAILED') + ')' : 'never'));
+  const ids = Object.keys(A.watching);
+  lines.push('watching: ' + (ids.length ? ids.map(id => { const w = A.watching[id]; return w.game.awayAbbr + '@' + w.game.homeAbbr + (w.finalAt ? ' (final, grace)' : ''); }).join(', ') : 'none'));
+  const sum = _nhlDrySummary(_nhlDryRows(), NHL_AUTO_CFG.CARD_MS, NHL_AUTO_CFG.CLIP_MS);
+  const days = Object.keys(sum).slice(-3);
+  if (!days.length) lines.push('', 'no dry data yet');
+  days.forEach(d => { const x = sum[d];
+    lines.push('', d + ' -- ' + x.games + ' game(s), ' + x.goals + ' goal(s) seen, ' + x.wouldFire + ' WOULD FIRE'
+      + ' (NYR ' + x.tiers[1] + ' · followed ' + x.tiers[2] + ' · picked ' + x.tiers[3] + ' · skipped ' + x.tiers[0] + ')',
+      '  peak non-NYR in any 10 min: ' + x.peak10,
+      '  cards queued behind another: ' + x.cards.waited + ' (max wait ' + x.cards.maxWaitS + 's)',
+      '  clips: ' + x.clips + ' · queued ' + x.clipQueue.waited + ' (max wait ' + x.clipQueue.maxWaitS + 's)'
+        + ' · lag median ' + (x.medianLagS == null ? '-' : x.medianLagS + 's') + ', max ' + (x.maxLagS == null ? '-' : x.maxLagS + 's')); });
+  return lines.join('\n');
+}
+window.nhlAutoWatchStart = nhlAutoWatchStart; window.nhlDryReport = nhlDryReport;
+window._nhlAutoPlan = _nhlAutoPlan; window._nhlDrySummary = _nhlDrySummary; window._nhlAutoScan = _nhlAutoScan;
+document.addEventListener('DOMContentLoaded', () => { setTimeout(() => { try{ nhlAutoWatchStart(); }catch(e){ console.log('[nhlAuto] start failed:', e.message); } }, NHL_AUTO_CFG.BOOT_DELAY_MS); });
 
 // r641/r645: the real live wire. nhlGoalWatch's detector was already correct and already ran
 // every night (log-only) -- this just points its two callbacks at the real renderers instead
@@ -5390,7 +5744,7 @@ function nhlLiveGoalTrigger(gameId, opts){
       // scorer + season count + live score line) -- see there for the exact format.
       const name = (rec.fullName && rec.fullName.trim()) || rec.scorer || '';
       playGoalClip({ account: rec.account, videoId: rec.videoId, source: 'nhl-live',
-        title: nhlGoalClipBadge({ scorer: name, goalsToDate: rec.goalsToDate, team: rec.team,
+        title: nhlGoalClipBadge({ scorer: name, fullName: name, strength: rec.strength, goalsToDate: rec.goalsToDate, team: rec.team,
           awayAbbr: rec.awayAbbr, homeAbbr: rec.homeAbbr, awayScore: rec.awayScore, homeScore: rec.homeScore }) });
     }
   });
@@ -8149,6 +8503,166 @@ function playNyyWinSong(){
 window.playNyyWinSong = playNyyWinSong;
 window.simNyyWinSong = playNyyWinSong;   // console test hook, same convention as simSting
 
+/* ═══ WALL ARBITER — begin (r656 sandbox; pasted VERBATIM into dashboard.html at integration) ═══
+   One arbiter for every LIVE moment that wants the wall: MLB HR cards + companion clips and NHL
+   goal cards + clips (SPEC-nhl-followed-goals §3). Pure logic -- time, timers and "is something
+   else on the wall" are INJECTED, so it's testable on a virtual clock and knows nothing about the
+   DOM. Callers hand it thunks (show()/play(done)); it only decides WHEN, or WHETHER.
+
+   Model: ONE slot. A card holds it for cardMs+gapMs; a clip holds it until play() calls done()
+   (or clipMaxMs, the safety net if done() never comes).
+   Order: cards before clips (a card is the live moment; a clip is a replay that landed minutes
+   later), then tier (1 = base favorites NYY/NYM/NYR · 2 = other followed · 3 = picked game), then
+   arrival. No preemption EXCEPT: a tier-1 card cuts a playing tier-2/3 clip (that clip is dropped,
+   not resumed -- a goal clip can't reliably resume).
+   Card-only (no clip) for a tier>=2 moment when: the rate cap is hit (capN moments allowed a clip
+   per capWindowMs), or a tier-1 team's game is live (focus). Mike's call 9/23: over the cap = card
+   only, never dropped outright.
+   Drops (all logged with a reason): a card that waited > cardMaxWaitMs (its clip is denied too --
+   a stale card's replay would just re-add the load); a clip older than clipMaxAgeMs since its
+   moment; a clip whose moment was denied; duplicates by id.
+   Blocked (montage owns the wall, or an unmanaged takeover like a win splash is up): nothing
+   dispatches; the queue waits, expiry still applies. */
+function createWall(cfg){
+  const C = Object.assign({ cardMs: 12000, gapMs: 400, cardMaxWaitMs: 60000, clipMaxAgeMs: 10 * 60000,
+    clipMaxMs: 90000, capN: 6, capWindowMs: 10 * 60000, retryMs: 1000 }, cfg || {});
+  const now = C.now, log = C.log || function(){};
+  const isBlocked = C.isBlocked || (() => false), tier1Live = C.tier1Live || (() => false);
+  const W = { cards: [], clips: [], slot: null, slotUntil: 0, seen: {}, cardAt: {}, denied: {}, clipAllowedAt: [], stats: {}, timer: null };
+  const bump = k => { W.stats[k] = (W.stats[k] || 0) + 1; };
+  const rank = (a, b) => (a.tier - b.tier) || (a.at - b.at);
+  function schedule(ms){ if (W.timer) C.clearTimer(W.timer); W.timer = C.setTimer(() => { W.timer = null; pump(); }, Math.max(0, ms)); }
+  function free(){ return !W.slot || now() >= W.slotUntil; }
+  function expire(){
+    const t = now();
+    W.cards = W.cards.filter(c => {
+      if (t - c.at <= C.cardMaxWaitMs) return true;
+      W.denied[c.id] = 'card waited ' + Math.round((t - c.at) / 1000) + 's'; bump('cardDropped');
+      log('drop card', c.id, W.denied[c.id]); return false; });
+    W.clips = W.clips.filter(k => {
+      if (W.denied[k.id]){ bump('clipDenied'); log('drop clip', k.id, 'moment denied: ' + W.denied[k.id]); return false; }
+      if (t - k.momentAt <= C.clipMaxAgeMs) return true;
+      bump('clipStale'); log('drop clip', k.id, 'stale ' + Math.round((t - k.momentAt) / 1000) + 's'); return false; });
+  }
+  function clipAllowed(item){
+    if (item.tier <= 1) return true;
+    if (tier1Live()){ W.denied[item.id] = 'card-only: tier-1 game live'; bump('cardOnlyFocus'); return false; }
+    const t = now(); W.clipAllowedAt = W.clipAllowedAt.filter(x => t - x < C.capWindowMs);
+    if (W.clipAllowedAt.length >= C.capN){ W.denied[item.id] = 'card-only: cap ' + C.capN + '/' + Math.round(C.capWindowMs / 60000) + 'min'; bump('cardOnlyCap'); return false; }
+    W.clipAllowedAt.push(t); return true;
+  }
+  function pump(){
+    expire();
+    if (!W.cards.length && !W.clips.length) return;
+    if (isBlocked()){ schedule(C.retryMs); return; }
+    // tier-1 card may cut a lower-tier clip
+    if (W.slot && W.slot.kind === 'clip' && !free() && W.cards.length){
+      const top = W.cards.slice().sort(rank)[0];
+      if (top.tier === 1 && W.slot.tier > 1){
+        const cut = W.slot; W.slot = null; bump('clipCut'); log('cut clip', cut.id, 'for tier-1 card', top.id);
+        try{ cut.cancel && cut.cancel(); }catch(_){}
+      }
+    }
+    if (!free()){ schedule(W.slotUntil - now()); return; }
+    W.slot = null;
+    const pick = W.cards.length ? (W.cards.sort(rank), W.cards.shift()) : (W.clips.sort(rank), W.clips.shift());
+    if (pick.kind === 'card'){
+      if (!pick.noClip) clipAllowed(pick); else W.denied[pick.id] = W.denied[pick.id] || 'card-only: caller';
+      W.slot = pick; W.slotUntil = now() + C.cardMs + C.gapMs; bump('cardShown');
+      log('show card', pick.id, 'tier ' + pick.tier + (W.denied[pick.id] ? ' (' + W.denied[pick.id] + ')' : ''));
+      try{ pick.show(); }catch(e){ log('card show threw', e && e.message); }
+      schedule(W.slotUntil - now());
+    } else {
+      // an orphan clip (its card never came through here) still counts against the cap/focus
+      if (!W.seen['card:' + pick.id] && !clipAllowed(pick)){ bump('clipDenied'); log('drop clip', pick.id, W.denied[pick.id]); schedule(0); return; }
+      W.slot = pick; W.slotUntil = now() + C.clipMaxMs; bump('clipPlayed');
+      log('play clip', pick.id, 'tier ' + pick.tier + ' age ' + Math.round((now() - pick.momentAt) / 1000) + 's');
+      let finished = false;
+      const done = () => { if (finished) return; finished = true; if (W.slot === pick){ W.slot = null; W.slotUntil = now() + C.gapMs; } schedule(C.gapMs); };
+      const userCancel = pick.cancel;   // caller's stop-the-media hook, run when a tier-1 card cuts this clip
+      pick.cancel = () => { finished = true; try{ userCancel && userCancel(); }catch(_){} };
+      try{ pick.play(done); }catch(e){ log('clip play threw', e && e.message); done(); }
+      schedule(W.slotUntil - now());
+    }
+  }
+  return {
+    card(item){
+      if (!item || item.id == null || W.seen['card:' + item.id]){ bump('dup'); return false; }
+      W.seen['card:' + item.id] = 1; W.cardAt[item.id] = now();
+      W.cards.push(Object.assign({ kind: 'card', tier: 3, at: now() }, item)); bump('cardIn'); pump(); return true;
+    },
+    clip(item){
+      if (!item || item.id == null || W.seen['clip:' + item.id]){ bump('dup'); return false; }
+      W.seen['clip:' + item.id] = 1;
+      // a clip's age runs from its MOMENT: the caller's momentAt, else its card's arrival here, else now
+      W.clips.push(Object.assign({ kind: 'clip', tier: 3, at: now(), momentAt: W.cardAt[item.id] != null ? W.cardAt[item.id] : now() }, item)); bump('clipIn'); pump(); return true;
+    },
+    pump,
+    state(){ return { slot: W.slot && { kind: W.slot.kind, id: W.slot.id, tier: W.slot.tier }, slotLeftMs: W.slot ? Math.max(0, W.slotUntil - now()) : 0,
+      cards: W.cards.map(c => c.id), clips: W.clips.map(c => c.id), stats: Object.assign({}, W.stats), denied: Object.assign({}, W.denied) }; }
+  };
+}
+/* ═══ WALL ARBITER — end ═══ */
+/* ★ r656 — WALL GLUE (SPEC-nhl-followed-goals §3). Binds the arbiter above to the real page.
+   ONE shared line for MLB HR cards + companion clips and NHL goal cards + clips. ?wall=off =
+   exactly r655 behavior (no arbiter). ?wallcap=N = clips allowed per 10 min for tier>=2 (default 6).
+   Tier 1 = NYY/NYM (UCS_CFG.MLB_TEAMS) and NYR (NHL_FAV_BASE). FOCUS IS CROSS-SPORT (Mike 9/23:
+   "across both so we can prioritize postseason games"): while ANY tier-1 game is live -- MLB or
+   NHL -- every tier>=2 moment in either sport is card-only. That includes MLB-only nights: a live
+   Yankees game now makes other followed teams' HRs card-only (clips suppressed), which is new.
+   Blocked while an MLB/GWG montage owns the wall or an unmanaged takeover (win splash, tennis,
+   Brain non-HR) is on screen. */
+function _wallQ(k){ try{ return new URLSearchParams(location.search).get(k); }catch(_){ return null; } }
+function _wallMlbTier(team){
+  const base = (typeof UCS_CFG !== 'undefined' && UCS_CFG.MLB_TEAMS) || ['NYY', 'NYM'];
+  if (base.includes(team)) return 1;
+  try{ if (_FAV_MLB.has(team)) return 2; }catch(_){}
+  return 3;
+}
+// Only live HR cards are managed; every other takeover (win cards, sims of other kinds, tennis,
+// Brain lead-change) stays unmanaged and simply blocks the wall while it's up.
+function _wallIsMlbHr(opts){
+  if (!opts || !(opts.mlbTeam || opts.brainTeam)) return false;
+  const a = opts.a || {};
+  if (a.winCard || opts.winCard) return false;
+  return /HOME RUN/i.test(String(a.headline || opts.headline || ''));
+}
+function _wallTier1Live(){
+  try{ const base = (typeof UCS_CFG !== 'undefined' && UCS_CFG.MLB_TEAMS) || ['NYY', 'NYM'];
+    if ((window._mlbGames || []).some(g => g && g.gameStatus === 'live' && (base.includes(g.awayAbbr) || base.includes(g.homeAbbr)))) return true; }catch(_){}
+  try{ const W = (window._nhlAuto && window._nhlAuto.watching) || {};
+    if (Object.keys(W).some(id => { const w = W[id]; return w && !w.finalAt && w.game
+      && (NHL_FAV_BASE.includes(w.game.awayAbbr) || NHL_FAV_BASE.includes(w.game.homeAbbr)); })) return true; }catch(_){}
+  return false;
+}
+// The arbiter's clip "done" signal. A managed clip registers its done() here right AFTER it
+// starts (its own start may preempt filler -> _recapPreempt -> this, which must not fire it).
+function _wallFireDone(){ const f = window._wallClipDone; window._wallClipDone = null; if (typeof f === 'function') setTimeout(f, 0); }
+const WALL = (_wallQ('wall') === 'off') ? null : createWall({
+  now: () => Date.now(), setTimer: (f, ms) => setTimeout(f, ms), clearTimer: id => clearTimeout(id),
+  cardMs: TKO_CARD_MS, gapMs: 600,   // 600 > showTakeover's 300ms class teardown, so our own card never reads as "unmanaged"
+  capN: (() => { const n = parseInt(_wallQ('wallcap'), 10); return Number.isFinite(n) && n >= 0 ? n : 6; })(),
+  isBlocked: () => { try{
+    if (window.MONTAGE && MONTAGE.ownsWall) return true;
+    if (window.GWG_MONTAGE && GWG_MONTAGE.on) return true;
+    const c = document.getElementById('mlb-takeover'); return !!(c && c.classList.contains('show'));
+  }catch(_){ return false; } },
+  tier1Live: _wallTier1Live,
+  log: (...a) => { try{ const line = new Date().toLocaleTimeString() + ' ' + a.join(' ');
+    (window._wallLog = window._wallLog || []).push(line); if (window._wallLog.length > 200) window._wallLog.shift();
+    console.log('[wall]', ...a); }catch(_){} }
+});
+window.WALL = WALL;
+function wallReport(){
+  if (!WALL) return 'WALL: off (?wall=off) -- r655 behavior';
+  const st = WALL.state();
+  return ['WALL -- ' + (st.slot ? st.slot.kind + ' ' + st.slot.id + ' (tier ' + st.slot.tier + ', ' + Math.round(st.slotLeftMs / 1000) + 's left)' : 'idle')
+    + ' · tier-1 live: ' + (_wallTier1Live() ? 'YES (tier>=2 card-only)' : 'no'),
+    'queued cards: ' + (st.cards.join(', ') || '-') + ' · queued clips: ' + (st.clips.join(', ') || '-'),
+    'stats: ' + JSON.stringify(st.stats), '', 'recent:', ...(window._wallLog || []).slice(-20)].join('\n');
+}
+window.wallReport = wallReport;
+
 function showTakeover(opts){
   /* ★ r228 — MONTAGE OWNERSHIP LOCK. Mike's model: while a montage runs, IT owns the video
      wall until its queue finishes. Everything else queues behind the montage's last beat.
@@ -8174,6 +8688,19 @@ function showTakeover(opts){
     try{ console.log('[montage] wall locked — HR queued ('+MONTAGE.hrQueue.length+')', (opts&&opts.mlbTeam)||''); }catch(_){}
     return;
   }
+  /* ★ r656 — WALL ROUTING. A live MLB HR card doesn't go straight up any more: it joins the
+     shared line and comes back through here with _wall:true when it's its turn. _firedAt keeps
+     the ORIGINAL fire time -- mlbCompanionWatch matches the play by it, and a card that waited
+     in line must not look for a later play. Id is team+batter+HR# so the pbp detector and
+     checkBigMoments firing the same homer collapse to one card. */
+  if (window.WALL && opts && !opts._wall && !opts.montage && !opts._seamRelease && _wallIsMlbHr(opts)){
+    const _wa = opts.a || {}, _wteam = opts.mlbTeam || opts.brainTeam || '';
+    const _wid = 'mlb:' + _wteam + ':' + String(_wa.sub || '').toLowerCase().replace(/[^a-z]/g, '') + ':' + (_wa._hrNum != null ? _wa._hrNum : (_wa.hrNum || ''));
+    const _wfired = Date.now();
+    WALL.card({ id: _wid, tier: _wallMlbTier(_wteam), sport: 'mlb',
+      show: () => showTakeover(Object.assign({}, opts, { _wall: true, _wallId: _wid, _firedAt: _wfired })) });
+    return;
+  }
   // ★ R116 — THE COMPANION HOOK. Both fire paths (Brain.fire and checkBigMoments)
   // funnel through showTakeover, so one hook catches both.
   // The card goes up NOW. The clip does not exist yet (17–39s). So we start a WATCH
@@ -8190,8 +8717,10 @@ function showTakeover(opts){
     const firedVia = opts && opts.mlbTeam ? 'checkBigMoments'
                    : opts && opts.brainTeam ? 'BRAIN.fire' : 'unknown';
     if (logTeam && (TKO_MEASURE || TKO_PLAY)){
-      if (window._tkoCancel) { try { window._tkoCancel(); } catch(_){} }   // supersede in-flight watch
-      const firedAt = Date.now();
+      // r656: under the wall each HR keeps its OWN companion watch -- superseding silently lost the
+      // first HR's clip whenever a second HR fired before it landed. Legacy path unchanged.
+      if (window._tkoCancel && !(opts && opts._wallId)) { try { window._tkoCancel(); } catch(_){} }   // supersede in-flight watch
+      const firedAt = (opts && opts._firedAt) || Date.now();   // r656: original fire time when the card waited in the wall's line
       window._tkoCompanion = 'watching…';
       const rec = tkoLogStart({
         team: logTeam, type: opts.type || 'takeover', firedVia,
@@ -8248,6 +8777,17 @@ function showTakeover(opts){
                 MONTAGE.hrQueue.push({ kind:'clip', clip:clip, cb:cb });
                 _mtrace && _mtrace('clip-land','companion clip queued ('+MONTAGE.hrQueue.length+')');
                 try{ console.log('[montage] companion clip landed — queued for next seam ('+MONTAGE.hrQueue.length+')'); }catch(_){}
+              } else if (window.WALL && opts._wallId){
+                // r656: the clip joins the shared line (cap/focus/tier decide; may be denied card-only)
+                tkoLogUpdate(rec, { outcome: 'QUEUED (wall)' });
+                WALL.clip({ id: opts._wallId, tier: _wallMlbTier(logTeam), sport: 'mlb',
+                  play: (done) => {
+                    playCompanionClip(clip, cb); window._wallClipDone = done;
+                    tkoLogUpdate(rec, { outcome: 'PLAYING' });
+                    const v = window._recapMp4;
+                    if (v) v.addEventListener('playing', () => tkoLogUpdate(rec, { playingMs: Date.now() }), {once:true});
+                  },
+                  cancel: () => { try{ _recapPreempt(); }catch(_){} } });
               } else {
                 playCompanionClip(clip, cb);
                 const v = window._recapMp4;
@@ -11983,6 +12523,7 @@ function _recapResume(){
 /* Silent teardown: stops the media WITHOUT invoking RECAP._onEnd (which would let
    the director immediately queue another video over the top of the companion). */
 function _recapPreempt(){
+  _wallFireDone();   // r656: a managed clip was cut/preempted -> the wall's slot frees
   clearTimeout(window._recapCapT);
   clearTimeout(window._recapRevealDeadlineT);      // r432: don't outlive the claim it was armed for
   RECAP._onEnd = null;                             // ← the whole point
@@ -12616,6 +13157,12 @@ function _playGoalClipSDK(clip, host, el, muted, account, onFail){
         window._recapGoalFrame = null;
         window._recapNowShowing = {what:'goal', title:(clip.title||'').slice(0,50), source:clip.source||'nhl', videoId:clip.videoId};
         clearTimeout(window._recapGoalRevealT);
+        // r652: with the iframe, there was no way to know the clip was ACTUALLY on screen, so
+        // reveal was a blind 900ms guess -- one more contributor to the seams Mike flagged
+        // (revealing, and lifting the montage's black cover, before the frame had truly
+        // painted). The SDK gives a real 'playing' event now; use it as the primary trigger
+        // and keep the 900ms timer only as a safety net if 'playing' never fires.
+        try{ player.on('playing', () => { if (_recapActive) revealRecap(); }); }catch(_){}
         window._recapGoalRevealT = setTimeout(() => { if (_recapActive) revealRecap(); }, 900);
         // r650: the SAFETY-NET timer -- same fixed-duration guess as the iframe path used
         // exclusively before this (NHL's landing payload still never gives a real duration).
@@ -12638,6 +13185,7 @@ function _playGoalClipSDK(clip, host, el, muted, account, onFail){
 
 function endRecap(){
   _mtrace('endRecap','teardown');
+  _wallFireDone();   // r656: a managed clip ended -> the wall's slot frees
   clearTimeout(window._recapCapT);
   clearTimeout(window._recapRevealDeadlineT);   // r432: don't outlive the claim it was armed for
   const el = document.getElementById('mlb-recap');
@@ -12669,9 +13217,11 @@ function endRecap(){
   /* ★ r223 — during a montage, raise the fade layer to black BEFORE removing the video, so
      the clip's teardown into the next card happens under cover instead of a visible snap.
      r215's _montageFade on the advance then fades back in over the new card. Only active
-     when a montage is running; the normal recap teardown is unchanged. */
+     when a montage is running; the normal recap teardown is unchanged.
+     r652: GWG_MONTAGE added to the gate -- this was MLB-only, which is exactly why Mike saw
+     seams on the GWG montage that HR never has (this cover never raised for it at all). */
   try {
-    if (window.MONTAGE && MONTAGE.on){
+    if ((window.MONTAGE && MONTAGE.on) || (window.GWG_MONTAGE && GWG_MONTAGE.on)){
       let f=document.getElementById('mlb-fade');
       if(!f){ f=document.createElement('div'); f.id='mlb-fade'; (document.querySelector('.shell')||document.body).appendChild(f); }
       f.classList.add('show'); requestAnimationFrame(()=>{ f.classList.add('on'); });
@@ -12715,9 +13265,10 @@ function revealRecap(){
      clip mounts, but the video used to hard-cut in under that black (a stutter). Now: the
      video is shown first, THEN we lift the black over it — so it fades FROM black INTO the
      video, symmetric with the card's fade-out. Only during a montage; normal recap reveal
-     is unchanged. A rAF ensures the video paints before the fade lifts. */
+     is unchanged. A rAF ensures the video paints before the fade lifts.
+     r652: GWG_MONTAGE added -- same gate as the raise in endRecap above, same reason. */
   try{
-    if (window.MONTAGE && MONTAGE.on){
+    if ((window.MONTAGE && MONTAGE.on) || (window.GWG_MONTAGE && GWG_MONTAGE.on)){
       const f=document.getElementById('mlb-fade');
       if(f && f.classList.contains('on')){
         requestAnimationFrame(()=>{ requestAnimationFrame(()=>{ f.classList.remove('on');
@@ -17132,7 +17683,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r650-nhl-clip-sdk-controls-off';
+const BUILD_MARKER = 'r656-shared-wall-arbiter';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -19342,6 +19893,12 @@ window.CC = (function(){
    // console.log -- but into the CC panel'''s own <pre> output (CC.run'''s existing render
    // path), not the console. No new plumbing: nhlWatchReport() already returns a string.
    {g:'Sim',n:'nhlreport',t:'action',fn:'nhlWatchReport',d:'NHL goal-watch report (clean, no console scroll)'},
+   // r654: read-only -- shows which NHL teams/picked games are goal-eligible (SPEC-nhl-followed-goals).
+   {g:'Sim',n:'nhlfav',t:'action',fn:'nhlFavDump',d:'NHL followed set (goal eligibility, read-only)'},
+   // r655: dry-run overload numbers from the auto-watch (nothing fires until r656).
+   {g:'Sim',n:'nhldry',t:'action',fn:'nhlDryReport',d:'NHL auto-watch dry report (would-fire counts, queue pressure)'},
+   // r656: the shared MLB+NHL line -- what's on the wall, what's queued, what got dropped and why.
+   {g:'Sim',n:'wall',t:'action',fn:'wallReport',d:'Wall arbiter: slot, queue, drops/card-only reasons'},
    // r649: same free-wiring pattern as nhlsim above -- CC.run() calls window[fn]() directly.
    {g:'Sim',n:'gwgmontage',t:'action',fn:'gwgMontageStart',d:'Start GWG montage (last 2 ET days, one card+clip per game)'},
    {g:'Sim',n:'gwgmontagestop',t:'action',fn:'gwgMontageStop',d:'Stop GWG montage'}
