@@ -2892,8 +2892,14 @@ function fetchWithTimeout(url, ms) {
 }
 
 // R60: text variant for non-JSON (RSS/XML). proxyFetch hardcodes JSON parsing.
-async function proxyFetchText(url) {
-  try { const res = await fetchWithTimeout(url, window._auditing ? 5000 : 8000); if (res.ok) return await res.text(); } catch(e){}   // R132: shorter direct-attempt timeout during audits
+async function proxyFetchText(url, skipDirect) {
+  // r632b: skipDirect lets a caller that KNOWS the target has no CORS header (e.g. NHL's
+  // api-web.nhle.com, confirmed live) skip the doomed direct attempt entirely -- avoids a
+  // browser-logged CORS console error on every single poll tick. Default false: every
+  // existing caller keeps trying direct-first, unchanged.
+  if (!skipDirect) {
+    try { const res = await fetchWithTimeout(url, window._auditing ? 5000 : 8000); if (res.ok) return await res.text(); } catch(e){}   // R132: shorter direct-attempt timeout during audits
+  }
   for (const proxy of PROXIES) {
     try {
       const res = await fetchWithTimeout(proxy(url), window._auditing ? 6000 : 10000);   // R132: audits abandon a flaky proxy fast; live panel stays patient
@@ -4877,7 +4883,7 @@ window._nhlWatchLog = window._nhlWatchLog || [];
 
 async function nhlLandingGoals(gameId){
   try{
-    const raw = await proxyFetchText('https://api-web.nhle.com/v1/gamecenter/' + gameId + '/landing');
+    const raw = await proxyFetchText('https://api-web.nhle.com/v1/gamecenter/' + gameId + '/landing', true);
     if (!raw) return null;
     const j = JSON.parse(raw);
     const periods = (j.summary && j.summary.scoring) || [];
@@ -4941,7 +4947,7 @@ window.nhlGoalWatch = nhlGoalWatch;
    gameIds off the score endpoint. Call once; each game gets its own independent watch/cancel. */
 async function nhlWatchTonight(){
   try{
-    const raw = await proxyFetchText('https://api-web.nhle.com/v1/score/now');
+    const raw = await proxyFetchText('https://api-web.nhle.com/v1/score/now', true);
     if (!raw) { console.log('[nhlWatchTonight] could not reach the score endpoint'); return 'fetch failed'; }
     const j = JSON.parse(raw);
     const games = (j.games || []).filter(g => g.gameState === 'LIVE' || g.gameState === 'PRE' || g.gameState === 'CRIT');
@@ -16292,7 +16298,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r632-nhl-goal-latency-watcher';
+const BUILD_MARKER = 'r633-nhl-watch-cc-clean-log';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -18470,7 +18476,11 @@ window.CC = (function(){
    // simNyyWin()/simSequence() already do from the console. CC.run() just calls
    // window[fn]() directly, so wiring a console-only sim helper to a panel button is
    // free -- no new mechanism, only a new row.
-   {g:'Sim',n:'simgoal',t:'action',fn:'simGoal',d:'Simulate NHL goal: splash then fullscreen video (r631)'}
+   {g:'Sim',n:'simgoal',t:'action',fn:'simGoal',d:'Simulate NHL goal: splash then fullscreen video (r631)'},
+   // r632b: reads window._nhlWatchLog and renders the same text nhlWatchReport() would
+   // console.log -- but into the CC panel'''s own <pre> output (CC.run'''s existing render
+   // path), not the console. No new plumbing: nhlWatchReport() already returns a string.
+   {g:'Sim',n:'nhlreport',t:'action',fn:'nhlWatchReport',d:'NHL goal-watch report (clean, no console scroll)'}
   ];
   var TABS=[['now','Now'],['flags','Flags'],['report','Report'],['tko','Takeover'],
             ['pipeline','Pipeline'],['montage','Montage'],['brain','Brain'],['watch','WWS Sync']];
