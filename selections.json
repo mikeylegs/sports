@@ -1,17 +1,7 @@
 {
   "v": 1,
-  "updated": "2026-09-21T11:20:20.144Z",
-  "events": [
-    {
-      "league": "golf/pga",
-      "label": "Golf (PGA)",
-      "espnId": "401824815",
-      "title": "INTL @ USA",
-      "showFrom": "20260924",
-      "showUntil": "20260924",
-      "rank": 1
-    }
-  ],
+  "updated": "2026-09-23T17:14:37.656Z",
+  "events": [],
   "watch": {
     "teams": [
       {
@@ -31,13 +21,13 @@
       },
       {
         "league": "football/nfl",
-        "abbr": "NYJ",
-        "name": "New York Jets"
+        "abbr": "BUF",
+        "name": "Buffalo Bills"
       },
       {
         "league": "football/nfl",
-        "abbr": "BUF",
-        "name": "Buffalo Bills"
+        "abbr": "NYJ",
+        "name": "New York Jets"
       },
       {
         "league": "football/nfl",
@@ -48,6 +38,11 @@
         "league": "baseball/mlb",
         "abbr": "NYM",
         "name": "New York Mets"
+      },
+      {
+        "league": "hockey/nhl",
+        "abbr": "NYI",
+        "name": "New York Islanders"
       }
     ],
     "players": [],
