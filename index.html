@@ -4858,6 +4858,123 @@ function mlbCompanionWatch(gamePk, sinceMs, onClip, onGiveUp, rec){
   return () => { dead = true; };
 }
 
+/* r632 -- NHL GOAL LATENCY WATCHER. Answers the question r631's handoff left open: how long
+   after a goal is actually scored does its highlightClip actually populate? Mirrors
+   mlbCompanionWatch's shape (poll, track, measure, give up), but the ground truth is weaker
+   than MLB's -- verified against a REAL live game (EDM@WPG, 2026010023, 9/22/26) before writing
+   a line of this: NHL's landing endpoint gives period + timeInPeriod per goal, but NO absolute
+   wall-clock timestamp anywhere on a goal or play event (checked both /landing and /play-by-play
+   for the same two real goals -- neither has one). MLB's instrument could ask MLB's OWN feed for
+   the play's true endTime and measure ESPN's detection lag SEPARATELY from MLB's clip-cutting
+   lag; NHL gives us no equivalent anchor, so this can only measure combined latency: our own
+   poll-detection lag (bounded by NHL_WATCH_CFG.POLL_MS, kept short on purpose) PLUS NHL's real
+   clip-cutting lag, from "first poll where this goal appears at all" to "first poll where that
+   goal's highlightClip is non-null." Said plainly in the log output, not hidden as false
+   precision. `eventId` (confirmed present and stable on every goal, verified against the same
+   real payload) is the tracking key -- not a period+time+player composite guess. */
+const NHL_WATCH_CFG = { POLL_MS: 4000, TIMEOUT_MS: 300000 };
+window._nhlWatchLog = window._nhlWatchLog || [];
+
+async function nhlLandingGoals(gameId){
+  try{
+    const raw = await proxyFetchText('https://api-web.nhle.com/v1/gamecenter/' + gameId + '/landing');
+    if (!raw) return null;
+    const j = JSON.parse(raw);
+    const periods = (j.summary && j.summary.scoring) || [];
+    const out = [];
+    periods.forEach(p => {
+      const periodNum = p.periodDescriptor && p.periodDescriptor.number;
+      (p.goals || []).forEach(g => out.push({
+        eventId: g.eventId, period: periodNum, timeInPeriod: g.timeInPeriod,
+        scorer: (g.name && g.name.default) || '', team: (g.teamAbbrev && g.teamAbbrev.default) || '',
+        highlightClip: g.highlightClip || null
+      }));
+    });
+    return out;
+  }catch(_){ return null; }
+}
+
+/* Polls one game until it's told to stop. Every goal it sees gets its own independent
+   first-seen -> clip-seen measurement; a game with 6 goals yields up to 6 log rows, not one. */
+function nhlGoalWatch(gameId, opts){
+  opts = opts || {};
+  const pollMs = opts.pollMs || NHL_WATCH_CFG.POLL_MS;
+  const timeoutMs = opts.timeoutMs || NHL_WATCH_CFG.TIMEOUT_MS;
+  const onClip = opts.onClip || function(rec){ console.log('[nhlGoalWatch] clip landed --', rec.scorer, rec.lagS + 's'); };
+  const onGiveUp = opts.onGiveUp || function(rec){ console.log('[nhlGoalWatch] gave up --', rec.scorer, 'no clip in', rec.waitedS + 's'); };
+  const tracked = new Map();
+  let dead = false;
+  const tick = async () => {
+    if (dead) return;
+    const goals = await nhlLandingGoals(gameId);
+    const now = Date.now();
+    if (goals){
+      goals.forEach(g => {
+        if (g.eventId == null) return;
+        let t = tracked.get(g.eventId);
+        if (!t){ t = { firstSeenMs: now, goal: g, resolved: false, gaveUp: false }; tracked.set(g.eventId, t); }
+        if (!t.resolved && g.highlightClip){
+          t.resolved = true;
+          const lagS = Math.round((now - t.firstSeenMs) / 1000);
+          const rec = { gameId, eventId: g.eventId, scorer: g.scorer, team: g.team,
+                        period: g.period, timeInPeriod: g.timeInPeriod, firstSeenMs: t.firstSeenMs,
+                        clipSeenMs: now, lagS, videoId: String(g.highlightClip), account: '6415718365001' };
+          window._nhlWatchLog.push(rec);
+          onClip(rec);
+        } else if (!t.resolved && !t.gaveUp && (now - t.firstSeenMs) > timeoutMs){
+          t.gaveUp = true;
+          const rec = { gameId, eventId: g.eventId, scorer: g.scorer, team: g.team,
+                        period: g.period, timeInPeriod: g.timeInPeriod, waitedS: Math.round((now - t.firstSeenMs) / 1000), gaveUp: true };
+          window._nhlWatchLog.push(rec);
+          onGiveUp(rec);
+        }
+      });
+    }
+    if (!dead){ window._nhlWatchT_ = window._nhlWatchT_ || {}; window._nhlWatchT_[gameId] = setTimeout(tick, pollMs); }
+  };
+  tick();
+  return () => { dead = true; };
+}
+window.nhlGoalWatch = nhlGoalWatch;
+
+/* Discovers tonight's live/upcoming NHL games and starts a watch on each -- no need to hand-copy
+   gameIds off the score endpoint. Call once; each game gets its own independent watch/cancel. */
+async function nhlWatchTonight(){
+  try{
+    const raw = await proxyFetchText('https://api-web.nhle.com/v1/score/now');
+    if (!raw) { console.log('[nhlWatchTonight] could not reach the score endpoint'); return 'fetch failed'; }
+    const j = JSON.parse(raw);
+    const games = (j.games || []).filter(g => g.gameState === 'LIVE' || g.gameState === 'PRE' || g.gameState === 'CRIT');
+    if (!games.length){ console.log('[nhlWatchTonight] no live/upcoming games right now'); return 'no games'; }
+    window._nhlWatchCancels = window._nhlWatchCancels || {};
+    games.forEach(g => {
+      if (window._nhlWatchCancels[g.id]) return;   // already watching this one
+      window._nhlWatchCancels[g.id] = nhlGoalWatch(g.id);
+      console.log('[nhlWatchTonight] watching', (g.awayTeam&&g.awayTeam.abbrev), '@', (g.homeTeam&&g.homeTeam.abbrev), 'game', g.id, '(' + g.gameState + ')');
+    });
+    return 'watching ' + games.length + ' game(s) -- call nhlWatchReport() any time';
+  }catch(e){ console.log('[nhlWatchTonight] error:', e.message); return 'error: ' + e.message; }
+}
+window.nhlWatchTonight = nhlWatchTonight;
+
+/* Readable dump of every measurement recorded so far, across every game watched this session. */
+function nhlWatchReport(){
+  const rows = window._nhlWatchLog || [];
+  if (!rows.length){ console.log('[nhlWatchReport] no goals measured yet'); return 'empty'; }
+  const lines = rows.map(r => r.gaveUp
+    ? ('GAVE UP  ' + (r.team||'?') + ' ' + (r.scorer||'?') + ' P' + r.period + ' ' + r.timeInPeriod + ' -- no clip in ' + r.waitedS + 's')
+    : ('CLIP IN ' + String(r.lagS).padStart(4) + 's  ' + (r.team||'?') + ' ' + (r.scorer||'?') + ' P' + r.period + ' ' + r.timeInPeriod + ' -- videoId ' + r.videoId));
+  const withLag = rows.filter(r => !r.gaveUp);
+  if (withLag.length){
+    const lags = withLag.map(r => r.lagS);
+    lines.push('---', 'n=' + lags.length + ' median=' + lags.slice().sort((a,b)=>a-b)[Math.floor(lags.length/2)] + 's'
+      + ' min=' + Math.min(...lags) + 's max=' + Math.max(...lags) + 's');
+  }
+  console.log(lines.join('\n'));
+  return lines.join('\n');
+}
+window.nhlWatchReport = nhlWatchReport;
+
 /* Glue: a Brain candidate → the gamePk to watch. meta.game is 'NYY@TB' — we only
    feature NYY/NYM, and the matchup ALREADY carries its gamePk (R114c), so this is
    a lookup in memory, not a network call. */
@@ -16175,7 +16292,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r631-nhl-goal-sim-flag';
+const BUILD_MARKER = 'r632-nhl-goal-latency-watcher';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
