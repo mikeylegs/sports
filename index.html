@@ -7784,6 +7784,27 @@ function _bigLeagueDividerHtml(league) {
   return `<div class="mlb-lg-divider"><img class="mlb-lg-divider-logo" src="${leagueLogoUrl(league)}" alt="${league}" onerror="this.style.opacity=0"></div>`;
 }
 
+/* r679: doubleheaders read as a duplicated card (9/23 TOR@BAL: two finals, both 4-2). Label them
+   G1/G2 in the status. Derived from the list itself -- same MLB matchup on the same ET day, ordered
+   by start time -- not from ESPN's notes, which only reliably tag game 1. */
+let _crawlDh = new Map();
+function crawlDoubleheaders(games){
+  const et = d => { try { return new Date(d).toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); } catch(_){ return ''; } };
+  const groups = {};
+  (games || []).forEach(g => {
+    if (!g || g.__divider || (g.league || 'MLB') !== 'MLB') return;
+    const k = g.awayAbbr + '@' + g.homeAbbr + '|' + (g.gameDate ? et(g.gameDate) : '');
+    (groups[k] = groups[k] || []).push(g);
+  });
+  const m = new Map();
+  Object.values(groups).forEach(a => {
+    const uniq = a.filter((g, i) => a.findIndex(x => String(x.id) === String(g.id)) === i);
+    if (uniq.length < 2) return;
+    uniq.sort((x, y) => (new Date(x.gameDate) - new Date(y.gameDate)) || String(x.id).localeCompare(String(y.id)))
+        .forEach((g, i) => m.set(String(g.id), i + 1));
+  });
+  return m;
+}
 function setupSubleagueRow(key, games, force=false) {
   const sig = subleagueSig(games);
   lastSubleagueGames[key] = games;
@@ -7821,6 +7842,7 @@ function setupSubleagueRow(key, games, force=false) {
   // updateSubleaguePhased itself so the loop never butts two blocks together with nothing
   // marking the seam. Phased AL/NL rows (dead path since r581, kept for cheap revert)
   // carry no band.
+  _crawlDh = crawlDoubleheaders(games);   // r679
   const _merged = (key === 'LG' && _subPhase === 'LG');
   const _lgOf = g => (typeof NL_TEAMS!=='undefined' && NL_TEAMS.has(g.homeAbbr)) ? 'nl' : 'al';
   const _band = lg => `<div class="mlb-lg-band ${lg}"></div>`;
@@ -7998,7 +8020,9 @@ function mlbCardHtml(g) {
   // UPCOMING shows the start time.
   const finalTag = (g.timeLabel && g.timeLabel.includes('/'))
     ? 'F' + g.timeLabel.slice(g.timeLabel.indexOf('/')) : 'FINAL';   // "Final/10" -> "F/10"
-  const status = live ? g.timeLabel : final ? finalTag : (g.timeLabel || '').split(' · ').pop();
+  const _st = live ? g.timeLabel : final ? finalTag : (g.timeLabel || '').split(' · ').pop();
+  const _dh = lg === 'MLB' && _crawlDh.get(String(g.id));   // r679: doubleheader game number
+  const status = (_st && _dh) ? _st + ' · G' + _dh : _st;
   const statusCls = live ? 'live' : upcoming ? 'upcoming' : 'final';
 
   // Stacked matchup: away team over home team, each row [logo][ABBR][score].
@@ -18176,7 +18200,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r678-crawl-band-leads';
+const BUILD_MARKER = 'r679-crawl-doubleheader-g1g2';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
