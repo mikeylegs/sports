@@ -5525,13 +5525,14 @@ function _nhlGameWatched(game, fav, selected){
   return fav.has(game.awayAbbr) || fav.has(game.homeAbbr) || _nhlGameSelected(game, selected);
 }
 // Priority tier for THIS goal (r656's governor ranks on it). 0 = not eligible.
-//  1 = base team (NYR) · 2 = other followed team · 3 = any goal in a selector-picked game.
+//  2 = NYR · 3 = other followed team · 4 = any goal in a selector-picked game (r657 renumber).
 // Team-level for follows (a goal AGAINST a followed team doesn't fire -- same as MLB), game-wide
 // for a picked game (the point of picking it).
 function _nhlGoalTier(scoringAbbr, game, fav, selected){
-  if (scoringAbbr && NHL_FAV_BASE.includes(scoringAbbr)) return 1;
-  if (scoringAbbr && fav.has(scoringAbbr)) return 2;
-  if (_nhlGameSelected(game, selected)) return 3;
+  // r657: numbered on the WALL's shared hierarchy (1 is NYY, MLB-only) -- NYR 2 · followed 3 · picked 4
+  if (scoringAbbr && NHL_FAV_BASE.includes(scoringAbbr)) return 2;
+  if (scoringAbbr && fav.has(scoringAbbr)) return 3;
+  if (_nhlGameSelected(game, selected)) return 4;
   return 0;
 }
 function _nhlGoalEligible(scoringAbbr, game, fav, selected){ return _nhlGoalTier(scoringAbbr, game, fav, selected) > 0; }
@@ -5540,7 +5541,7 @@ function _nhlGameDay(g){ return String((g && g.gameDate) || '').replace(/-/g, ''
 // CC readout -- "did my selections register?" without waiting for a goal (MLB favDump lesson).
 function nhlFavDump(){
   const fav = _favNhlSet(), selected = _selectedNhlGames();
-  const lines = ['NHL FOLLOWED SET (r654 -- eligibility only, nothing fires yet)',
+  const lines = ['NHL FOLLOWED SET (goal eligibility)',
     'teams: ' + [...fav].sort().join(', '),
     'picked games: ' + (selected.length ? '' : 'none')];
   selected.forEach(x => lines.push('  ' + x.day + '  ' + (x.abbrs ? x.abbrs.join(' v ') : '(not hydrated yet -- cannot match)') + '  espn ' + x.espnId));
@@ -5618,8 +5619,8 @@ function _nhlDrySummary(rows, cardMs, clipMs){
     const rs = days[day].slice().sort((a, b) => a.t - b.t);
     const goals = rs.filter(r => r.kind === 'goal' && !r.restart);
     const fire = goals.filter(r => r.tier > 0);
-    const tiers = { 1: 0, 2: 0, 3: 0, 0: 0 }; goals.forEach(r => { tiers[r.tier] = (tiers[r.tier] || 0) + 1; });
-    const nonNyr = fire.filter(r => r.tier > 1).map(r => r.t);
+    const tiers = { 2: 0, 3: 0, 4: 0, 0: 0 }; goals.forEach(r => { tiers[r.tier] = (tiers[r.tier] || 0) + 1; });
+    const nonNyr = fire.filter(r => r.tier > 2).map(r => r.t);
     let peak10 = 0;
     nonNyr.forEach((t, i) => { let n = 0; for (let k = i; k < nonNyr.length && nonNyr[k] - t < 600000; k++) n++; peak10 = Math.max(peak10, n); });
     const queueSim = (ts, dur) => { let busy = 0, waited = 0, maxWait = 0;
@@ -5709,7 +5710,7 @@ function nhlDryReport(){
   if (!days.length) lines.push('', 'no dry data yet');
   days.forEach(d => { const x = sum[d];
     lines.push('', d + ' -- ' + x.games + ' game(s), ' + x.goals + ' goal(s) seen, ' + x.wouldFire + ' WOULD FIRE'
-      + ' (NYR ' + x.tiers[1] + ' · followed ' + x.tiers[2] + ' · picked ' + x.tiers[3] + ' · skipped ' + x.tiers[0] + ')',
+      + ' (NYR ' + x.tiers[2] + ' · followed ' + x.tiers[3] + ' · picked ' + x.tiers[4] + ' · skipped ' + x.tiers[0] + ')',
       '  peak non-NYR in any 10 min: ' + x.peak10,
       '  cards queued behind another: ' + x.cards.waited + ' (max wait ' + x.cards.maxWaitS + 's)',
       '  clips: ' + x.clips + ' · queued ' + x.clipQueue.waited + ' (max wait ' + x.clipQueue.maxWaitS + 's)'
@@ -8503,84 +8504,68 @@ function playNyyWinSong(){
 window.playNyyWinSong = playNyyWinSong;
 window.simNyyWinSong = playNyyWinSong;   // console test hook, same convention as simSting
 
-/* ═══ WALL ARBITER — begin (r656 sandbox; pasted VERBATIM into dashboard.html at integration) ═══
+/* ═══ WALL ARBITER — begin (r657; sandbox-owned, pasted VERBATIM into dashboard.html) ═══
    One arbiter for every LIVE moment that wants the wall: MLB HR cards + companion clips and NHL
-   goal cards + clips (SPEC-nhl-followed-goals §3). Pure logic -- time, timers and "is something
-   else on the wall" are INJECTED, so it's testable on a virtual clock and knows nothing about the
-   DOM. Callers hand it thunks (show()/play(done)); it only decides WHEN, or WHETHER.
+   goal cards + clips. Pure logic -- time, timers and "is something else on the wall" are INJECTED,
+   so it's testable on a virtual clock and knows nothing about the DOM. Callers hand it thunks
+   (show()/play(done)); it only decides WHEN.
 
-   Model: ONE slot. A card holds it for cardMs+gapMs; a clip holds it until play() calls done()
-   (or clipMaxMs, the safety net if done() never comes).
-   Order: cards before clips (a card is the live moment; a clip is a replay that landed minutes
-   later), then tier (1 = base favorites NYY/NYM/NYR · 2 = other followed · 3 = picked game), then
-   arrival. No preemption EXCEPT: a tier-1 card cuts a playing tier-2/3 clip (that clip is dropped,
-   not resumed -- a goal clip can't reliably resume).
-   Card-only (no clip) for a tier>=2 moment when: the rate cap is hit (capN moments allowed a clip
-   per capWindowMs), or a tier-1 team's game is live (focus). Mike's call 9/23: over the cap = card
-   only, never dropped outright.
-   Drops (all logged with a reason): a card that waited > cardMaxWaitMs (its clip is denied too --
-   a stale card's replay would just re-add the load); a clip older than clipMaxAgeMs since its
-   moment; a clip whose moment was denied; duplicates by id.
+   r657 policy (Mike 9/24): NOTHING a followed team/player or picked game earns is suppressed --
+   no rate cap, no card-only, no dropping a card for waiting. Priority only:
+     tier 1 NYY · tier 2 NYR · tier 3 other followed · tier 4 picked game
+   Model: ONE slot. A card holds it for cardMs+gapMs; a clip until play() calls done() (or clipMaxMs,
+   the safety net if done() never comes). Queue order: cards before clips (a card is the live moment;
+   a clip is a replay that lands minutes later), then tier, then arrival.
+   Preemption: a tier <= cutMaxTier card (NYY/NYR) may cut a playing clip of a LOWER tier; the cut
+   clip is RE-QUEUED and replays from the start later -- cut, never lost.
+   The only drops: duplicate ids, and a clip whose moment is older than clipMaxAgeMs (a clip that
+   lands hours late -- 11322s was seen 9/23 -- is noise, not a replay).
    Blocked (montage owns the wall, or an unmanaged takeover like a win splash is up): nothing
-   dispatches; the queue waits, expiry still applies. */
+   dispatches; the queue waits. */
 function createWall(cfg){
-  const C = Object.assign({ cardMs: 12000, gapMs: 400, cardMaxWaitMs: 60000, clipMaxAgeMs: 10 * 60000,
-    clipMaxMs: 90000, capN: 6, capWindowMs: 10 * 60000, retryMs: 1000 }, cfg || {});
+  const C = Object.assign({ cardMs: 12000, gapMs: 400, clipMaxAgeMs: 30 * 60000, clipMaxMs: 90000,
+    cutMaxTier: 2, retryMs: 1000 }, cfg || {});
   const now = C.now, log = C.log || function(){};
-  const isBlocked = C.isBlocked || (() => false), tier1Live = C.tier1Live || (() => false);
-  const W = { cards: [], clips: [], slot: null, slotUntil: 0, seen: {}, cardAt: {}, denied: {}, clipAllowedAt: [], stats: {}, timer: null };
+  const isBlocked = C.isBlocked || (() => false);
+  const W = { cards: [], clips: [], slot: null, slotUntil: 0, seen: {}, cardAt: {}, stats: {}, timer: null };
   const bump = k => { W.stats[k] = (W.stats[k] || 0) + 1; };
   const rank = (a, b) => (a.tier - b.tier) || (a.at - b.at);
   function schedule(ms){ if (W.timer) C.clearTimer(W.timer); W.timer = C.setTimer(() => { W.timer = null; pump(); }, Math.max(0, ms)); }
   function free(){ return !W.slot || now() >= W.slotUntil; }
   function expire(){
     const t = now();
-    W.cards = W.cards.filter(c => {
-      if (t - c.at <= C.cardMaxWaitMs) return true;
-      W.denied[c.id] = 'card waited ' + Math.round((t - c.at) / 1000) + 's'; bump('cardDropped');
-      log('drop card', c.id, W.denied[c.id]); return false; });
     W.clips = W.clips.filter(k => {
-      if (W.denied[k.id]){ bump('clipDenied'); log('drop clip', k.id, 'moment denied: ' + W.denied[k.id]); return false; }
       if (t - k.momentAt <= C.clipMaxAgeMs) return true;
       bump('clipStale'); log('drop clip', k.id, 'stale ' + Math.round((t - k.momentAt) / 1000) + 's'); return false; });
-  }
-  function clipAllowed(item){
-    if (item.tier <= 1) return true;
-    if (tier1Live()){ W.denied[item.id] = 'card-only: tier-1 game live'; bump('cardOnlyFocus'); return false; }
-    const t = now(); W.clipAllowedAt = W.clipAllowedAt.filter(x => t - x < C.capWindowMs);
-    if (W.clipAllowedAt.length >= C.capN){ W.denied[item.id] = 'card-only: cap ' + C.capN + '/' + Math.round(C.capWindowMs / 60000) + 'min'; bump('cardOnlyCap'); return false; }
-    W.clipAllowedAt.push(t); return true;
   }
   function pump(){
     expire();
     if (!W.cards.length && !W.clips.length) return;
     if (isBlocked()){ schedule(C.retryMs); return; }
-    // tier-1 card may cut a lower-tier clip
+    // a NYY/NYR card may cut a lower-tier clip -- which goes back in line, not away
     if (W.slot && W.slot.kind === 'clip' && !free() && W.cards.length){
       const top = W.cards.slice().sort(rank)[0];
-      if (top.tier === 1 && W.slot.tier > 1){
-        const cut = W.slot; W.slot = null; bump('clipCut'); log('cut clip', cut.id, 'for tier-1 card', top.id);
+      if (top.tier <= C.cutMaxTier && W.slot.tier > top.tier){
+        const cut = W.slot; W.slot = null; bump('clipCut'); log('cut clip', cut.id, 'for tier-' + top.tier + ' card', top.id, '-- re-queued');
         try{ cut.cancel && cut.cancel(); }catch(_){}
+        W.clips.push(Object.assign({}, cut, { cancel: cut.userCancel, at: now() }));
       }
     }
     if (!free()){ schedule(W.slotUntil - now()); return; }
     W.slot = null;
     const pick = W.cards.length ? (W.cards.sort(rank), W.cards.shift()) : (W.clips.sort(rank), W.clips.shift());
     if (pick.kind === 'card'){
-      if (!pick.noClip) clipAllowed(pick); else W.denied[pick.id] = W.denied[pick.id] || 'card-only: caller';
       W.slot = pick; W.slotUntil = now() + C.cardMs + C.gapMs; bump('cardShown');
-      log('show card', pick.id, 'tier ' + pick.tier + (W.denied[pick.id] ? ' (' + W.denied[pick.id] + ')' : ''));
+      log('show card', pick.id, 'tier ' + pick.tier + ' waited ' + Math.round((now() - pick.at) / 1000) + 's');
       try{ pick.show(); }catch(e){ log('card show threw', e && e.message); }
       schedule(W.slotUntil - now());
     } else {
-      // an orphan clip (its card never came through here) still counts against the cap/focus
-      if (!W.seen['card:' + pick.id] && !clipAllowed(pick)){ bump('clipDenied'); log('drop clip', pick.id, W.denied[pick.id]); schedule(0); return; }
       W.slot = pick; W.slotUntil = now() + C.clipMaxMs; bump('clipPlayed');
       log('play clip', pick.id, 'tier ' + pick.tier + ' age ' + Math.round((now() - pick.momentAt) / 1000) + 's');
       let finished = false;
       const done = () => { if (finished) return; finished = true; if (W.slot === pick){ W.slot = null; W.slotUntil = now() + C.gapMs; } schedule(C.gapMs); };
-      const userCancel = pick.cancel;   // caller's stop-the-media hook, run when a tier-1 card cuts this clip
-      pick.cancel = () => { finished = true; try{ userCancel && userCancel(); }catch(_){} };
+      pick.userCancel = pick.userCancel || pick.cancel;   // caller's stop-the-media hook, run if a NYY/NYR card cuts this clip
+      pick.cancel = () => { finished = true; try{ pick.userCancel && pick.userCancel(); }catch(_){} };
       try{ pick.play(done); }catch(e){ log('clip play threw', e && e.message); done(); }
       schedule(W.slotUntil - now());
     }
@@ -8589,35 +8574,34 @@ function createWall(cfg){
     card(item){
       if (!item || item.id == null || W.seen['card:' + item.id]){ bump('dup'); return false; }
       W.seen['card:' + item.id] = 1; W.cardAt[item.id] = now();
-      W.cards.push(Object.assign({ kind: 'card', tier: 3, at: now() }, item)); bump('cardIn'); pump(); return true;
+      W.cards.push(Object.assign({ kind: 'card', tier: 4, at: now() }, item)); bump('cardIn'); pump(); return true;
     },
     clip(item){
       if (!item || item.id == null || W.seen['clip:' + item.id]){ bump('dup'); return false; }
       W.seen['clip:' + item.id] = 1;
       // a clip's age runs from its MOMENT: the caller's momentAt, else its card's arrival here, else now
-      W.clips.push(Object.assign({ kind: 'clip', tier: 3, at: now(), momentAt: W.cardAt[item.id] != null ? W.cardAt[item.id] : now() }, item)); bump('clipIn'); pump(); return true;
+      W.clips.push(Object.assign({ kind: 'clip', tier: 4, at: now(), momentAt: W.cardAt[item.id] != null ? W.cardAt[item.id] : now() }, item)); bump('clipIn'); pump(); return true;
     },
     pump,
     state(){ return { slot: W.slot && { kind: W.slot.kind, id: W.slot.id, tier: W.slot.tier }, slotLeftMs: W.slot ? Math.max(0, W.slotUntil - now()) : 0,
-      cards: W.cards.map(c => c.id), clips: W.clips.map(c => c.id), stats: Object.assign({}, W.stats), denied: Object.assign({}, W.denied) }; }
+      cards: W.cards.map(c => c.id), clips: W.clips.map(c => c.id), stats: Object.assign({}, W.stats) }; }
   };
 }
 /* ═══ WALL ARBITER — end ═══ */
 /* ★ r656 — WALL GLUE (SPEC-nhl-followed-goals §3). Binds the arbiter above to the real page.
    ONE shared line for MLB HR cards + companion clips and NHL goal cards + clips. ?wall=off =
-   exactly r655 behavior (no arbiter). ?wallcap=N = clips allowed per 10 min for tier>=2 (default 6).
-   Tier 1 = NYY/NYM (UCS_CFG.MLB_TEAMS) and NYR (NHL_FAV_BASE). FOCUS IS CROSS-SPORT (Mike 9/23:
-   "across both so we can prioritize postseason games"): while ANY tier-1 game is live -- MLB or
-   NHL -- every tier>=2 moment in either sport is card-only. That includes MLB-only nights: a live
-   Yankees game now makes other followed teams' HRs card-only (clips suppressed), which is new.
+   exactly r655 behavior (no arbiter).
+   r657 (Mike 9/24): priority only, nothing suppressed -- the r656 rate cap and cross-sport
+   card-only focus are GONE. Hierarchy: 1 NYY · 2 NYR · 3 other followed (incl. NYM) · 4 picked game.
    Blocked while an MLB/GWG montage owns the wall or an unmanaged takeover (win splash, tennis,
    Brain non-HR) is on screen. */
 function _wallQ(k){ try{ return new URLSearchParams(location.search).get(k); }catch(_){ return null; } }
 function _wallMlbTier(team){
   const base = (typeof UCS_CFG !== 'undefined' && UCS_CFG.MLB_TEAMS) || ['NYY', 'NYM'];
-  if (base.includes(team)) return 1;
-  try{ if (_FAV_MLB.has(team)) return 2; }catch(_){}
-  return 3;
+  if (team === 'NYY') return 1;                                // r657 hierarchy: NYY first
+  if (base.includes(team)) return 3;                           // NYM = other followed
+  try{ if (_FAV_MLB.has(team)) return 3; }catch(_){}
+  return 4;                                                    // picked game / hrscope=all
 }
 // Only live HR cards are managed; every other takeover (win cards, sims of other kinds, tennis,
 // Brain lead-change) stays unmanaged and simply blocks the wall while it's up.
@@ -8627,27 +8611,17 @@ function _wallIsMlbHr(opts){
   if (a.winCard || opts.winCard) return false;
   return /HOME RUN/i.test(String(a.headline || opts.headline || ''));
 }
-function _wallTier1Live(){
-  try{ const base = (typeof UCS_CFG !== 'undefined' && UCS_CFG.MLB_TEAMS) || ['NYY', 'NYM'];
-    if ((window._mlbGames || []).some(g => g && g.gameStatus === 'live' && (base.includes(g.awayAbbr) || base.includes(g.homeAbbr)))) return true; }catch(_){}
-  try{ const W = (window._nhlAuto && window._nhlAuto.watching) || {};
-    if (Object.keys(W).some(id => { const w = W[id]; return w && !w.finalAt && w.game
-      && (NHL_FAV_BASE.includes(w.game.awayAbbr) || NHL_FAV_BASE.includes(w.game.homeAbbr)); })) return true; }catch(_){}
-  return false;
-}
 // The arbiter's clip "done" signal. A managed clip registers its done() here right AFTER it
 // starts (its own start may preempt filler -> _recapPreempt -> this, which must not fire it).
 function _wallFireDone(){ const f = window._wallClipDone; window._wallClipDone = null; if (typeof f === 'function') setTimeout(f, 0); }
 const WALL = (_wallQ('wall') === 'off') ? null : createWall({
   now: () => Date.now(), setTimer: (f, ms) => setTimeout(f, ms), clearTimer: id => clearTimeout(id),
   cardMs: TKO_CARD_MS, gapMs: 600,   // 600 > showTakeover's 300ms class teardown, so our own card never reads as "unmanaged"
-  capN: (() => { const n = parseInt(_wallQ('wallcap'), 10); return Number.isFinite(n) && n >= 0 ? n : 6; })(),
   isBlocked: () => { try{
     if (window.MONTAGE && MONTAGE.ownsWall) return true;
     if (window.GWG_MONTAGE && GWG_MONTAGE.on) return true;
     const c = document.getElementById('mlb-takeover'); return !!(c && c.classList.contains('show'));
   }catch(_){ return false; } },
-  tier1Live: _wallTier1Live,
   log: (...a) => { try{ const line = new Date().toLocaleTimeString() + ' ' + a.join(' ');
     (window._wallLog = window._wallLog || []).push(line); if (window._wallLog.length > 200) window._wallLog.shift();
     console.log('[wall]', ...a); }catch(_){} }
@@ -8657,7 +8631,7 @@ function wallReport(){
   if (!WALL) return 'WALL: off (?wall=off) -- r655 behavior';
   const st = WALL.state();
   return ['WALL -- ' + (st.slot ? st.slot.kind + ' ' + st.slot.id + ' (tier ' + st.slot.tier + ', ' + Math.round(st.slotLeftMs / 1000) + 's left)' : 'idle')
-    + ' · tier-1 live: ' + (_wallTier1Live() ? 'YES (tier>=2 card-only)' : 'no'),
+    + ' · priority: 1 NYY · 2 NYR · 3 followed · 4 picked',
     'queued cards: ' + (st.cards.join(', ') || '-') + ' · queued clips: ' + (st.clips.join(', ') || '-'),
     'stats: ' + JSON.stringify(st.stats), '', 'recent:', ...(window._wallLog || []).slice(-20)].join('\n');
 }
@@ -8778,7 +8752,7 @@ function showTakeover(opts){
                 _mtrace && _mtrace('clip-land','companion clip queued ('+MONTAGE.hrQueue.length+')');
                 try{ console.log('[montage] companion clip landed — queued for next seam ('+MONTAGE.hrQueue.length+')'); }catch(_){}
               } else if (window.WALL && opts._wallId){
-                // r656: the clip joins the shared line (cap/focus/tier decide; may be denied card-only)
+                // r656/r657: the clip joins the shared line (tier decides WHEN; never suppressed)
                 tkoLogUpdate(rec, { outcome: 'QUEUED (wall)' });
                 WALL.clip({ id: opts._wallId, tier: _wallMlbTier(logTeam), sport: 'mlb',
                   play: (done) => {
@@ -17683,7 +17657,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r656-shared-wall-arbiter';
+const BUILD_MARKER = 'r657-wall-priority-only';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -19898,7 +19872,7 @@ window.CC = (function(){
    // r655: dry-run overload numbers from the auto-watch (nothing fires until r656).
    {g:'Sim',n:'nhldry',t:'action',fn:'nhlDryReport',d:'NHL auto-watch dry report (would-fire counts, queue pressure)'},
    // r656: the shared MLB+NHL line -- what's on the wall, what's queued, what got dropped and why.
-   {g:'Sim',n:'wall',t:'action',fn:'wallReport',d:'Wall arbiter: slot, queue, drops/card-only reasons'},
+   {g:'Sim',n:'wall',t:'action',fn:'wallReport',d:'Wall arbiter: slot, queue, priority log'},
    // r649: same free-wiring pattern as nhlsim above -- CC.run() calls window[fn]() directly.
    {g:'Sim',n:'gwgmontage',t:'action',fn:'gwgMontageStart',d:'Start GWG montage (last 2 ET days, one card+clip per game)'},
    {g:'Sim',n:'gwgmontagestop',t:'action',fn:'gwgMontageStop',d:'Stop GWG montage'}
