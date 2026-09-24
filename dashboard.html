@@ -1551,6 +1551,7 @@ html.nomask #mlb-takeover.tko-full .tkoH-photo{ -webkit-mask:none !important; ma
 #mlb-recap .recap-frame .video-js video{object-fit:contain;}
 /* r671: no poster still before the first frame -- black (the overlay bg) until the clip truly plays */
 #mlb-recap .recap-frame .video-js .vjs-poster{display:none !important;}
+#mlb-recap .recap-frame .video-js.vjs-hold{opacity:0 !important;}   /* r672: invisible until the playhead moves */
 /* r651 -- Mike: "red warning bar" on deploy. Confirmed via video.js's own source: ErrorDisplay
    (classes vjs-error-display + inherited vjs-modal-dialog) opens itself on the player's
    'error' event -- exactly what the console showed (ima-sdk-load-error / ads-before-preroll-
@@ -13476,12 +13477,23 @@ function _playGoalClipSDK(clip, host, el, muted, account, onFail){
         // (revealing, and lifting the montage's black cover, before the frame had truly
         // painted). The SDK gives a real 'playing' event now; use it as the primary trigger
         // and keep the 900ms timer only as a safety net if 'playing' never fires.
-        try{ player.on('playing', () => { if (_recapActive) revealRecap(); }); }catch(_){}
+        /* r672: r671 still flickered a thumbnail (Mike, on r671). 'playing' can fire while the
+           <video> element is still painting its POSTER attribute (not just the .vjs-poster layer r671
+           hid), and Brightcove re-applies the poster when the catalog loads. So: (1) the whole player is
+           transparent (vjs-hold) until the playhead has actually MOVED (>0.15s = frames are painting),
+           and reveal waits for that too; (2) the poster is stripped via the player API and the <video>
+           attribute, at ready and whenever the player sets it again. */
+        try{ player.addClass('vjs-hold'); }catch(_){}
+        const _noPoster = () => { try{ if (player.poster && player.poster()) player.poster(''); const ve = player.el && player.el() && player.el().querySelector('video'); if (ve) ve.removeAttribute('poster'); }catch(_){} };
+        _noPoster();
+        try{ player.on('posterchange', _noPoster); player.on('loadstart', _noPoster); }catch(_){}
+        const _goLive = () => { try{ player.removeClass('vjs-hold'); }catch(_){} if (_recapActive) revealRecap(); };
+        try{ player.on('timeupdate', () => { try{ if (player.currentTime() > 0.15) _goLive(); }catch(_){} }); }catch(_){}
         try{ player.on('timeupdate', () => _clipTailFade(player.duration() - player.currentTime(), () => player.volume(), x => player.volume(x), () => window._recapGoalPlayer === player)); }catch(_){}   // r666
         // r671: 900ms was NOT a safety net -- it always beat 'playing' (SDK boot + the blocked IMA
         // pre-roll attempt take longer), so it revealed the player's POSTER still (Mike 9/24: "random
         // still image between GWG card -> recap, ~1s"). Now a real fallback, and the poster is hidden (CSS).
-        window._recapGoalRevealT = setTimeout(() => { if (_recapActive) revealRecap(); }, 6000);
+        window._recapGoalRevealT = setTimeout(() => { if (_recapActive) _goLive(); }, 6000);
         // r650: the SAFETY-NET timer -- same fixed-duration guess as the iframe path used
         // exclusively before this (NHL's landing payload still never gives a real duration).
         // player.on('ended') below should always fire first now that we have a real player;
@@ -18101,7 +18113,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r671-nhl-clip-no-poster-flash';
+const BUILD_MARKER = 'r672-nhl-clip-hold-until-frames';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
