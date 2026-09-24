@@ -5169,6 +5169,9 @@ function nhlGoalWatch(gameId, opts){
   return () => { dead = true; };
 }
 window.nhlGoalWatch = nhlGoalWatch;
+// r674: Report-tab Clear on "NHL clip latency" -- wipes the measured log (memory + localStorage).
+// Safe mid-game: goals already on the board are re-tagged pre-existing by the watcher (r660), never re-measured as fresh.
+window.nhlClipLogClear = function(){ window._nhlWatchLog = []; try{ localStorage.removeItem(NHL_LOG_KEY); }catch(_){} return 'cleared NHL clip latency'; };
 
 // r641: pure -- no DOM, no fetch. Testable in isolation (unit harness extracts this verbatim).
 // r653: back in use -- the LIVE takeover headline keeps POWER PLAY / SHORTHANDED GOAL. Only the
@@ -5911,7 +5914,15 @@ function createLagStore(io, etDay){
   // committed + not-yet-flushed, so the report is current
   function all(){ const j = read(); pending.forEach(p => { const d = j.days[p.day] || (j.days[p.day] = {}), s = d[p.sport] || (d[p.sport] = {}); (s[p.field] = s[p.field] || []).push(p.lag); }); return j; }
   function clear(){ pending = []; try{ io.set(LAG_CFG.KEY, JSON.stringify({ days: {} })); }catch(_){} }
-  return { add, flush, all, clear, _pending: () => pending.length };
+  // r674: clear ONE sport's history (the Report tab's Clear on MLB/NHL timing) -- merge-on-write:
+  // re-read, drop that sport from every day, keep the other sport, drop now-empty days.
+  function clearSport(sport){
+    pending = pending.filter(p => p.sport !== sport);
+    const j = read();
+    Object.keys(j.days).forEach(d => { if (j.days[d]) delete j.days[d][sport]; if (!Object.keys(j.days[d] || {}).length) delete j.days[d]; });
+    try{ io.set(LAG_CFG.KEY, JSON.stringify(j)); }catch(_){}
+  }
+  return { add, flush, all, clear, clearSport, _pending: () => pending.length };
 }
 // PURE: text table for one sport over the stored days
 function lagReportText(j, sport, label, leagueName){
@@ -5993,6 +6004,8 @@ function lagInstrumentText(sport){
     + '\n\n' + LAG.status();
 }
 window.lagInstrumentText = lagInstrumentText;
+// r674: Report-tab Clear, per view
+window.lagClear = sport => { if (!LAG) return 'instrument off'; LAG.store.clearSport(sport); return 'cleared ' + sport + ' timing'; };
 
 // r641/r645: the real live wire. nhlGoalWatch's detector was already correct and already ran
 // every night (log-only) -- this just points its two callbacks at the real renderers instead
@@ -18160,7 +18173,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r673-nhl-clip-rvfc-gate-clipdebug';
+const BUILD_MARKER = 'r674-report-clear-per-view';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -20751,7 +20764,7 @@ window.CC = (function(){
           + '<button id="nrCopy" style="padding:6px 12px;border-radius:6px;border:1px solid #2b3a4e;background:#16202e;color:#9fb0c6;font-weight:700;font-size:12px;cursor:pointer">Copy</button>'
           + '<button id="nrSnap" style="padding:6px 12px;border-radius:6px;border:1px solid #5a3a1a;background:#2a1c0d;color:#f5c98a;font-weight:700;font-size:12px;cursor:pointer">📸 Incident Snapshot</button>'
           + '<button id="nrRefresh" style="padding:6px 12px;border-radius:6px;border:1px solid #3a3050;background:#1a1428;color:#c9b6f5;font-weight:700;font-size:12px;cursor:pointer">↻ Refresh</button>'
-          + '<button id="nrClear" style="padding:6px 12px;border-radius:6px;border:1px solid #6b2b2b;background:#2a1414;color:#f5b6b6;font-weight:700;font-size:12px;cursor:pointer;margin-left:auto">🗑 Clear</button>'
+          + (RV.view==='wall' ? '' : '<button id="nrClear" style="padding:6px 12px;border-radius:6px;border:1px solid #6b2b2b;background:#2a1414;color:#f5b6b6;font-weight:700;font-size:12px;cursor:pointer;margin-left:auto">🗑 Clear</button>')
           + '</div>'
           + '<div style="font-size:10.5px;color:#6b7a8f;margin-bottom:8px">Snapshot taken on open. Scroll freely — it will not refresh under you. Tap ↻ for a fresh snapshot. Save writes a .txt to Chrome\'s download folder (point it at Dropbox).</div>'
           + '<pre style="white-space:pre-wrap;word-break:break-word;font:11px ui-monospace,Menlo,monospace;color:#cde4ff;margin:0">'+txt.replace(/</g,'&lt;')+'</pre>';
@@ -20775,11 +20788,16 @@ window.CC = (function(){
         if(cl) cl.onclick=function(ev){
           ev.stopPropagation(); window._ccActionAt=Date.now();
           if(!clArmed){
-            clArmed=true; cl.textContent='Tap again to clear'; cl.style.background='#6b1f1f'; cl.style.borderColor='#f87171';
+            clArmed=true; cl.textContent='Tap again to clear '+({'mlb-lag':'MLB timing','nhl-lag':'NHL timing','nhl-clips':'NHL clip latency'}[RV.view]||'timeline'); cl.style.background='#6b1f1f'; cl.style.borderColor='#f87171';
             clTimer=setTimeout(_clDisarm, 4000);
             return;
           }
-          var r=(typeof nightClear==='function')?nightClear():'n/a';
+          /* r674: Clear empties the history of the view you're LOOKING AT (timeline / MLB timing / NHL timing /
+             NHL clip latency). Wall has no stored history -- no Clear button there. */
+          var r = RV.view==='mlb-lag' ? (typeof window.lagClear==='function' ? window.lagClear('mlb') : 'n/a')
+                : RV.view==='nhl-lag' ? (typeof window.lagClear==='function' ? window.lagClear('nhl') : 'n/a')
+                : RV.view==='nhl-clips' ? (typeof window.nhlClipLogClear==='function' ? window.nhlClipLogClear() : 'n/a')
+                : (typeof nightClear==='function')?nightClear():'n/a';
           _clDisarm();
           renderPane('report');
         };
