@@ -2603,8 +2603,10 @@ html.logoscore-v1 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-status{max-width:min(
   },true);
 })();
 const W = p => {
-  const espn = `https://a.espncdn.com/combiner/i?img=/i/teamlogos/${p}.png&w=120&h=120`;
-  return `https://images.weserv.nl/?url=${encodeURIComponent(espn)}&w=120&output=png`;
+  // r685: 500px (was 120). The featured panes draw MLB logos at 2-4x 120px on the wall, so the browser was
+  // upscaling a tiny bitmap -- the soft/blurry look next to WWS's crisp NHL logos (ESPN's raw 500px PNG).
+  const espn = `https://a.espncdn.com/combiner/i?img=/i/teamlogos/${p}.png&w=500&h=500`;
+  return `https://images.weserv.nl/?url=${encodeURIComponent(espn)}&w=500&output=png`;
 };
 const C = W;
 
@@ -18258,7 +18260,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r684-report-live';
+const BUILD_MARKER = 'r685-logos-500px';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -19160,7 +19162,7 @@ function teardownMLBFullscreen() {
 
 function logoUrl(league, abbr) {
   return LOGOS[`${league}:${abbr}`] || LOGOS[`${league}:${abbr.toLowerCase()}`]
-    || `https://images.weserv.nl/?url=a.espncdn.com/combiner/i?img=/i/teamlogos/${league.toLowerCase()}/500/scoreboard/${abbr.toLowerCase()}.png&w=120&h=120&output=png`;
+    || `https://images.weserv.nl/?url=a.espncdn.com/combiner/i?img=/i/teamlogos/${league.toLowerCase()}/500/scoreboard/${abbr.toLowerCase()}.png&w=500&h=500&output=png`;   // r685: 500px (was 120)
 }
 
 // Shared image-failure handler: most logo failures are transient network
