@@ -4025,7 +4025,7 @@ async function montageStart(){
   _montageScrim(true);   // r208 #3: one scrim for the whole sequence — panel stays dimmed,
                          // so card→clip→card crossfades over a static backdrop, no repaint flash
   const n=await montageBuild();
-  if(!n){ MONTAGE.on=false; MONTAGE.active=false; try{ console.log('[montage] nothing to play'); }catch(_){}; return; }
+  if(!n){ MONTAGE.on=false; MONTAGE.active=false; MONTAGE.ownsWall=false; _montageScrim(false); try{ console.log('[montage] nothing to play'); }catch(_){}; return; }   // r680: release scrim + wall (was left dimmed)
   _montageBeat();
 }
 function _montageStop(finished){
@@ -4056,6 +4056,12 @@ function _montageStop(finished){
 }
 window.MONTAGE = MONTAGE;   // r223: expose so endRecap can check montage state for the fade
 window.montageStart = montageStart;
+// r680: CC "run" entry point -- montageStart is async (CC.run would print "{}"), so report synchronously.
+window.montageRun = function(){
+  if (MONTAGE.active) return 'HR montage already running';
+  montageStart().then(() => { if (!MONTAGE.active) console.log('[montage] nothing to play'); }).catch(e => console.log('[montage] start failed:', e && e.message));
+  return 'HR montage starting (last 2 ET days)…';
+};
 window.montageStop = () => _montageStop(false);
 
 // r302: montage hero render-glitch A/B flags (independent, toggle on the wall):
@@ -7820,6 +7826,7 @@ function setupSubleagueRow(key, games, force=false) {
   const el = document.getElementById(TRACK_IDS[key]);
   const ca = document.getElementById('ca'+key);
   if (!el) return;
+  _crawlAnimStop(key);   // r681: rebuild runs on the rAF path; restarted from x once re-measured
   // scroll position is preserved across content updates (normalized below) so a
   // score tick no longer snaps the crawl back to the start
   if (games.length === 0) {
@@ -7880,6 +7887,7 @@ function setupSubleagueRow(key, games, force=false) {
     if (unitW <= crawlW) {
       if (ca) { ca.style.webkitMaskImage = 'none'; ca.style.maskImage = 'none'; }
       scrollPos[key].active = false;
+      el.style.transform = '';   // r681: rafScroll may have written one more frame of x before active dropped
       el.style.justifyContent = 'center';
     } else {
       if (ca) { ca.style.webkitMaskImage = ''; ca.style.maskImage = ''; }
@@ -7891,6 +7899,7 @@ function setupSubleagueRow(key, games, force=false) {
         scrollPos[key].halfW = el.scrollWidth / reps;
         scrollPos[key].x = scrollPos[key].halfW ? (scrollPos[key].x % scrollPos[key].halfW) : 0;
         scrollPos[key].active = true;
+        _crawlAnimStart(key);   // r681
       });
     }
   });
@@ -18200,7 +18209,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r679-crawl-doubleheader-g1g2';
+const BUILD_MARKER = 'r681-crawl-compositor';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -20120,6 +20129,32 @@ const scrollPos = {
   LG:  { x:0, halfW:0, active:false },
 };
 const TRACK_IDS = { NHL:'tNHL', NBA:'tNBA', MLB:'tMLB', AL:'tAL', NL:'tNL', LG:'tLG' };
+/* r681: the LG crawl runs as a compositor animation (WAAPI transform). rafScroll advances by elapsed
+   time, so ANY main-thread task (the 60s refresh: JSON parse, hidden-track renders, standings,
+   refit) landed as a visible jump. A transform animation keeps moving off the main thread.
+   scrollPos.LG.x stays the source of truth: rafScroll now READS it back from the animation each
+   frame, and every rebuild stops the animation (holding the position inline), lets the rebuild run
+   on the old path, then restarts from x -- so the x=0 resets and x%halfW normalize are unchanged.
+   ?crawlwaapi=off -> the pre-r681 rAF path. */
+const CRAWL_WAAPI = (() => { try { return new URLSearchParams(location.search).get('crawlwaapi') !== 'off' && typeof Element.prototype.animate === 'function'; } catch(_){ return false; } })();
+const _CRAWL_WAAPI_KEYS = { LG: 1 };
+function _crawlSpeed(key){ return (key==='AL'||key==='NL'||key==='LG') ? SUBLEAGUE_SPEED : SPEED; }
+function _crawlAnimStop(key){
+  const s = scrollPos[key]; if (!s || !s.anim) return;
+  try{ s.anim.cancel(); }catch(_){}
+  s.anim = null;
+  const el = document.getElementById(TRACK_IDS[key]); if (el) el.style.transform = `translateX(${s.x}px)`;   // hold where it was
+}
+function _crawlAnimStart(key){
+  _crawlAnimStop(key);
+  const s = scrollPos[key], el = document.getElementById(TRACK_IDS[key]);
+  if (!CRAWL_WAAPI || !_CRAWL_WAAPI_KEYS[key] || !el || !s.active || !(s.halfW > 0)) return;
+  const v = _crawlSpeed(key);
+  s.anim = el.animate([{ transform: 'translateX(0px)' }, { transform: `translateX(${-s.halfW}px)` }],
+                      { duration: s.halfW / v * 1000, iterations: Infinity, easing: 'linear' });
+  const off = ((-s.x) % s.halfW + s.halfW) % s.halfW;    // px already travelled into this lap
+  s.anim.currentTime = off / v * 1000;
+}
 
 let rafLast = null;
 function rafScroll(ts) {
@@ -20130,6 +20165,7 @@ function rafScroll(ts) {
       if (!s.active || s.halfW <= 0) continue;
       const el = document.getElementById(TRACK_IDS[key]);
       if (!el) continue;
+      if (s.anim){ s.x = -(((+s.anim.currentTime || 0) / 1000 * _crawlSpeed(key)) % s.halfW); continue; }   // r681: compositor owns the motion
       s.x -= (key==='AL'||key==='NL'||key==='LG' ? SUBLEAGUE_SPEED : SPEED) * dt;
       if (s.x <= -s.halfW) s.x += s.halfW;
       el.style.transform = `translateX(${s.x}px)`;
@@ -20477,7 +20513,7 @@ window.CC = (function(){
    {g:'Video',n:'dirlog',t:'toggle',d:'Director decision log'},
    {g:'Video',n:'mlbvid',t:'toggle',d:'MLB video pipeline trace'},
    {g:'Video',n:'rotations',t:'num',d:'Cap filler rotations'},
-   {g:'Video',n:'montage',t:'toggle',d:'Start the HR montage block'},
+   {g:'Video',n:'montage',t:'action',fn:'montageRun',d:'Start the HR montage block (no reload; ?montage=1 still works)'},   // r680: was a reload toggle
    {g:'Video',n:'montagelog',t:'toggle',d:'Montage state HUD'},
    {g:'Takeover/HR',n:'ticks',t:'toggle',d:'Per-play tick log (pitch-by-pitch)'},
    {g:'Sources',n:'pools',t:'toggle',d:'Per-source gate chain'},
