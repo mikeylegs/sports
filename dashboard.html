@@ -1549,6 +1549,8 @@ html.nomask #mlb-takeover.tko-full .tkoH-photo{ -webkit-mask:none !important; ma
 #mlb-recap .recap-frame .video-js{position:absolute !important;inset:0 !important;
   width:100% !important;height:100% !important;background:#000;}
 #mlb-recap .recap-frame .video-js video{object-fit:contain;}
+/* r671: no poster still before the first frame -- black (the overlay bg) until the clip truly plays */
+#mlb-recap .recap-frame .video-js .vjs-poster{display:none !important;}
 /* r651 -- Mike: "red warning bar" on deploy. Confirmed via video.js's own source: ErrorDisplay
    (classes vjs-error-display + inherited vjs-modal-dialog) opens itself on the player's
    'error' event -- exactly what the console showed (ima-sdk-load-error / ads-before-preroll-
@@ -13476,7 +13478,10 @@ function _playGoalClipSDK(clip, host, el, muted, account, onFail){
         // and keep the 900ms timer only as a safety net if 'playing' never fires.
         try{ player.on('playing', () => { if (_recapActive) revealRecap(); }); }catch(_){}
         try{ player.on('timeupdate', () => _clipTailFade(player.duration() - player.currentTime(), () => player.volume(), x => player.volume(x), () => window._recapGoalPlayer === player)); }catch(_){}   // r666
-        window._recapGoalRevealT = setTimeout(() => { if (_recapActive) revealRecap(); }, 900);
+        // r671: 900ms was NOT a safety net -- it always beat 'playing' (SDK boot + the blocked IMA
+        // pre-roll attempt take longer), so it revealed the player's POSTER still (Mike 9/24: "random
+        // still image between GWG card -> recap, ~1s"). Now a real fallback, and the poster is hidden (CSS).
+        window._recapGoalRevealT = setTimeout(() => { if (_recapActive) revealRecap(); }, 6000);
         // r650: the SAFETY-NET timer -- same fixed-duration guess as the iframe path used
         // exclusively before this (NHL's landing payload still never gives a real duration).
         // player.on('ended') below should always fire first now that we have a real player;
@@ -18096,7 +18101,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r670-lag-espn-explicit-dates';
+const BUILD_MARKER = 'r671-nhl-clip-no-poster-flash';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
