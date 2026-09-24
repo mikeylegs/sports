@@ -13487,13 +13487,29 @@ function _playGoalClipSDK(clip, host, el, muted, account, onFail){
         const _noPoster = () => { try{ if (player.poster && player.poster()) player.poster(''); const ve = player.el && player.el() && player.el().querySelector('video'); if (ve) ve.removeAttribute('poster'); }catch(_){} };
         _noPoster();
         try{ player.on('posterchange', _noPoster); player.on('loadstart', _noPoster); }catch(_){}
-        const _goLive = () => { try{ player.removeClass('vjs-hold'); }catch(_){} if (_recapActive) revealRecap(); };
-        try{ player.on('timeupdate', () => { try{ if (player.currentTime() > 0.15) _goLive(); }catch(_){} }); }catch(_){}
+        /* r673: still flashed ON r672 (Mike's 120fps phone video: ~0.1s of a celebration still between
+           card and footage). A moving playhead evidently isn't proof frames are on screen. Gate on the
+           strongest signal the browser has: requestVideoFrameCallback fires ONLY for real decoded video
+           frames presented to the compositor -- never for a poster/thumbnail. Hold until 3 have been
+           presented. Fallbacks: no rVFC support -> playhead > 0.6s; nothing at all -> the 6s timer. */
+        let _live = false, _frames = 0, _rvfcArmed = false;
+        const _goLive = (why) => { if (_live) return; _live = true; try{ player.removeClass('vjs-hold'); }catch(_){} _clipDbg('LIVE via ' + why);
+          if (_recapActive) revealRecap(); };
+        const _vid = () => { try{ return player.el().querySelector('video'); }catch(_){ return null; } };
+        const _armRvfc = () => { if (_rvfcArmed) return true; const v = _vid();
+          if (!v || typeof v.requestVideoFrameCallback !== 'function') return false;
+          const cb = () => { _frames++; _clipDbg('frame ' + _frames); if (_frames >= 3) _goLive('3 presented frames'); else v.requestVideoFrameCallback(cb); };
+          v.requestVideoFrameCallback(cb); _rvfcArmed = true; _clipDbg('rVFC armed'); return true; };
+        _clipDbgStart(player);   // before arming, so the arm shows in the capture
+        _armRvfc();
+        try{ ['loadstart', 'loadeddata', 'canplay', 'playing', 'posterchange', 'waiting', 'stalled'].forEach(e => player.on(e, () => { _clipDbg('ev ' + e); if (!_rvfcArmed) _armRvfc(); })); }catch(_){}
+        try{ player.on('timeupdate', () => { try{ if (!_rvfcArmed && player.currentTime() > 0.6) _goLive('playhead (no rVFC)'); }catch(_){} }); }catch(_){}
+        // (?clipdebug=1 capture started above: per-frame snapshot of every layer that could show an image, 6s)
         try{ player.on('timeupdate', () => _clipTailFade(player.duration() - player.currentTime(), () => player.volume(), x => player.volume(x), () => window._recapGoalPlayer === player)); }catch(_){}   // r666
         // r671: 900ms was NOT a safety net -- it always beat 'playing' (SDK boot + the blocked IMA
         // pre-roll attempt take longer), so it revealed the player's POSTER still (Mike 9/24: "random
         // still image between GWG card -> recap, ~1s"). Now a real fallback, and the poster is hidden (CSS).
-        window._recapGoalRevealT = setTimeout(() => { if (_recapActive) _goLive(); }, 6000);
+        window._recapGoalRevealT = setTimeout(() => { if (_recapActive) _goLive('6s fallback'); }, 6000);
         // r650: the SAFETY-NET timer -- same fixed-duration guess as the iframe path used
         // exclusively before this (NHL's landing payload still never gives a real duration).
         // player.on('ended') below should always fire first now that we have a real player;
@@ -13592,6 +13608,37 @@ function _resetRecapHost(){
    during an MLB/GWG montage it fades to BLACK instead (#mlb-fade), matching the montage's own
    black seams. ?clipfade=<seconds> tunes it on the real wall (0 = off) -- a flag rather than a
    studio because only real league clips show whether the length feels right. */
+/* r673: ?clipdebug=1 -- clip-start forensics. Each animation frame for 6s after an NHL clip starts, it
+   records (only when something changed): ms since start, playhead, <video> readyState, player opacity /
+   hold class, the <video> poster attribute, .vjs-poster display, overlay show/playing/opacity, black
+   cover, and every visible img/picture/background-image inside the overlay. Plus player events and the
+   LIVE decision. CC Sim -> clipdbg prints the last capture. */
+const _CLIP_DBG_ON = (() => { try{ return new URLSearchParams(location.search).get('clipdebug') === '1'; }catch(_){ return false; } })();
+let _clipDbgRows = [], _clipDbgT0 = 0;
+function _clipDbg(msg){ if (!_CLIP_DBG_ON) return; _clipDbgRows.push(Math.round(performance.now() - _clipDbgT0) + 'ms  ' + msg); }
+function _clipDbgStart(player){
+  if (!_CLIP_DBG_ON) return;
+  _clipDbgT0 = performance.now(); _clipDbgRows = ['clip start'];
+  let last = '';
+  const snap = () => {
+    const t = performance.now() - _clipDbgT0;
+    try{
+      const pe = player.el && player.el(), v = pe && pe.querySelector('video'), vp = pe && pe.querySelector('.vjs-poster');
+      const ov = document.getElementById('mlb-recap'), f = document.getElementById('mlb-fade');
+      const imgs = ov ? [...ov.querySelectorAll('*')].filter(e => { const cs = getComputedStyle(e); return cs.display !== 'none' && cs.visibility !== 'hidden'
+          && (e.tagName === 'IMG' || e.tagName === 'PICTURE' || (cs.backgroundImage && cs.backgroundImage !== 'none')); })
+        .map(e => e.tagName + '.' + String(e.className || '').split(' ')[0] + '=' + String(e.currentSrc || e.src || getComputedStyle(e).backgroundImage).slice(-28)) : [];
+      const row = 'ct ' + (+(player.currentTime() || 0)).toFixed(2) + ' rs ' + (v ? v.readyState : '-') + ' op ' + (pe ? getComputedStyle(pe).opacity : '-')
+        + (pe && pe.classList.contains('vjs-hold') ? ' HOLD' : '') + ' vposter[' + (v ? String(v.getAttribute('poster') || '').slice(-24) : 'no <video>') + ']'
+        + ' .vjs-poster ' + (vp ? getComputedStyle(vp).display : 'none') + ' ov ' + (ov ? (ov.classList.contains('show') ? 'S' : '-') + (ov.classList.contains('playing') ? 'P' : '-') + getComputedStyle(ov).opacity : '?')
+        + (f && f.classList.contains('on') ? ' BLACK' : '') + (imgs.length ? ' IMGS ' + imgs.join(' ') : '');
+      if (row !== last){ _clipDbgRows.push(Math.round(t) + 'ms  ' + row); last = row; }
+    }catch(e){ _clipDbgRows.push(Math.round(t) + 'ms  snap err ' + e.message); }
+    if (t < 6000) requestAnimationFrame(snap); else { window._clipDbgText = _clipDbgRows.join('\n'); console.log('[clipdebug]\n' + window._clipDbgText); }
+  };
+  requestAnimationFrame(snap);
+}
+window.clipDebugReport = () => window._clipDbgText || (_clipDbgRows.length ? _clipDbgRows.join('\n') : (_CLIP_DBG_ON ? 'no NHL clip captured yet' : 'add ?clipdebug=1 to the URL, then play an NHL clip'));
 const CLIP_FADE_S = (() => { try{ const q = parseFloat(new URLSearchParams(location.search).get('clipfade')); if (isFinite(q) && q >= 0) return q; }catch(_){} return 1.5; })();
 function _clipTailFade(remain, getVol, setVol, stillMine){
   if (!CLIP_FADE_S || !(remain > 0) || remain > CLIP_FADE_S || window._clipFading || window._recapSuspended) return;
@@ -18113,7 +18160,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r672-nhl-clip-hold-until-frames';
+const BUILD_MARKER = 'r673-nhl-clip-rvfc-gate-clipdebug';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -20397,6 +20444,8 @@ window.CC = (function(){
    {g:'Sim',n:'nhldry',t:'action',fn:'nhlDryReport',d:'NHL auto-watch dry report (would-fire counts, queue pressure)'},
    // r656: the shared MLB+NHL line -- what's on the wall, what's queued, what got dropped and why.
    {g:'Sim',n:'wall',t:'action',fn:'wallReport',d:'Wall arbiter: slot, queue, priority log'},
+   // r673: NHL clip-start forensics (needs ?clipdebug=1)
+   {g:'Sim',n:'clipdbg',t:'action',fn:'clipDebugReport',d:'NHL clip start: per-frame layer log (?clipdebug=1)'},
    // r649: same free-wiring pattern as nhlsim above -- CC.run() calls window[fn]() directly.
    {g:'Sim',n:'gwgmontage',t:'action',fn:'gwgMontageStart',d:'Start GWG montage (last 2 ET days, one card+clip per game)'},
    {g:'Sim',n:'gwgmontagestop',t:'action',fn:'gwgMontageStop',d:'Stop GWG montage'}
