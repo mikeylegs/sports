@@ -2755,60 +2755,62 @@ function _dropSimulcastSibling(name){
   const _generic = new RegExp('^' + primary.trim().replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\s*(one|\\+|plus)$', 'i').test(_s);
   return (_known || _generic) ? primary.trim() : name;
 }
-const _mlbNetworkCache = new Map();      // gamePk -> network string | null, permanent (immutable once scheduled)
-const _mlbNetworkInFlight = new Set();   // gamePks currently being fetched — no duplicate fetches
-async function mlbBroadcastNetwork(gamePk, team){
-  if (!gamePk) return null;
-  if (_mlbNetworkCache.has(gamePk)) return _mlbNetworkCache.get(gamePk);
-  if (_mlbNetworkInFlight.has(gamePk)) return null;
-  _mlbNetworkInFlight.add(gamePk);
-  let network = null;
+/* r675: r471/r579/r659's gamePk-keyed mlbBroadcastNetwork (fed by ucsMlbGame's 'current' game) removed -- see below. */
+/* r675: the network is resolved for THE CARD'S OWN GAME (matched by date), not the team's "current"
+   game. Before, mlbNetworkOverride asked ucsMlbGame for the team's game -- which returns the LAST FINAL
+   until first pitch is <6h away -- so every morning/afternoon the card showed YESTERDAY's network
+   (9/24 7am: last night's Prime game painted "Prime Video" on tonight's YES game, gamePk 823493).
+   MLB is authoritative and always wins when it has the game:
+     1. a genuine national TV entry (FOX/ESPN/TBS/Apple TV+/NBC...; MLB Network excluded -- simulcast)
+     2. OUR side's entry is a streamer (Amazon Prime / Apple / Netflix / Peacock / Hulu / Roku)
+     3. OUR side's own TV entry (YES / SNY) -- a confirmed local game
+   Only when MLB has no broadcasts for the game (not posted yet / fetch failed) does the ESPN +
+   resolveNetwork YES/SNY default stand. Cache 20 min (not forever) so late postings/flex changes land. */
+function mlbPickNetwork(g, team){
+  const tv = ((g && g.broadcasts) || []).filter(x => /tv/i.test(x.type || ''));
+  if (!tv.length) return null;
+  const nat = tv.find(x => x.isNational && !/^mlbn$/i.test(x.callSign || '') && !/^mlb\s*network$/i.test(x.name || ''));
+  if (nat) return /amazon|prime/i.test((nat.name || '') + ' ' + (nat.callSign || '')) ? 'Prime Video' : _dropSimulcastSibling(nat.callSign || nat.name || null);
+  const _tid = { NYY: 147, NYM: 121 }[team];
+  const _side = (g.teams && g.teams.home && g.teams.home.team && g.teams.home.team.id === _tid) ? 'home' : 'away';
+  const mine = tv.filter(x => x.homeAway === _side), txt = x => (x.name || '') + ' ' + (x.callSign || '');
+  const stream = mine.find(x => /amazon|prime|apple|netflix|peacock|hulu|roku/i.test(txt(x)));
+  if (stream) return /amazon|prime/i.test(txt(stream)) ? 'Prime Video' : /apple/i.test(txt(stream)) ? 'Apple TV+' : _dropSimulcastSibling(stream.name || stream.callSign || null);
+  const own = mine[0];
+  return own ? _dropSimulcastSibling(own.callSign || own.name || null) : null;
+}
+const _mlbNetByGame = new Map();      // team|etDate -> { t, net }
+const _mlbNetInFlight = new Set();
+const MLB_NET_TTL = 20 * 60000;
+async function mlbBroadcastNetworkFor(team, isoDate){
+  const tid = { NYY: 147, NYM: 121 }[team]; if (!tid || !isoDate) return null;
+  const t0 = new Date(isoDate).getTime(); if (!isFinite(t0)) return null;
+  const et = ms => new Date(ms).toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+  const key = team + '|' + et(t0), hit = _mlbNetByGame.get(key);
+  if (hit && Date.now() - hit.t < MLB_NET_TTL) return hit.net;
+  if (_mlbNetInFlight.has(key)) return hit ? hit.net : null;
+  _mlbNetInFlight.add(key);
+  let net = hit ? hit.net : null;
   try {
-    const raw = await proxyFetchText(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&gamePk=${gamePk}&hydrate=broadcasts(all)`);
+    const raw = await proxyFetchText(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${tid}&startDate=${et(t0 - 864e5)}&endDate=${et(t0 + 864e5)}&hydrate=broadcasts(all)`);
     if (raw){
-      const games = (JSON.parse(raw).dates || []).flatMap(x => x.games || []);
-      const g = games.find(x => x.gamePk === gamePk) || games[0];
-      // r579: MLB Network rides ALONGSIDE the real broadcaster as a separate isNational:true,
-      // type:'TV' entry (confirmed live, gamePk 823496 9/12 NYY@NYM — carries a genuine
-      // 'MLBN' national entry in the SAME broadcasts array as the correct SNY/YES entries).
-      // The un-filtered isNational&&TV find() could grab MLBN over YES/SNY, or over a real
-      // Apple TV+/Amazon national exclusive if MLBN's entry happened to sort first — MLBN was
-      // never meant to be a candidate here (r471's own comment only ever named FOX/TBS/ESPN/
-      // ABC). Excluding it so this only fires on a genuine national exclusive.
-      const b = (g?.broadcasts || []).find(x => x.isNational && x.type === 'TV'
-        && !/^mlbn$/i.test(x.callSign||'') && !/^mlb\s*network$/i.test(x.name||''));
-      network = b ? _dropSimulcastSibling(b.callSign || b.name || null) : null;
-      // r659: Yankees-on-Prime games aren't national -- MLB lists "Amazon Prime Video" as the
-      // Yankees' own HOME/AWAY TV entry (isNational:false, confirmed live gamePk 823492, 9/23 TB@NYY),
-      // so the national-only search above missed it and the RSN override painted YES. When our
-      // team's side carries a streamer instead of its RSN, that's the answer.
-      if (!b && team && g){
-        const _tid = { NYY: 147, NYM: 121 }[team];
-        const _side = (g.teams && g.teams.home && g.teams.home.team && g.teams.home.team.id === _tid) ? 'home' : 'away';
-        const _loc = (g.broadcasts || []).find(x => x.type === 'TV' && x.homeAway === _side
-          && /amazon|prime|apple|netflix|peacock|roku/i.test((x.name || '') + ' ' + (x.callSign || '')));
-        if (_loc) network = /amazon|prime/i.test((_loc.name || '') + ' ' + (_loc.callSign || '')) ? 'Prime Video'
-                          : _dropSimulcastSibling(_loc.name || _loc.callSign || null);
-      }
+      const games = (JSON.parse(raw).dates || []).flatMap(x => x.games || [])
+        .filter(x => Math.abs(new Date(x.gameDate).getTime() - t0) < 12 * 3.6e6)
+        .sort((x, y) => Math.abs(new Date(x.gameDate).getTime() - t0) - Math.abs(new Date(y.gameDate).getTime() - t0));
+      net = games.length ? mlbPickNetwork(games[0], team) : null;
+      _mlbNetByGame.set(key, { t: Date.now(), net });
     }
   } catch(_){}
-  _mlbNetworkCache.set(gamePk, network);
-  _mlbNetworkInFlight.delete(gamePk);
-  return network;
+  _mlbNetInFlight.delete(key);
+  return net;
 }
-const _mlbNetworkByTeam = {};   // 'NYY'/'NYM' -> gamePk most recently checked
-function mlbNetworkOverride(awayAbbr, homeAbbr){
+function mlbNetworkOverride(awayAbbr, homeAbbr, isoDate){
   const team = (awayAbbr === 'NYY' || homeAbbr === 'NYY') ? 'NYY'
              : (awayAbbr === 'NYM' || homeAbbr === 'NYM') ? 'NYM' : null;
-  if (!team) return null;
-  ucsMlbGame(team).then(g => {
-    if (!g || !g.gamePk) return;
-    if (_mlbNetworkByTeam[team] === g.gamePk && _mlbNetworkCache.has(g.gamePk)) return;
-    _mlbNetworkByTeam[team] = g.gamePk;
-    mlbBroadcastNetwork(g.gamePk, team);   // fire-and-forget — populates _mlbNetworkCache for the NEXT render tick
-  }).catch(()=>{});
-  const gamePk = _mlbNetworkByTeam[team];
-  return gamePk ? (_mlbNetworkCache.get(gamePk) || null) : null;
+  if (!team || !isoDate) return null;
+  const hit = _mlbNetByGame.get(team + '|' + new Date(isoDate).toLocaleDateString('en-CA', { timeZone: 'America/New_York' }));
+  if (!hit || Date.now() - hit.t >= MLB_NET_TTL) mlbBroadcastNetworkFor(team, isoDate).catch(()=>{});   // fire-and-forget; next render picks it up
+  return hit ? hit.net : null;
 }
 function normalizeAbbr(league, abbr) {
   return ABBR_NORMALIZE[`${league}:${abbr}`] || abbr;
@@ -6941,7 +6943,7 @@ function parseEvent(ev, leagueKey) {
   network = resolveNetwork(network, awayAbbr, homeAbbr, ev.date);
   // r471: MLB positively confirms a national network (FOX/TBS/ESPN/ABC) ESPN's own feed
   // didn't report — only ever overrides when MLB has a confirmed answer, never removes one.
-  try { const _mlbNet = mlbNetworkOverride(awayAbbr, homeAbbr); if (_mlbNet) network = _mlbNet; } catch(_){}
+  try { const _mlbNet = mlbNetworkOverride(awayAbbr, homeAbbr, ev.date); if (_mlbNet) network = _mlbNet; } catch(_){}
 
   // ── Next game info ────────────────────────────────────────────
   // Check multiple ESPN API locations for next event date
@@ -17623,7 +17625,8 @@ function ensureNextGame(abbr, teamMlbId, g, nextGame, slotClass) {
         { const bc = Array.isArray(upcoming.broadcasts) ? upcoming.broadcasts : [];
           const tv = bc.filter(b => /tv/i.test(b.type || ''));
           const chosen = tv.find(b => b.isNational) || tv.find(b => b.homeAway === (isHome ? 'home' : 'away')) || tv[0];
-          nextNet = chosen ? _dropSimulcastSibling(chosen.name || chosen.callSign || '') : ''; }
+          nextNet = ((abbr === 'NYY' || abbr === 'NYM') && mlbPickNetwork(upcoming, abbr))   // r675: MLB picker for our teams
+                 || (chosen ? _dropSimulcastSibling(chosen.name || chosen.callSign || '') : ''); }
         _nextGameCache[abbr] = {
           opp: MLB_TEAM_ID_TO_ABBR[oppId] || '',
           side: isHome ? 'vs' : '@',
@@ -18173,7 +18176,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r674-report-clear-per-view';
+const BUILD_MARKER = 'r675-nyy-network-per-game';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -19352,6 +19355,7 @@ async function fetchNextGame(lg, awayAbbr, homeAbbr) {
           const _realNational = broadcasts.find(b => b?.market === 'national' && b.names?.[0] && !/^mlb\.?\s*tv$/i.test(b.names[0].trim()));
           let network = _dropSimulcastSibling(_realNational?.names?.[0] || broadcasts?.[0]?.names?.[0] || null);
           network = resolveNetwork(network, awayAbbr, homeAbbr, ev.date);
+          if (lg.key === 'MLB') { try { const _mn = await mlbBroadcastNetworkFor((awayAbbr==='NYY'||homeAbbr==='NYY')?'NYY':(awayAbbr==='NYM'||homeAbbr==='NYM')?'NYM':'', ev.date); if (_mn) network = _mn; } catch(_){} }   // r675
           const gameDate = new Date(ev.date);
           const tomorrow = new Date(now); tomorrow.setDate(now.getDate()+1);
           const timeStr = gameDate.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
