@@ -5103,7 +5103,7 @@ function nhlGoalWatch(gameId, opts){
           // touch it again. Re-deriving from a fabricated "now" baseline is exactly what
           // produced tonight's spurious 0s duplicates.
           if (prior){ t = { firstSeenMs: prior.firstSeenMs || now, goal: g, resolved: true }; }
-          else { t = { firstSeenMs: now, goal: g, resolved: false };
+          else { t = { firstSeenMs: now, goal: g, resolved: false, pre: first };   // r660: pre = on the board when this watch started
             // r636: this exact goal has NEVER been seen or logged before, yet it already has a
             // clip on the very FIRST poll we ever ran for it -- the goal happened before this
             // watch started (the game's own history, not something caught in the act). Tag it
@@ -5124,7 +5124,7 @@ function nhlGoalWatch(gameId, opts){
           const rec = { gameId, eventId: g.eventId, scorer: g.scorer, team: g.team,
                         period: g.period, timeInPeriod: g.timeInPeriod, firstSeenMs: t.firstSeenMs,
                         clipSeenMs: now, lagS, videoId: String(g.highlightClip), account: '6415718365001',
-                        restartArtifact: isRestartArtifact,
+                        restartArtifact: isRestartArtifact || !!t.pre,   // r660: its real wait began before we were watching
                         // r645: additive -- for the clip badge's siren/score-line text (nhlGoalClipBadge).
                         // Existing readers (nhlWatchReport, the saved log) only read the fields above.
                         fullName: g.fullName, goalsToDate: g.goalsToDate,
@@ -5896,7 +5896,8 @@ function nhlWatchReport(){
     lines.push('WATCHING:');
     statusGames.forEach(gid => {
       const s = window._nhlWatchStatus[gid];
-      const stillRunning = !!(window._nhlWatchCancels && window._nhlWatchCancels[gid]);
+      const stillRunning = !!((window._nhlWatchCancels && window._nhlWatchCancels[gid])
+        || (window._nhlAuto && window._nhlAuto.watching && window._nhlAuto.watching[gid]));   // r660: auto-watch counts
       const agoS = s.lastPollMs ? Math.round((Date.now() - s.lastPollMs)/1000) : null;
       const flag = !stillRunning ? ' [STOPPED]' : (agoS === null ? ' [no poll yet]' : (agoS > NHL_WATCH_CFG.STALE_S ? ' [STALE]' : ''));
       lines.push('  ' + s.away + ' @ ' + s.home + '  ' + gid + '  (' + s.gameState + ')  '
@@ -5904,7 +5905,7 @@ function nhlWatchReport(){
     });
     lines.push('');
   } else {
-    lines.push('WATCHING: nothing -- call nhlWatchTonight() first', '');
+    lines.push('WATCHING: nothing yet -- auto-watch picks up followed/picked games at pre-game', '');
   }
   // r637: goals we've SEEN but that don't have a clip yet -- shown the moment they're
   // detected, not just once they resolve. Per Mike: the goal should log regardless, with the
@@ -17696,7 +17697,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r659-crawl-end-period-prime-video';
+const BUILD_MARKER = 'r660-cc-pinned-output-report-fixes';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -20056,7 +20057,10 @@ window.CC = (function(){
     // element but row() never emitted it -- the button fired the fn and the return value had
     // nowhere to go. Masked until now because tkodump/etc. have a side effect (clipboard copy)
     // or a real on-screen effect (simgoal); nhlreport has neither, which is what exposed it.
-    var outph = (f.t==='action') ? '<pre id="ccout-'+f.n+'" class="ccout"></pre>' : '';
+    // r660: data-ccout, not id -- a PINNED action renders twice (Pinned group + its own group), so
+    // two elements shared id "ccout-<name>" and CC.run wrote into whichever came first. Mike's
+    // nhlreport (pinned) printed into the Pinned copy while he clicked the Sim-group copy.
+    var outph = (f.t==='action') ? '<pre data-ccout="'+f.n+'" class="ccout"></pre>' : '';
     return '<div class="fr"><span class="st'+(st?' on':'')+'" onclick="CC.star(\''+f.n+'\')">'
          + (st?'\u2605':'\u2606')+'</span>'
          + '<span class="nm" onclick="CC.copy(\''+f.n+'\')" title="copy a URL with this flag flipped">?'+f.n+'</span>'
@@ -20725,11 +20729,13 @@ window.CC = (function(){
         overrides={};
         renderFlags(); renderOv(); updateReloadBar(); renderDot();
       }catch(e){} },
-    run:function(id,fn){ try{
-        var out=window[fn](); var el=$('ccout-'+id);
-        if(el) el.outerHTML='<pre id="ccout-'+id+'" class="ccout">'+String(typeof out==='string'?out:JSON.stringify(out,null,1)||'(no return value — check the console)')
-          .replace(/</g,'&lt;')+'</pre>';
-      }catch(e){ var el2=$('ccout-'+id); if(el2) el2.outerHTML='<pre id="ccout-'+id+'" class="ccout"><b>read failed:</b> '+String(e.message||e).replace(/</g,'&lt;')+'</pre>'; } },
+    run:function(id,fn){
+      // r660: write into EVERY copy of this action's output box (pinned + group), not just the first
+      var put=function(h){ var els=document.querySelectorAll('pre[data-ccout="'+id+'"]'); for(var i=0;i<els.length;i++) els[i].innerHTML=h; };
+      try{
+        var out=window[fn]();
+        put(String(typeof out==='string'?out:JSON.stringify(out,null,1)||'(no return value — check the console)').replace(/</g,'&lt;'));
+      }catch(e){ put('<b>read failed:</b> '+String(e.message||e).replace(/</g,'&lt;')); } },
     refresh:renderAll
   };
   try{
