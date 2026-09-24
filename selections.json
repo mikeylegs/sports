@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-09-24T18:27:09.499Z",
+  "updated": "2026-09-24T18:29:44.828Z",
   "events": [
     {
       "league": "baseball/mlb",
@@ -80,14 +80,15 @@
         "league": "hockey/nhl",
         "abbr": "NYI",
         "name": "New York Islanders"
-      },
-      {
-        "league": "hockey/nhl",
-        "abbr": "LA",
-        "name": "Los Angeles Kings"
       }
     ],
-    "players": [],
+    "players": [
+      {
+        "sport": "nhl",
+        "name": "Artemi Panarin",
+        "team": "LA"
+      }
+    ],
     "crawlLeagues": [
       "MLB",
       "NHL",
