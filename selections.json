@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-09-23T17:14:37.656Z",
+  "updated": "2026-09-24T00:02:16.175Z",
   "events": [],
   "watch": {
     "teams": [
@@ -21,13 +21,13 @@
       },
       {
         "league": "football/nfl",
-        "abbr": "BUF",
-        "name": "Buffalo Bills"
+        "abbr": "NYJ",
+        "name": "New York Jets"
       },
       {
         "league": "football/nfl",
-        "abbr": "NYJ",
-        "name": "New York Jets"
+        "abbr": "BUF",
+        "name": "Buffalo Bills"
       },
       {
         "league": "football/nfl",
