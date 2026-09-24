@@ -8780,7 +8780,9 @@ function showTakeover(opts){
               const cb = (TKO_COMPANION && moment) ? {
                 batter: moment.batter || (opts.a && opts.a.sub) || '',
                 team  : logTeam,
-                hr    : (opts.a && opts.a._hrNum) || null,
+                // r662: fall back to the StatsAPI play text ("Brett Baty homers (23) ...") when the card
+                // itself had no number (a thin legacy-path card, pre-r661) -- same play, authoritative.
+                hr    : (opts.a && opts.a._hrNum) || +(((moment && moment.desc) || '').match(/homers? \((\d+)\)/i) || [])[1] || null,
                 inning: moment.inning || null,
                 half  : moment.half || ''
               } : null;
@@ -9432,6 +9434,7 @@ let _rosterReady = false;
    it — with last name as a backstop. A last name shared by two players on one roster is
    marked ambiguous (null) rather than guessed: a wrong face is worse than no face. */
 const _favPlayerIds = Object.create(null);
+const _favPlayerNames = Object.create(null);   // r661: MLB person id -> roster fullName
 function _normName(x){
   return String(x||'').trim().toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
@@ -9451,6 +9454,34 @@ function _mlbIdForBatter(text){
   } catch(_){ return null; }
 }
 
+/* ★ r661 — Mike 9/23: a Mets HR card read "HOME RUN / BATY" -- surname only, no HR number. That
+   card came from the LEGACY checkBigMoments path, which builds the card from ESPN's lastPlay TEXT
+   ("Baty homered to right...") and ESPN's lastPlay carries no HR count. When it beats the StatsAPI
+   pbp detector to the homer, pbp stands down for 90s (_hrRecentlyFired) and the thin card is the
+   only one. Fix: before this path shows its card, pull the SAME StatsAPI play the pbp path would
+   have used (capped at 2.5s -- a slow feed still gets a card, just the thin one). */
+function _latestHrFromFeed(feed, text){
+  const plays = (feed && feed.liveData && feed.liveData.plays && feed.liveData.plays.allPlays) || [];
+  const want = _lastNameOf(String(text || '').replace(/\s+homer.*$/i, ''));
+  for (let i = plays.length - 1; i >= 0; i--){
+    const p = plays[i];
+    if (!p || !p.result || p.result.eventType !== 'home_run') continue;
+    const b = (p.matchup && p.matchup.batter) || {};
+    if (want && _lastNameOf(b.fullName || '') !== want) continue;
+    const n = p.result.homeRunNumber || +((String(p.result.description || '').match(/\((\d+)\)/) || [])[1]) || null;
+    return { name: b.fullName || '', id: b.id || null, hrNum: n };
+  }
+  return null;
+}
+async function _hrEnrich(teamAbbr, text){
+  try{
+    const pk = await tkoGamePkFor({ meta: { game: teamAbbr } });
+    if (!pk) return null;
+    const raw = await proxyFetchText('https://statsapi.mlb.com/api/v1.1/game/' + pk + '/feed/live');
+    return Object.assign({ pk }, raw ? (_latestHrFromFeed(JSON.parse(raw), text) || {}) : {});
+  }catch(_){ return null; }
+}
+window._latestHrFromFeed = _latestHrFromFeed; window._hrEnrich = _hrEnrich;
 async function loadFavRosters(){
   if (new URLSearchParams(location.search).get('rosteroff') === '1'){ console.log('[roster] disabled via ?rosteroff=1'); return; }
   let anyOk = false;
@@ -9470,6 +9501,7 @@ async function loadFavRosters(){
         const _pid = p.person && p.person.id;
         if (_pid){
           _favPlayerIds[_normName(full)] = _pid;
+          _favPlayerNames[_pid] = full;   // r661
           const _ln = _lastNameOf(full);
           if (_ln.length >= 3){
             if (_favPlayerIds[_ln] === undefined) _favPlayerIds[_ln] = _pid;
@@ -14814,18 +14846,25 @@ function checkBigMoments(games){
            but the roster lookup is what actually resolves the photo. */
         const _mid = (g.lastPlay && (g.lastPlay.mlbId || g.lastPlay.batterMlbId || g.lastPlay.hitterMlbId))
                   || _mlbIdForBatter(cur.lastPlay);
-        const _hn  = g.lastPlay && g.lastPlay.hrNum;
-        showTakeover({side, mlbTeam:teamAbbr, a:{ accent,
-          hero:_mid?`https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:action:hero:current.jpg/q_auto:good,w_1500/v1/people/${_mid}/action/hero/current`:'',
-          head:_mid?`https://img.mlbstatic.com/mlb-photos/image/upload/w_240,q_auto/v1/people/${_mid}/headshot/67/current`:'',
+        const _hn0 = g.lastPlay && g.lastPlay.hrNum;
+        const _lp  = cur.lastPlay;
+        // r661: enrich from StatsAPI first (full name + HR number + pk), capped; then fire.
+        const _fireHr = (en) => {
+        const _mid2 = (en && en.id) || _mid, _hn = (en && en.hrNum) || _hn0;
+        showTakeover({side, mlbTeam:teamAbbr, gamePk:(en && en.pk) || undefined, a:{ accent,
+          hero:_mid2?`https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:action:hero:current.jpg/q_auto:good,w_1500/v1/people/${_mid2}/action/hero/current`:'',
+          head:_mid2?`https://img.mlbstatic.com/mlb-photos/image/upload/w_240,q_auto/v1/people/${_mid2}/headshot/67/current`:'',
           logo:logoUrl('MLB',teamAbbr),
           logoX:1, logoY:1, logoSize:14, logoGlow:4,   // r186: Mike's contact-sheet value
           focusX:41, focusY:13, focusScale:1.1, duo:0.05, txtX:5, txtY:1,
           wash_r:wrgb[0], wash_g:wrgb[1], wash_b:wrgb[2],
           headline:'HOME RUN',
           hrNum:_hn?`(${_hn})`:null, _hrNum:_hn||null,
-          sub:((cur.lastPlay.match(/^(.+?)\s+homer/i)||[])[1]||cur.lastPlay), subIcon:'\u26be',
+          sub:(en && en.name) || (_mid2 && _favPlayerNames[_mid2]) || ((_lp.match(/^(.+?)\s+homer/i)||[])[1]||_lp), subIcon:'\u26be',
           band:{aAbbr:g.awayAbbr,aScore:cur.as,hAbbr:g.homeAbbr,hScore:cur.hs,lit:(teamAbbr===g.awayAbbr?'a':'h')} }});
+        };
+        Promise.race([_hrEnrich(teamAbbr, _lp), new Promise(r => setTimeout(() => r(null), 2500))])
+          .then(_fireHr, () => _fireHr(null));
       } else if(_tookLead && _leadTakeoverOn){   // R38: lead-change takeover disabled (Mike); flip _leadTakeoverOn to revive
         showTakeover({side, mlbTeam:teamAbbr, a:{ accent, wash:`rgba(${GLOW_TEAM[teamAbbr]||'11,42,94'},0.9)`,
           kicker:`${teamAbbr} take the lead`, headline:'LEAD CHANGE',
@@ -17697,7 +17736,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r660-cc-pinned-output-report-fixes';
+const BUILD_MARKER = 'r662-hr-ribbon-number-fallback';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
