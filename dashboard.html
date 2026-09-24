@@ -18176,7 +18176,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r675-nyy-network-per-game';
+const BUILD_MARKER = 'r676-refresh-no-repaint';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -18589,6 +18589,18 @@ async function refreshGolfLeaderboard() {
 // backgrounded) — long interval so it doesn't fight with the lap-driven refresh.
 setInterval(() => { if (isUSOpenActive()) refreshGolfLeaderboard(); }, 180000);
 
+/* r676: the 60s refresh repainted both featured slots EVERY cycle. r531 (anchor) and the WWS
+   keep-active fix bake the rotation's CURRENT slide (.active, data-since) into the fresh markup, so
+   the "only touch the DOM when the slot actually changed" string compare always saw a change once
+   the 12s rotation had moved -- full outerHTML rebuild, filled slides (standings/POTG/spotlight)
+   wiped back to placeholders until the next heal tick. Probed live 9/24 (r675): yank + slot2
+   replaced at every refresh; the only diff was the active slide / data-since. Compare with the
+   rotation state stripped; a real content change still rebuilds exactly as before. */
+function _slotSig(html){
+  return html == null ? null : String(html)
+    .replace(/\sdata-since="[^"]*"/g, '')
+    .replace(/class="([^"]*)"/g, (m, c) => 'class="' + c.split(/\s+/).filter(x => x && x !== 'active' && x !== 'slot-enter').join(' ') + '"');
+}
 function renderMLBFullscreen(games, yesterdayGames=[]) {
   const shell = document.querySelector('.shell');
   shell.classList.add('mlb-full');
@@ -18856,7 +18868,7 @@ function renderMLBFullscreen(games, yesterdayGames=[]) {
         window._lastYankHtml = null;                  // force one full rebuild when it later goes non-live
       } else {
         const yHtml = yankSlotHtml();
-        if (yHtml !== window._lastYankHtml) {          // only touch the DOM when the slot actually changed
+        if (_slotSig(yHtml) !== _slotSig(window._lastYankHtml)) {   // r676: ignore rotation state (active/data-since)
           window._lastYankHtml = yHtml;
           yankSlot.outerHTML = yHtml;
           const e = row.querySelector('.mlb-feat-slot.yank');
@@ -18870,7 +18882,7 @@ function renderMLBFullscreen(games, yesterdayGames=[]) {
         window._lastMetHtml = null;
       } else {
         const mHtml = metSlotHtml();
-        if (mHtml !== window._lastMetHtml) {
+        if (_slotSig(mHtml) !== _slotSig(window._lastMetHtml)) {   // r676
           window._lastMetHtml = mHtml;
           secSlot.outerHTML = mHtml;
           const e = row.querySelector('.mlb-feat-slot.secondary');
@@ -19831,7 +19843,10 @@ function getRefreshRate() { return anyLive ? 30 : 60; }
 let mlbDesignatedTeamsLive = false;
 
 async function fetchAll() {
-  setStatus('loading', 0, currentRate);
+  // r676: "Updating…" only until the first data lands. Every 60s refresh used to flip the bar
+  // yellow for the fetch's duration; staleness is already covered by updateStaleness (r596).
+  if (!window._lastDataAt) setStatus('loading', 0, currentRate);
+  const _fetchT0 = Date.now();
   let total=0, ok=false, liveCount=0;
   let anyYesterday = false;
   let mlbOk = false; // tracked separately: when MLB Fullscreen is the active
@@ -19962,7 +19977,9 @@ async function fetchAll() {
 
   anyLive     = liveCount > 0;
   currentRate = getRefreshRate();
-  countdown   = currentRate;
+  // r676: the period is measured from the fetch START. Resetting to a full currentRate here made
+  // every cycle 60s + fetch time, so the refresh crept against the 12s slide rotation.
+  countdown   = Math.max(1, currentRate - Math.round((Date.now() - _fetchT0) / 1000));
 
   const statusOk = (getLayoutMode() === 'mlbFull' && !forceDemo) ? mlbOk : ok;
   setStatus(statusOk?'live':'error', total, currentRate, anyYesterday ? 'Yesterday' : '');
