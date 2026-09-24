@@ -5063,6 +5063,7 @@ function nhlGoalWatch(gameId, opts){
   const onGoal = opts.onGoal || function(){};
   const tracked = window._nhlWatchTracked[gameId] = window._nhlWatchTracked[gameId] || {};
   let dead = false;
+  let seenOk = false;   // r658: flips after the first SUCCESSFUL landing poll of this watch
   const tick = async () => {
     if (dead) return;
     const goals = await nhlLandingGoals(gameId);
@@ -5072,6 +5073,9 @@ function nhlGoalWatch(gameId, opts){
     const st = window._nhlWatchStatus[gameId];
     if (st){ st.lastPollMs = now; st.pollCount = (st.pollCount || 0) + 1; st.lastOk = goals !== null; }
     if (goals){
+      // r658: goals found on this watch's first good poll were already on the board when it started
+      // (page reload mid-game) -- onGoal gets first=true so a live caller can refuse to fire them.
+      const first = !seenOk; seenOk = true;
       goals.forEach(g => {
         if (g.eventId == null) return;
         let t = tracked[g.eventId];
@@ -5096,7 +5100,7 @@ function nhlGoalWatch(gameId, opts){
             // r641: the actual live trigger point -- brand new goal, no prior log, no clip yet
             // on first sight. This IS "caught in the act."
             else {
-              try{ onGoal(Object.assign({}, g, { awayAbbr: goals.awayAbbr, homeAbbr: goals.homeAbbr, season: goals.season })); }
+              try{ onGoal(Object.assign({}, g, { awayAbbr: goals.awayAbbr, homeAbbr: goals.homeAbbr, season: goals.season }), first); }
               catch(e){ console.log('[nhlGoalWatch] onGoal failed:', e.message); }
             }
           }
@@ -5558,7 +5562,7 @@ window._nhlGameDay = _nhlGameDay; window.nhlFavDump = nhlFavDump;
 // landing feed at 4s for hours. Nothing is shown: every goal/clip is scored (tier 0-3) and logged
 // to localStorage so one real night gives true overload numbers (nhlDryReport, CC Sim -> nhldry)
 // before r656's governor lets anything onto the wall.
-//   ?nhlgoals=off  -> no auto-watch at all · default / ?nhlgoals=dry -> this · 'on' (r656)
+//   ?nhlgoals=off  -> no auto-watch at all · ?nhlgoals=dry -> log only · DEFAULT (r658) = on
 //   feeds goals into the r656 WALL (falls back to dry under ?wall=off, so nothing fires ungoverned).
 // A game is kept GRACE_MS past FINAL so late-landing clips still get measured.
 // Takes over a manual nhlWatchTonight() watch on the same game: both share
@@ -5569,10 +5573,11 @@ const NHL_AUTO_CFG = { RESCAN_MS: 3 * 60000, BOOT_DELAY_MS: 8000, GRACE_MS: 20 *
 function nhlGoalsMode(){
   let q = null; try{ q = new URLSearchParams(location.search).get('nhlgoals'); }catch(_){}
   if (q === 'off') return 'off';
-  // r656: 'on' is real now -- goals feed the WALL (dry logging continues alongside). Without the
-  // wall (?wall=off) there's nothing to govern them, so 'on' still falls back to dry.
-  if (q === 'on') return (typeof WALL !== 'undefined' && WALL) ? 'on' : 'dry';
-  return 'dry';
+  // r658 (Mike 9/24): ON BY DEFAULT -- every followed/picked goal is eligible with no flag.
+  // ?nhlgoals=dry = log only (the old default). Without the wall (?wall=off) there's nothing to
+  // order them, so it falls back to dry.
+  if (q === 'dry') return 'dry';
+  return (typeof WALL !== 'undefined' && WALL) ? 'on' : 'dry';
 }
 // PURE: what to start/stop this scan. games = normalized score-feed rows
 // {id, state, gameType, awayAbbr, homeAbbr, day}; watching = {id: {finalAt}}.
@@ -5580,7 +5585,9 @@ function _nhlAutoPlan(games, fav, selected, watching, now, graceMs){
   const byId = {}; (games || []).forEach(g => { byId[String(g.id)] = g; });
   const start = [], stop = [], markFinal = [];
   (games || []).forEach(g => {
-    if ((g.state === 'LIVE' || g.state === 'CRIT') && !watching[String(g.id)] && _nhlGameWatched(g, fav, selected)) start.push(g);
+    // r658: PRE too (~1h before puck drop) -- with reload-safety below, a watch that starts after the
+    // first goal would never fire it, so the watch has to be up BEFORE the game starts.
+    if ((g.state === 'LIVE' || g.state === 'CRIT' || g.state === 'PRE') && !watching[String(g.id)] && _nhlGameWatched(g, fav, selected)) start.push(g);
   });
   Object.keys(watching || {}).forEach(id => {
     const w = watching[id], g = byId[id];
@@ -5658,16 +5665,19 @@ async function _nhlAutoScan(){
       console.log('[nhlAuto] took over manual watch on', id); } }catch(_){}
     window._nhlWatchStatus[id] = window._nhlWatchStatus[id] || { away: g.awayAbbr, home: g.homeAbbr, gameState: g.state,
       startedMs: now, lastPollMs: null, pollCount: 0, lastOk: null };
+    const pre = new Set();   // r658: eventIds already on the board when this watch started
     const cancel = nhlGoalWatch(g.id, {
-      onGoal: (x) => { if (window._nhlAuto.mode === 'on') _nhlWallGoal(g, x);   // r656
+      onGoal: (x, first) => { if (first) pre.add(String(x.eventId));
+        if (window._nhlAuto.mode === 'on' && !first) _nhlWallGoal(g, x);   // r656/r658
         _nhlDryRecord({ kind: 'goal', t: Date.now(), day: g.day, gameId: id, gameType: g.gameType, eventId: x.eventId,
-        team: x.team, scorer: x.fullName || x.scorer, strength: x.strength || '', tier: _nhlDryTier(g, x.team), restart: false }); },
-      onClip: (rec) => { if (window._nhlAuto.mode === 'on' && !rec.restartArtifact) _nhlWallClip(g, rec);   // r656
+        team: x.team, scorer: x.fullName || x.scorer, strength: x.strength || '', tier: _nhlDryTier(g, x.team), restart: !!first }); },
+      onClip: (rec) => { const old = !!rec.restartArtifact || pre.has(String(rec.eventId));
+        if (window._nhlAuto.mode === 'on' && !old) _nhlWallClip(g, rec);   // r656/r658
         _nhlDryRecord({ kind: 'clip', t: Date.now(), day: g.day, gameId: id, gameType: g.gameType, eventId: rec.eventId,
-        team: rec.team, scorer: rec.fullName || rec.scorer, lagS: rec.lagS, tier: _nhlDryTier(g, rec.team), restart: !!rec.restartArtifact }); }
+        team: rec.team, scorer: rec.fullName || rec.scorer, lagS: rec.lagS, tier: _nhlDryTier(g, rec.team), restart: old }); }
     });
     A.watching[id] = { cancel, game: g, since: now, finalAt: null };
-    console.log('[nhlAuto] DRY watching', g.awayAbbr, '@', g.homeAbbr, id, '(type ' + g.gameType + ')');
+    console.log('[nhlAuto] ' + A.mode.toUpperCase() + ' watching', g.awayAbbr, '@', g.homeAbbr, id, '(' + g.state + ', type ' + g.gameType + ')');
   });
 }
 // r656: live NHL goal -> the shared WALL line. Hero resolved+decoded BEFORE joining (r653's
@@ -17657,7 +17667,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r657-wall-priority-only';
+const BUILD_MARKER = 'r658-nhl-goals-default-on';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
