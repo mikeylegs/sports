@@ -18176,7 +18176,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r676-refresh-no-repaint';
+const BUILD_MARKER = 'r677-fittext-memo';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -20140,7 +20140,13 @@ tick(); setInterval(tick, 1000); fetchAll();
 // size-container height. Shrinks ONLY when content would overflow, so short
 // strings sit at the ceiling and long ones step down — no clipping at any
 // string length, and no dependence on which font actually loaded.
-function fitText(scope){
+/* r677: fitText was the 12s crawl hitch. Probed live 9/24 (LoAF): a 450-670ms task every rotation
+   tick, attributed to scheduleFit's setTimeout -> fitText(#row-MLB). The dots redraw (childList)
+   every 12s tripped the autofit observer, and a full-row pass forces 2+ layouts PER [data-fit]
+   element even when nothing changed. Memo: an element whose text, fit bounds and box width are
+   unchanged since it was last fitted is skipped (no writes -> layout stays clean -> reads are cheap).
+   force=true (font load) refits everything. */
+function fitText(scope, force){
   const cont = document.getElementById('row-MLB');
   const baseH = (cont && cont.clientHeight) || window.innerHeight || 720;
   const els = (scope || document).querySelectorAll('[data-fit]');
@@ -20150,6 +20156,8 @@ function fitText(scope){
     const minCqh = parseFloat(el.dataset.fitMin) || maxCqh * 0.45;
     const maxPx = maxCqh / 100 * baseH;
     const minPx = minCqh / 100 * baseH;
+    const _fk = () => el.textContent + '|' + maxPx + '|' + minPx + '|' + el.clientWidth;   // r677
+    if (!force && el._fitK && el.style.fontSize && el._fitK === _fk()) return;
     el.style.fontSize = maxPx + 'px';
     /* r387: the old fits() used scrollWidth<=clientWidth, but text-overflow:ellipsis makes browsers
        report scrollWidth===clientWidth once truncated — so a clipped title read as "fits" and never
@@ -20183,6 +20191,7 @@ function fitText(scope){
       }
       el.style.fontSize = best + 'px';
     }
+    el._fitK = _fk();   // r677: measured at the final size
   });
   // r517: tennis pregame day/time — stack-if-clips, NEVER shrink (Mike: "no shrinking"). Reuses
   // this same fitText pass (already triggered on every #row-MLB DOM change via the MutationObserver
@@ -20237,7 +20246,10 @@ function scheduleFit(){
   // Header date/time/countdown tick every second, but they update via nodeValue
   // (characterData), which this childList-only observer ignores — so the per-second
   // ticks no longer trigger a full-row refit (which used to hitch the AL/NL crawl).
-  if (row) new MutationObserver(scheduleFit).observe(row, {childList:true, subtree:true});
+  // r677: the slide dots (every 12s) and the crawl tracks never hold [data-fit] text -- don't refit for them.
+  const _fitSkip = n => n && n.nodeType === 1 && n.closest && n.closest('.mlb-subleague-crawl, [id$="-dots"]');
+  if (row) new MutationObserver(recs => { if (recs.some(r => !_fitSkip(r.target))) scheduleFit(); }).observe(row, {childList:true, subtree:true});
+  try{ document.fonts && document.fonts.ready.then(() => fitText(row, true)); }catch(_){}   // r677: text widths change once fonts land
   window.addEventListener('resize', scheduleFit);
   document.addEventListener('fullscreenchange', scheduleFit);
 })();
