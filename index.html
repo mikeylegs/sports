@@ -2447,6 +2447,10 @@ html.logoscore-v1 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-status{max-width:min(
     opts=opts||{};
     let all=_all();
     if(opts.cat) all=all.filter(e=>e.cat===opts.cat);
+    // r667: Report-tab filters -- type is a category ("wws") or category.event ("wws.advance");
+    // q is a case-insensitive search over the whole line (team, player, league, game...)
+    if(opts.type) all=all.filter(e=>opts.type.indexOf('.')>=0 ? (e.cat+'.'+e.event)===opts.type : e.cat===opts.type);
+    if(opts.q){ const qq=String(opts.q).toLowerCase(); all=all.filter(e=>{ let d=''; try{ d=JSON.stringify(e.detail)||''; }catch(_){} return (e.cat+'.'+e.event+' '+d).toLowerCase().indexOf(qq)>=0; }); }
     if(opts.since){ all=all.filter(e=>e.et>=opts.since); }
     const bootET = new Date(NIGHT.booted).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour12:false});
     const lines=['── NIGHT REPORT · session booted '+_etDate(NIGHT.booted)+' '+bootET+' · '+all.length+' events ──'];
@@ -2470,6 +2474,8 @@ html.logoscore-v1 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-status{max-width:min(
     return lines.join('\n');
   }
   window._nightReportText = _nightReportText;
+  // r667: types present in the log, with counts, for the Report-tab filter dropdown
+  window._nightTypes = function(){ const c={}; _all().forEach(e=>{ c[e.cat]=(c[e.cat]||0)+1; const k=e.cat+'.'+e.event; c[k]=(c[k]||0)+1; }); return c; };
   window.nightReport = function(opts){
     const out=_nightReportText(opts);
     console.log(out);
@@ -2482,17 +2488,17 @@ html.logoscore-v1 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-status{max-width:min(
      .txt. CRITICAL: the Blob is explicit UTF-8 with NO BOM, so the file uploads/pastes cleanly
      (the old copy-paste-shows-empty bug was an encoding issue). Chrome's download folder can be
      pointed at a Dropbox-synced folder so the file auto-syncs — then just share the Dropbox link. */
-  window.nightSave = function(){
+  window.nightSave = function(text, prefix){   // r667: optional text/prefix -- saves whatever Report view is showing
     try{
-      var out = (typeof nightReport==='function') ? _nightReportText() : JSON.stringify(NIGHT.buf);
+      var out = (typeof text==='string') ? text : (typeof nightReport==='function') ? _nightReportText() : JSON.stringify(NIGHT.buf);
       var stamp = new Date().toLocaleString('sv-SE',{timeZone:'America/New_York'}).replace(/[: ]/g,'-');
       var blob = new Blob([out], {type:'text/plain;charset=utf-8'});   // explicit UTF-8, no BOM
       var url = URL.createObjectURL(blob);
       var a = document.createElement('a');
-      a.href=url; a.download='nightreport-'+stamp+'.txt';
+      a.href=url; a.download=(prefix||'nightreport')+'-'+stamp+'.txt';
       document.body.appendChild(a); a.click();
       setTimeout(function(){ try{ document.body.removeChild(a); URL.revokeObjectURL(url); }catch(_){} }, 1000);
-      return 'saved nightreport-'+stamp+'.txt';
+      return 'saved '+(prefix||'nightreport')+'-'+stamp+'.txt';
     }catch(e){ return 'save failed: '+(e&&e.message); }
   };
   /* r426 — one-tap clear, requested for the CC Report tab (a long-uncleared log gets unwieldy
@@ -5673,6 +5679,7 @@ async function _nhlAutoScan(){
   try{ const raw = await proxyFetchText('https://api-web.nhle.com/v1/score/now', true); j = raw ? JSON.parse(raw) : null; }catch(_){ j = null; }
   const now = Date.now(); A.lastScanMs = now; A.lastScanOk = !!j;
   if (!j) return;
+  A.anyLive = (j.games || []).some(g => g.gameState === 'LIVE' || g.gameState === 'CRIT');   // r667: gates the lag instrument
   const games = (j.games || []).map(g => ({ id: g.id, state: g.gameState, gameType: g.gameType,
     awayAbbr: (g.awayTeam && g.awayTeam.abbrev) || '', homeAbbr: (g.homeTeam && g.homeTeam.abbrev) || '',
     day: _nhlGameDay(g) || String(j.currentDate || '').replace(/-/g, '') }));
@@ -5751,6 +5758,225 @@ function nhlDryReport(){
 window.nhlAutoWatchStart = nhlAutoWatchStart; window.nhlDryReport = nhlDryReport;
 window._nhlAutoPlan = _nhlAutoPlan; window._nhlDrySummary = _nhlDrySummary; window._nhlAutoScan = _nhlAutoScan;
 document.addEventListener('DOMContentLoaded', () => { setTimeout(() => { try{ nhlAutoWatchStart(); }catch(e){ console.log('[nhlAuto] start failed:', e.message); } }, NHL_AUTO_CFG.BOOT_DELAY_MS); });
+
+/* ═══ LAG INSTRUMENT — begin (r667; sandbox-owned, pasted VERBATIM into dashboard.html) ═══
+   Persistent ESPN-vs-league timing instrument (the console lagProbe/nhlLagProbe, made permanent).
+   Page-agnostic: fetch, clock, storage and "is anything live" are INJECTED.
+   Per data point it records when each source first showed a value; once both have, one sample
+   lag = ESPN - league (positive = league first) is emitted. Values already true at the instrument's
+   first poll (page load) carry no timing info and are skipped. Samples persist per ET day
+   (merge-on-write: re-read, APPEND, trim -- two panels add their own samples, never overwrite),
+   14 days kept, 400 samples per field per day. Only finished samples persist: a reload mid-change
+   costs at most that one sample. */
+const LAG_CFG = { POLL_MS: 5000, FLUSH_MS: 30000, KEEP_DAYS: 14, CAP: 400, GAME_TTL_MS: 45 * 60000, CLOCK_EVERY_MS: 30000,
+  KEY: 'lagInstrument_v1' };
+function _lagFold(s){ return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z]/g, ''); }
+function _lagLast(s){ const t = String(s || '').trim().split(/\s+/).filter(x => !/^(jr|sr|ii|iii|iv)\.?$/i.test(x)); return _lagFold(t.pop() || ''); }
+function _lagSecs(c){ const m = String(c || '').match(/^(\d+):(\d{2})/); return m ? (+m[1]) * 60 + (+m[2]) : null; }
+// PURE normalizers: raw payload -> [{ game, final, points:[[field, value]], clock:{per,s}|null }]
+function _lagMlbEspn(e){
+  const out = [];
+  (e && e.events || []).forEach(ev => {
+    const c = (ev.competitions || [])[0] || {}, st = (ev.status && ev.status.type) || {};
+    if (st.state !== 'in' && st.state !== 'post') return;
+    const H = (c.competitors || []).find(x => x.homeAway === 'home') || {}, A = (c.competitors || []).find(x => x.homeAway === 'away') || {};
+    const game = _lagFold(A.team && A.team.displayName) + '@' + _lagFold(H.team && H.team.displayName);
+    const w = String(st.shortDetail || st.detail || '').split(/\s+/)[0].toLowerCase();
+    const half = w.startsWith('top') ? 'T' : w.startsWith('bot') ? 'B' : w.startsWith('mid') ? 'M' : w.startsWith('end') ? 'E' : null;
+    const si = c.situation || {};
+    out.push(_lagMlbPoints(game, st.state === 'post', +A.score, +H.score, ev.status && ev.status.period, half, si.outs, si.balls, si.strikes,
+      (si.onFirst ? '1' : '-') + (si.onSecond ? '2' : '-') + (si.onThird ? '3' : '-'),
+      _lagLast(si.batter && si.batter.athlete && (si.batter.athlete.displayName || si.batter.athlete.shortName))));
+  });
+  return out;
+}
+function _lagMlbLeague(m){
+  const out = [];
+  ((m && m.dates) || []).flatMap(d => d.games || []).forEach(g => {
+    const code = (g.status && g.status.codedGameState) || '', fin = code === 'F' || code === 'O';
+    if (code !== 'I' && !fin) return;
+    const ls = g.linescore || {}, off = ls.offense || {};
+    out.push(_lagMlbPoints(_lagFold(g.teams.away.team.name) + '@' + _lagFold(g.teams.home.team.name), fin, g.teams.away.score, g.teams.home.score,
+      ls.currentInning, ({ Top: 'T', Bottom: 'B', Middle: 'M', End: 'E' })[ls.inningState] || null, ls.outs, ls.balls, ls.strikes,
+      (off.first ? '1' : '-') + (off.second ? '2' : '-') + (off.third ? '3' : '-'), _lagLast(off.batter && off.batter.fullName)));
+  });
+  return out;
+}
+function _lagMlbPoints(game, final, a, h, inn, half, outs, b, s, bases, batter){
+  const P = [['score', a + '-' + h]];
+  if (final) P.push(['final', 'F']);
+  else {
+    const hi = half && inn ? half + inn : null;
+    if (hi) P.push(['inning/half', hi]);
+    if (hi && (half === 'T' || half === 'B')){
+      P.push(['outs', hi + '|' + outs]);
+      if (batter){ P.push(['batter (PA done)', hi + '|' + batter]); P.push(['count', hi + '|' + batter + '|' + b + '-' + s]); }
+      P.push(['bases', hi + '|' + outs + '|' + bases]);
+    }
+  }
+  return { game, final, points: P, clock: null };
+}
+function _lagNhlEspn(e, ab){
+  const out = [];
+  (e && e.events || []).forEach(ev => {
+    const c = (ev.competitions || [])[0] || {}, st = (ev.status && ev.status.type) || {};
+    if (st.state !== 'in' && st.state !== 'post') return;
+    const H = (c.competitors || []).find(x => x.homeAway === 'home') || {}, A = (c.competitors || []).find(x => x.homeAway === 'away') || {};
+    const game = ab(A.team && A.team.abbreviation) + '@' + ab(H.team && H.team.abbreviation);
+    const P = [['score', (+A.score) + '-' + (+H.score)]], per = ev.status && ev.status.period;
+    let clock = null;
+    if (st.state === 'post') P.push(['final', 'F']);
+    else {
+      P.push(['period start', 'P' + per]);
+      if (/end of|intermission/i.test(String(st.shortDetail || st.detail || ''))) P.push(['intermission', 'INT' + per]);
+      else clock = { per, s: _lagSecs(ev.status.displayClock) };
+    }
+    out.push({ game, final: st.state === 'post', points: P, clock });
+  });
+  return out;
+}
+function _lagNhlLeague(n, ab){
+  const out = [];
+  (n && n.games || []).forEach(g => {
+    const gs = g.gameState, fin = gs === 'FINAL' || gs === 'OFF';
+    if (gs !== 'LIVE' && gs !== 'CRIT' && !fin) return;
+    const P = [['score', (+g.awayTeam.score) + '-' + (+g.homeTeam.score)]], ck = g.clock || {};
+    let clock = null;
+    if (fin) P.push(['final', 'F']);
+    else {
+      P.push(['period start', 'P' + g.period]);
+      if (ck.inIntermission) P.push(['intermission', 'INT' + g.period]);
+      else if (ck.running) clock = { per: g.period, s: ck.secondsRemaining != null ? ck.secondsRemaining : _lagSecs(ck.timeRemaining) };
+    }
+    out.push({ game: ab(g.awayTeam && g.awayTeam.abbrev) + '@' + ab(g.homeTeam && g.homeTeam.abbrev), final: fin, points: P, clock });
+  });
+  return out;
+}
+// Core pairing engine. One per sport. onSample(field, lagS, t) for every finished pair.
+function createLagPairer(onSample){
+  const seen = {}, lastAct = {}, lastClockSample = {};
+  let t0 = null;
+  function ingest(src, t, rows, otherClock){
+    if (t0 == null) t0 = t;
+    rows.forEach(r => {
+      // a game we never saw live has nothing to time -- ignore finals of games already over at load
+      if (r.final && !seen[r.game]) return;
+      if (!r.final) lastAct[r.game] = t;   // finals don't keep a game alive -- it prunes GAME_TTL after the end
+      const g = seen[r.game] || (seen[r.game] = {});
+      r.points.forEach(([field, value]) => {
+        if (value == null || value === '') return;
+        const k = field + '\u0001' + value, x = g[k] || (g[k] = {});
+        if (x[src] != null) return;
+        x[src] = t;
+        if (x.e != null && x.l != null && !x.done){
+          x.done = true;
+          if (!(x.e === t0 && x.l === t0)) onSample(field, (x.e - x.l) / 1000, t);
+        }
+      });
+    });
+    return rows;
+  }
+  // ESPN clock vs league clock at the same poll: positive = ESPN shows MORE time left (behind)
+  function clocks(t, espnRows, leagueRows){
+    const L = {}; leagueRows.forEach(r => { if (r.clock) L[r.game] = r.clock; });
+    espnRows.forEach(r => { const a = r.clock, b = L[r.game];
+      if (!a || !b || a.per !== b.per || a.s == null || b.s == null) return;
+      if (lastClockSample[r.game] != null && t - lastClockSample[r.game] < LAG_CFG.CLOCK_EVERY_MS) return;
+      lastClockSample[r.game] = t; onSample('running clock (ESPN extra s)', a.s - b.s, t); });
+  }
+  function prune(t){ Object.keys(lastAct).forEach(g => { if (t - lastAct[g] > LAG_CFG.GAME_TTL_MS){ delete seen[g]; delete lastAct[g]; delete lastClockSample[g]; } }); }
+  return { ingest, clocks, prune, _seen: seen, games: () => Object.keys(seen) };
+}
+// Persistent sample store: merge-on-write append, per ET day per sport per field.
+function createLagStore(io, etDay){
+  let pending = [];   // [{sport, field, lag, day}]
+  function read(){ try{ const j = JSON.parse(io.get(LAG_CFG.KEY) || '{}'); return (j && typeof j === 'object' && j.days) ? j : { days: {} }; }catch(_){ return { days: {} }; } }
+  function add(sport, field, lag, t){ pending.push({ sport, field, lag: Math.round(lag * 10) / 10, day: etDay(t) }); }
+  function flush(){
+    if (!pending.length) return 0;
+    const j = read(), n = pending.length;
+    pending.forEach(p => { const d = j.days[p.day] || (j.days[p.day] = {}), s = d[p.sport] || (d[p.sport] = {}), a = s[p.field] || (s[p.field] = []);
+      a.push(p.lag); if (a.length > LAG_CFG.CAP) a.splice(0, a.length - LAG_CFG.CAP); });
+    const days = Object.keys(j.days).sort(); while (days.length > LAG_CFG.KEEP_DAYS) delete j.days[days.shift()];
+    try{ io.set(LAG_CFG.KEY, JSON.stringify(j)); pending = []; }catch(_){ return 0; }
+    return n;
+  }
+  // committed + not-yet-flushed, so the report is current
+  function all(){ const j = read(); pending.forEach(p => { const d = j.days[p.day] || (j.days[p.day] = {}), s = d[p.sport] || (d[p.sport] = {}); (s[p.field] = s[p.field] || []).push(p.lag); }); return j; }
+  function clear(){ pending = []; try{ io.set(LAG_CFG.KEY, JSON.stringify({ days: {} })); }catch(_){} }
+  return { add, flush, all, clear, _pending: () => pending.length };
+}
+// PURE: text table for one sport over the stored days
+function lagReportText(j, sport, label, leagueName){
+  const q = (a, p) => a[Math.min(a.length - 1, Math.floor(a.length * p))];
+  const row = (f, a) => { a = a.slice().sort((x, y) => x - y);
+    const lf = Math.round(100 * a.filter(x => x > 2.5).length / a.length), ef = Math.round(100 * a.filter(x => x < -2.5).length / a.length);
+    return '  ' + f.padEnd(28) + String(a.length).padStart(5) + String(q(a, .5).toFixed(1)).padStart(9) + String(q(a, .9).toFixed(1)).padStart(8)
+      + (String(lf) + '%').padStart(11) + (String(ef) + '%').padStart(11); };
+  const head = '  ' + 'field'.padEnd(28) + 'n'.padStart(5) + 'median s'.padStart(9) + 'p90 s'.padStart(8) + (leagueName + ' 1st').padStart(11) + 'ESPN 1st'.padStart(11);
+  const days = Object.keys((j && j.days) || {}).sort();
+  const lines = [label + ' — lag = ESPN minus ' + leagueName + ' (positive = ' + leagueName + ' first) · ±2.5s = tie (5s polling)'];
+  const total = {};
+  days.forEach(d => { const s = (j.days[d] || {})[sport] || {}; Object.keys(s).forEach(f => { (total[f] = total[f] || []).push.apply(total[f], s[f]); }); });
+  if (!Object.keys(total).length){ lines.push('', '  no samples yet -- the instrument records while live games are on the panel'); return lines.join('\n'); }
+  lines.push('', 'ALL DAYS (' + days.length + ')', head);
+  Object.keys(total).sort().forEach(f => lines.push(row(f, total[f])));
+  days.slice().reverse().forEach(d => { const s = (j.days[d] || {})[sport] || {}; const fs = Object.keys(s); if (!fs.length) return;
+    lines.push('', d, head); fs.sort().forEach(f => lines.push(row(f, s[f]))); });
+  return lines.join('\n');
+}
+/* ═══ LAG INSTRUMENT — end ═══ */
+/* ★ r667 — LAG INSTRUMENT GLUE. Starts itself; polls only while the panel has a live MLB game
+   (window._mlbGames) or the NHL auto-watch saw one (window._nhlAuto.anyLive), plus a grace period
+   for games it's still timing. A sport's tick is ingested only when BOTH its sources answered
+   that tick -- a one-sided failure would otherwise read as fake lag. ?lagprobe=off disables.
+   Readout: CC Report tab -> View: MLB timing / NHL timing. */
+const LAG = (() => {
+  try{ if (new URLSearchParams(location.search).get('lagprobe') === 'off') return null; }catch(_){}
+  const etDay = t => new Date(t).toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+  const store = createLagStore({ get: k => { try{ return localStorage.getItem(k); }catch(_){ return null; } },
+                                 set: (k, v) => localStorage.setItem(k, v) }, etDay);
+  const P = { mlb: createLagPairer((f, l, t) => store.add('mlb', f, l, t)), nhl: createLagPairer((f, l, t) => store.add('nhl', f, l, t)) };
+  const st = { polls: 0, last: 0, fails: { mlb: 0, nhl: 0 }, live: { mlb: false, nhl: false }, started: Date.now() };
+  const ab = a => { a = String(a || '').toUpperCase(); try{ return normalizeAbbr('NHL', a); }catch(_){ return a; } };
+  const get = async (u, skip) => { try{ const r = await proxyFetchText(u, skip); return r ? JSON.parse(r) : null; }catch(_){ return null; } };
+  let busy = false;
+  async function tick(){
+    if (busy) return; busy = true;
+    try{
+      const t = Date.now();
+      const mlbOn = (window._mlbGames || []).some(g => g && g.gameStatus === 'live') || P.mlb.games().length > 0;
+      const nhlOn = !!(window._nhlAuto && window._nhlAuto.anyLive) || P.nhl.games().length > 0;
+      st.live = { mlb: mlbOn, nhl: nhlOn };
+      const jobs = [];
+      if (mlbOn) jobs.push(Promise.all([get('https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard', false),
+          get('https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=' + etDay(t) + '&hydrate=linescore', false)]).then(([e, m]) => {
+        if (!e || !m){ st.fails.mlb++; return; }
+        P.mlb.ingest('e', t, _lagMlbEspn(e)); P.mlb.ingest('l', t, _lagMlbLeague(m)); }));
+      if (nhlOn) jobs.push(Promise.all([get('https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard', false),
+          get('https://api-web.nhle.com/v1/score/now', true)]).then(([e, n]) => {
+        if (!e || !n){ st.fails.nhl++; return; }
+        const er = P.nhl.ingest('e', t, _lagNhlEspn(e, ab)), nr = P.nhl.ingest('l', t, _lagNhlLeague(n, ab)); P.nhl.clocks(t, er, nr); }));
+      if (jobs.length){ await Promise.all(jobs); st.polls++; st.last = t; }
+      P.mlb.prune(t); P.nhl.prune(t);
+    }catch(_){} finally { busy = false; }
+  }
+  setInterval(tick, LAG_CFG.POLL_MS);
+  setInterval(() => { try{ store.flush(); }catch(_){} }, LAG_CFG.FLUSH_MS);
+  window.addEventListener('beforeunload', () => { try{ store.flush(); }catch(_){} });
+  function status(){ const ago = st.last ? Math.round((Date.now() - st.last) / 1000) + 's ago' : 'not yet';
+    return 'instrument: ' + (st.live.mlb || st.live.nhl ? 'RECORDING' : 'idle (no live games)') + ' · ' + st.polls + ' polls this session, last ' + ago
+      + ' · timing now: MLB ' + (P.mlb.games().join(', ') || '-') + ' · NHL ' + (P.nhl.games().join(', ') || '-')
+      + (st.fails.mlb || st.fails.nhl ? ' · skipped ticks (a source failed) MLB ' + st.fails.mlb + ' / NHL ' + st.fails.nhl : ''); }
+  return { store, status, tick, _P: P, _st: st };
+})();
+window.LAG = LAG;
+function lagInstrumentText(sport){
+  if (!LAG) return 'Timing instrument is off (?lagprobe=off).';
+  return (sport === 'mlb' ? lagReportText(LAG.store.all(), 'mlb', 'MLB TIMING vs ESPN', 'MLB') : lagReportText(LAG.store.all(), 'nhl', 'NHL TIMING vs ESPN', 'NHL'))
+    + '\n\n' + LAG.status();
+}
+window.lagInstrumentText = lagInstrumentText;
 
 // r641/r645: the real live wire. nhlGoalWatch's detector was already correct and already ran
 // every night (log-only) -- this just points its two callbacks at the real renderers instead
@@ -14447,6 +14673,7 @@ window.brainTakeoverPayload = brainTakeoverPayload;
      ripped out on day one.
    · Fail-open throughout: any fetch/parse problem leaves the legacy path in charge. */
 const PBP_THROTTLE_MS = 20000;
+const PBP_FAV_THROTTLE_MS = 5000;   // r668: NYY/NYM games -- the fast MLB refresh calls in every 5s
 const _pbpState = Object.create(null);   // gamePk -> { seen:Set, t:ms, seeded:bool }
 /* ★★ r192 — SEEN-STATE MUST SURVIVE A PAGE LOAD.
    THE BUG (23 Jul): tkolog showed the same games seeding over and over — CLE at 1:35,
@@ -14639,7 +14866,10 @@ function mlbPbpHrWatch(games){
       live.forEach(g => {
         const pk = _pkForGame(g, map); if (!pk) return;
         const st = _pbpState[pk] || (_pbpState[pk] = { seen:new Set(), t:0, seeded:false });
-        if (Date.now() - st.t < PBP_THROTTLE_MS) return;
+        // r668: favorites checked every 5s (was 20s like everyone) -- MLB's play-by-play is the
+        // HR detector's fast source, so its poll gap is most of the HR card's delay.
+        const _thr = (g.awayAbbr === 'NYY' || g.homeAbbr === 'NYY' || g.awayAbbr === 'NYM' || g.homeAbbr === 'NYM') ? PBP_FAV_THROTTLE_MS : PBP_THROTTLE_MS;
+        if (Date.now() - st.t < _thr) return;
         st.t = Date.now();
         // r196: another instance may have seen (and fired) a homer since our last poll
         if (st.seeded) _pbpMergeFromStore(pk, st);
@@ -17853,7 +18083,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r666-clip-tail-fade';
+const BUILD_MARKER = 'r668-mlb-live-overlay';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -19094,6 +19324,65 @@ async function fetchLeagueYesterday(lg) {
 }
 
 // ── Fetch ─────────────────────────────────────────────────────
+/* ★ r668 — MLB LIVE OVERLAY. The lag instrument measured ESPN ~18s behind MLB on every live
+   field (median 18s, p90 27-30s, MLB first 96-100%, 9/23 West Coast games). For LIVE games only,
+   ESPN's score / inning+half / outs / balls-strikes / bases / batter / pitcher / hits are replaced
+   with MLB's own (one schedule?hydrate=linescore call covers every game; shared 4s cache so the
+   5s fast refresh and the 30s main cycle don't double-fetch). Everything MLB's schedule doesn't
+   carry stays ESPN (records, network, win prob, lastPlay text, inning linescores, pregame/final).
+   Capped at 3s -- a slow/failed MLB call just leaves ESPN's values, exactly r667 behavior.
+   ESPN<->MLB game matching reuses the pbp detector's proven _mlbPkIndex/_pkForGame. */
+const _mlbLive = { at: 0, byPk: null, inflight: null };
+function _mlbLiveFetch(){
+  if (_mlbLive.byPk && Date.now() - _mlbLive.at < 4000) return Promise.resolve(_mlbLive.byPk);
+  if (_mlbLive.inflight) return _mlbLive.inflight;
+  _mlbLive.inflight = (async () => {
+    try{
+      const day = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+      const raw = await proxyFetchText('https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=' + day + '&hydrate=linescore');
+      const j = raw ? JSON.parse(raw) : null;
+      if (j){ const m = new Map(); ((j.dates) || []).flatMap(d => d.games || []).forEach(g => m.set(g.gamePk, g)); _mlbLive.byPk = m; _mlbLive.at = Date.now(); }
+    }catch(_){}
+    _mlbLive.inflight = null;
+    return (_mlbLive.byPk && Date.now() - _mlbLive.at < 15000) ? _mlbLive.byPk : null;   // never overlay stale MLB data
+  })();
+  return _mlbLive.inflight;
+}
+// PURE (mutates g): overlay one ESPN-parsed live game with its MLB schedule entry. Returns true if applied.
+function _mlbOverlayGame(g, s){
+  if (!g || !s || g.gameStatus !== 'live' || !s.status || s.status.codedGameState !== 'I') return false;
+  const ls = s.linescore || {};
+  if (!ls.currentInning || !s.teams || !s.teams.away || !s.teams.home) return false;
+  if (s.teams.away.score != null) g.awayScore = s.teams.away.score;
+  if (s.teams.home.score != null) g.homeScore = s.teams.home.score;
+  const half = ({ Top: 'Top', Bottom: 'Bot', Middle: 'Mid', End: 'End' })[ls.inningState];
+  if (half) g.timeLabel = half + ' ' + ls.currentInning + ordinal(ls.currentInning);
+  if (g.situation){
+    const off = ls.offense || {}, def = ls.defense || {}, tt = ls.teams || {};
+    g.situation.onFirst = !!off.first; g.situation.onSecond = !!off.second; g.situation.onThird = !!off.third;
+    if (ls.balls != null) g.situation.balls = ls.balls;
+    if (ls.strikes != null) g.situation.strikes = ls.strikes;
+    if (ls.outs != null) g.situation.outs = ls.outs;
+    if (off.batter && off.batter.fullName) g.situation.batter = off.batter.fullName;
+    if (def.pitcher && def.pitcher.fullName) g.situation.pitcher = def.pitcher.fullName;
+    if (tt.away && tt.away.hits != null) g.situation.awayHits = tt.away.hits;
+    if (tt.home && tt.home.hits != null) g.situation.homeHits = tt.home.hits;
+  }
+  g._mlbOverlay = true;
+  return true;
+}
+async function mlbLiveOverlay(games){
+  if (!(games || []).some(g => g && g.gameStatus === 'live')) return games;
+  try{
+    if (new URLSearchParams(location.search).get('mlboverlay') === 'off') return games;
+    const r = await Promise.race([Promise.all([_mlbLiveFetch(), _mlbPkIndex()]), new Promise(res => setTimeout(() => res(null), 3000))]);
+    const byPk = r && r[0], map = r && r[1];
+    if (!byPk || !map) return games;
+    games.forEach(g => { if (g && g.gameStatus === 'live'){ const pk = _pkForGame(g, map); if (pk) _mlbOverlayGame(g, byPk.get(pk)); } });
+  }catch(_){}
+  return games;
+}
+window.mlbLiveOverlay = mlbLiveOverlay; window._mlbOverlayGame = _mlbOverlayGame;
 async function fetchLeague(lg) {
   // IMPORTANT: always pass an explicit dates= param for "today." ESPN's bare
   // scoreboard endpoint (no dates param) has been observed to return a stale
@@ -19104,7 +19393,9 @@ async function fetchLeague(lg) {
   try {
     const data = await proxyFetch(url);
     logRequest(lg.key, true, Date.now()-start);
-    return (data.events||[]).map(ev=>parseEvent(ev,lg.key));
+    const _games = (data.events||[]).map(ev=>parseEvent(ev,lg.key));
+    if (lg.key === 'MLB') await mlbLiveOverlay(_games);   // r668: MLB-first live state
+    return _games;
   } catch(e) {
     logRequest(lg.key, false, Date.now()-start, e.message);
     throw e;
@@ -20338,8 +20629,37 @@ window.CC = (function(){
        Save button downloads a clean-UTF8 .txt (→ Dropbox folder); Refresh re-snapshots on demand. */
     if(id==='report'){
       try{
-        var txt = (typeof _nightReportText==='function') ? _nightReportText() : 'recorder not ready';
-        el.innerHTML =
+        /* r667: VIEW selector (night timeline + the instruments) and timeline filters. The choice is
+           remembered per viewer (localStorage, try-wrapped); Copy/Save take exactly what's shown. */
+        var RV={view:'timeline',type:'',q:''}; try{ var _rv=JSON.parse(localStorage.getItem('cc.reportView')||'null'); if(_rv) RV=Object.assign(RV,_rv); }catch(_){}
+        var _rvSave=function(){ try{ localStorage.setItem('cc.reportView', JSON.stringify(RV)); }catch(_){} };
+        var VIEWS=[['timeline','Night timeline'],['mlb-lag','MLB timing (vs ESPN)'],['nhl-lag','NHL timing (vs ESPN)'],['nhl-clips','NHL clip latency'],['wall','Wall']];
+        var txt;
+        try{
+          if(RV.view==='mlb-lag') txt=(typeof window.lagInstrumentText==='function')?window.lagInstrumentText('mlb'):'instrument not loaded';
+          else if(RV.view==='nhl-lag') txt=(typeof window.lagInstrumentText==='function')?window.lagInstrumentText('nhl'):'instrument not loaded';
+          else if(RV.view==='nhl-clips') txt=(typeof window.nhlWatchReport==='function')?window.nhlWatchReport():'n/a';
+          else if(RV.view==='wall') txt=(typeof window.wallReport==='function')?window.wallReport():'n/a';
+          else txt=(typeof _nightReportText==='function') ? _nightReportText({type:RV.type||'', q:RV.q||''}) : 'recorder not ready';
+        }catch(e){ txt='view error: '+(e&&e.message); }
+        var _esc=function(x){ return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); };
+        var sel='<div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;align-items:center">'
+          + '<select id="nrView" style="padding:5px 8px;border-radius:6px;background:#101826;color:#cde4ff;border:1px solid #2b3a4e;font-size:12px">'
+          + VIEWS.map(function(v){ return '<option value="'+v[0]+'"'+(RV.view===v[0]?' selected':'')+'>'+v[1]+'</option>'; }).join('')+'</select>';
+        if(RV.view==='timeline'){
+          var T=(typeof window._nightTypes==='function')?window._nightTypes():{};
+          var cats=Object.keys(T).filter(function(k){return k.indexOf('.')<0;}).sort();
+          sel+='<select id="nrType" style="padding:5px 8px;border-radius:6px;background:#101826;color:#cde4ff;border:1px solid #2b3a4e;font-size:12px">'
+            + '<option value="">All types</option>'
+            + cats.map(function(c){ var subs=Object.keys(T).filter(function(k){return k.indexOf(c+'.')===0;}).sort();
+                return '<option value="'+_esc(c)+'"'+(RV.type===c?' selected':'')+'>'+_esc(c)+' ('+T[c]+')</option>'
+                  + subs.map(function(k){ return '<option value="'+_esc(k)+'"'+(RV.type===k?' selected':'')+'>&nbsp;&nbsp;'+_esc(k)+' ('+T[k]+')</option>'; }).join(''); }).join('')
+            + (RV.type && !T[RV.type] ? '<option value="'+_esc(RV.type)+'" selected>'+_esc(RV.type)+' (0)</option>' : '')
+            + '</select>'
+            + '<input id="nrQ" placeholder="search: team, player, league…" value="'+_esc(RV.q||'')+'" style="flex:1;min-width:160px;padding:5px 8px;border-radius:6px;background:#05070d;color:#cde4ff;border:1px solid #2b3a4e;font-size:12px">';
+        }
+        sel+='</div>';
+        el.innerHTML = sel +
           '<div style="display:flex;gap:8px;margin-bottom:10px">'
           + '<button id="nrSave" style="padding:6px 12px;border-radius:6px;border:1px solid #2e6b45;background:#0d3320;color:#b6f0c8;font-weight:700;font-size:12px;cursor:pointer">⤓ Save Report</button>'
           + '<button id="nrCopy" style="padding:6px 12px;border-radius:6px;border:1px solid #2b3a4e;background:#16202e;color:#9fb0c6;font-weight:700;font-size:12px;cursor:pointer">Copy</button>'
@@ -20349,7 +20669,11 @@ window.CC = (function(){
           + '</div>'
           + '<div style="font-size:10.5px;color:#6b7a8f;margin-bottom:8px">Snapshot taken on open. Scroll freely — it will not refresh under you. Tap ↻ for a fresh snapshot. Save writes a .txt to Chrome\'s download folder (point it at Dropbox).</div>'
           + '<pre style="white-space:pre-wrap;word-break:break-word;font:11px ui-monospace,Menlo,monospace;color:#cde4ff;margin:0">'+txt.replace(/</g,'&lt;')+'</pre>';
-        var sv=$('nrSave'); if(sv) sv.onclick=function(){ window._ccActionAt=Date.now(); var r=(typeof nightSave==='function')?nightSave():'n/a'; sv.textContent='⤓ '+r; setTimeout(function(){sv.textContent='⤓ Save Report';},2500); };
+        var _rerender=function(){ _rvSave(); window._ccActionAt=Date.now(); renderPane('report'); };
+        var vw=$('nrView'); if(vw) vw.onchange=function(){ RV.view=vw.value; _rerender(); };
+        var ty=$('nrType'); if(ty) ty.onchange=function(){ RV.type=ty.value; _rerender(); };
+        var qi=$('nrQ'); if(qi){ qi.onkeydown=function(ev){ if(ev.key==='Enter'){ RV.q=qi.value; _rerender(); } }; qi.onchange=function(){ RV.q=qi.value; _rerender(); }; }
+        var sv=$('nrSave'); if(sv) sv.onclick=function(){ window._ccActionAt=Date.now(); var r=(typeof nightSave==='function')?nightSave(txt, RV.view==='timeline'?'nightreport':RV.view):'n/a'; sv.textContent='⤓ '+r; setTimeout(function(){sv.textContent='⤓ Save Report';},2500); };
         var cp=$('nrCopy'); if(cp) cp.onclick=function(){ try{ var w=navigator.clipboard&&navigator.clipboard.writeText(txt); if(w&&w.catch)w.catch(function(){}); cp.textContent='Copied'; setTimeout(function(){cp.textContent='Copy';},1500);}catch(_){} };
         /* r431: independent of the report snapshot above — pulls fresh live state at tap time
            (recap/montage flags, video element state, visibility log, audiolog buffer, YTLT
