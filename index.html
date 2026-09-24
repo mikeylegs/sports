@@ -2739,7 +2739,7 @@ function _dropSimulcastSibling(name){
 }
 const _mlbNetworkCache = new Map();      // gamePk -> network string | null, permanent (immutable once scheduled)
 const _mlbNetworkInFlight = new Set();   // gamePks currently being fetched — no duplicate fetches
-async function mlbBroadcastNetwork(gamePk){
+async function mlbBroadcastNetwork(gamePk, team){
   if (!gamePk) return null;
   if (_mlbNetworkCache.has(gamePk)) return _mlbNetworkCache.get(gamePk);
   if (_mlbNetworkInFlight.has(gamePk)) return null;
@@ -2760,6 +2760,18 @@ async function mlbBroadcastNetwork(gamePk){
       const b = (g?.broadcasts || []).find(x => x.isNational && x.type === 'TV'
         && !/^mlbn$/i.test(x.callSign||'') && !/^mlb\s*network$/i.test(x.name||''));
       network = b ? _dropSimulcastSibling(b.callSign || b.name || null) : null;
+      // r659: Yankees-on-Prime games aren't national -- MLB lists "Amazon Prime Video" as the
+      // Yankees' own HOME/AWAY TV entry (isNational:false, confirmed live gamePk 823492, 9/23 TB@NYY),
+      // so the national-only search above missed it and the RSN override painted YES. When our
+      // team's side carries a streamer instead of its RSN, that's the answer.
+      if (!b && team && g){
+        const _tid = { NYY: 147, NYM: 121 }[team];
+        const _side = (g.teams && g.teams.home && g.teams.home.team && g.teams.home.team.id === _tid) ? 'home' : 'away';
+        const _loc = (g.broadcasts || []).find(x => x.type === 'TV' && x.homeAway === _side
+          && /amazon|prime|apple|netflix|peacock|roku/i.test((x.name || '') + ' ' + (x.callSign || '')));
+        if (_loc) network = /amazon|prime/i.test((_loc.name || '') + ' ' + (_loc.callSign || '')) ? 'Prime Video'
+                          : _dropSimulcastSibling(_loc.name || _loc.callSign || null);
+      }
     }
   } catch(_){}
   _mlbNetworkCache.set(gamePk, network);
@@ -2775,7 +2787,7 @@ function mlbNetworkOverride(awayAbbr, homeAbbr){
     if (!g || !g.gamePk) return;
     if (_mlbNetworkByTeam[team] === g.gamePk && _mlbNetworkCache.has(g.gamePk)) return;
     _mlbNetworkByTeam[team] = g.gamePk;
-    mlbBroadcastNetwork(g.gamePk);   // fire-and-forget — populates _mlbNetworkCache for the NEXT render tick
+    mlbBroadcastNetwork(g.gamePk, team);   // fire-and-forget — populates _mlbNetworkCache for the NEXT render tick
   }).catch(()=>{});
   const gamePk = _mlbNetworkByTeam[team];
   return gamePk ? (_mlbNetworkCache.get(gamePk) || null) : null;
@@ -6902,6 +6914,20 @@ function situationHtml(sit, gameId) {
     <div class="sit-block">${diamond}${bso}</div>`;
 }
 
+// r659: crawl chip's NHL intermission text -- "End 1st" / "End 2nd" / "End Reg" / "End OT" /
+// "End 2OT"... (CSS uppercases it). Anything that isn't an NHL intermission passes through.
+function crawlTimeLabel(g, leagueKey){
+  const tl = (g && g.timeLabel) || '';
+  if (leagueKey !== 'NHL' || !g.isIntermission) return tl;
+  const p = +g.intermissionAfterPeriod || 0;
+  if (p === 1) return 'End 1st';
+  if (p === 2) return 'End 2nd';
+  if (p === 3) return 'End Reg';
+  if (p === 4) return 'End OT';
+  if (p > 4) return 'End ' + (p - 3) + 'OT';
+  return tl;
+}
+window.crawlTimeLabel = crawlTimeLabel;
 function chipHtml(g, leagueKey) {
   const has      = g.awayScore !== null;
   const awayW    = has && g.awayScore > g.homeScore;
@@ -6946,10 +6972,13 @@ function chipHtml(g, leagueKey) {
     return '';
   }
 
-  const timeParts = g.timeLabel.split(' · ');
+  // r659 (Mike 9/24): CRAWL ONLY -- "2nd Intermission" ran too long for a chip. Shortened to the
+  // score-bug form here; g.timeLabel itself is untouched, so every other surface keeps its text.
+  const _tl = crawlTimeLabel(g, leagueKey);
+  const timeParts = _tl.split(' · ');
   const timeHtml  = timeParts.length===2
     ? `<span class="chip-time-label">${timeParts[0]}</span><span class="chip-time-value">${timeParts[1]}</span>`
-    : `<span class="chip-time-value">${g.timeLabel}</span>`;
+    : `<span class="chip-time-value">${_tl}</span>`;
 
   const _mp = meaningfulPlay(g);
   const lastPlayHtml = (live && _mp)
@@ -6991,7 +7020,7 @@ function chipHtml(g, leagueKey) {
     const countdownTxt = getIntermissionCountdown(g._intKey, isPlayoffs);
     const intCls     = remaining <= 30 ? 'int-urgent' : remaining <= 60 ? 'int-warning' : 'int';
     timeBlock = `<span class="chip-time ${intCls}">
-      <span class="chip-time-label">${g.timeLabel}</span>
+      <span class="chip-time-label">${_tl}</span>
       <span class="chip-time-value" style="font-size:38px;" data-int-key="${g._intKey}">${countdownTxt ? `Back in ${countdownTxt}` : 'Starting Soon'}</span>
     </span>`;
   } else {
@@ -7002,9 +7031,9 @@ function chipHtml(g, leagueKey) {
                ? `<span class="chip-time-upcoming-label">${timeParts[0]}</span>`
                : `<span class="chip-time-label">${timeParts[0]}</span>`
              : ''}
-           <span class="chip-time-value">${timeParts.length===2 ? timeParts[1] : g.timeLabel}</span>
+           <span class="chip-time-value">${timeParts.length===2 ? timeParts[1] : _tl}</span>
          </span>`
-      : `<span class="chip-time"><span class="chip-time-value">${g.timeLabel}</span></span>`;
+      : `<span class="chip-time"><span class="chip-time-value">${_tl}</span></span>`;
   }
 
   // For live MLB, wrap time + situation together in Option C layout
@@ -17667,7 +17696,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r658-nhl-goals-default-on';
+const BUILD_MARKER = 'r659-crawl-end-period-prime-video';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
