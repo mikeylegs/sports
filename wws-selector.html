@@ -50,7 +50,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Wide World of Sports — Day Selector <span style="font-size:12px;font-weight:400;opacity:.5;font-family:monospace">selector-r189</span></h1>
+  <h1>Wide World of Sports — Day Selector <span style="font-size:12px;font-weight:400;opacity:.5;font-family:monospace">selector-r190</span></h1>
   <p class="sub">Pick today's / this weekend's events for the panel. Output is <code>selections.json</code> — commit it to the repo root and the dashboard (phase 2) picks it up on its next poll.</p>
   <div class="bar">
     <select id="range">
@@ -132,6 +132,8 @@
         </div>
         <div class="d" style="margin:0 0 4px">All followed tennis players (from either method):</div>
         <div id="playersList" style="display:flex;flex-direction:column;gap:4px;margin:0 0 14px"></div>
+        <div style="font-weight:700;font-size:12px;margin-bottom:6px;opacity:.8">🏒 NHL <span class="d" style="font-weight:400">— goal cards + clips for these players. To add: open TEAMS, type a player's name, tap ☆ next to it</span></div>
+        <div id="nhlPlayersList" style="display:flex;flex-direction:column;gap:4px;margin:0 0 14px"></div>
         <div style="font-weight:700;font-size:12px;margin-bottom:6px;opacity:.8">⛳ GOLF <span class="d" style="font-weight:400">— PGA TOUR + LIV players who still qualify for majors, click to follow</span></div>
         <div style="position:relative;margin:0 0 8px">
           <input id="gq" placeholder="Filter golfers…" oninput="drawGolfers()"
@@ -229,7 +231,7 @@ function _adoptPublishedWatch(watch){
     if (!p || !p.sport || !p.name) continue;
     const key = `${p.sport}|${_fold(p.name)}`;
     if (playersRemoved.has(key)) continue;
-    if (!players.has(key)){ players.set(key, { sport:p.sport, name:p.name }); changed = true; }
+    if (!players.has(key)){ players.set(key, Object.assign({ sport:p.sport, name:p.name }, p.team ? { team:p.team } : {})); changed = true; }   // selector-r190: keep NHL team
   }
   if (changed){
     saveStars(); savePlayers();
@@ -264,7 +266,7 @@ async function toggleFollowing(){
     document.getElementById('teamgrid').innerHTML = '<span class="d">Loading teams…</span>';
     document.getElementById('golfgrid').innerHTML = '<span class="d">Loading golfers…</span>';
     document.getElementById('tennisFieldGrid').innerHTML = '<span class="d">Loading current field…</span>';
-    drawPlayers();
+    drawPlayers(); drawNhlPlayers();   // selector-r190
     await Promise.all([loadTeams(), loadGolfers(), loadTennisField()]);
     drawTeams(); drawGolfers(); drawTennisField();
   }
@@ -393,7 +395,7 @@ function addPlayer(){
 }
 function removePlayer(key){
   players.delete(key); playersRemoved.add(key); savePlayersRemoved();
-  savePlayers(); _cntPlayers(); drawPlayers();
+  savePlayers(); _cntPlayers(); drawPlayers(); drawNhlPlayers();   // selector-r190
   if (_tennisField) drawTennisField();
 }
 function drawPlayers(){
@@ -454,12 +456,42 @@ function _akaHits(t, q){
   }
   return out;
 }
+// selector-r190: follow an NHL PLAYER. Saved as {sport:'nhl', name, team} -- the team tells the panel
+// which games to watch; only this player's goals fire (between NYR and followed teams).
+function _nhlKey(name){ return `nhl|${_fold(name)}`; }
+function _nhlStarHtml(name, t){
+  const on = players.has(_nhlKey(name));
+  const esc = x => String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const arg = JSON.stringify({ name, team: t.abbr }).replace(/'/g, '&#39;');
+  return `<span class="pstar${on ? ' on' : ''}" title="${on ? 'Unfollow' : 'Follow'} player" onclick='nhlPlayerToggle(event, ${arg})'>${on ? '★' : '☆'} ${esc(name)}</span>`;
+}
+function nhlPlayerToggle(ev, p){
+  if (ev){ ev.preventDefault(); ev.stopPropagation(); }   // inside the team's <label>: never toggle the team
+  const key = _nhlKey(p.name);
+  if (players.has(key)){ players.delete(key); playersRemoved.add(key); }
+  else { players.set(key, { sport:'nhl', name:p.name, team:p.team }); playersRemoved.delete(key); }
+  savePlayers(); savePlayersRemoved(); _cntPlayers();
+  drawTeams(); drawNhlPlayers();
+}
+function drawNhlPlayers(){
+  const grid = document.getElementById('nhlPlayersList'); if (!grid) return;
+  const list = [...players.entries()].filter(([,p]) => p.sport === 'nhl');
+  if (!list.length){ grid.innerHTML = '<p class="sub" style="margin:4px 0">No NHL players followed yet.</p>'; return; }
+  const esc = x => String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  grid.innerHTML = list.map(([key, p]) =>
+    `<div class="ev" style="margin:0;padding:8px 10px;justify-content:space-between">
+      <span class="m"><span class="t" style="font-size:13px">${esc(p.name)}</span> <span class="d">${esc(p.team || '')}</span></span>
+      <button onclick="removePlayer('${key.replace(/'/g, "\\'")}')" style="flex:none;background:#3a1214;color:#ff8a8a;border:1px solid #612;border-radius:6px;padding:4px 10px;font:700 14px inherit;cursor:pointer">✕</button>
+    </div>`).join('');
+}
 function _teamRowHtml(t, q){
   const key = `${t.league}|${t.abbr}`, on = stars.has(key);
   const nameHit = q && (_fold(t.name).includes(q) || _fold(t.abbr).includes(q) || _fold(t.tag).includes(q));
   const hits = nameHit ? [] : _akaHits(t, q);
+  // selector-r190: NHL roster hits get a ☆ -- follow the PLAYER (goal cards + clips on the panel)
+  const isNhl = t.league === 'hockey/nhl';
   const hint = hits.length
-    ? `<br><span class="d" style="color:var(--acc)">↳ ${hits.join(' · ')}</span>` : '';
+    ? `<br><span class="d" style="color:var(--acc)">↳ ${isNhl ? hits.map(n => _nhlStarHtml(n, t)).join(' · ') : hits.join(' · ')}</span>` : '';
   return `<label class="ev ${on?'on':''}" data-key="${key}" style="margin:0;padding:7px 9px;gap:7px">
     <input type="checkbox" ${on?'checked':''} onchange='starToggle(${JSON.stringify({league:t.league,abbr:t.abbr,name:t.name}).replace(/'/g,"&#39;")}, this)'>
     <span class="m"><span class="t" style="font-size:13px">${t.name}</span><br><span class="d">${t.tag} · ${t.abbr}</span>${hint}</span>
@@ -1098,6 +1130,9 @@ function dl(){
 .sortable-chosen { background:#12203a !important; box-shadow:0 10px 28px rgba(0,0,0,0.6); }
 .sortable-drag { opacity: 1 !important; scale: 1.03; }
 .draghandle { cursor: grab; touch-action: none; }
+.pstar { cursor:pointer; padding:1px 4px; border-radius:5px; white-space:nowrap; }   /* selector-r190 */
+.pstar:hover { background:rgba(52,211,153,0.12); }
+.pstar.on { color:#fbbf24; font-weight:800; }
 </style>
 <script>/* SortableJS 1.15.6 (MIT) — embedded so it can't fail to load from a CDN the kiosk can't reach */
 /*! Sortable 1.15.6 - MIT | git://github.com/SortableJS/Sortable.git */
