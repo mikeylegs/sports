@@ -4373,7 +4373,11 @@ async function _mlbPkIndex(){
     try {
       // 2-day ET window — the handoff TIMEZONE bug: a UTC toISOString() at night asks
       // for TOMORROW and finds no games.
-      const url = 'https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=' + _etYmd(0)
+      // r669: window now starts YESTERDAY. After midnight ET a still-live West Coast game belongs to
+      // yesterday's schedule, so (today, tomorrow) left it out of the index -- _pkForGame returned
+      // null and the pbp HR detector, B1b hits, r665 final watch and r668 overlay all went blind
+      // for exactly those games. A series' multiple rows are still disambiguated by the live flag.
+      const url = 'https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=' + _etYmd(-1)
                 + '&endDate=' + _etYmd(1) + '&hydrate=linescore,team';
       const raw = await proxyFetchText(url);
       if (!raw) return _pkIndex.map;                                 // keep last good map
@@ -5950,7 +5954,7 @@ const LAG = (() => {
       st.live = { mlb: mlbOn, nhl: nhlOn };
       const jobs = [];
       if (mlbOn) jobs.push(Promise.all([get('https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard', false),
-          get('https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=' + etDay(t) + '&hydrate=linescore', false)]).then(([e, m]) => {
+          get('https://statsapi.mlb.com/api/v1/schedule?sportId=1&' + _mlbEtRange() + '&hydrate=linescore', false)]).then(([e, m]) => {
         if (!e || !m){ st.fails.mlb++; return; }
         P.mlb.ingest('e', t, _lagMlbEspn(e)); P.mlb.ingest('l', t, _lagMlbLeague(m)); }));
       if (nhlOn) jobs.push(Promise.all([get('https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard', false),
@@ -18083,7 +18087,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r668-mlb-live-overlay';
+const BUILD_MARKER = 'r669-mlb-two-day-window';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -19332,14 +19336,21 @@ async function fetchLeagueYesterday(lg) {
    carry stays ESPN (records, network, win prob, lastPlay text, inning linescores, pregame/final).
    Capped at 3s -- a slow/failed MLB call just leaves ESPN's values, exactly r667 behavior.
    ESPN<->MLB game matching reuses the pbp detector's proven _mlbPkIndex/_pkForGame. */
+/* r669: TWO-DAY window, not today's ET date. A West Coast game that starts on the 23rd is still
+   "2026-09-23" in MLB's schedule after midnight ET, so date=<today> dropped every late live game
+   at 12:00 ET -- the overlay AND the lag instrument went blind for exactly the games still on. */
+function _mlbEtRange(){
+  const d = t => new Date(t).toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+  return 'startDate=' + d(Date.now() - 86400000) + '&endDate=' + d(Date.now());
+}
+window._mlbEtRange = _mlbEtRange;
 const _mlbLive = { at: 0, byPk: null, inflight: null };
 function _mlbLiveFetch(){
   if (_mlbLive.byPk && Date.now() - _mlbLive.at < 4000) return Promise.resolve(_mlbLive.byPk);
   if (_mlbLive.inflight) return _mlbLive.inflight;
   _mlbLive.inflight = (async () => {
     try{
-      const day = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
-      const raw = await proxyFetchText('https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=' + day + '&hydrate=linescore');
+      const raw = await proxyFetchText('https://statsapi.mlb.com/api/v1/schedule?sportId=1&' + _mlbEtRange() + '&hydrate=linescore');
       const j = raw ? JSON.parse(raw) : null;
       if (j){ const m = new Map(); ((j.dates) || []).flatMap(d => d.games || []).forEach(g => m.set(g.gamePk, g)); _mlbLive.byPk = m; _mlbLive.at = Date.now(); }
     }catch(_){}
