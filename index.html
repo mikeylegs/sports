@@ -5944,6 +5944,15 @@ const LAG = (() => {
   const st = { polls: 0, last: 0, fails: { mlb: 0, nhl: 0 }, live: { mlb: false, nhl: false }, started: Date.now() };
   const ab = a => { a = String(a || '').toUpperCase(); try{ return normalizeAbbr('NHL', a); }catch(_){ return a; } };
   const get = async (u, skip) => { try{ const r = await proxyFetchText(u, skip); return r ? JSON.parse(r) : null; }catch(_){ return null; } };
+  /* r670: ESPN scoreboard with EXPLICIT dates. The bare endpoint serves a stale default day (the
+     same trap fetchLeague documents) -- 9/24 00:15 ET it returned 9/20's slate, so ESPN had zero
+     live MLB rows and nothing could pair. Today always; yesterday too between midnight and 6am ET,
+     when late games are still live on yesterday's slate. (ESPN rejects a dates=A-B range for MLB: 400.) */
+  const espnDays = () => { const d = t => new Date(t).toLocaleDateString('en-CA', { timeZone: 'America/New_York' }).replace(/-/g, '');
+    const h = +new Date().toLocaleString('en-US', { timeZone: 'America/New_York', hour: 'numeric', hour12: false }) % 24;
+    return h < 6 ? [d(Date.now() - 86400000), d(Date.now())] : [d(Date.now())]; };
+  const getEspn = async (path) => { const rs = await Promise.all(espnDays().map(d => get('https://site.api.espn.com/apis/site/v2/sports/' + path + '/scoreboard?limit=100&dates=' + d, false)));
+    return rs.some(x => !x) ? null : { events: [].concat.apply([], rs.map(x => x.events || [])) }; };
   let busy = false;
   async function tick(){
     if (busy) return; busy = true;
@@ -5953,11 +5962,11 @@ const LAG = (() => {
       const nhlOn = !!(window._nhlAuto && window._nhlAuto.anyLive) || P.nhl.games().length > 0;
       st.live = { mlb: mlbOn, nhl: nhlOn };
       const jobs = [];
-      if (mlbOn) jobs.push(Promise.all([get('https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard', false),
+      if (mlbOn) jobs.push(Promise.all([getEspn('baseball/mlb'),
           get('https://statsapi.mlb.com/api/v1/schedule?sportId=1&' + _mlbEtRange() + '&hydrate=linescore', false)]).then(([e, m]) => {
         if (!e || !m){ st.fails.mlb++; return; }
         P.mlb.ingest('e', t, _lagMlbEspn(e)); P.mlb.ingest('l', t, _lagMlbLeague(m)); }));
-      if (nhlOn) jobs.push(Promise.all([get('https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard', false),
+      if (nhlOn) jobs.push(Promise.all([getEspn('hockey/nhl'),
           get('https://api-web.nhle.com/v1/score/now', true)]).then(([e, n]) => {
         if (!e || !n){ st.fails.nhl++; return; }
         const er = P.nhl.ingest('e', t, _lagNhlEspn(e, ab)), nr = P.nhl.ingest('l', t, _lagNhlLeague(n, ab)); P.nhl.clocks(t, er, nr); }));
@@ -18087,7 +18096,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r669-mlb-two-day-window';
+const BUILD_MARKER = 'r670-lag-espn-explicit-dates';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
