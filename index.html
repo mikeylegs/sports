@@ -8742,7 +8742,9 @@ function showTakeover(opts){
     if (logTeam && (TKO_MEASURE || TKO_PLAY)){
       // r656: under the wall each HR keeps its OWN companion watch -- superseding silently lost the
       // first HR's clip whenever a second HR fired before it landed. Legacy path unchanged.
-      if (window._tkoCancel && !(opts && opts._wallId)) { try { window._tkoCancel(); } catch(_){} }   // supersede in-flight watch
+      // r664: under the wall NOTHING supersedes -- a win splash (unmanaged) used to cancel a pending
+      // HR clip's watch too, silently losing that clip if it hadn't landed yet.
+      if (window._tkoCancel && !window.WALL) { try { window._tkoCancel(); } catch(_){} }   // supersede in-flight watch
       const firedAt = (opts && opts._firedAt) || Date.now();   // r656: original fire time when the card waited in the wall's line
       window._tkoCompanion = 'watching…';
       const rec = tkoLogStart({
@@ -12556,6 +12558,10 @@ function _recapSuspend(){
   if (!_recapActive || window._recapSuspended) return false;
   try { if (window._recapMp4) window._recapMp4.pause(); } catch(_){}
   try { _recapPlayer && _recapPlayer.pauseVideo && _recapPlayer.pauseVideo(); } catch(_){}
+  // r664: stop the end-guard clocks while paused (they re-arm on resume), and pause the NHL SDK
+  // player too -- it wasn't covered, so its audio ran on under the card.
+  clearTimeout(window._recapEndGuard); clearTimeout(window._recapGoalEndT);
+  try { window._recapGoalPlayer && window._recapGoalPlayer.pause && window._recapGoalPlayer.pause(); } catch(_){}
   // r548: R117's own doc says the recap should play "UNDERNEATH the takeover card" while
   // suspended — but #mlb-recap is z-index:90, #mlb-takeover is z-index:70, so pausing alone
   // left the (frozen) recap frame drawn ON TOP of the takeover the whole suspended window,
@@ -12571,6 +12577,8 @@ function _recapResume(){
   if (!_recapActive) return;                       // it was preempted meanwhile — leave it dead
   try { if (window._recapMp4) window._recapMp4.play().catch(()=>{}); } catch(_){}
   try { _recapPlayer && _recapPlayer.playVideo && _recapPlayer.playVideo(); } catch(_){}
+  try { window._recapGoalPlayer && window._recapGoalPlayer.play && window._recapGoalPlayer.play(); } catch(_){}   // r664
+  try { if (typeof window._recapReArm === 'function') window._recapReArm(); } catch(_){}                           // r664
   // r548: undo the suspend-time hide above. Skipped when the branch above already returned
   // (preempted meanwhile) — a fresh dispatch or _recapPreempt owns #mlb-recap's visibility then.
   try { const el = document.getElementById('mlb-recap'); if (el) el.classList.add('show'); } catch(_){}
@@ -12589,6 +12597,7 @@ function _recapPreempt(){
   _resetRecapHost();
   const el = document.getElementById('mlb-recap');
   if (el){ el.classList.remove('show'); el.classList.remove('playing'); }
+  _clipFadeReset();   // r666
   _recapActive = false; _recapRevealed = false; window._recapSuspended = false; window._recapActiveSince = 0;
 }
 /* r432 — ATTACK-PLAN Phase 2: source-level FAIL-FAST, trigger-agnostic. Phase 1 mapped every
@@ -12934,7 +12943,10 @@ function playCompanionClip(clip, callback){
         badge.textContent = '\u26be EARLIER \u2014 ' + parts.join(' \u00b7 ');
       } else {
         badge.className = 'recap-badge';
-        badge.textContent = 'THAT PLAY \u00b7 ' + (clip.lagS != null ? clip.lagS + 's' : '');
+        // r664: was 'THAT PLAY · <lag>s' -- a measurement-era debug label (Mike 9/23: "random THAT
+        // CLIP 91S"). A companion with no moment context (e.g. the win splash's final-out clip) now
+        // shows MLB's own caption for the clip ("David Bednar secures the Yanks' 9-2 win").
+        badge.textContent = clip.title ? '\u26be ' + clip.title : 'HIGHLIGHT';
       }
     }
     const host = document.getElementById('recap-player');
@@ -12958,6 +12970,7 @@ function playCompanionClip(clip, callback){
     v.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;background:#000;';
     el.classList.add('show');   // r179: overlay visible immediately, not only on reveal
     v.onplaying = () => revealRecap();
+    v.addEventListener('timeupdate', () => _clipTailFade(v.duration - v.currentTime, () => v.volume, x => { v.volume = x; }, () => window._recapMp4 === v));   // r666
     v.onended   = () => { try{ if(window.nightEvent) nightEvent('clip','ended',{title:(clip.title||'').slice(0,40)}); }catch(_){} endRecap(); };
     v.onerror   = () => { try{ var f=document.getElementById('mlb-fade'); if(f){ f.classList.remove('on'); f.classList.remove('show'); } }catch(_){}; endRecap(); };   // r313: if the clip errors BEFORE onplaying, revealRecap never lifts the black we raised — clear it here so black can't persist
     /* ★ r206 — END-OF-CLIP GUARD (Mike: "video played through and froze paused/muted,
@@ -12979,7 +12992,11 @@ function playCompanionClip(clip, callback){
       let fallback = clip.lengthSec;
       if (!(isFinite(fallback) && fallback > 0)) fallback = _hmsToSec(clip.duration);
       if (!(isFinite(fallback) && fallback > 0)) fallback = 210;
-      const dur = (isFinite(v.duration) && v.duration > 0) ? v.duration : fallback;
+      // r664: REMAINING time, not full duration -- after a suspend (a takeover card over this
+      // clip) the guard is re-armed from where playback actually is. It used to run on wall-clock
+      // from metadata, so a 12s NYY win splash over a 20s Semien clip made the guard fire ~10s
+      // into real playback and cut the clip short (9/23 log: suspend -> resume -> endguard 5s later).
+      const dur = (isFinite(v.duration) && v.duration > 0) ? Math.max(0, v.duration - (v.currentTime || 0)) : fallback;
       window._recapEndGuard = setTimeout(() => {
         if (_recapActive && window._recapMp4 === v){
           try { console.warn('[recap] end-guard fired — clip froze without `ended` after ' + Math.round(dur) + 's'); } catch(_){}
@@ -12989,6 +13006,7 @@ function playCompanionClip(clip, callback){
       }, (dur + 1.5) * 1000);
     };
     v.onloadedmetadata = _armEndGuard;
+    window._recapReArm = _armEndGuard;   // r664: _recapResume re-arms from the resumed position
     v.onpause = () => {
       // a pause within the last 0.6s is a frozen final frame, not a real pause
       if (_recapActive && isFinite(v.duration) && v.duration > 0 && (v.duration - v.currentTime) < 0.6){
@@ -13218,6 +13236,7 @@ function _playGoalClipSDK(clip, host, el, muted, account, onFail){
         // painted). The SDK gives a real 'playing' event now; use it as the primary trigger
         // and keep the 900ms timer only as a safety net if 'playing' never fires.
         try{ player.on('playing', () => { if (_recapActive) revealRecap(); }); }catch(_){}
+        try{ player.on('timeupdate', () => _clipTailFade(player.duration() - player.currentTime(), () => player.volume(), x => player.volume(x), () => window._recapGoalPlayer === player)); }catch(_){}   // r666
         window._recapGoalRevealT = setTimeout(() => { if (_recapActive) revealRecap(); }, 900);
         // r650: the SAFETY-NET timer -- same fixed-duration guess as the iframe path used
         // exclusively before this (NHL's landing payload still never gives a real duration).
@@ -13228,6 +13247,13 @@ function _playGoalClipSDK(clip, host, el, muted, account, onFail){
         window._recapGoalEndT = setTimeout(() => {
           if (_recapActive && window._recapGoalPlayer === player) endRecap();
         }, (dur + 2) * 1000);
+        // r664: re-arm from the real remaining time after a suspend (see _recapResume)
+        window._recapReArm = () => {
+          let rem = dur;
+          try{ const d = player.duration(), c = player.currentTime(); if (d > 0) rem = Math.max(0, d - c); }catch(_){}
+          clearTimeout(window._recapGoalEndT);
+          window._recapGoalEndT = setTimeout(() => { if (_recapActive && window._recapGoalPlayer === player) endRecap(); }, (rem + 2) * 1000);
+        };
         try{
           player.on('ended', () => { if (_recapActive && window._recapGoalPlayer === player) endRecap(); });
           player.on('error', () => { if (_recapActive && window._recapGoalPlayer === player) endRecap(); });
@@ -13249,6 +13275,7 @@ function endRecap(){
   clearTimeout(_recapTimer); clearTimeout(_recapRevealTimer); clearTimeout(_recapKick); _recapRevealed = false;
   clearTimeout(window._recapGoalRevealT); clearTimeout(window._recapGoalEndT);   // r631: goal-clip iframe lane timers
   el.classList.remove('show'); el.classList.remove('playing');
+  _clipFadeReset();   // r666
   /* ★ r158 — ONE PLAYER FOR THE WHOLE SESSION WAS THE BUG. new YT.Player() ran once and
      every later clip went through loadVideoById on that same instance, so its onReady/
      onStateChange/onError closures stayed bound to the FIRST video forever. Log proof
@@ -13302,6 +13329,45 @@ function _resetRecapHost(){
     } else host.innerHTML = '';
   } catch (_) {}
 }
+/* ★ r666 — CLIP TAIL FADE (Mike 9/23: league clips end abruptly, often mid-sentence). In the
+   last CLIP_FADE_S seconds of an MLB companion (mp4) or NHL goal clip (Brightcove SDK), fade the
+   picture AND ramp the audio to silence, so the clip's own hard cut lands on silence/transparency.
+   Picture: normally the overlay fades to the panel underneath (it's being revealed next anyway);
+   during an MLB/GWG montage it fades to BLACK instead (#mlb-fade), matching the montage's own
+   black seams. ?clipfade=<seconds> tunes it on the real wall (0 = off) -- a flag rather than a
+   studio because only real league clips show whether the length feels right. */
+const CLIP_FADE_S = (() => { try{ const q = parseFloat(new URLSearchParams(location.search).get('clipfade')); if (isFinite(q) && q >= 0) return q; }catch(_){} return 1.5; })();
+function _clipTailFade(remain, getVol, setVol, stillMine){
+  if (!CLIP_FADE_S || !(remain > 0) || remain > CLIP_FADE_S || window._clipFading || window._recapSuspended) return;
+  window._clipFading = true;
+  const ms = Math.max(250, remain * 1000);
+  try{
+    const montage = (window.MONTAGE && MONTAGE.on) || (window.GWG_MONTAGE && GWG_MONTAGE.on);
+    if (montage){
+      let f = document.getElementById('mlb-fade');
+      if (!f){ f = document.createElement('div'); f.id = 'mlb-fade'; (document.querySelector('.shell') || document.body).appendChild(f); }
+      f.classList.add('show'); requestAnimationFrame(() => f.classList.add('on'));
+    } else {
+      const el = document.getElementById('mlb-recap');
+      if (el){ el.style.transition = 'opacity ' + ms + 'ms linear'; el.style.opacity = '0'; }
+    }
+  }catch(_){}
+  let v0 = 1; try{ v0 = getVol(); }catch(_){}
+  const t0 = performance.now();
+  const step = () => {
+    if (!stillMine()) return;
+    const k = Math.min(1, (performance.now() - t0) / ms);
+    try{ setVol(v0 * (1 - k)); }catch(_){}
+    if (k < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+// undo the tail fade's inline overrides -- every teardown path runs this
+function _clipFadeReset(){
+  window._clipFading = false;
+  try{ const el = document.getElementById('mlb-recap'); if (el){ el.style.opacity = ''; el.style.transition = ''; } }catch(_){}
+}
+window._clipTailFade = _clipTailFade;
 function revealRecap(){
   if (_recapRevealed) return; _recapRevealed = true;
   clearTimeout(window._recapRevealDeadlineT);   // r432: revealed — the deadline's job is done
@@ -14518,6 +14584,46 @@ function _pkForGame(g, map){
     return live.length === 1 ? live[0].pk : null;
   } catch(_){ return null; }
 }
+/* ★ r665 — MLB-FIRST FINAL (Mike 9/23: "clips beating splash screens"). The win splash keyed on
+   ESPN's gameStatus flipping to final, and ESPN's flag lags MLB's own feed -- the NYM final-out
+   clip was already posted 25s before the splash fired. While a NYY/NYM game is in the 9th or later,
+   poll MLB's schedule status for that gamePk every 5s; the moment MLB codes it F (Final) or O (Game
+   Over), record the final score and re-run checkBigMoments, whose win branch now honors it
+   (_mlbFinalEarly). ESPN catching up later can't refire it: the override keeps cur.status 'final',
+   so prev is already final. Suspended/postponed codes (not F/O) are ignored. */
+const _mlbFinalEarly = Object.create(null);   // ESPN game key -> { as, hs, pk, at }
+// PURE: MLB schedule JSON -> {as, hs} once that gamePk is final, else null.
+function _mlbFinalFromSchedule(json, pk){
+  const g = ((json && json.dates) || []).flatMap(d => d.games || []).find(x => x && x.gamePk === pk);
+  if (!g || !g.status || !/^[FO]$/.test(g.status.codedGameState || '')) return null;
+  const a = g.teams && g.teams.away && g.teams.away.score, h = g.teams && g.teams.home && g.teams.home.score;
+  if (a == null || h == null) return null;
+  return { as: +a, hs: +h };
+}
+function _mlbLateInning(g){ const m = String((g && g.timeLabel) || '').match(/(\d+)/); return !!(m && +m[1] >= 9); }
+let _mlbFinalBusy = false;
+function mlbFinalWatchTick(){
+  if (_mlbFinalBusy) return;
+  const fav = ['NYY', 'NYM'];
+  const games = (window._mlbGames || []).filter(g => g && g.gameStatus === 'live'
+    && (fav.includes(g.awayAbbr) || fav.includes(g.homeAbbr)) && _mlbLateInning(g)
+    && !_mlbFinalEarly[g.id || (g.awayAbbr + g.homeAbbr)]);
+  if (!games.length) return;
+  _mlbFinalBusy = true;
+  _mlbPkIndex().then(map => Promise.all(games.map(async g => {
+    const pk = map && _pkForGame(g, map); if (!pk) return false;
+    let f = null;
+    try{ const raw = await proxyFetchText('https://statsapi.mlb.com/api/v1/schedule?sportId=1&gamePk=' + pk); f = raw ? _mlbFinalFromSchedule(JSON.parse(raw), pk) : null; }catch(_){}
+    if (!f) return false;
+    const key = g.id || (g.awayAbbr + g.homeAbbr);
+    _mlbFinalEarly[key] = Object.assign({ pk, at: Date.now() }, f);
+    try{ if (window.nightEvent) nightEvent('game', 'final_mlb_first', { teams: g.awayAbbr + '@' + g.homeAbbr, score: f.as + '-' + f.hs, espnSaid: g.timeLabel || '' }); }catch(_){}
+    return true;
+  }))).then(r => { if (r && r.some(Boolean)) checkBigMoments(window._mlbGames); })
+    .catch(() => {}).then(() => { _mlbFinalBusy = false; });
+}
+window._mlbFinalFromSchedule = _mlbFinalFromSchedule; window.mlbFinalWatchTick = mlbFinalWatchTick;
+setInterval(() => { try{ mlbFinalWatchTick(); }catch(_){} }, 5000);
 function mlbPbpHrWatch(games){
   try {
     if (window._pbpHrOff) return;
@@ -14741,6 +14847,8 @@ function checkBigMoments(games){
     const side=teamAbbr==='NYM'?'right':'left';
     const accent=GLOW_TEAM[teamAbbr]?`rgb(${GLOW_TEAM[teamAbbr]})`:'#fbbf24';
     const cur={as:g.awayScore||0,hs:g.homeScore||0,status:g.gameStatus,lastPlay:(g.lastPlay&&g.lastPlay.primary)||''};
+    // r665: MLB called it final before ESPN did -- use MLB's status + score (see _mlbFinalEarly)
+    const _fe=_mlbFinalEarly[key]; if(_fe && cur.status!=='final'){ cur.status='final'; cur.as=_fe.as; cur.hs=_fe.hs; }
     const prev=_prevMLB[key];
     if(prev){
       // R25: go-ahead lead change on a STATIC team (NYY/NYM), 6th inning or later.
@@ -17745,7 +17853,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r663-vjs-ads-error-quiet';
+const BUILD_MARKER = 'r666-clip-tail-fade';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
