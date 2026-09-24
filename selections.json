@@ -1,44 +1,7 @@
 {
   "v": 1,
-  "updated": "2026-09-24T00:02:27.457Z",
-  "events": [
-    {
-      "league": "hockey/nhl",
-      "label": "NHL",
-      "espnId": "401886429",
-      "title": "Minnesota Wild @ Dallas Stars",
-      "showFrom": "20260923",
-      "showUntil": "20260923",
-      "rank": 1
-    },
-    {
-      "league": "hockey/nhl",
-      "label": "NHL",
-      "espnId": "401886441",
-      "title": "Ottawa Senators @ Toronto Maple Leafs",
-      "showFrom": "20260923",
-      "showUntil": "20260923",
-      "rank": 2
-    },
-    {
-      "league": "hockey/nhl",
-      "label": "NHL",
-      "espnId": "401879650",
-      "title": "Toronto Maple Leafs @ Ottawa Senators",
-      "showFrom": "20260923",
-      "showUntil": "20260923",
-      "rank": 3
-    },
-    {
-      "league": "hockey/nhl",
-      "label": "NHL",
-      "espnId": "401879369",
-      "title": "Los Angeles Kings @ Anaheim Ducks",
-      "showFrom": "20260923",
-      "showUntil": "20260923",
-      "rank": 4
-    }
-  ],
+  "updated": "2026-09-24T04:41:55.621Z",
+  "events": [],
   "watch": {
     "teams": [
       {
