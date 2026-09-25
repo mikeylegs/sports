@@ -5072,9 +5072,18 @@ async function nhlLandingGoals(gameId){
     const j = JSON.parse(raw);
     const periods = (j.summary && j.summary.scoring) || [];
     const out = [];
+    // r692 (Mike 9/25): SHOOTOUT goals are listed as period-5 'goals' (and NHL now posts clips for them),
+    // but only the WALK-OFF is worth a card: the shootout's LAST attempt, and a goal. 9/24 NYR-NJD: Cuylle
+    // scored on attempt 4 (NHL flags him gameWinner) but the shootout ENDED on Lombardi's save -> no card.
+    const _so = (j.summary && j.summary.shootout) || [];
+    const _soEv = (Array.isArray(_so) ? _so : (_so.events || [])).slice().sort((a, b) => (a.sequence || 0) - (b.sequence || 0));
+    const _soLast = _soEv[_soEv.length - 1];
+    const _soWalkoffPid = (_soLast && _soLast.result === 'goal') ? _soLast.playerId : null;
     periods.forEach(p => {
       const periodNum = p.periodDescriptor && p.periodDescriptor.number;
+      const _isSO = !!(p.periodDescriptor && p.periodDescriptor.periodType === 'SO');
       (p.goals || []).forEach(g => out.push({
+        so: _isSO, soWalkoff: _isSO && _soWalkoffPid != null && g.playerId === _soWalkoffPid,   // r692
         eventId: g.eventId, period: periodNum, timeInPeriod: g.timeInPeriod,
         scorer: (g.name && g.name.default) || '', team: (g.teamAbbrev && g.teamAbbrev.default) || '',
         highlightClip: g.highlightClip || null,
@@ -5190,6 +5199,7 @@ function nhlGoalWatch(gameId, opts){
                         period: g.period, timeInPeriod: g.timeInPeriod, firstSeenMs: t.firstSeenMs,
                         clipSeenMs: now, lagS, videoId: String(g.highlightClip), account: '6415718365001',
                         restartArtifact: isRestartArtifact || !!t.pre,   // r660: its real wait began before we were watching
+                        so: !!g.so, soWalkoff: !!g.soWalkoff,   // r692: shootout gating for the clip path
                         // r645: additive -- for the clip badge's siren/score-line text (nhlGoalClipBadge).
                         // Existing readers (nhlWatchReport, the saved log) only read the fields above.
                         fullName: g.fullName, goalsToDate: g.goalsToDate,
@@ -5412,7 +5422,7 @@ function nhlGoalTakeoverOpts(g, hero){
     logoX: 1, logoY: 1, logoSize: 15.5, logoGlow: 4,
     focusX: 41, focusY: 13, focusScale: 1.1, duo: 0.05,
     txtX: 5, txtY: 3,
-    headline: nhlGoalHeadline(g.strength, g.goalsToDate),
+    headline: g.so ? 'SHOOTOUT WINNER' : nhlGoalHeadline(g.strength, g.goalsToDate),   // r692: not a stat goal -- no GOAL (n)
     sub: name, live: true } };
 }
 window.nhlGoalTakeoverOpts = nhlGoalTakeoverOpts;
@@ -5764,7 +5774,8 @@ function _nhlDrySummary(rows, cardMs, clipMs){
   return out;
 }
 window._nhlAuto = window._nhlAuto || { mode: null, watching: {}, lastScanMs: 0, lastScanOk: null, scans: 0, timer: null };
-function _nhlDryTier(game, teamAbbr, scorer){
+function _nhlDryTier(game, teamAbbr, scorer, g){
+  if (g && g.so && !g.soWalkoff) return 0;   // r692: a shootout goal only counts if it ended the shootout
   try{ return _nhlGoalTier(teamAbbr, game, _favNhlSet(), _selectedNhlGames(), scorer, _favNhlPlayers()); }catch(_){ return 0; }
 }
 /* r686 (Mike 9/25): RANGERS WIN splash, live. r642 built the card, the final-edge watcher and the trigger,
@@ -5809,11 +5820,11 @@ async function _nhlAutoScan(){
       onGoal: (x, first) => { if (first) pre.add(String(x.eventId));
         if (window._nhlAuto.mode === 'on' && !first) _nhlWallGoal(g, x);   // r656/r658
         _nhlDryRecord({ kind: 'goal', t: Date.now(), day: g.day, gameId: id, gameType: g.gameType, eventId: x.eventId,
-        team: x.team, scorer: x.fullName || x.scorer, strength: x.strength || '', tier: _nhlDryTier(g, x.team, x.fullName || x.scorer), restart: !!first }); },
+        team: x.team, scorer: x.fullName || x.scorer, strength: x.strength || '', tier: _nhlDryTier(g, x.team, x.fullName || x.scorer, x), restart: !!first }); },
       onClip: (rec) => { const old = !!rec.restartArtifact || pre.has(String(rec.eventId));
         if (window._nhlAuto.mode === 'on' && !old) _nhlWallClip(g, rec);   // r656/r658
         _nhlDryRecord({ kind: 'clip', t: Date.now(), day: g.day, gameId: id, gameType: g.gameType, eventId: rec.eventId,
-        team: rec.team, scorer: rec.fullName || rec.scorer, lagS: rec.lagS, tier: _nhlDryTier(g, rec.team, rec.fullName || rec.scorer), restart: old }); }
+        team: rec.team, scorer: rec.fullName || rec.scorer, lagS: rec.lagS, tier: _nhlDryTier(g, rec.team, rec.fullName || rec.scorer, rec), restart: old }); }
     });
     const _wt = _nhlWinTeamOf(g);   // r686
     const winCancel = (_wt && window._nhlAuto.mode === 'on') ? nhlLiveWinTrigger(g.id, { team: _wt, fire: _nhlWinFire }) : null;
@@ -5824,13 +5835,13 @@ async function _nhlAutoScan(){
 // r656: live NHL goal -> the shared WALL line. Hero resolved+decoded BEFORE joining (r653's
 // _gwgHeroPrep, capped ~2.7s) so the card never mounts photo-less. Tier 0 = not eligible, dropped.
 async function _nhlWallGoal(game, x){
-  const tier = _nhlDryTier(game, x.team, x.fullName || x.scorer); if (!tier || !window.WALL) return;
+  const tier = _nhlDryTier(game, x.team, x.fullName || x.scorer, x); if (!tier || !window.WALL) return;
   let hero = null; try{ hero = await _gwgHeroPrep(x); }catch(_){}
   WALL.card({ id: 'nhl:' + game.id + ':' + x.eventId, tier, sport: 'nhl',
     show: () => showTakeover(Object.assign(nhlGoalTakeoverOpts(x, hero), { _wall: true })) });
 }
 function _nhlWallClip(game, rec){
-  const tier = _nhlDryTier(game, rec.team, rec.fullName || rec.scorer); if (!tier || !window.WALL) return;
+  const tier = _nhlDryTier(game, rec.team, rec.fullName || rec.scorer, rec); if (!tier || !window.WALL) return;
   const name = (rec.fullName && rec.fullName.trim()) || rec.scorer || '';
   WALL.clip({ id: 'nhl:' + game.id + ':' + rec.eventId, tier, sport: 'nhl',
     play: (done) => {
@@ -6084,7 +6095,7 @@ const LAG = (() => {
       st.live = { mlb: mlbOn, nhl: nhlOn };
       const jobs = [];
       if (mlbOn) jobs.push(Promise.all([getEspn('baseball/mlb'),
-          get('https://statsapi.mlb.com/api/v1/schedule?sportId=1&' + _mlbEtRange() + '&hydrate=linescore', false)]).then(([e, m]) => {
+          get(_mlbBust('https://statsapi.mlb.com/api/v1/schedule?sportId=1&' + _mlbEtRange() + '&hydrate=linescore'), false)]).then(([e, m]) => {   // r692
         if (!e || !m){ st.fails.mlb++; return; }
         P.mlb.ingest('e', t, _lagMlbEspn(e)); P.mlb.ingest('l', t, _lagMlbLeague(m)); }));
       if (nhlOn) jobs.push(Promise.all([getEspn('hockey/nhl'),
@@ -15093,7 +15104,7 @@ function mlbFinalWatchTick(){
   _mlbPkIndex().then(map => Promise.all(games.map(async g => {
     const pk = map && _pkForGame(g, map); if (!pk) return false;
     let f = null;
-    try{ const raw = await proxyFetchText('https://statsapi.mlb.com/api/v1/schedule?sportId=1&gamePk=' + pk); f = raw ? _mlbFinalFromSchedule(JSON.parse(raw), pk) : null; }catch(_){}
+    try{ const raw = await proxyFetchText(_mlbBust('https://statsapi.mlb.com/api/v1/schedule?sportId=1&gamePk=' + pk)); f = raw ? _mlbFinalFromSchedule(JSON.parse(raw), pk) : null; }catch(_){}   // r692
     if (!f) return false;
     const key = g.id || (g.awayAbbr + g.homeAbbr);
     _mlbFinalEarly[key] = Object.assign({ pk, at: Date.now() }, f);
@@ -15126,8 +15137,8 @@ function mlbPbpHrWatch(games){
         st.t = Date.now();
         // r196: another instance may have seen (and fired) a homer since our last poll
         if (st.seeded) _pbpMergeFromStore(pk, st);
-        const url = 'https://statsapi.mlb.com/api/v1/game/' + pk + '/playByPlay'
-                  + '?fields=allPlays,result,eventType,event,description,about,atBatIndex,halfInning,matchup,batter,id,fullName';
+        const url = _mlbBust('https://statsapi.mlb.com/api/v1/game/' + pk + '/playByPlay'
+                  + '?fields=allPlays,result,eventType,event,description,about,atBatIndex,halfInning,matchup,batter,id,fullName');   // r692
         proxyFetchText(url).then(raw => {
           if (!raw) return;
           let plays;
@@ -18428,7 +18439,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r691-cup-margin';
+const BUILD_MARKER = 'r692-shootout-walkoff-mlb-bust';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -19693,6 +19704,11 @@ async function fetchLeagueYesterday(lg) {
 /* r669: TWO-DAY window, not today's ET date. A West Coast game that starts on the 23rd is still
    "2026-09-23" in MLB's schedule after midnight ET, so date=<today> dropped every late live game
    at 12:00 ET -- the overlay AND the lag instrument went blind for exactly the games still on. */
+/* r692: CACHE-BUST live MLB polls. Mike's 9/25 freshness probe: the same statsapi request with a unique
+   _t param was first 100%; the plain startDate/endDate range was never first (p90 ~60s behind) -- MLB's CDN
+   hands back a cached copy up to a minute old. That's the flat 60s p90 in the lag data. Applied to the
+   live-critical polls only: r668 overlay, lag instrument, r665 final watch, NYY/NYM pbp HR watch. */
+function _mlbBust(u){ return u + (u.indexOf('?') >= 0 ? '&' : '?') + '_t=' + Date.now(); }
 function _mlbEtRange(){
   const d = t => new Date(t).toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
   return 'startDate=' + d(Date.now() - 86400000) + '&endDate=' + d(Date.now());
@@ -19704,7 +19720,7 @@ function _mlbLiveFetch(){
   if (_mlbLive.inflight) return _mlbLive.inflight;
   _mlbLive.inflight = (async () => {
     try{
-      const raw = await proxyFetchText('https://statsapi.mlb.com/api/v1/schedule?sportId=1&' + _mlbEtRange() + '&hydrate=linescore');
+      const raw = await proxyFetchText(_mlbBust('https://statsapi.mlb.com/api/v1/schedule?sportId=1&' + _mlbEtRange() + '&hydrate=linescore'));   // r692
       const j = raw ? JSON.parse(raw) : null;
       if (j){ const m = new Map(); ((j.dates) || []).flatMap(d => d.games || []).forEach(g => m.set(g.gamePk, g)); _mlbLive.byPk = m; _mlbLive.at = Date.now(); }
     }catch(_){}
