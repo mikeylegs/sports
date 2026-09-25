@@ -511,15 +511,16 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
   -webkit-mask-image:linear-gradient(transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(transparent,#000 6%,#000 94%,transparent);}
 .cup-list.loop{animation:cupScroll linear infinite;}
 @keyframes cupScroll{from{transform:translateY(0);}to{transform:translateY(-50%);}}
-.cup-m{display:flex;align-items:center;gap:1.4cqh;padding:1.3cqh 1.2cqh;border-bottom:1px solid rgba(255,255,255,0.06);}
+.cup-m{display:flex;align-items:center;gap:1.2cqh;padding:2.1cqh 1cqh;border-bottom:1px solid rgba(255,255,255,0.06);}
 .cup-p{flex:1;min-width:0;display:flex;flex-direction:column;gap:0.3cqh;}
 .cup-p.r{text-align:right;}
-.cup-p span{font-size:3.1cqh;font-weight:700;color:rgba(255,255,255,0.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15;}
+.cup-p span{font-size:3.95cqh;font-weight:700;color:rgba(255,255,255,0.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15;}
 .cup-p.win span{color:#fff;font-weight:800;}
-.cup-mid{flex:0 0 15cqh;text-align:center;display:flex;flex-direction:column;align-items:center;gap:0.3cqh;}
-.cup-res{font-size:3.8cqh;font-weight:900;color:#fff;white-space:nowrap;}
-.cup-sub{font-size:2.4cqh;font-weight:800;letter-spacing:0.08em;color:rgba(255,255,255,0.45);white-space:nowrap;}
+.cup-mid{flex:0 0 17cqh;text-align:center;display:flex;flex-direction:column;align-items:center;gap:0.3cqh;}
+.cup-res{font-size:5cqh;font-weight:900;color:#fff;white-space:nowrap;}
+.cup-sub{font-size:2.9cqh;font-weight:800;letter-spacing:0.08em;color:rgba(255,255,255,0.45);white-space:nowrap;}
 .cup-m.live .cup-sub{color:#4ade80;}
+.cup-note{flex:1;min-width:0;text-align:center;font-size:2.9cqh;font-weight:900;letter-spacing:0.08em;line-height:1.2;color:rgba(255,255,255,0.8);text-transform:uppercase;padding:0 1cqh;}   /* r689: Mike's mockup -- 'FIRST TO / 15.5 POINTS' between the scores */
 .cup-foot{flex-shrink:0;text-align:center;font-size:2.7cqh;font-weight:800;letter-spacing:0.06em;color:rgba(255,255,255,0.55);padding:0.9cqh 1cqh 0.3cqh;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 @keyframes wwsGolfScroll{0%,8%{transform:translateY(0);}92%,100%{transform:translateY(calc(-100% + 30cqh));}}
 .wws-tm-row{display:flex;align-items:center;justify-content:space-around;padding:2.4cqh 1.5cqh 0;}
@@ -16758,12 +16759,15 @@ function wwsTennisInner(d){
 /* r687: cup renderer. Left = away (INTL), right = home (USA) -- same sides as the team scores above.
    Loop phase comes from the wall clock (negative delay), so a re-render never snaps the list back. */
 // Long names (worst case: 'Christiaan Bezuidenhout', 23) clip at the wall's pane width -> initial + surname.
-function _cupName(n){ n = String(n || '').trim(); if (n.length <= 18) return n; const p = n.split(/\s+/); return p.length > 1 ? p[0][0] + '. ' + p.slice(1).join(' ') : n; }
+// r689 (Mike): always initial + surname -- 'Rory McIlroy' -> 'R. McIlroy'. Multi-word given names
+// ('Si Woo Kim', 'Min Woo Lee') keep only the first initial: 'S. Kim'. Already-short forms pass through.
+function _cupName(n){ n = String(n || '').trim(); if (/^[A-Z]\.\s/.test(n)) return n; const p = n.split(/\s+/); return p.length > 1 ? p[0][0] + '. ' + p[p.length - 1] : n; }
 function wwsCupInner(d){
   const c = d.cup, esc = x => String(x == null ? '' : x).replace(/&/g, '&amp;').replace(/</g, '&lt;');
   const [A, H] = c.teams, aN = parseFloat(A.score) || 0, hN = parseFloat(H.score) || 0;
   const top = `<div class="cup-top">
     <div class="cup-t l"><img src="${A.logo}" alt="" onerror="this.style.opacity=0"><span class="cup-abbr">${esc(A.abbr)}</span><span class="cup-score${aN > hN ? ' lead' : ''}">${esc(A.score)}</span></div>
+    <div class="cup-note">${c.toWin ? `First to<br>${c.toWin} points` : esc(c.session)}</div>
     <div class="cup-t r"><span class="cup-score${hN > aN ? ' lead' : ''}">${esc(H.score)}</span><span class="cup-abbr">${esc(H.abbr)}</span><img src="${H.logo}" alt="" onerror="this.style.opacity=0"></div></div>`;
   const row = m => `<div class="cup-m${m.state === 'in' ? ' live' : ''}">
     <div class="cup-p l${m.away.win ? ' win' : ''}">${m.away.names.map(n => `<span>${esc(_cupName(n))}</span>`).join('')}</div>
@@ -16773,8 +16777,7 @@ function wwsCupInner(d){
   const loop = c.matches.length >= 3, dur = Math.max(12, c.matches.length * 5);
   const delay = loop ? -((Date.now() / 1000) % dur) : 0;
   const list = `<div class="cup-wrap"><div class="cup-list${loop ? ' loop' : ''}" style="${loop ? `animation-duration:${dur}s;animation-delay:${delay.toFixed(2)}s` : ''}">${rows}${loop ? rows : ''}</div></div>`;
-  const foot = c.toWin ? `<div class="cup-foot">First team to ${c.toWin} points wins the ${esc(c.cupName || 'Cup')}</div>` : '';
-  return wwsBanner(d) + `<div class="wws-cup">${top}<div class="cup-sess">${esc(c.session)}</div>${list}${foot}</div>`;
+  return wwsBanner(d) + `<div class="wws-cup">${top}${list}</div>`;   // r689: session label + footer dropped (mockup)
 }
 function wwsGolfInner(d){
   // R67/r421: PREGAME (tournament not started) → GOLF-CARD-SPEC.md card. Own header
@@ -18396,7 +18399,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r688-cup-real-shape';
+const BUILD_MARKER = 'r689-cup-readable';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
