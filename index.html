@@ -514,9 +514,9 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .cup-m{display:flex;align-items:center;gap:1.2cqh;padding:2.1cqh 1cqh;border-bottom:1px solid rgba(255,255,255,0.06);}
 .cup-p{flex:1;min-width:0;display:flex;flex-direction:column;gap:0.3cqh;}
 .cup-p.r{text-align:right;}
-.cup-p span{font-size:3.95cqh;font-weight:700;color:rgba(255,255,255,0.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15;}
+.cup-p span{font-size:3.7cqh;font-weight:700;color:rgba(255,255,255,0.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15;}
 .cup-p.win span{color:#fff;font-weight:800;}
-.cup-mid{flex:0 0 17cqh;text-align:center;display:flex;flex-direction:column;align-items:center;gap:0.3cqh;}
+.cup-mid{flex:0 0 15cqh;text-align:center;display:flex;flex-direction:column;align-items:center;gap:0.3cqh;}
 .cup-res{font-size:5cqh;font-weight:900;color:#fff;white-space:nowrap;}
 .cup-sub{font-size:2.9cqh;font-weight:800;letter-spacing:0.08em;color:rgba(255,255,255,0.45);white-space:nowrap;}
 .cup-m.live .cup-sub{color:#4ade80;}
@@ -16796,12 +16796,12 @@ function wwsCupInner(d){
   const [A, H] = c.teams, aN = parseFloat(A.score) || 0, hN = parseFloat(H.score) || 0;
   const top = `<div class="cup-top">
     <div class="cup-t l"><img src="${A.logo}" alt="" onerror="this.style.opacity=0"><span class="cup-abbr">${esc(A.abbr)}</span><span class="cup-score${aN > hN ? ' lead' : ''}">${esc(A.score)}</span></div>
-    <div class="cup-note">${c.toWin ? `First to<br>${c.toWin} points` : esc(c.session)}</div>
+    <div class="cup-note">${c.toWin ? `First to<br>${c.toWin} pts` : esc(c.session)}</div>
     <div class="cup-t r"><span class="cup-score${hN > aN ? ' lead' : ''}">${esc(H.score)}</span><span class="cup-abbr">${esc(H.abbr)}</span><img src="${H.logo}" alt="" onerror="this.style.opacity=0"></div></div>`;
   const row = m => `<div class="cup-m${m.state === 'in' ? ' live' : ''}">
-    <div class="cup-p l${m.away.win ? ' win' : ''}">${m.away.names.map(n => `<span>${esc(_cupName(n))}</span>`).join('')}</div>
+    <div class="cup-p l${m.away.win ? ' win' : ''}">${m.away.names.map(n => `<span data-fit="3.7" data-fit-min="2.9">${esc(_cupName(n))}</span>`).join('')}</div>
     <div class="cup-mid"><span class="cup-res">${esc(m.res)}</span><span class="cup-sub">${esc(m.sub)}</span></div>
-    <div class="cup-p r${m.home.win ? ' win' : ''}">${m.home.names.map(n => `<span>${esc(_cupName(n))}</span>`).join('')}</div></div>`;
+    <div class="cup-p r${m.home.win ? ' win' : ''}">${m.home.names.map(n => `<span data-fit="3.7" data-fit-min="2.9">${esc(_cupName(n))}</span>`).join('')}</div></div>`;   // r691: fitText shrinks only a name that doesn't fit ON THIS SCREEN (kiosk font ~13% wider than headless); floor 2.9cqh > readability floor
   const rows = c.matches.map(row).join('');
   const loop = c.matches.length >= 3, dur = Math.max(12, c.matches.length * 5);
   const delay = loop ? -((Date.now() / 1000) % dur) : 0;
@@ -18428,7 +18428,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r690-director-memory';
+const BUILD_MARKER = 'r691-cup-margin';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
