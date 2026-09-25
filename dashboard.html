@@ -16146,7 +16146,9 @@ async function wwsPollWatchGolf(){
    PURE: builds { teams:[away,home], session, matches:[...], toWin } or null. */
 function _cupParse(lb, sbComp, name){
   const evs = (lb && lb.events) || [], ev = evs[0] || {};
-  const comps = (ev.competitions || []);
+  // r688: LIVE SHAPE (Mike's 9/25 dump): competitions is an ARRAY OF SESSION ARRAYS -- competitions[1][0] is a
+  // match (competitions[0] = team totals). Flatten one level; a flat list (r687's assumption) still works.
+  const comps = (ev.competitions || []).flatMap(c => Array.isArray(c) ? c : [c]);
   const txt = c => (c && typeof c.score === 'object') ? String((c.score && c.score.displayValue) || '') : String((c && c.score) || '');
   const won = c => !!(c && ((c.score && typeof c.score === 'object' && c.score.winner) || c.winner === true));
   const abbr = c => ((c && c.team && (c.team.abbreviation || c.team.name)) || '').toUpperCase();
@@ -16167,7 +16169,13 @@ function _cupParse(lb, sbComp, name){
         const lead = A.score && A.score !== '-' ? A : (H.score && H.score !== '-' ? H : null);
         const w = A.win ? A : H.win ? H : null;
         res = (w && w.score) || (lead && lead.score) || (state === 'post' ? 'Halved' : 'AS');
-        if (state === 'in'){ const m = det.match(/thru\s*(\d+)|^(\d+)$/i); sub = m ? 'THRU ' + (m[1] || m[2]) : (det && !/scheduled/i.test(det) ? det.toUpperCase() : 'LIVE'); if (lead) sub = lead.team + ' · ' + sub; }
+        if (state === 'in'){
+          // r688: real fields are competitor status.displayThru / thru (score.displayValue = '2 Up'); 'Thru N' text as fallback
+          const th = (away.status && (away.status.displayThru || away.status.thru)) || (home.status && (home.status.displayThru || home.status.thru)) || '';
+          const m = det.match(/thru\s*(\d+)/i);
+          sub = th !== '' && th != null ? 'THRU ' + th : m ? 'THRU ' + m[1] : 'LIVE';
+          if (lead) sub = lead.team + ' · ' + sub;
+        }
         else sub = w ? w.team + ' WINS' : 'FINAL';
       }
       return { i, session: c.description || '', state, tee, res, sub, away: A, home: H };
@@ -18388,7 +18396,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r687-presidents-cup';
+const BUILD_MARKER = 'r688-cup-real-shape';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
