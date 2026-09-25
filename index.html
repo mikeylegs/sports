@@ -497,6 +497,30 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .wws-g-head span{font-size:2.8cqh!important;font-weight:800;letter-spacing:0.08em;color:rgba(255,255,255,0.45)!important;}
 .wws-g-scrollwrap{overflow:hidden;flex:1;position:relative;margin-top:0.6cqh;}
 .wws-g-scroll{animation:wwsGolfScroll linear 1 forwards;}
+/* r687: TEAM MATCH-PLAY CUP (Presidents/Ryder/Solheim) — crests + team score up top, the session's matches
+   looping below, points-to-win pinned at the bottom. Sized in the pane's cqh like the golf rows. */
+.wws-cup{display:flex;flex-direction:column;flex:1;min-height:0;}
+.cup-top{display:flex;align-items:center;justify-content:space-between;padding:0.6cqh 1cqh 0.4cqh;flex-shrink:0;}
+.cup-t{display:flex;align-items:center;gap:1.6cqh;min-width:0;}
+.cup-t img{width:9cqh;height:9cqh;object-fit:contain;flex-shrink:0;}
+.cup-abbr{font-size:4.6cqh;font-weight:900;color:rgba(255,255,255,0.85);letter-spacing:0.04em;}
+.cup-score{font-size:9cqh;font-weight:900;color:#fff;font-variant-numeric:tabular-nums;line-height:1;min-width:6cqh;text-align:center;}
+.cup-score.lead{color:#d4af37;}
+.cup-sess{font-size:2.7cqh;font-weight:800;letter-spacing:0.1em;color:rgba(255,255,255,0.5);text-transform:uppercase;text-align:center;padding:0.2cqh 1cqh 0.8cqh;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;}
+.cup-wrap{flex:1;min-height:0;overflow:hidden;position:relative;border-top:1px solid rgba(255,255,255,0.1);border-bottom:1px solid rgba(255,255,255,0.1);
+  -webkit-mask-image:linear-gradient(transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(transparent,#000 6%,#000 94%,transparent);}
+.cup-list.loop{animation:cupScroll linear infinite;}
+@keyframes cupScroll{from{transform:translateY(0);}to{transform:translateY(-50%);}}
+.cup-m{display:flex;align-items:center;gap:1.4cqh;padding:1.3cqh 1.2cqh;border-bottom:1px solid rgba(255,255,255,0.06);}
+.cup-p{flex:1;min-width:0;display:flex;flex-direction:column;gap:0.3cqh;}
+.cup-p.r{text-align:right;}
+.cup-p span{font-size:3.1cqh;font-weight:700;color:rgba(255,255,255,0.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15;}
+.cup-p.win span{color:#fff;font-weight:800;}
+.cup-mid{flex:0 0 15cqh;text-align:center;display:flex;flex-direction:column;align-items:center;gap:0.3cqh;}
+.cup-res{font-size:3.8cqh;font-weight:900;color:#fff;white-space:nowrap;}
+.cup-sub{font-size:2.4cqh;font-weight:800;letter-spacing:0.08em;color:rgba(255,255,255,0.45);white-space:nowrap;}
+.cup-m.live .cup-sub{color:#4ade80;}
+.cup-foot{flex-shrink:0;text-align:center;font-size:2.7cqh;font-weight:800;letter-spacing:0.06em;color:rgba(255,255,255,0.55);padding:0.9cqh 1cqh 0.3cqh;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 @keyframes wwsGolfScroll{0%,8%{transform:translateY(0);}92%,100%{transform:translateY(calc(-100% + 30cqh));}}
 .wws-tm-row{display:flex;align-items:center;justify-content:space-around;padding:2.4cqh 1.5cqh 0;}
 .wws-tm-side{display:flex;flex-direction:column;align-items:center;gap:0.8cqh;min-width:0;flex:1;}
@@ -5742,6 +5766,23 @@ window._nhlAuto = window._nhlAuto || { mode: null, watching: {}, lastScanMs: 0, 
 function _nhlDryTier(game, teamAbbr, scorer){
   try{ return _nhlGoalTier(teamAbbr, game, _favNhlSet(), _selectedNhlGames(), scorer, _favNhlPlayers()); }catch(_){ return 0; }
 }
+/* r686 (Mike 9/25): RANGERS WIN splash, live. r642 built the card, the final-edge watcher and the trigger,
+   but nothing started it -- only the CC sim / a manual console call. Now every NYR game the auto-watcher
+   picks up also gets a win watch, off NHL's own gameState (ESPN's final measured up to ~9 min late,
+   p90 540s). NYR only (Mike: only NYR is splash-worthy). Mode 'on' only (dry/off never fire). A loss
+   logs and skips (nhlWinTakeoverOpts returns null). If a card is up at the horn (an OT winner's goal
+   card), wait for it to clear -- up to 20s -- then fire; unmanaged like the MLB win card. */
+const NHL_WIN_TEAMS = ['NYR'];
+function _nhlWinFire(payload, tries){
+  tries = tries || 0;
+  let busy = false;
+  try{ const st = window.WALL && WALL.state(); busy = !!(st && st.slot && st.slot.kind === 'card'); }catch(_){}
+  try{ const tk = document.getElementById('mlb-takeover'); if (tk && tk.classList.contains('show')) busy = true; }catch(_){}
+  if (busy && tries < 20){ setTimeout(() => _nhlWinFire(payload, tries + 1), 1000); return; }
+  try{ window.nightEvent('nhl', 'win_splash', { team: payload.mlbTeam, waitedS: tries }); }catch(_){}
+  showTakeover(payload);
+}
+function _nhlWinTeamOf(g){ return NHL_WIN_TEAMS.find(t => g.awayAbbr === t || g.homeAbbr === t) || null; }
 async function _nhlAutoScan(){
   const A = window._nhlAuto; A.scans++;
   let j = null;
@@ -5754,7 +5795,7 @@ async function _nhlAutoScan(){
     day: _nhlGameDay(g) || String(j.currentDate || '').replace(/-/g, '') }));
   const plan = _nhlAutoPlan(games, _nhlWatchSet(), _selectedNhlGames(), A.watching, now, NHL_AUTO_CFG.GRACE_MS);   // r683: + followed players' teams
   plan.markFinal.forEach(id => { if (A.watching[id]) A.watching[id].finalAt = now; });
-  plan.stop.forEach(id => { try{ A.watching[id].cancel(); }catch(_){} delete A.watching[id];
+  plan.stop.forEach(id => { try{ A.watching[id].cancel(); }catch(_){} try{ if (A.watching[id].winCancel) A.watching[id].winCancel(); }catch(_){} delete A.watching[id];
     console.log('[nhlAuto] stop watching', id); });
   plan.start.forEach(g => {
     const id = String(g.id);
@@ -5773,7 +5814,9 @@ async function _nhlAutoScan(){
         _nhlDryRecord({ kind: 'clip', t: Date.now(), day: g.day, gameId: id, gameType: g.gameType, eventId: rec.eventId,
         team: rec.team, scorer: rec.fullName || rec.scorer, lagS: rec.lagS, tier: _nhlDryTier(g, rec.team, rec.fullName || rec.scorer), restart: old }); }
     });
-    A.watching[id] = { cancel, game: g, since: now, finalAt: null };
+    const _wt = _nhlWinTeamOf(g);   // r686
+    const winCancel = (_wt && window._nhlAuto.mode === 'on') ? nhlLiveWinTrigger(g.id, { team: _wt, fire: _nhlWinFire }) : null;
+    A.watching[id] = { cancel, winCancel, game: g, since: now, finalAt: null };
     console.log('[nhlAuto] ' + A.mode.toUpperCase() + ' watching', g.awayAbbr, '@', g.homeAbbr, id, '(' + g.state + ', type ' + g.gameType + ')');
   });
 }
@@ -5843,13 +5886,17 @@ function _lagFold(s){ return String(s || '').toLowerCase().normalize('NFD').repl
 function _lagLast(s){ const t = String(s || '').trim().split(/\s+/).filter(x => !/^(jr|sr|ii|iii|iv)\.?$/i.test(x)); return _lagFold(t.pop() || ''); }
 function _lagSecs(c){ const m = String(c || '').match(/^(\d+):(\d{2})/); return m ? (+m[1]) * 60 + (+m[2]) : null; }
 // PURE normalizers: raw payload -> [{ game, final, points:[[field, value]], clock:{per,s}|null }]
+/* r686: games are keyed matchup + ET GAME DATE. Keyed by matchup alone, a series' yesterday-final (the MLB
+   query spans yesterday..today) stamped MLB "final" at instrument start while ESPN's only came when TODAY's
+   game ended -- the 9/24 "final median 8940s" artifact (and it could pre-stamp a score). */
+function _lagEtDay(iso){ try{ return iso ? new Date(iso).toLocaleDateString('en-CA', { timeZone: 'America/New_York' }) : ''; }catch(_){ return ''; } }
 function _lagMlbEspn(e){
   const out = [];
   (e && e.events || []).forEach(ev => {
     const c = (ev.competitions || [])[0] || {}, st = (ev.status && ev.status.type) || {};
     if (st.state !== 'in' && st.state !== 'post') return;
     const H = (c.competitors || []).find(x => x.homeAway === 'home') || {}, A = (c.competitors || []).find(x => x.homeAway === 'away') || {};
-    const game = _lagFold(A.team && A.team.displayName) + '@' + _lagFold(H.team && H.team.displayName);
+    const game = _lagFold(A.team && A.team.displayName) + '@' + _lagFold(H.team && H.team.displayName) + '|' + _lagEtDay(ev.date || c.date);
     const w = String(st.shortDetail || st.detail || '').split(/\s+/)[0].toLowerCase();
     const half = w.startsWith('top') ? 'T' : w.startsWith('bot') ? 'B' : w.startsWith('mid') ? 'M' : w.startsWith('end') ? 'E' : null;
     const si = c.situation || {};
@@ -5865,7 +5912,7 @@ function _lagMlbLeague(m){
     const code = (g.status && g.status.codedGameState) || '', fin = code === 'F' || code === 'O';
     if (code !== 'I' && !fin) return;
     const ls = g.linescore || {}, off = ls.offense || {};
-    out.push(_lagMlbPoints(_lagFold(g.teams.away.team.name) + '@' + _lagFold(g.teams.home.team.name), fin, g.teams.away.score, g.teams.home.score,
+    out.push(_lagMlbPoints(_lagFold(g.teams.away.team.name) + '@' + _lagFold(g.teams.home.team.name) + '|' + _lagEtDay(g.gameDate), fin, g.teams.away.score, g.teams.home.score,
       ls.currentInning, ({ Top: 'T', Bottom: 'B', Middle: 'M', End: 'E' })[ls.inningState] || null, ls.outs, ls.balls, ls.strikes,
       (off.first ? '1' : '-') + (off.second ? '2' : '-') + (off.third ? '3' : '-'), _lagLast(off.batter && off.batter.fullName)));
   });
@@ -6179,7 +6226,7 @@ function nhlLiveWinTrigger(gameId, opts){
       const payload = nhlWinTakeoverOpts(s);
       if (!payload){ console.log('[nhlLiveWinTrigger] game final -- followed team did not win, no splash'); return; }
       if (typeof showTakeover !== 'function'){ console.log('[nhlLiveWinTrigger] showTakeover not available'); return; }
-      showTakeover(payload);
+      (typeof opts.fire === 'function' ? opts.fire : showTakeover)(payload);   // r686: auto path waits for a clear wall
     }
   });
 }
@@ -16093,6 +16140,61 @@ async function wwsPollWatchGolf(){
    need it; the others are trusted inline per spec). Cached per event (incl. a null/empty result,
    so a bad tournament doesn't get refetched every poll cycle). Fails soft field-by-field — a
    missing field just means that line doesn't render (wwsGolfInner hides absent lines). */
+/* r687: TEAM MATCH-PLAY CUP. The scoreboard only carries the team totals (competitors type 'team') and
+   name-less 'pair' matches; ESPN's leaderboard feed has each match's pairs (roster[].athlete.displayName),
+   result (score.displayValue '1 Up' / '3 & 2', score.winner), tee time and session name (description).
+   PURE: builds { teams:[away,home], session, matches:[...], toWin } or null. */
+function _cupParse(lb, sbComp, name){
+  const evs = (lb && lb.events) || [], ev = evs[0] || {};
+  const comps = (ev.competitions || []);
+  const txt = c => (c && typeof c.score === 'object') ? String((c.score && c.score.displayValue) || '') : String((c && c.score) || '');
+  const won = c => !!(c && ((c.score && typeof c.score === 'object' && c.score.winner) || c.winner === true));
+  const abbr = c => ((c && c.team && (c.team.abbreviation || c.team.name)) || '').toUpperCase();
+  const logo = a => 'https://a.espncdn.com/i/teamlogos/countries/500/' + String(a).toLowerCase() + '.png';
+  const ET = { timeZone: 'America/New_York' };
+  const matches = comps.filter(c => (c.competitors || []).length === 2 && (c.competitors || []).some(x => (x.roster || []).length))
+    .map((c, i) => {
+      const cs = c.competitors;
+      const away = cs.find(x => x.homeAway === 'away') || cs[1], home = cs.find(x => x.homeAway === 'home') || cs[0];
+      const st = (c.status && c.status.type) || {}, state = st.state || 'pre';
+      const side = x => ({ team: abbr(x), names: (x.roster || []).map(r => (r.athlete && (r.athlete.displayName || r.athlete.shortName)) || '').filter(Boolean), win: won(x), score: txt(x) });
+      const A = side(away), H = side(home);
+      const tee = (away.status && away.status.teeTime) || (home.status && home.status.teeTime) || c.date || '';
+      const det = String((away.status && away.status.detail) || (home.status && home.status.detail) || st.shortDetail || st.detail || '');
+      let res = '', sub = '';
+      if (state === 'pre'){ const t = Date.parse(tee); res = isFinite(t) ? new Date(t).toLocaleTimeString('en-US', Object.assign({ hour: 'numeric', minute: '2-digit' }, ET)) : (det || 'TBD'); sub = 'TEE'; }
+      else {
+        const lead = A.score && A.score !== '-' ? A : (H.score && H.score !== '-' ? H : null);
+        const w = A.win ? A : H.win ? H : null;
+        res = (w && w.score) || (lead && lead.score) || (state === 'post' ? 'Halved' : 'AS');
+        if (state === 'in'){ const m = det.match(/thru\s*(\d+)|^(\d+)$/i); sub = m ? 'THRU ' + (m[1] || m[2]) : (det && !/scheduled/i.test(det) ? det.toUpperCase() : 'LIVE'); if (lead) sub = lead.team + ' · ' + sub; }
+        else sub = w ? w.team + ' WINS' : 'FINAL';
+      }
+      return { i, session: c.description || '', state, tee, res, sub, away: A, home: H };
+    });
+  if (!matches.length) return null;
+  // Which session: one with a live match, else the first not fully complete, else the last one.
+  const sessions = []; matches.forEach(m => { if (!sessions.includes(m.session)) sessions.push(m.session); });
+  const bySess = s => matches.filter(m => m.session === s);
+  const pick = sessions.find(s => bySess(s).some(m => m.state === 'in')) || sessions.find(s => bySess(s).some(m => m.state !== 'post')) || sessions[sessions.length - 1];
+  const tc = (sbComp && sbComp.competitors) || [];
+  const tAway = tc.find(x => x.homeAway === 'away') || tc[1] || {}, tHome = tc.find(x => x.homeAway === 'home') || tc[0] || {};
+  const team = x => { const a = abbr(x) || ''; return { abbr: a, score: txt(x) || '0', logo: logo(a) }; };
+  const toWin = /presidents/i.test(name || '') ? 15.5 : /ryder|solheim/i.test(name || '') ? 14.5 : null;
+  return { teams: [team(tAway), team(tHome)], session: pick, matches: bySess(pick), toWin, cupName: (name || '').replace(/^\d{4}\s+/, '') };
+}
+window._cupCache = window._cupCache || {};
+async function fetchGolfCup(evId, sbComp, name){
+  const hit = window._cupCache[evId];
+  if (hit && Date.now() - hit.t < 30000) return hit.v;
+  let v = hit ? hit.v : null;
+  try{
+    const raw = await proxyFetchText('https://site.web.api.espn.com/apis/site/v2/sports/golf/leaderboard?event=' + evId);
+    if (raw) v = _cupParse(JSON.parse(raw), sbComp, name);
+  }catch(_){}
+  window._cupCache[evId] = { t: Date.now(), v };
+  return v;
+}
 async function fetchGolfPreview(eventId, league){
   window._golfPreviewCache = window._golfPreviewCache || {};
   const key = league + '|' + eventId;
@@ -16223,6 +16325,9 @@ async function wwsPollEvents(){
         // Cached per event; fails soft field-by-field.
         if (kind === 'golf'){
           ev.__golfPreview = await fetchGolfPreview(evId, e.league);
+          // r687: a TEAM cup (both scoreboard competitors are teams) gets the match-play layout's data
+          if ((comp.competitors || []).length === 2 && (comp.competitors || []).every(c => c.type === 'team'))
+            ev.__cup = await fetchGolfCup(evId, comp, ev.name || ev.shortName || e.label || '');
           if (ev.__golfPreview.course && !(ev.courses && ev.courses[0] && ev.courses[0].name)) ev.courses = [{ name: ev.__golfPreview.course }];
         }
         // r578: WWS pregame/live cards were reading c.team.abbreviation RAW — this whole
@@ -16392,6 +16497,7 @@ async function wwsPollEvents(){
           followedSide,   // r519: SPEC-tennis-win-splash — index into sides[], or null
           venue: bVenue,
           golf: kind === 'golf' ? (ev.__golfPreview || null) : undefined,   // r421: GOLF-CARD-SPEC fields
+          cup: kind === 'golf' ? (ev.__cup || null) : undefined,              // r687: team match-play cup
           situation: (comp.situation && (comp.situation.downDistanceText || comp.situation.shortDownDistanceText)) || '',
           status: kind === 'tennis'
             ? (() => {   // r480: "Final · Round 1" once done; just "Round 1" while live (Mike: drop the
@@ -16641,6 +16747,27 @@ function wwsTennisInner(d){
   }
   return wwsBanner(d) + `<div class="wws-tn-rows wws-tennis${d.pre?' pre':''}">${rows}</div>${statusHtml}`;
 }
+/* r687: cup renderer. Left = away (INTL), right = home (USA) -- same sides as the team scores above.
+   Loop phase comes from the wall clock (negative delay), so a re-render never snaps the list back. */
+// Long names (worst case: 'Christiaan Bezuidenhout', 23) clip at the wall's pane width -> initial + surname.
+function _cupName(n){ n = String(n || '').trim(); if (n.length <= 18) return n; const p = n.split(/\s+/); return p.length > 1 ? p[0][0] + '. ' + p.slice(1).join(' ') : n; }
+function wwsCupInner(d){
+  const c = d.cup, esc = x => String(x == null ? '' : x).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const [A, H] = c.teams, aN = parseFloat(A.score) || 0, hN = parseFloat(H.score) || 0;
+  const top = `<div class="cup-top">
+    <div class="cup-t l"><img src="${A.logo}" alt="" onerror="this.style.opacity=0"><span class="cup-abbr">${esc(A.abbr)}</span><span class="cup-score${aN > hN ? ' lead' : ''}">${esc(A.score)}</span></div>
+    <div class="cup-t r"><span class="cup-score${hN > aN ? ' lead' : ''}">${esc(H.score)}</span><span class="cup-abbr">${esc(H.abbr)}</span><img src="${H.logo}" alt="" onerror="this.style.opacity=0"></div></div>`;
+  const row = m => `<div class="cup-m${m.state === 'in' ? ' live' : ''}">
+    <div class="cup-p l${m.away.win ? ' win' : ''}">${m.away.names.map(n => `<span>${esc(_cupName(n))}</span>`).join('')}</div>
+    <div class="cup-mid"><span class="cup-res">${esc(m.res)}</span><span class="cup-sub">${esc(m.sub)}</span></div>
+    <div class="cup-p r${m.home.win ? ' win' : ''}">${m.home.names.map(n => `<span>${esc(_cupName(n))}</span>`).join('')}</div></div>`;
+  const rows = c.matches.map(row).join('');
+  const loop = c.matches.length >= 3, dur = Math.max(12, c.matches.length * 5);
+  const delay = loop ? -((Date.now() / 1000) % dur) : 0;
+  const list = `<div class="cup-wrap"><div class="cup-list${loop ? ' loop' : ''}" style="${loop ? `animation-duration:${dur}s;animation-delay:${delay.toFixed(2)}s` : ''}">${rows}${loop ? rows : ''}</div></div>`;
+  const foot = c.toWin ? `<div class="cup-foot">First team to ${c.toWin} points wins the ${esc(c.cupName || 'Cup')}</div>` : '';
+  return wwsBanner(d) + `<div class="wws-cup">${top}<div class="cup-sess">${esc(c.session)}</div>${list}${foot}</div>`;
+}
 function wwsGolfInner(d){
   // R67/r421: PREGAME (tournament not started) → GOLF-CARD-SPEC.md card. Own header
   // (title + PGA logo, no wwsBanner — spec's .g-hdr replaces it) then course/location/
@@ -16817,6 +16944,7 @@ function _wwsTodayTonight(raw, isoDate){
 }
 function wwsSlideInner(d){
   if (d.kind === 'tennis' && d.sides.length === 2) return wwsTennisInner(d);
+  if (d.kind === 'golf' && d.cup && d.cup.matches && d.cup.matches.length) return wwsCupInner(d);   // r687
   if (d.kind === 'golf' && (d.sides.length || d.pre)) return wwsGolfInner(d);
   if (d.kind === 'soccer' && d.sides.length === 2) return wwsSoccerInner(d);
   if (d.sides.length === 2) return wwsTeamInner(d);
@@ -18260,7 +18388,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r685-logos-500px';
+const BUILD_MARKER = 'r687-presidents-cup';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
