@@ -10591,6 +10591,27 @@ function wwsRecapTarget(kindWant){       // golf round recaps only now (see wwsF
 // match that's final (not pre, not live) and not already recapped → target.
 // Fires ONCE per game: _recapSeen is stamped when playRecap succeeds.
 const _recapSeen = new Set();
+/* r690: DIRECTOR MEMORY SURVIVES RELOADS (Mike: "NYY recap is always coming up first"). Three pieces of
+   state lived only in memory, so every page refresh reset them:
+     1. _recapSeen -- incl. r555's once-per-game 'nyy-priority:<gamePk>' -> the same Yankees recap re-jumped
+        the line after EVERY reload. Now persisted 36h (':unknown' keys never persisted).
+     2. RECAP.director.idx -- round-robin cursor restarted at 0. Now resumed (same cycle signature, <12h).
+     3. _recapServedAt / _recapShownAt -- the 30-min repeat block + anti-monotony stamps. Now persisted 60 min.
+   One localStorage key, merge-on-write (re-read, change, prune, write). Per browser, like every other store. */
+const RDS_KEY = 'recapDirState_v1', RDS_SEEN_TTL = 36 * 3600e3, RDS_IDX_TTL = 12 * 3600e3, RDS_STAMP_TTL = 60 * 60000;
+function _rdsRead(){ try{ const j = JSON.parse(localStorage.getItem(RDS_KEY) || '{}'); return (j && typeof j === 'object') ? j : {}; }catch(_){ return {}; } }
+function _rdsWrite(mut){ try{ const j = _rdsRead(); mut(j); localStorage.setItem(RDS_KEY, JSON.stringify(j)); }catch(_){} }
+function _rdsPrune(o, ttl, now){ Object.keys(o || {}).forEach(k => { if (!(now - o[k] < ttl)) delete o[k]; }); return o; }
+function _rdsStamp(bucket, id, ts){ if (id == null) return; _rdsWrite(j => { const now = Date.now(); j[bucket] = _rdsPrune(j[bucket] || {}, RDS_STAMP_TTL, now); j[bucket][id] = ts || now; }); }
+function _rdsHydrate(bucket, target, ttl){ try{ const now = Date.now(), src = _rdsRead()[bucket] || {}; Object.keys(src).forEach(k => { if (now - src[k] < ttl) target[k] = Math.max(target[k] || 0, src[k]); }); }catch(_){} }
+(function(){ const now = Date.now(), seen = _rdsRead().seen || {};
+  Object.keys(seen).forEach(k => { if (now - seen[k] < RDS_SEEN_TTL) Set.prototype.add.call(_recapSeen, k); }); })();
+_recapSeen.add = function(k){
+  Set.prototype.add.call(this, k);
+  if (k != null && !/(:unknown|undefined|null)$/.test(String(k)))
+    _rdsWrite(j => { const now = Date.now(); j.seen = _rdsPrune(j.seen || {}, RDS_SEEN_TTL, now); j.seen[k] = now; });
+  return this;
+};
 function wwsFinalTarget(){
   if (_fixtures) return { el: document.querySelector('#wws-stage .lf-slide[data-wws]') || document.createElement('div'),
     id:'fx', d:{ kind:'soccer', label:'2026 FIFA World Cup', pre:false, live:false, sides:[{name:'ENG'},{name:'MEX'}] } };
@@ -10755,6 +10776,11 @@ function recapClockTick(slotClass){
 // regardless of what's on screen.
 function recapDirectorTick(slotClass){
   const D = RECAP.director;
+  if (!D._rdsLoaded){   // r690: resume the round-robin where the last page load left it
+    D._rdsLoaded = true;
+    try{ const v = _rdsRead().idx || {};
+      if (v.sig === D.cycle.join('|') && Date.now() - v.t < RDS_IDX_TTL && v.v >= 0 && v.v < D.cycle.length){ D.idx = v.v; _dirNote('RESUME idx=' + v.v + ' (saved ' + Math.round((Date.now() - v.t) / 60000) + 'm ago)'); } }catch(_){}
+  }
   // ★ r148 — THE TRACE WAS IN THE WRONG PLACE. r146b logged from just above the cycle
   // scan, i.e. AFTER the three guards below, so a tick dying at a guard produced no
   // line at all — which is exactly what the wall showed: rotation dead, ytlog totally
@@ -10954,6 +10980,7 @@ function recapDirectorTick(slotClass){
     // back via onNoVideo to rewind the cursor so nothing downstream is skipped.
     D.count = 0;
     D.idx = (pos + 1) % D.cycle.length;
+    _rdsWrite(j => { j.idx = { v: D.idx, sig: D.cycle.join('|'), t: Date.now() }; });   // r690
     _dirNote('DISPATCH ' + cand);
     playRecap(cand, { onNoVideo: () => { /* R15: keep cycle moving, just note it */
       window._recapEvt = `skip:${cand} (no video)`; _dirNote('no video from ' + cand); } });
@@ -12089,7 +12116,7 @@ async function findRecap(sourceId){
   // served, or the auditor would change what the director serves next (measurement
   // altering the thing measured). Director calls (not auditing) behave exactly as before.
   if (!window._auditing) RECAP.videoCache[cacheKey] = { at: Date.now(), video: pick };
-  if (!window._auditing && pick && pick.videoId) _recapServedAt[pick.videoId] = Date.now();   // R92: stamp at return (cross-source dedup)
+  if (!window._auditing && pick && pick.videoId){ _recapServedAt[pick.videoId] = Date.now(); _rdsStamp('served', pick.videoId); }   // R92: stamp at return (cross-source dedup) · r690 persisted
   if (!window._auditing && pick) _markServed(_servedKey(pick));   // global recent-served ring
   if (!pick){
     console.warn('[recap] no video found for', sourceId, '—', _specificFailReason || '(no single specific cause)');
@@ -12706,10 +12733,12 @@ function _titleDateStale(title){
 }
                                    // ("embedding disabled by owner"). Session-scoped, dropped
                                    // from every pool so a dead clip is skipped, not retried.
-const _recapShownAt = {};   // R57 videoId → last-shown ms (anti-monotony throttle)
+const _recapShownAt = {};
+_rdsHydrate('shown', _recapShownAt, RDS_STAMP_TTL);   // r690   // R57 videoId → last-shown ms (anti-monotony throttle)
 const _recapShowSeq = {};   // r560 videoId → dispatch-rank at last shown (source-agnostic, monotonic)
 let _recapShowSeqNext = 1;  // r560 next dispatch-rank to assign; incremented at every real stamp site
-const _recapServedAt = {};  // R92 videoId → last-RETURNED ms (cross-source dedup; stamps at findRecap return, before play, so a clip picked for one source can't be re-picked by the next before it plays)
+const _recapServedAt = {};
+_rdsHydrate('served', _recapServedAt, RDS_STAMP_TTL);   // r690  // R92 videoId → last-RETURNED ms (cross-source dedup; stamps at findRecap return, before play, so a clip picked for one source can't be re-picked by the next before it plays)
 // ── (r141) GLOBAL RECENT-SERVED RING — the "back to back" safeguard Mike asked for.
 // The SEEN/CROSS-SOURCE gates are per-video, time-windowed, and SOFT, so a thin pool
 // (ASG week: Bellinger tops mlb-daily/-allgames/-season) re-serves the same clip via
@@ -14229,8 +14258,8 @@ async function playRecap(sourceId, opts){
     if (!video && src.fallback){ try { video = await _withResolveTimeout(resolveVideo(src.fallback), RECAP_RESOLVE_TIMEOUT_MS, 'resolveVideo-fallback:'+src.fallback); } catch(_){} }
     if (!video){ _dormancyNote(sourceId, false);   // r146: count the miss toward suppression
                  ytltRecord({ source:sourceId, note: (window._recapFailReason || 'NO VIDEO (unknown)') + _dormancySuffix(sourceId) }); window._recapFailReason = null; _recapActive = false; if (opts.onNoVideo) opts.onNoVideo(); return false; }
-    if (video.videoId) _recapShownAt[video.videoId] = Date.now();   // R57: stamp for anti-monotony scoring
-    else if (video.kind === 'mp4' && video.gamePk) _recapShownAt['mlb:' + video.gamePk] = Date.now();   // A4: mp4 recaps have no videoId — key the cooldown by gamePk
+    if (video.videoId){ _recapShownAt[video.videoId] = Date.now(); _rdsStamp('shown', video.videoId); }   // R57: stamp for anti-monotony scoring · r690 persisted
+    else if (video.kind === 'mp4' && video.gamePk){ _recapShownAt['mlb:' + video.gamePk] = Date.now(); _rdsStamp('shown', 'mlb:' + video.gamePk); }   // A4: mp4 recaps have no videoId — key the cooldown by gamePk
     { const _seqKey = video.videoId || (video.kind === 'mp4' && video.gamePk ? 'mlb:' + video.gamePk : null);
       if (_seqKey) _recapShowSeq[_seqKey] = _recapShowSeqNext++; }   // r560: source-agnostic dispatch-rank stamp
     _dormancyNote(sourceId, true);    // r146: source produced — clear any suppression
@@ -18399,7 +18428,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r689-cup-readable';
+const BUILD_MARKER = 'r690-director-memory';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
