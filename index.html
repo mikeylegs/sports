@@ -509,8 +509,8 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .cup-sess{font-size:2.7cqh;font-weight:800;letter-spacing:0.1em;color:rgba(255,255,255,0.5);text-transform:uppercase;text-align:center;padding:0.2cqh 1cqh 0.8cqh;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;}
 .cup-wrap{flex:1;min-height:0;overflow:hidden;position:relative;border-top:1px solid rgba(255,255,255,0.1);border-bottom:1px solid rgba(255,255,255,0.1);
   -webkit-mask-image:linear-gradient(transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(transparent,#000 6%,#000 94%,transparent);}
-.cup-list.loop{animation:cupScroll linear infinite;}
-@keyframes cupScroll{from{transform:translateY(0);}to{transform:translateY(-50%);}}
+.cup-list.wws-g-scroll{animation:cupPass linear 1 forwards;animation-delay:3s;will-change:transform;}   /* r693: ONE pass top→bottom (3s hold at top, 4s hold at bottom via data-hold-end), then the card rotates. Rides the golf .wws-g-scroll lifecycle (restart on activation, advance on animationend, watchdogs) */
+@keyframes cupPass{from{transform:translateY(0);}to{transform:translateY(var(--cupEnd,0px));}}
 .cup-m{display:flex;align-items:center;gap:1.2cqh;padding:2.1cqh 1cqh;border-bottom:1px solid rgba(255,255,255,0.06);}
 .cup-p{flex:1;min-width:0;display:flex;flex-direction:column;gap:0.3cqh;}
 .cup-p.r{text-align:right;}
@@ -16807,16 +16807,14 @@ function wwsCupInner(d){
   const [A, H] = c.teams, aN = parseFloat(A.score) || 0, hN = parseFloat(H.score) || 0;
   const top = `<div class="cup-top">
     <div class="cup-t l"><img src="${A.logo}" alt="" onerror="this.style.opacity=0"><span class="cup-abbr">${esc(A.abbr)}</span><span class="cup-score${aN > hN ? ' lead' : ''}">${esc(A.score)}</span></div>
-    <div class="cup-note">${c.toWin ? `First to<br>${c.toWin} pts` : esc(c.session)}</div>
     <div class="cup-t r"><span class="cup-score${hN > aN ? ' lead' : ''}">${esc(H.score)}</span><span class="cup-abbr">${esc(H.abbr)}</span><img src="${H.logo}" alt="" onerror="this.style.opacity=0"></div></div>`;
   const row = m => `<div class="cup-m${m.state === 'in' ? ' live' : ''}">
     <div class="cup-p l${m.away.win ? ' win' : ''}">${m.away.names.map(n => `<span data-fit="3.7" data-fit-min="2.9">${esc(_cupName(n))}</span>`).join('')}</div>
     <div class="cup-mid"><span class="cup-res">${esc(m.res)}</span><span class="cup-sub">${esc(m.sub)}</span></div>
     <div class="cup-p r${m.home.win ? ' win' : ''}">${m.home.names.map(n => `<span data-fit="3.7" data-fit-min="2.9">${esc(_cupName(n))}</span>`).join('')}</div></div>`;   // r691: fitText shrinks only a name that doesn't fit ON THIS SCREEN (kiosk font ~13% wider than headless); floor 2.9cqh > readability floor
   const rows = c.matches.map(row).join('');
-  const loop = c.matches.length >= 3, dur = Math.max(12, c.matches.length * 5);
-  const delay = loop ? -((Date.now() / 1000) % dur) : 0;
-  const list = `<div class="cup-wrap"><div class="cup-list${loop ? ' loop' : ''}" style="${loop ? `animation-duration:${dur}s;animation-delay:${delay.toFixed(2)}s` : ''}">${rows}${loop ? rows : ''}</div></div>`;
+  const scroll = c.matches.length >= 3, dur = Math.max(8, (c.matches.length - 3) * 2.6);   // r693: estimate; _cupMeasure sets the real one
+  const list = `<div class="cup-wrap"><div class="cup-list${scroll ? ' wws-g-scroll' : ''}"${scroll ? ` data-hold-end="4000" style="animation-duration:${dur}s"` : ''}>${rows}</div></div>`;
   return wwsBanner(d) + `<div class="wws-cup">${top}${list}</div>`;   // r689: session label + footer dropped (mockup)
 }
 function wwsGolfInner(d){
@@ -17283,8 +17281,25 @@ if (!window._wwsScrollEnd){
     const t = ev.target;
     if (!t.classList || !t.classList.contains('wws-g-scroll')) return;
     const slide = t.closest('.lf-slide');
-    if (slide && slide.classList.contains('active')) _wwsAdvance();
+    if (!slide || !slide.classList.contains('active')) return;
+    const hold = +(t.dataset.holdEnd || 0);               // r693: cup holds at the bottom before rotating
+    if (!hold) { _wwsAdvance(); return; }
+    const since = slide.dataset.since;
+    setTimeout(() => { if (slide.isConnected && slide.classList.contains('active') && slide.dataset.since === since) _wwsAdvance(); }, hold);
   });
+  document.addEventListener('animationstart', ev => {   // r693: size the cup pass to the real list
+    const t = ev.target;
+    if (t.classList && t.classList.contains('cup-list')) _cupMeasure(t);
+  });
+}
+/* r693: cup scroll distance/duration from the laid-out list: end = wrap − list (px), ~2.6s per row of
+   travel, min 8s. Called on animationstart (render + every activation restart) and after a data rewrite. */
+function _cupMeasure(t){
+  const wrap = t.parentElement; if (!wrap || !wrap.clientHeight) return;
+  const travel = Math.max(0, t.offsetHeight - wrap.clientHeight);
+  const rowH = (t.firstElementChild && t.firstElementChild.offsetHeight) || 1;
+  t.style.setProperty('--cupEnd', (-travel) + 'px');
+  t.style.animationDuration = Math.max(8, travel / rowH * 2.6).toFixed(1) + 's';
 }
 function _wwsCountTick(){                               // R13b: live "kicks off in" countdown
   document.querySelectorAll('.wws-count[data-kick]').forEach(el => {
@@ -17427,10 +17442,13 @@ function wwsFillSlides(){
     const sig = JSON.stringify(d);              // R12e: skip no-op rewrites — an
     if (el.dataset.sig === sig) return;         // innerHTML rewrite restarts CSS scroll
     el.dataset.sig = sig;
+    let _cupT = null;                             // r693: a live score change must not restart the cup pass
+    try { const o = el.querySelector('.cup-list.wws-g-scroll'), a = o && o.getAnimations && o.getAnimations()[0]; if (a) _cupT = a.currentTime; } catch(_){}
     el.innerHTML = wwsSlideInner(d);
     el.removeAttribute('data-ready');
     _wwsCountTick();
     if (typeof fitText === 'function') fitText(el);
+    if (_cupT != null) try { const n = el.querySelector('.cup-list.wws-g-scroll'); if (n){ _cupMeasure(n); const a = n.getAnimations()[0]; if (a) a.currentTime = _cupT; } } catch(_){}
     // r489: measure AFTER fitText — it rewrites font sizes, which changes the very line
     // heights the scroll distance is computed from. Runs again on activation (see
     // _wwsAdvance) for slides that had no layout yet at this point.
@@ -18439,7 +18457,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r692-shootout-walkoff-mlb-bust';
+const BUILD_MARKER = 'r693-cup-onepass';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
