@@ -500,12 +500,13 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 /* r687: TEAM MATCH-PLAY CUP (Presidents/Ryder/Solheim) — crests + team score up top, the session's matches
    looping below, points-to-win pinned at the bottom. Sized in the pane's cqh like the golf rows. */
 .wws-cup{display:flex;flex-direction:column;flex:1;min-height:0;}
-.cup-top{display:flex;align-items:center;justify-content:space-between;padding:0.6cqh 1cqh 0.4cqh;flex-shrink:0;}
+.cup-top{display:flex;align-items:center;justify-content:center;gap:2.2cqh;padding:0.6cqh 1cqh 0.4cqh;flex-shrink:0;}
 .cup-t{display:flex;align-items:center;gap:1.6cqh;min-width:0;}
 .cup-t img{width:9cqh;height:9cqh;object-fit:contain;flex-shrink:0;}
 .cup-abbr{font-size:4.6cqh;font-weight:900;color:rgba(255,255,255,0.85);letter-spacing:0.04em;}
 .cup-score{font-size:9cqh;font-weight:900;color:#fff;font-variant-numeric:tabular-nums;line-height:1;min-width:6cqh;text-align:center;}
 .cup-score.lead{color:#d4af37;}
+.cup-dash{font-size:6cqh;font-weight:900;color:rgba(255,255,255,0.35);line-height:1;}   /* r697: scores pulled together around a dash (Mike) */
 .cup-sess{font-size:2.7cqh;font-weight:800;letter-spacing:0.1em;color:rgba(255,255,255,0.5);text-transform:uppercase;text-align:center;padding:0.2cqh 1cqh 0.8cqh;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;}
 .cup-wrap{flex:1;min-height:0;overflow:hidden;position:relative;border-top:1px solid rgba(255,255,255,0.1);border-bottom:1px solid rgba(255,255,255,0.1);
   -webkit-mask-image:linear-gradient(transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(transparent,#000 6%,#000 94%,transparent);}
@@ -16808,13 +16809,14 @@ function wwsCupInner(d){
   const [A, H] = c.teams, aN = parseFloat(A.score) || 0, hN = parseFloat(H.score) || 0;
   const top = `<div class="cup-top">
     <div class="cup-t l"><img src="${A.logo}" alt="" onerror="this.style.opacity=0"><span class="cup-abbr">${esc(A.abbr)}</span><span class="cup-score${aN > hN ? ' lead' : ''}">${esc(A.score)}</span></div>
+    <span class="cup-dash">–</span>
     <div class="cup-t r"><span class="cup-score${hN > aN ? ' lead' : ''}">${esc(H.score)}</span><span class="cup-abbr">${esc(H.abbr)}</span><img src="${H.logo}" alt="" onerror="this.style.opacity=0"></div></div>`;
   const row = m => `<div class="cup-m${m.state === 'in' ? ' live' : ''}">
     <div class="cup-p l${m.away.win ? ' win' : ''}">${m.away.names.map(n => `<span data-fit="4.4" data-fit-min="2.9" data-fit-pad="3">${esc(_cupName(n))}</span>`).join('')}</div>
     <div class="cup-mid"><span class="cup-res">${esc(m.res)}</span><span class="cup-sub">${esc(m.sub)}</span></div>
     <div class="cup-p r${m.home.win ? ' win' : ''}">${m.home.names.map(n => `<span data-fit="4.4" data-fit-min="2.9" data-fit-pad="3">${esc(_cupName(n))}</span>`).join('')}</div></div>`;   // r691: fitText shrinks only a name that doesn't fit ON THIS SCREEN (kiosk font ~13% wider than headless); floor 2.9cqh > readability floor
   const rows = c.matches.map(row).join('');
-  const scroll = c.matches.length >= 3, dur = Math.max(5, (c.matches.length - 3) * 1.3);   // r693: estimate; _cupMeasure sets the real one
+  const scroll = c.matches.length >= 3, dur = Math.max(6, (c.matches.length - 3) * 1.8);   // r693: estimate; _cupMeasure sets the real one
   const list = `<div class="cup-wrap"><div class="cup-list${scroll ? ' wws-g-scroll' : ''}"${scroll ? ` data-hold-end="4000" style="animation-duration:${dur}s"` : ''}>${rows}</div></div>`;
   return wwsBanner(d) + `<div class="wws-cup">${top}${list}</div>`;   // r689: session label + footer dropped (mockup)
 }
@@ -17300,7 +17302,7 @@ function _cupMeasure(t){
   const travel = Math.max(0, t.offsetHeight - wrap.clientHeight);
   const rowH = (t.firstElementChild && t.firstElementChild.offsetHeight) || 1;
   t.style.setProperty('--cupEnd', (-travel) + 'px');
-  t.style.animationDuration = Math.max(5, travel / rowH * 1.3).toFixed(1) + 's';   // r694: 2x faster (Mike)
+  t.style.animationDuration = Math.max(6, travel / rowH * 1.8).toFixed(1) + 's';   // r697: a touch slower (1.3 → 1.8s/row)   // r694: 2x faster (Mike)
 }
 function _wwsCountTick(){                               // R13b: live "kicks off in" countdown
   document.querySelectorAll('.wws-count[data-kick]').forEach(el => {
@@ -18473,7 +18475,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r696-cup-singles';
+const BUILD_MARKER = 'r697-cup-scores-dash';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
