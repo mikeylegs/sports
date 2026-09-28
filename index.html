@@ -18340,6 +18340,35 @@ function renderLastFinalSlot(abbr, g, nextGame, slotClass, opts) {
 // standings / next slides (via renderLastFinalSlot bare mode) behind a dual
 // mini-rail. Rotation is the existing yank rotation; stand slides carry
 // data-div so paint() refreshes AL and NL East independently.
+/* r700: SEASON-OVER. A team whose MLB schedule has NO game (any type: regular, postseason,
+   spring) from today through +10 days is out of season → it leaves the anchor rotation (Mike:
+   'boot the Mets' after they missed the 2026 playoffs). 10 days clears every in-postseason gap
+   (series breaks are 3-5 days); today's game counts, so a team gets its final day. It returns on
+   its own once next season's schedule is within 10 days. Both out → NYY stays (the pane needs a
+   team). ?seasonover=off disables. Cached 6h, persisted so a reload doesn't flash the old team. */
+const SEASON_OVER_KEY = 'seasonOver_v1';
+window._seasonOver = window._seasonOver || (() => { try { return JSON.parse(localStorage.getItem(SEASON_OVER_KEY) || '{}'); } catch(_){ return {}; } })();
+function _seasonOut(t){
+  if (new URLSearchParams(location.search).get('seasonover') === 'off') return false;
+  const r = window._seasonOver[t]; return !!(r && r.over);
+}
+function _anchorAllowed(t){ return !_seasonOut(t) || (t === 'NYY' && _seasonOut('NYM')); }
+async function _seasonOverCheck(abbr, teamId){
+  const r = window._seasonOver[abbr];
+  if (r && Date.now() - r.at < 6 * 3600000) return;
+  const B = window._seasonOverBusy = window._seasonOverBusy || {};
+  if (B[abbr] && Date.now() - B[abbr] < 120000) return;   // one attempt per 2 min (in-flight / failing proxy)
+  B[abbr] = Date.now();
+  try {
+    const d = t => new Date(t).toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+    const raw = await proxyFetchText(_mlbBust(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${teamId}&startDate=${d(Date.now())}&endDate=${d(Date.now() + 10 * 86400000)}`));
+    const j = raw ? JSON.parse(raw) : null; if (!j || !Array.isArray(j.dates)) return;   // fail-open: unknown ≠ over
+    const n = j.dates.reduce((s, x) => s + ((x.games || []).length), 0);
+    window._seasonOver[abbr] = { over: n === 0, at: Date.now(), n };
+    try { const m = JSON.parse(localStorage.getItem(SEASON_OVER_KEY) || '{}'); m[abbr] = window._seasonOver[abbr]; localStorage.setItem(SEASON_OVER_KEY, JSON.stringify(m)); } catch(_){}   // merge-on-write
+  } catch(_){}
+}
+window._seasonOverCheck = _seasonOverCheck;
 function renderAnchorIdleSlot(yg, mg, yNext, mNext, mLive){   // r270: mLive = live NYM game (one live card, no next/standings filler)
   // R12b (panel feedback): NO combined rail — alternate the FULL single-team
   // pane, NYY then NYM, swapping every 36s (3 slide ticks). Each pane is the
@@ -18350,6 +18379,7 @@ function renderAnchorIdleSlot(yg, mg, yNext, mNext, mLive){   // r270: mLive = l
   window._anchorMerged = true;
   window._anchorArgs = { yg, mg, yNext, mNext, mLive };
   if (!window._anchorTeam) window._anchorTeam = 'NYY';
+  if (!_anchorAllowed(window._anchorTeam)) window._anchorTeam = window._anchorTeam === 'NYY' ? 'NYM' : 'NYY';   // r700
   // R13: swap is LAP-DRIVEN, not wall-clock — the rotation interval calls
   // _anchorSwap() exactly when the current pane's slide index wraps, so every
   // visit shows each slide exactly once (the 36s timer drifted against the 12s
@@ -18360,7 +18390,9 @@ function renderAnchorIdleSlot(yg, mg, yNext, mNext, mLive){   // r270: mLive = l
     const row = document.getElementById('row-MLB');
     const slot = row && row.querySelector('.mlb-feat-slot.yank');
     if (!slot) return false;
-    window._anchorTeam = window._anchorTeam === 'NYY' ? 'NYM' : 'NYY';
+    const _next = window._anchorTeam === 'NYY' ? 'NYM' : 'NYY';
+    if (!_anchorAllowed(_next)) return false;   // r700: out-of-season team never rotates in
+    window._anchorTeam = _next;
     const html = window._anchorTeam === 'NYY'
       ? renderLastFinalSlot('NYY', a.yg, a.yNext, 'yank')
       : (a.mLive ? mlbFeaturedSlotHtml(a.mLive, 'yank', 'METS')      // r270: NYM live = one live card
@@ -18483,7 +18515,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r699-wws-full-dwell';
+const BUILD_MARKER = 'r700-season-over';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -19056,6 +19088,7 @@ function renderMLBFullscreen(games, yesterdayGames=[]) {
         if (metYest && metYest.gameStatus === 'final' && _recapFresh(metYest)) { mRecap = metYest; _lastFinalLog('NYM','espnBridge',{id:metYest.id, awayScore:metYest.awayScore, homeScore:metYest.homeScore}); }
       }
     }
+    _seasonOverCheck('NYM', 121); _seasonOverCheck('NYY', 147);   // r700: async + cached; applies from the next render
     return renderAnchorIdleSlot(yRecap, mRecap, yankNext, metNext, _metLive);   // r270: NYM live card in rotation
   };
   const metSlotHtml = () => {           // r466: slot-2 — golf > perpetual WWS (NYM clutch removed)
