@@ -496,7 +496,7 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .wws-g-head{padding:0.2cqh 2cqh;border-bottom:1px solid rgba(255,255,255,0.12);}
 .wws-g-head span{font-size:2.8cqh!important;font-weight:800;letter-spacing:0.08em;color:rgba(255,255,255,0.45)!important;}
 .wws-g-scrollwrap{overflow:hidden;flex:1;position:relative;margin-top:0.6cqh;}
-.wws-g-scroll{animation:wwsGolfScroll linear 1 forwards;}
+.wws-g-scroll{animation:cupPass linear 1 forwards;animation-delay:3s;will-change:transform;}   /* r698: golf leaderboard uses the cup's measured pass (the old wwsGolfScroll guessed 30cqh of window → last row stopped halfway up) */
 /* r687: TEAM MATCH-PLAY CUP (Presidents/Ryder/Solheim) — crests + team score up top, the session's matches
    looping below, points-to-win pinned at the bottom. Sized in the pane's cqh like the golf rows. */
 .wws-cup{display:flex;flex-direction:column;flex:1;min-height:0;}
@@ -16859,7 +16859,7 @@ function wwsGolfInner(d){
     <span class="wws-g-rd">R${d.round||''}</span>
   </div>`;
   return wwsBanner(d) + head + rows[0] +
-    `<div class="wws-g-scrollwrap"><div class="wws-g-scroll" style="animation-duration:${Math.max(10,(d.sides.length-1)*2.5)}s">${rows.slice(1).join('')}</div></div>`;
+    `<div class="wws-g-scrollwrap"><div class="wws-g-scroll" data-hold-end="4000" style="animation-duration:${Math.max(6,(d.sides.length-5)*1.8)}s">${rows.slice(1).join('')}</div></div>`;
 }
 function wwsSoccerInner(d){
   // Deluxe World Cup treatment (round 10): oversized crest-as-flag, hero score,
@@ -17292,7 +17292,7 @@ if (!window._wwsScrollEnd){
   });
   document.addEventListener('animationstart', ev => {   // r693: size the cup pass to the real list
     const t = ev.target;
-    if (t.classList && t.classList.contains('cup-list')) _cupMeasure(t);
+    if (t.classList && t.classList.contains('wws-g-scroll')) _cupMeasure(t);   // r698: cup + golf leaderboard
   });
 }
 /* r693: cup scroll distance/duration from the laid-out list: end = wrap − list (px), ~2.6s per row of
@@ -17410,10 +17410,18 @@ function renderWwsSlot(bestLive){
           if (!cur.dataset.since){ cur.dataset.since = Date.now(); return; }
           const durMs = (parseFloat(sc.style.animationDuration) || 0) * 1000;
           if (Date.now() - +cur.dataset.since < durMs + 15000) return;
+        } else {
+          /* r699: THE SHORT-SLIDE BUG. This timer used to advance a plain slide on every 12s tick,
+             regardless of when that slide became active. A scroll card (cup/golf) advances itself on
+             its own clock (animationend + hold), so the NEXT slide landed at a random phase of the
+             12s grid and was cut after 0-12s (Mike: NYY 'up for a second or two'). Now: tick every 1s,
+             advance only once THIS slide has had its full 12s (data-since, preserved across rebuilds). */
+          if (!cur.dataset.since){ cur.dataset.since = Date.now(); return; }
+          if (Date.now() - +cur.dataset.since < 12000) return;
         }
       }
       _wwsAdvance();
-    }, 12000);
+    }, 1000);
   }
   // Round-10 note 10: no rail, no globe — the banner identifies the event and
   // the pane runs full slot width (also resolves the note-8 overflow).
@@ -17466,7 +17474,7 @@ function wwsFillSlides(){
     el.removeAttribute('data-ready');
     _wwsCountTick();
     if (typeof fitText === 'function') fitText(el);
-    if (_cupT != null) try { const n = el.querySelector('.wws-g-scroll'); if (n){ if (n.classList.contains('cup-list')) _cupMeasure(n); const a = n.getAnimations()[0]; if (a) a.currentTime = _cupT; } } catch(_){}
+    if (_cupT != null) try { const n = el.querySelector('.wws-g-scroll'); if (n){ _cupMeasure(n); const a = n.getAnimations()[0]; if (a) a.currentTime = _cupT; } } catch(_){}
     // r489: measure AFTER fitText — it rewrites font sizes, which changes the very line
     // heights the scroll distance is computed from. Runs again on activation (see
     // _wwsAdvance) for slides that had no layout yet at this point.
@@ -18475,7 +18483,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r697-cup-scores-dash';
+const BUILD_MARKER = 'r699-wws-full-dwell';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
