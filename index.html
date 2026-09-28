@@ -1929,6 +1929,7 @@ html.logoscore-v1 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-status{max-width:min(
    (gap:0, line opacity:0) so it's dropped from the markup entirely rather than shipping an
    invisible element. */
 .mlb-lg-divider{display:flex;align-items:center;flex:none;padding:0 1.5cqh;height:100%;}
+.mlb-card2 > .mlb-lg-divider{padding:0;}   /* r701: logo lives inside its league's first card */
 .mlb-lg-divider-logo{width:14.6cqh;height:14.6cqh;object-fit:contain;flex-shrink:0;
   filter:drop-shadow(0 0 6px rgba(255,255,255,0.25));opacity:0.9;}
 /* Pinned league logo (crossfades AL↔NL as the displayed set switches) */
@@ -7966,9 +7967,13 @@ function setupSubleagueRow(key, games, force=false) {
   const _band = lg => `<div class="mlb-lg-band ${lg}"></div>`;
   let unitHtml;
   if (_merged && games.length){
-    let prevSub=null, parts=[], sawDivider=false;
+    let prevSub=null, parts=[], sawDivider=false, pendingDiv=null, firstCard=-1;
+    /* r701: the league logo goes INSIDE the first card of its league, right after that card's r678
+       leading color band — as a sibling it sat between the previous game and the next game's band,
+       so it read as part of the PREVIOUS game (Mike: NBA logo inside NYI-TOR). */
+    const _withDiv = (html, lg) => html.replace(/^(\s*<div class="mlb-card2[^>]*>)/, '$1' + _bigLeagueDividerHtml(lg));
     for (const g of games){
-      if (g.__divider){ parts.push(_bigLeagueDividerHtml(g.__divider)); prevSub=null; sawDivider=true; continue; }
+      if (g.__divider){ pendingDiv = g.__divider; prevSub=null; sawDivider=true; continue; }
       if ((g.league||'MLB') === 'MLB'){
         const sub = _lgOf(g);
         if (prevSub && prevSub!==sub) parts.push(_band(sub));
@@ -7976,8 +7981,12 @@ function setupSubleagueRow(key, games, force=false) {
       } else {
         prevSub = null;   // r585: no thin-band seam between non-MLB games — the big divider owns those boundaries
       }
-      parts.push(mlbCardHtml(g));
+      let _h = mlbCardHtml(g);
+      if (pendingDiv){ _h = _withDiv(_h, pendingDiv); pendingDiv = null; }
+      if (firstCard < 0) firstCard = parts.length;
+      parts.push(_h);
     }
+    if (pendingDiv && firstCard >= 0) parts[firstCard] = _withDiv(parts[firstCard], pendingDiv);   // wrap divider → the loop's first game
     // r41's original wrap-seam cap only still applies when nothing else marked a boundary —
     // i.e. the whole sequence is one homogeneous MLB AL/NL block (every other-league case
     // already gets its wrap divider pushed explicitly by updateSubleaguePhased).
@@ -18515,7 +18524,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r700-season-over';
+const BUILD_MARKER = 'r701-crawl-logo-inside';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
