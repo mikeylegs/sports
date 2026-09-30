@@ -2438,7 +2438,7 @@ html.logoscore-v1 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-status{max-width:min(
     });
     // A8 missed HR — score jumped by >=1 for a favorite but no hr.fire near it
     all.filter(e=>e.cat==='score'&&e.event==='change'&&e.detail&&e.detail.fav&&e.detail.delta>=1).forEach(sc=>{
-      const near=all.find(e=>e.cat==='hr'&&e.event==='fire'&&Math.abs(e.t-sc.t)<=120000);
+      const near=all.find(e=>((e.cat==='hr'&&e.event==='fire')||(e.cat==='takeover'&&e.event==='fire'))&&Math.abs(e.t-sc.t)<=120000);   // r703: pbp fires the card BEFORE the scoreboard moves (9/30 grand slam: card 11:07:12, score 11:07:24)
       if(!near && sc.detail.likelyHR) F.push('⚠ POSSIBLE MISSED HR '+sc.et+' '+(sc.detail.team||'')+' scored (+'+sc.detail.delta+') no takeover fired');
     });
     // A9 stuck WWS — rotation pinned (tiny ready pool during live games) or same target repeatedly
@@ -3017,6 +3017,12 @@ function tvDelayMs(){
   return Math.max(0, Math.min(120, v)) * 1000;
 }
 window.tvDelay = sec => { try { localStorage.setItem(TV_DELAY_KEY, String(+sec)); } catch(_){} return tvDelayMs() / 1000; };
+/* r703: CC buttons — instant (tvDelayMs is read on every fetch), saved, no reload. */
+const _tvUrlLock = () => { const q = new URLSearchParams(location.search).get('tvdelay'); return q != null && q !== ''; };
+const _tvStep = d => { const cur = tvDelayMs() / 1000; if (_tvUrlLock()) return 'URL ?tvdelay=' + cur + ' is overriding — switch that flag OFF + reload first';
+  const n = Math.max(0, Math.min(120, cur + d)); window.tvDelay(n); return 'TV delay now ' + n + 's (live)'; };
+window.tvDelayUp = () => _tvStep(2); window.tvDelayDown = () => _tvStep(-2);
+window.tvDelayShow = () => 'TV delay ' + (tvDelayMs() / 1000) + 's' + (_tvUrlLock() ? ' (URL override)' : '');
 const _tvBuf = new Map();
 const _tvLive = u => /statsapi\.mlb\.com|site\.api\.espn\.com|site\.web\.api\.espn\.com|api-web\.nhle\.com/.test(String(u));
 const _tvKey = u => String(u).replace(/([?&])_t=\d+(&|$)/, (m, a, b) => b ? a : '').replace(/[?&]$/, '');
@@ -3334,17 +3340,25 @@ function _montageClipFor(items, hr){
     /* r283 (1c) — REJECT spectator / reaction / non-broadcast clips. Debut HRs attract these:
        "Parents watch X hit his first home run" (family in the stands, not the swing), plus
        data-viz / animated / statcast-analysis cuts. These use HR wording but aren't the play. */
-    if(/\b(parents?|family|watch(es|ed|ing)?|celebrat|reacts?|reaction|from the stands|in the stands|data viz|animated|statcast|an animated look)\b/i.test(tl)) continue;
+    if(/\b(parents?|family|watch(es|ed|ing)?|celebrat|reacts?|reaction|from the stands|in the stands|data viz|animated|statcast|an animated look|field view|measuring|bat[\s-]?tracking|tracking data|pitch tracking|stats on|sound on|mic'?d up|slow[\s-]?mo)\b/i.test(tl)) continue;   /* r703: 9/30 montage played 'Field View: …', 'Measuring the stats on …', '… through bat tracking data' */
     /* r417 — REJECT analysis / breakdown videos. "A deep dive into X's home run" and "Breaking
        down X's home run" carry HR wording but are Statcast-style analysis, not the play call —
        they were beating the real ordinal clip ("...first-career home run") which r283 demotes. */
     if(/\b(deep[\s-]?dive|breaking down|breakdown|by the numbers|anatomy of|the science of|explained)\b/i.test(tl)) continue;
+    /* r704 — MLB's OWN TAGS (Mike's 9/30 CLIP TAG PROBE). Real broadcast HR clips carry taxonomy
+       'highlight' + 'home-run'. Field View renders carry 'exclusive-angle'; Statcast cuts ('crushes
+       423-foot home run') 'player-tracking'; talk clips 'interview'/'press-conference'. Radio calls
+       are tagged like highlights, so they go by title. Tags beat titles: postseason titles have no (N). */
+    const _tax=mlbKw(it);
+    if(_tax.some(v=>/^(exclusive-angle|player-tracking|interview|press-conference)$/.test(v))) continue;
+    if(/\bradio call\b/i.test(tl)) continue;
+    const tagHL = _tax.includes('highlight') && _tax.includes('home-run');
     const parenM=title.match(/\((\d+)\)/);                             // the definitive HR-clip format
     const hasParenN=!!parenM;
     const clipN=parenM?parseInt(parenM[1],10):null;
     const isHrClip=hasParenN
                  || /(first|second|third|1st|2nd|3rd)[^.]*(career )?home run/i.test(title)
-                 || /homers|home run/i.test(title);
+                 || /homers|home run|homer\b|grand slam/i.test(title);   // r704: postseason titles: "Ben Rice's GRAND SLAM!"
     if(!isHrClip) continue;                                             // (2) must be an HR clip
     const dur=_montageDurSec(it.duration);
     if(dur && dur>90) continue;                                        // backstop, not primary
@@ -3363,20 +3377,29 @@ function _montageClipFor(items, hr){
     /* r220: an EXACT (N) match to this homer's number is the definitive clip — rank it above
        every other (N). This disambiguates a same-player multi-HR game (Lindor 7 vs 8). */
     const exactN = (targetN!=null && clipN!=null && clipN===targetN);
-    cands.push({url, title, rank, exactN, dur:(dur==null?999:dur)});
+    /* r704: which homer? No (N) in postseason titles, so match the TYPE (rbi 1-4) — a 2-HR game
+       (Rice: solo + grand slam) must not show the solo clip for the slam. -1 wrong type, 1 right, 0 silent. */
+    const _types=['solo','two-run','three-run','grand slam'], _rbi=+((hr.result||{}).rbi)||0, _want=_types[_rbi-1];
+    const _said=_types.filter(w=>tl.indexOf(w)>=0);
+    const typeFit = !_want||!_said.length ? 0 : (_said.includes(_want) ? 1 : -1);
+    const _cut=((it.image||{}).cuts||[]).find(c=>c.width>=320&&c.width<=640)||{};
+    cands.push({url, title, rank, exactN, typeFit, tagHL, thumb:_cut.src||'', dur:(dur==null?999:dur)});
   }
   if(!cands.length) return null;
   /* r220 sort: exact-(N)-match first (the specific homer), then rank, then duration. */
   cands.sort((a,b)=> (a.exactN!==b.exactN) ? (a.exactN?-1:1)
+                    : (a.typeFit!==b.typeFit) ? b.typeFit-a.typeFit          // r704: the right homer first
+                    : (a.tagHL!==b.tagHL) ? (a.tagHL?-1:1)                   // r704: MLB-tagged highlight beats everything else
                     : (a.rank!==b.rank ? a.rank-b.rank : a.dur-b.dur));
   // r280: selection log — surface WHICH title won + the alternatives, so a wrong-clip pick
   // (e.g. a Statcast/short clip beating the broadcast HR) is diagnosable instead of silent.
   // r281: capture selection into a ring buffer (rendered in the CC Montage tab, not just console).
   try{
     var _pickLine = cands[0].title + '  ⟵ from ' + cands.length + ': '
-      + cands.slice(0,5).map(function(c){return '[r'+c.rank+(c.exactN?'*':'')+' '+c.dur+'s] '+String(c.title).slice(0,40);}).join('  ');
+      + cands.slice(0,5).map(function(c){return '[r'+c.rank+(c.exactN?'*':'')+(c.tagHL?' HL':'')+(c.typeFit>0?' T+':c.typeFit<0?' T-':'')+' '+c.dur+'s] '+String(c.title).slice(0,40);}).join('  ');
     if(!window.MONTAGE) window.MONTAGE={};
-    (MONTAGE._pickLog = MONTAGE._pickLog || []).unshift({ t:Date.now(), line:_pickLine });
+    (MONTAGE._pickLog = MONTAGE._pickLog || []).unshift({ t:Date.now(), line:_pickLine,
+      thumbs: cands.slice(0,4).map(function(c,i){ return { src:c.thumb, title:String(c.title).slice(0,60), won:i===0 }; }) });   // r704: CC Montage thumbnails
     if(MONTAGE._pickLog.length>10) MONTAGE._pickLog.length=10;   // keep last 10
     if(new URLSearchParams(location.search).get('montagelog')==='1'){ console.log('[montage] pick →', _pickLine); }
   }catch(_){}
@@ -3655,6 +3678,32 @@ function _montageFade(done){
     }, 200);
   }, 320);
 }
+/* r703: WALL BLACK WATCHDOG — backstop for every path. #mlb-fade (z92 black) and #montage-scrim are
+   pointer-events:none, so they are invisible to hit-tests and nothing 'owns' them once a montage ends.
+   If the fade has been up >15s, or the scrim is up with no montage running, and no video is actually
+   playing → lower/remove it and log. Legit fades last <1s; a clip-start fade clears on reveal. */
+(function(){
+  let fadeSince = 0, scrimSince = 0;
+  setInterval(() => {
+    try {
+      const now = Date.now(), f = document.getElementById('mlb-fade'), sc = document.getElementById('montage-scrim');
+      const playing = [...document.querySelectorAll('video')].some(v => !v.paused && !v.ended && v.readyState > 2);
+      const mOn = !!((window.MONTAGE && MONTAGE.on) || (window.GWG_MONTAGE && GWG_MONTAGE.on));
+      const up = f && (f.classList.contains('on') || f.classList.contains('show'));
+      fadeSince = up ? (fadeSince || now) : 0;
+      if (up && !playing && now - fadeSince > 15000){
+        f.classList.remove('on'); setTimeout(() => { try { f.classList.remove('show'); } catch(_){} }, 340); fadeSince = 0;
+        try { console.warn('[wall] black-watchdog: lowered a stuck #mlb-fade'); if (window.nightEvent) nightEvent('sys', 'warn', { m: '[wall] black-watchdog lowered stuck #mlb-fade' }); } catch(_){}
+      }
+      const sUp = sc && sc.style.opacity !== '0' && !mOn;
+      scrimSince = sUp ? (scrimSince || now) : 0;
+      if (sUp && now - scrimSince > 15000){
+        try { _montageScrim(false); } catch(_){ try { sc.remove(); } catch(__){} } scrimSince = 0;
+        try { console.warn('[wall] black-watchdog: removed an orphan #montage-scrim'); if (window.nightEvent) nightEvent('sys', 'warn', { m: '[wall] black-watchdog removed orphan scrim' }); } catch(_){}
+      }
+    } catch(_){}
+  }, 2000);
+})();
 function _montageScrim(on){
   let sc=document.getElementById('montage-scrim');
   if(!sc && on){ sc=document.createElement('div'); sc.id='montage-scrim';
@@ -4117,6 +4166,7 @@ function _montageStop(finished){
     _queue.forEach((op,i)=>{ if(op){ op._seamRelease=false; setTimeout(()=>{ try{ showTakeover(op); }catch(_){} }, 400+i*200); } });
   }
   _montageScrim(false);   // r208 #3: drop the sequence scrim, panel returns
+  try{ const _f=document.getElementById('mlb-fade'); if(_f){ _f.classList.remove('on'); setTimeout(()=>{ try{ _f.classList.remove('show'); }catch(_){} }, 340); } }catch(_){}   // r703: a clip cut by the end-guard never 'revealed', so nothing lowered the fade → 20-min black wall (9/30)
   clearTimeout(MONTAGE._holdT);
   if(RECAP._onEnd){ RECAP._onEnd=null; }
   const el=document.getElementById('mlb-takeover'); if(el) el.className='';
@@ -4972,6 +5022,8 @@ async function mlbCompanionClip(gamePk, sinceMs, playerId){
        show nothing. The (?<!fly |ground |line |foul ) guard preserves "...on a fly ball to...". */
     {
       const _tl = String(it.headline || it.title || '');
+      if (/\b(field view|measuring the stats|bat[\s-]?tracking|tracking data|statcast|animated|radio call)\b/i.test(_tl)) { _au.rawPlay=(_au.rawPlay||0)+1; return false; }   // r703: analysis/render cuts are never the play
+      if (mlbKw(it).some(v => /^(exclusive-angle|player-tracking|interview|press-conference)$/.test(v))) { _au.rawPlay=(_au.rawPlay||0)+1; return false; }   // r704: MLB's own tags (9/30 probe)
       if (/\bin play,|\bcalled strike\b|\bswinging strike\b|\bfoul tip\b|\bstrikes out\b|hit by pitch|wild pitch|(?<!fly |ground |line |foul )\bball (to|four|in dirt)\b/i.test(_tl)) { _au.rawPlay=(_au.rawPlay||0)+1; return false; }
     }
     // ★ if MLB told us WHO, require the clip to be tagged with them. This is the
@@ -9156,6 +9208,7 @@ function showTakeover(opts){
        fires at the seam; its companion clip lands ~2min later as its own interrupt; the montage
        flows around it, never freezing for the full HR sequence. */
     MONTAGE.hrQueue = MONTAGE.hrQueue || [];
+    if (opts && !opts._firedAt) opts._firedAt = Date.now();   // r703: a queued live HR keeps its REAL fire time (seam release can be a beat later)
     MONTAGE.hrQueue.push(opts);
     MONTAGE.deferred = opts;   // keep the HUD 'deferred' readout meaningful (latest)
     _mtrace('showTakeover','HR queued ('+MONTAGE.hrQueue.length+') '+((opts&&opts.mlbTeam)||''));
@@ -9190,13 +9243,16 @@ function showTakeover(opts){
     const logTeam = opts && (opts.mlbTeam || opts.brainTeam);
     const firedVia = opts && opts.mlbTeam ? 'checkBigMoments'
                    : opts && opts.brainTeam ? 'BRAIN.fire' : 'unknown';
-    if (logTeam && (TKO_MEASURE || TKO_PLAY)){
+    /* r703: a MONTAGE beat is an OLD homer — the montage already chose its clip. The live watch below
+       assumes the HR just happened (searches 'first clip after now'), so on a replay it grabbed whatever
+       the game posted next (9/30: 'Payton Tolle K's Heliot Ramos' played as Ben Rice's companion). */
+    if (logTeam && (TKO_MEASURE || TKO_PLAY) && !(opts && opts.montage)){
       // r656: under the wall each HR keeps its OWN companion watch -- superseding silently lost the
       // first HR's clip whenever a second HR fired before it landed. Legacy path unchanged.
       // r664: under the wall NOTHING supersedes -- a win splash (unmanaged) used to cancel a pending
       // HR clip's watch too, silently losing that clip if it hadn't landed yet.
       if (window._tkoCancel && !window.WALL) { try { window._tkoCancel(); } catch(_){} }   // supersede in-flight watch
-      const firedAt = (opts && opts._firedAt) || Date.now();   // r656: original fire time when the card waited in the wall's line
+      const firedAt = ((opts && opts._firedAt) || Date.now()) - (typeof tvDelayMs === 'function' ? tvDelayMs() : 0);   // r656: original fire time when the card waited in the wall's line; r703: minus the TV delay (the play is D older than our detection)
       window._tkoCompanion = 'watching…';
       const rec = tkoLogStart({
         team: logTeam, type: opts.type || 'takeover', firedVia,
@@ -18565,7 +18621,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r702-tv-delay';
+const BUILD_MARKER = 'r704-clip-tags-thumbs';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -19129,7 +19185,7 @@ function renderMLBFullscreen(games, yesterdayGames=[]) {
       }
     }
     let mRecap = (metGame && metGame.gameStatus === 'final') ? metGame : null;
-    if (!mRecap){
+    if (!mRecap && !_seasonOut('NYM')){   // r703: out-of-season team → stop resolving its (days-old) last game
       if (_mlbYestCache.NYM !== undefined){
         if (_mlbYestCache.NYM && _recapFresh(_mlbYestCache.NYM)) { mRecap = _mlbYestCache.NYM; _lastFinalLog('NYM','mlbResolved',{gamePk:mRecap.gamePk}); }
         else _lastFinalLog('NYM','mlbHold',{});
@@ -20883,7 +20939,10 @@ window.CC = (function(){
    {g:'Video',n:'dirlog',t:'toggle',d:'Director decision log'},
    {g:'Video',n:'mlbvid',t:'toggle',d:'MLB video pipeline trace'},
    {g:'Video',n:'rotations',t:'num',d:'Cap filler rotations'},
-   {g:'Live',n:'tvdelay',t:'num',def:'20',d:'TV delay, seconds (default 20 = NBC timing 9/30; 0 = off). Or window.tvDelay(N) — no reload'},
+   {g:'Live',n:'tvup',t:'action',fn:'tvDelayUp',d:'TV delay +2s — instant, saved'},
+   {g:'Live',n:'tvdown',t:'action',fn:'tvDelayDown',d:'TV delay −2s — instant, saved'},
+   {g:'Live',n:'tvshow',t:'action',fn:'tvDelayShow',d:'Show current TV delay'},
+   {g:'Live',n:'tvdelay',t:'num',def:'20',d:'Hard override via URL (needs reload; beats the buttons above — leave OFF normally)'},
    {g:'Video',n:'montage',t:'action',fn:'montageRun',d:'Start the HR montage block (no reload; ?montage=1 still works)'},   // r680: was a reload toggle
    {g:'Video',n:'montagelog',t:'toggle',d:'Montage state HUD'},
    {g:'Takeover/HR',n:'ticks',t:'toggle',d:'Per-play tick log (pitch-by-pitch)'},
@@ -21387,7 +21446,12 @@ window.CC = (function(){
       var _sig=lines.join('\n');
       if(em && em.__ccSig!==_sig){
         em.__ccSig=_sig;
-        em.innerHTML='<pre>'+_sig.replace(/</g,'&lt;')+'</pre>'
+        /* r704: thumbnails of each pick's top candidates (winner outlined) — a render/Statcast win is visible at a glance */
+        var _th=(M&&M.pickLog||[]).slice(0,6).map(function(p){ return '<div style="display:flex;gap:6px;margin:4px 0;align-items:flex-start">'
+          + (p.thumbs||[]).filter(function(x){return x.src;}).map(function(x){ return '<figure style="margin:0;width:120px;font-size:9px;line-height:1.2;color:#9ab">'
+            + '<img src="'+x.src.replace(/"/g,'')+'" style="width:120px;height:68px;object-fit:cover;border-radius:3px;'+(x.won?'outline:2px solid #4ade80;':'opacity:.55;')+'">'
+            + '<figcaption>'+(x.won?'\u2714 ':'')+String(x.title).replace(/</g,'&lt;')+'</figcaption></figure>'; }).join('') + '</div>'; }).join('');
+        em.innerHTML=(_th?'<div class="nt">CLIP PICKS \u2014 winner outlined</div>'+_th:'')+'<pre>'+_sig.replace(/</g,'&lt;')+'</pre>'
           + '<div class="nt">Live montage state. Auto-scheduling (fire in the NYY-final gap) is not wired yet — '
           + 'currently started via <code>?montage=1</code> / <code>montageStart()</code>.</div>';
       }
