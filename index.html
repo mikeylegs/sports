@@ -2981,7 +2981,7 @@ function fetchWithTimeout(url, ms) {
 }
 
 // R60: text variant for non-JSON (RSS/XML). proxyFetch hardcodes JSON parsing.
-async function proxyFetchText(url, skipDirect) {
+async function _proxyFetchTextRaw(url, skipDirect) {   // r702: raw network; proxyFetchText (below) = TV-delayed
   // r632b: skipDirect lets a caller that KNOWS the target has no CORS header (e.g. NHL's
   // api-web.nhle.com, confirmed live) skip the doomed direct attempt entirely -- avoids a
   // browser-logged CORS console error on every single poll tick. Default false: every
@@ -3001,6 +3001,39 @@ async function proxyFetchText(url, skipDirect) {
   }
   return null;
 }
+/* ═══ r702 TV DELAY ═══ The wall was ~20s AHEAD of the NBC broadcast (Mike timed an out: 20s).
+   Every live-data response (statsapi, ESPN site APIs, NHL api-web) is buffered with its arrival
+   time and callers get the NEWEST snapshot that is at least D old — so scores, count, bases, the
+   crawl, HR/goal/win splashes and clip discovery all play back D late, in order, nothing dropped.
+   Monotonic: until a snapshot has aged D, the OLDEST one is served (never jumps backwards).
+   A failed fetch never resurrects data older than D+60s. D: ?tvdelay=N > localStorage
+   (window.tvDelay(N)) > 20s default; 0 = off. Lag instrument uses the raw fetch (measures sources). */
+const TV_DELAY_KEY = 'tvDelaySec_v1', TV_DELAY_DEFAULT = 20;
+function tvDelayMs(){
+  const q = new URLSearchParams(location.search).get('tvdelay');
+  let v = q != null && q !== '' ? parseFloat(q) : NaN;
+  if (!isFinite(v)) { try { v = parseFloat(localStorage.getItem(TV_DELAY_KEY)); } catch(_){ v = NaN; } }
+  if (!isFinite(v)) v = TV_DELAY_DEFAULT;
+  return Math.max(0, Math.min(120, v)) * 1000;
+}
+window.tvDelay = sec => { try { localStorage.setItem(TV_DELAY_KEY, String(+sec)); } catch(_){} return tvDelayMs() / 1000; };
+const _tvBuf = new Map();
+const _tvLive = u => /statsapi\.mlb\.com|site\.api\.espn\.com|site\.web\.api\.espn\.com|api-web\.nhle\.com/.test(String(u));
+const _tvKey = u => String(u).replace(/([?&])_t=\d+(&|$)/, (m, a, b) => b ? a : '').replace(/[?&]$/, '');
+function _tvServe(url, raw){
+  const D = tvDelayMs(); if (!D || !_tvLive(url)) return raw;
+  const k = _tvKey(url), now = Date.now();
+  let a = _tvBuf.get(k); if (!a){ a = []; _tvBuf.set(k, a); if (_tvBuf.size > 400) _tvBuf.delete(_tvBuf.keys().next().value); }
+  if (raw != null) a.push({ t: now, v: raw });
+  let i = -1; for (let j = a.length - 1; j >= 0; j--) if (now - a[j].t >= D){ i = j; break; }
+  if (i > 0){ a.splice(0, i); i = 0; }
+  const e = i === 0 ? a[0] : (a.length ? a[0] : null);
+  if (!e) return raw;
+  if (raw == null && now - e.t > D + 60000) return raw;          // fetch failing: don't pass off old data as live
+  return e.v;
+}
+window._tvServe = _tvServe; window._tvBuf = _tvBuf;
+async function proxyFetchText(url, skipDirect){ return _tvServe(url, await _proxyFetchTextRaw(url, skipDirect)); }
 
 /* ══════════════════════════════════════════════════════════════════════════════
    R120 · hudMake() — SHARED HUD CHROME. Every diagnostic HUD gets this. No excuses.
@@ -6077,7 +6110,7 @@ const LAG = (() => {
   const P = { mlb: createLagPairer((f, l, t) => store.add('mlb', f, l, t)), nhl: createLagPairer((f, l, t) => store.add('nhl', f, l, t)) };
   const st = { polls: 0, last: 0, fails: { mlb: 0, nhl: 0 }, live: { mlb: false, nhl: false }, started: Date.now() };
   const ab = a => { a = String(a || '').toUpperCase(); try{ return normalizeAbbr('NHL', a); }catch(_){ return a; } };
-  const get = async (u, skip) => { try{ const r = await proxyFetchText(u, skip); return r ? JSON.parse(r) : null; }catch(_){ return null; } };
+  const get = async (u, skip) => { try{ const r = await _proxyFetchTextRaw(u, skip);   /* r702: instrument measures RAW source timing (no TV delay) */ return r ? JSON.parse(r) : null; }catch(_){ return null; } };
   /* r670: ESPN scoreboard with EXPLICIT dates. The bare endpoint serves a stale default day (the
      same trap fetchLeague documents) -- 9/24 00:15 ET it returned 9/20's slate, so ESPN had zero
      live MLB rows and nothing could pair. Today always; yesterday too between midnight and 6am ET,
@@ -6451,7 +6484,7 @@ if (new URLSearchParams(location.search).get('tkotest') === '1') {
   });
 }
 
-async function proxyFetch(url) {
+async function _proxyFetchRaw(url) {   // r702: raw network; proxyFetch (below) = TV-delayed
   // 1. Try ESPN directly first
   try {
     const res = await fetchWithTimeout(url, 8000);
@@ -6484,6 +6517,14 @@ async function proxyFetch(url) {
     }
   }
   throw new Error('All fetch attempts failed');
+}
+async function proxyFetch(url){   // r702: TV delay (stored as text so a caller mutating the JSON can't corrupt the buffer)
+  if (!tvDelayMs() || !_tvLive(url)) return _proxyFetchRaw(url);
+  let raw = null, err = null;
+  try { raw = JSON.stringify(await _proxyFetchRaw(url)); } catch(e){ err = e; }
+  const v = _tvServe(url, raw);
+  if (v == null) throw (err || new Error('All fetch attempts failed'));
+  return JSON.parse(v);
 }
 
 const SPEED = 110;
@@ -18524,7 +18565,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r701-crawl-logo-inside';
+const BUILD_MARKER = 'r702-tv-delay';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -20842,6 +20883,7 @@ window.CC = (function(){
    {g:'Video',n:'dirlog',t:'toggle',d:'Director decision log'},
    {g:'Video',n:'mlbvid',t:'toggle',d:'MLB video pipeline trace'},
    {g:'Video',n:'rotations',t:'num',d:'Cap filler rotations'},
+   {g:'Live',n:'tvdelay',t:'num',def:'20',d:'TV delay, seconds (default 20 = NBC timing 9/30; 0 = off). Or window.tvDelay(N) — no reload'},
    {g:'Video',n:'montage',t:'action',fn:'montageRun',d:'Start the HR montage block (no reload; ?montage=1 still works)'},   // r680: was a reload toggle
    {g:'Video',n:'montagelog',t:'toggle',d:'Montage state HUD'},
    {g:'Takeover/HR',n:'ticks',t:'toggle',d:'Per-play tick log (pitch-by-pitch)'},
