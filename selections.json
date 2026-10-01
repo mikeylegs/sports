@@ -1,16 +1,7 @@
 {
   "v": 1,
-  "updated": "2026-10-01T01:43:32.412Z",
+  "updated": "2026-10-01T01:43:46.051Z",
   "events": [
-    {
-      "league": "golf/pga",
-      "label": "Golf (PGA)",
-      "espnId": "401824815",
-      "title": "INTL @ USA",
-      "showFrom": "20260927",
-      "showUntil": "20260927",
-      "rank": 1
-    },
     {
       "league": "baseball/mlb",
       "label": "MLB",
@@ -18,7 +9,7 @@
       "title": "Chicago Cubs @ San Diego Padres",
       "showFrom": "20260930",
       "showUntil": "20260930",
-      "rank": 2
+      "rank": 1
     },
     {
       "league": "hockey/nhl",
@@ -27,7 +18,7 @@
       "title": "New York Islanders @ Toronto Maple Leafs",
       "showFrom": "20260930",
       "showUntil": "20260930",
-      "rank": 3
+      "rank": 2
     },
     {
       "league": "hockey/nhl",
@@ -36,7 +27,7 @@
       "title": "Pittsburgh Penguins @ Philadelphia Flyers",
       "showFrom": "20260930",
       "showUntil": "20260930",
-      "rank": 4
+      "rank": 3
     },
     {
       "league": "hockey/nhl",
@@ -45,7 +36,7 @@
       "title": "Los Angeles Kings @ Colorado Avalanche",
       "showFrom": "20260930",
       "showUntil": "20260930",
-      "rank": 5
+      "rank": 4
     }
   ],
   "watch": {
