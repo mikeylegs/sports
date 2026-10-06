@@ -3345,12 +3345,20 @@ function _montageClipFor(items, hr){
        down X's home run" carry HR wording but are Statcast-style analysis, not the play call —
        they were beating the real ordinal clip ("...first-career home run") which r283 demotes. */
     if(/\b(deep[\s-]?dive|breaking down|breakdown|by the numbers|anatomy of|the science of|explained)\b/i.test(tl)) continue;
+    /* r704 — MLB's OWN TAGS (Mike's 9/30 CLIP TAG PROBE). Real broadcast HR clips carry taxonomy
+       'highlight' + 'home-run'. Field View renders carry 'exclusive-angle'; Statcast cuts ('crushes
+       423-foot home run') 'player-tracking'; talk clips 'interview'/'press-conference'. Radio calls
+       are tagged like highlights, so they go by title. Tags beat titles: postseason titles have no (N). */
+    const _tax=mlbKw(it);
+    if(_tax.some(v=>/^(exclusive-angle|player-tracking|interview|press-conference)$/.test(v))) continue;
+    if(/\bradio call\b/i.test(tl)) continue;
+    const tagHL = _tax.includes('highlight') && _tax.includes('home-run');
     const parenM=title.match(/\((\d+)\)/);                             // the definitive HR-clip format
     const hasParenN=!!parenM;
     const clipN=parenM?parseInt(parenM[1],10):null;
     const isHrClip=hasParenN
                  || /(first|second|third|1st|2nd|3rd)[^.]*(career )?home run/i.test(title)
-                 || /homers|home run/i.test(title);
+                 || /homers|home run|homer\b|grand slam/i.test(title);   // r704: postseason titles: "Ben Rice's GRAND SLAM!"
     if(!isHrClip) continue;                                             // (2) must be an HR clip
     const dur=_montageDurSec(it.duration);
     if(dur && dur>90) continue;                                        // backstop, not primary
@@ -3369,20 +3377,29 @@ function _montageClipFor(items, hr){
     /* r220: an EXACT (N) match to this homer's number is the definitive clip — rank it above
        every other (N). This disambiguates a same-player multi-HR game (Lindor 7 vs 8). */
     const exactN = (targetN!=null && clipN!=null && clipN===targetN);
-    cands.push({url, title, rank, exactN, dur:(dur==null?999:dur)});
+    /* r704: which homer? No (N) in postseason titles, so match the TYPE (rbi 1-4) — a 2-HR game
+       (Rice: solo + grand slam) must not show the solo clip for the slam. -1 wrong type, 1 right, 0 silent. */
+    const _types=['solo','two-run','three-run','grand slam'], _rbi=+((hr.result||{}).rbi)||0, _want=_types[_rbi-1];
+    const _said=_types.filter(w=>tl.indexOf(w)>=0);
+    const typeFit = !_want||!_said.length ? 0 : (_said.includes(_want) ? 1 : -1);
+    const _cut=((it.image||{}).cuts||[]).find(c=>c.width>=320&&c.width<=640)||{};
+    cands.push({url, title, rank, exactN, typeFit, tagHL, thumb:_cut.src||'', dur:(dur==null?999:dur)});
   }
   if(!cands.length) return null;
   /* r220 sort: exact-(N)-match first (the specific homer), then rank, then duration. */
   cands.sort((a,b)=> (a.exactN!==b.exactN) ? (a.exactN?-1:1)
+                    : (a.typeFit!==b.typeFit) ? b.typeFit-a.typeFit          // r704: the right homer first
+                    : (a.tagHL!==b.tagHL) ? (a.tagHL?-1:1)                   // r704: MLB-tagged highlight beats everything else
                     : (a.rank!==b.rank ? a.rank-b.rank : a.dur-b.dur));
   // r280: selection log — surface WHICH title won + the alternatives, so a wrong-clip pick
   // (e.g. a Statcast/short clip beating the broadcast HR) is diagnosable instead of silent.
   // r281: capture selection into a ring buffer (rendered in the CC Montage tab, not just console).
   try{
     var _pickLine = cands[0].title + '  ⟵ from ' + cands.length + ': '
-      + cands.slice(0,5).map(function(c){return '[r'+c.rank+(c.exactN?'*':'')+' '+c.dur+'s] '+String(c.title).slice(0,40);}).join('  ');
+      + cands.slice(0,5).map(function(c){return '[r'+c.rank+(c.exactN?'*':'')+(c.tagHL?' HL':'')+(c.typeFit>0?' T+':c.typeFit<0?' T-':'')+' '+c.dur+'s] '+String(c.title).slice(0,40);}).join('  ');
     if(!window.MONTAGE) window.MONTAGE={};
-    (MONTAGE._pickLog = MONTAGE._pickLog || []).unshift({ t:Date.now(), line:_pickLine });
+    (MONTAGE._pickLog = MONTAGE._pickLog || []).unshift({ t:Date.now(), line:_pickLine,
+      thumbs: cands.slice(0,4).map(function(c,i){ return { src:c.thumb, title:String(c.title).slice(0,60), won:i===0 }; }) });   // r704: CC Montage thumbnails
     if(MONTAGE._pickLog.length>10) MONTAGE._pickLog.length=10;   // keep last 10
     if(new URLSearchParams(location.search).get('montagelog')==='1'){ console.log('[montage] pick →', _pickLine); }
   }catch(_){}
@@ -5005,7 +5022,8 @@ async function mlbCompanionClip(gamePk, sinceMs, playerId){
        show nothing. The (?<!fly |ground |line |foul ) guard preserves "...on a fly ball to...". */
     {
       const _tl = String(it.headline || it.title || '');
-      if (/\b(field view|measuring the stats|bat[\s-]?tracking|tracking data|statcast|animated)\b/i.test(_tl)) { _au.rawPlay=(_au.rawPlay||0)+1; return false; }   // r703: analysis/render cuts are never the play
+      if (/\b(field view|measuring the stats|bat[\s-]?tracking|tracking data|statcast|animated|radio call)\b/i.test(_tl)) { _au.rawPlay=(_au.rawPlay||0)+1; return false; }   // r703: analysis/render cuts are never the play
+      if (mlbKw(it).some(v => /^(exclusive-angle|player-tracking|interview|press-conference)$/.test(v))) { _au.rawPlay=(_au.rawPlay||0)+1; return false; }   // r704: MLB's own tags (9/30 probe)
       if (/\bin play,|\bcalled strike\b|\bswinging strike\b|\bfoul tip\b|\bstrikes out\b|hit by pitch|wild pitch|(?<!fly |ground |line |foul )\bball (to|four|in dirt)\b/i.test(_tl)) { _au.rawPlay=(_au.rawPlay||0)+1; return false; }
     }
     // ★ if MLB told us WHO, require the clip to be tagged with them. This is the
@@ -6700,7 +6718,12 @@ function getLayoutMode() {
   if (params.get('demo') && params.get('demo') !== 'all') return 'normal';
   const now = new Date();
   if (now <= SEASON_CONFIG.champUntil) return 'champions';
-  if (now >= SEASON_CONFIG.mlbFullStart && now <= SEASON_CONFIG.mlbFullEnd) return 'mlbFull';
+  /* r705: mlbFullEnd (Oct 6) flipped every screen back to the spring quadrant layout the moment
+     NHL/NBA opened — that layout hasn't been maintained since June. The MLB-full layout IS the panel
+     now (merged NHL/NBA/MLB crawl, WWS, anchor rotation; season-over handles who's in the anchor),
+     so it stays on year-round. The old layout is still reachable with ?layout=normal. */
+  if (params.get('layout') === 'normal') return 'normal';
+  if (now >= SEASON_CONFIG.mlbFullStart) return 'mlbFull';
   return 'normal';
 }
 
@@ -18603,7 +18626,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r703-montage-clips-black-guard';
+const BUILD_MARKER = 'r705-mlbfull-yearround';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
@@ -21428,7 +21451,12 @@ window.CC = (function(){
       var _sig=lines.join('\n');
       if(em && em.__ccSig!==_sig){
         em.__ccSig=_sig;
-        em.innerHTML='<pre>'+_sig.replace(/</g,'&lt;')+'</pre>'
+        /* r704: thumbnails of each pick's top candidates (winner outlined) — a render/Statcast win is visible at a glance */
+        var _th=(M&&M.pickLog||[]).slice(0,6).map(function(p){ return '<div style="display:flex;gap:6px;margin:4px 0;align-items:flex-start">'
+          + (p.thumbs||[]).filter(function(x){return x.src;}).map(function(x){ return '<figure style="margin:0;width:120px;font-size:9px;line-height:1.2;color:#9ab">'
+            + '<img src="'+x.src.replace(/"/g,'')+'" style="width:120px;height:68px;object-fit:cover;border-radius:3px;'+(x.won?'outline:2px solid #4ade80;':'opacity:.55;')+'">'
+            + '<figcaption>'+(x.won?'\u2714 ':'')+String(x.title).replace(/</g,'&lt;')+'</figcaption></figure>'; }).join('') + '</div>'; }).join('');
+        em.innerHTML=(_th?'<div class="nt">CLIP PICKS \u2014 winner outlined</div>'+_th:'')+'<pre>'+_sig.replace(/</g,'&lt;')+'</pre>'
           + '<div class="nt">Live montage state. Auto-scheduling (fire in the NYY-final gap) is not wired yet — '
           + 'currently started via <code>?montage=1</code> / <code>montageStart()</code>.</div>';
       }
