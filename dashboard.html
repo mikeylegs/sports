@@ -717,6 +717,7 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .lf-series-logo{width:84%;max-height:44cqh;object-fit:contain;filter:drop-shadow(0 0 2.4cqh rgba(170,195,235,0.28));}   /* r708: bigger */
 .lf-slide[data-slide="slast"],.lf-slide[data-slide="slive"]{justify-content:center;gap:2.4cqh;}   /* r709: same centered stack as MLB 'lf' */
 .lf-score-row.d3 .lf-score-num{font-size:10.5cqh;}   /* r709: NBA triple digits */
+.lf-stand3.nhl .lf-stand3-rec{font-size:4.2cqh;}   /* r713: 3-part W-L-OT (worst case '19–12–13') leaves the team column room */
 .lf-sport-perfs{display:flex;flex-direction:column;gap:1cqh;align-items:center;width:100%;margin-top:1cqh;}   /* r709 */
 .lf-sport-perf{display:block;width:96%;text-align:center;font-size:5.2cqh;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .lf-sport-perf-n{font-weight:800;color:#fff;}
@@ -18582,7 +18583,7 @@ window._seasonOverCheck = _seasonOverCheck;
    next 9 days = _footerRangeGames) and division standings (apis/v2 …/standings?level=3, 30 min).
    Slide names are s-prefixed (slive/slast/sstand/snext) so no MLB-only hook (recap director lf/data-team,
    POTG, decisions) ever touches them. A team counts as in season with a game within ±10 days. */
-const SPORT_ANCHOR = { NYR: { lg: 'NHL', name: 'RANGERS' }, NYK: { lg: 'NBA', name: 'KNICKS' } };
+const SPORT_ANCHOR = { NYR: { lg: 'NHL', name: 'RANGERS' }, NYK: { lg: 'NBA', name: 'KNICKS', tint: '#003087' } };   // r713: Knicks orange tinted the pane muddy brown-black → the NYY pane's navy (Mike)
 const _sportG = { past: { NHL: [], NBA: [] }, today: { NHL: [], NBA: [] } };
 const _sportStand = {};   // lg -> [{ name, abbr, teams:[{abbr, w, l, otl, pts, pct, gb}] }]
 const _sLg = k => LEAGUES.find(l => l.key === k);
@@ -18644,7 +18645,7 @@ function _sportStandHtml(st){
   const rows = d.teams.slice(0, 5).map(x => {
     const right = nhl ? (x.pts ?? '') : (x.gb == null || x.gb === 0 ? (x === lead ? '—' : (x.gb ?? '')) : x.gb);
     return `<div class="lf-stand3-row${x.abbr === st.abbr ? ' me' : ''}">
-      <span class="lf-stand3-team"><img class="lf-stand3-logo" src="${logoUrl(st.lg, x.abbr)}" alt="" onerror="this.style.opacity=0">${x.abbr}</span>
+      <span class="lf-stand3-team">${x.abbr}</span>
       <span class="lf-stand3-rec">${nhl ? `${x.w}–${x.l}–${x.otl || 0}` : `${x.w}–${x.l}`}</span><span class="lf-stand3-gap"></span>
       <span class="lf-stand3-gb">${right}</span></div>`; }).join('');
   return `<div class="lf-stand3-head"><span>Team</span><span>${nhl ? 'W-L-OT' : 'W-L'}</span><span class="lf-stand3-gap"></span><span>${nhl ? 'PTS' : 'GB'}</span></div>` + rows;
@@ -18658,7 +18659,7 @@ function renderSportAnchorSlot(abbr){
       .map(p => `<div class="lf-sport-perf" data-fit="5.2" data-fit-min="2.9" data-fit-pad="4"><span class="lf-sport-perf-n">${p.name}</span> <span class="lf-sport-perf-s">${String(p.stat).replace(/^[A-Z]{1,2}\s*-\s*/, '').split(/,\s*/).slice(0, 2).join(', ')}</span></div>`).join('');   // first two stat items (a full line clipped at the floor)
     slides.push(['slast', `<div class="lf-slide-head">Last Game</div>${_sportScoreRow(st.last, abbr)}${perf ? `<div class="lf-sport-perfs">${perf}</div>` : ''}`]);
   }
-  slides.push(['sstand', `<div class="lf-slide-head">${st.div ? st.div.name : 'Standings'}</div><div class="lf-stand3" id="yank-sstand">${_sportStandHtml(st)}</div>`]);
+  slides.push(['sstand', `<div class="lf-slide-head">${st.div ? st.div.name : 'Standings'}</div><div class="lf-stand3${lg === 'NHL' ? ' nhl' : ''}" id="yank-sstand">${_sportStandHtml(st)}</div>`]);
   if (st.next){
     const n = st.next, home = n.homeAbbr === abbr, opp = home ? n.awayAbbr : n.homeAbbr;
     const od = st.div && st.div.teams.find(x => x.abbr === opp);
@@ -18670,10 +18671,13 @@ function renderSportAnchorSlot(abbr){
       <div class="lf-next2-rec">${oRec}</div>
       <div class="lf-next2-pills">${when ? `<span class="lf-next-timepill" data-fit="4.5" data-fit-min="3.6">${when}</span>` : ''}${n.network ? netBug(n.network, 'lf-next-network', 'feat', n.network) : ''}</div></div>`]);
   }
-  const tint = getTeamColor(lg, abbr) || '#0C2340';
+  const tint = SPORT_ANCHOR[abbr].tint || getTeamColor(lg, abbr) || '#0C2340';
   /* r710: the anchor's slide rotation is only ever started inside renderLastFinalSlot (MLB). A page that
      loads straight into NYR/NYK never called it → stuck on the first card (Mike, 10/27). Idempotent. */
   try { startLfRotation('yank'); } catch(_){}
+  /* r713: size the standings columns to their REAL content (NHL W-L-OT '10-12-3' clipped under the
+     default W-L grid). Same sizer the MLB stand slide uses; runs after the markup lands. */
+  requestAnimationFrame(() => requestAnimationFrame(() => { try { const b = document.getElementById('yank-sstand'); if (b) sizeStand3Cols(b); } catch(_){} }));
   return `<div class="mlb-feat-slot yank team-tinted sport-anchor" data-anchor="${abbr}" style="--slot-color:${tint}">
     <div class="lf-wrap">
       <div class="lf-left">
@@ -18857,7 +18861,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r712-ws-logo-float';
+const BUILD_MARKER = 'r713-nhl-stand-cols';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
