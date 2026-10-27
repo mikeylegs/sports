@@ -717,6 +717,7 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .lf-series-logo{width:84%;max-height:44cqh;object-fit:contain;filter:drop-shadow(0 0 2.4cqh rgba(170,195,235,0.28));}   /* r708: bigger */
 .lf-slide[data-slide="slast"],.lf-slide[data-slide="slive"]{justify-content:center;gap:2.4cqh;}   /* r709: same centered stack as MLB 'lf' */
 .lf-score-row.d3 .lf-score-num{font-size:10.5cqh;}   /* r709: NBA triple digits */
+.lf-sport-time{font-size:5cqh;font-weight:900;color:#fff;line-height:1;white-space:nowrap;}   /* r714 */
 .lf-stand3.nhl .lf-stand3-rec{font-size:4.2cqh;}   /* r713: 3-part W-L-OT (worst case '19–12–13') leaves the team column room */
 .lf-sport-perfs{display:flex;flex-direction:column;gap:1cqh;align-items:center;width:100%;margin-top:1cqh;}   /* r709 */
 .lf-sport-perf{display:block;width:96%;text-align:center;font-size:5.2cqh;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -2799,6 +2800,22 @@ function resolveNetwork(network, awayAbbr, homeAbbr, gameDateISO){
    poll cycle once the fetch resolves. A confirmed "no national broadcast" result (RSN-only
    game) returns null and the caller keeps today's ESPN-derived result unchanged — this only
    ever overrides when MLB POSITIVELY confirms a national network, never removes one. */
+/* r714 (Mike: "I never want to see NHL NET"). NHL Network simulcasts the local feed, so it's never the
+   answer. Order: a real national exclusive (TNT/ESPN/ABC/…) > NYR's own side's local (MSG) when NYR
+   plays > home market > away market > nothing. undefined = no broadcast data (keep the old value). */
+const _NHL_NET_RE = /^\s*nhl\s*(net(work)?|n)\s*$/i;
+function _nhlPickNet(bc, away, home){
+  if (!Array.isArray(bc) || !bc.length) return undefined;
+  const mk = b => String(typeof b?.market === 'string' ? b.market : (b?.market?.type || '')).toLowerCase();
+  const nm = b => ((b?.names || [])[0] || '').trim();
+  const ok = b => nm(b) && !_NHL_NET_RE.test(nm(b));
+  const nat = bc.find(b => mk(b) === 'national' && ok(b));
+  if (nat) return nm(nat);
+  const side = away === 'NYR' ? 'away' : home === 'NYR' ? 'home' : null;
+  const pick = (m) => bc.find(b => mk(b) === m && ok(b));
+  const b = (side && pick(side)) || pick('home') || pick('away') || bc.find(ok);
+  return b ? nm(b) : '';
+}
 function _dropSimulcastSibling(name){
   if (!name) return name;
   const m = String(name).match(/^\s*([^/]+?)\s*\/\s*(.+?)\s*$/);
@@ -7193,6 +7210,7 @@ function parseEvent(ev, leagueKey) {
   // broadcaster, so it doesn't count as national for this check.
   const _realNational = broadcasts.find(b => b?.market === 'national' && b.names?.[0] && !/^mlb\.?\s*tv$/i.test(b.names[0].trim()));
   let network = _dropSimulcastSibling(_realNational?.names?.[0] || broadcasts?.[0]?.names?.[0] || broadcasts?.[0]?.market?.shortName || null);
+  if (leagueKey === 'NHL') { const _nn = _nhlPickNet(broadcasts, awayAbbr, homeAbbr); if (_nn !== undefined) network = _nn; }   // r714: never NHL Network — local first
   // ESPN's public scoreboard API doesn't carry Apple TV+ national-exclusive
   // deals at all, and its regional (home/away RSN) entries aren't reliably
   // ordered — YES/SNY are the actual local broadcasters for every
@@ -18664,12 +18682,18 @@ function renderSportAnchorSlot(abbr){
     const n = st.next, home = n.homeAbbr === abbr, opp = home ? n.awayAbbr : n.homeAbbr;
     const od = st.div && st.div.teams.find(x => x.abbr === opp);
     const oRec = od ? (lg === 'NHL' ? `${od.w}-${od.l}-${od.otl || 0}` : `${od.w}-${od.l}`) : ((home ? n.awayRecord : n.homeRecord) || '');
-    const when = String(n.timeLabel || '').replace(/^Tonight · /, 'Tonight · ');
+    /* r714: three lines like Mike asked — DAY (pill, colored like MLB's) / TIME / NETWORK. Built from gameDate in ET. */
+    const _gd = new Date(n.gameDate), _ET = { timeZone: 'America/New_York' };
+    const _dk = d => d.toLocaleDateString('en-CA', _ET), _today = _dk(new Date()), _tom = _dk(new Date(Date.now() + 864e5));
+    const _day = isNaN(_gd) ? '' : _dk(_gd) === _today ? 'Tonight' : _dk(_gd) === _tom ? 'Tomorrow' : _gd.toLocaleDateString('en-US', Object.assign({ weekday: 'long' }, _ET));
+    const _dayCls = _day === 'Tonight' ? '' : _day === 'Tomorrow' ? ' tomorrow' : ' future';
+    const _time = isNaN(_gd) ? '' : _gd.toLocaleTimeString('en-US', Object.assign({ hour: 'numeric', minute: '2-digit' }, _ET));
+    const _net = lg === 'NHL' && _NHL_NET_RE.test(n.network || '') ? '' : (n.network || '');
     slides.push(['snext', `<div class="lf-next2">
       <div class="lf-next2-opp"><img class="lf-next2-logo" src="${logoUrl(lg, opp)}" alt="" onerror="this.style.opacity=0">
         <div class="lf-next2-vs"><span class="lf-next2-vslabel">${home ? 'vs' : '@'}</span><span class="lf-next2-team">${opp}</span></div></div>
       <div class="lf-next2-rec">${oRec}</div>
-      <div class="lf-next2-pills">${when ? `<span class="lf-next-timepill" data-fit="4.5" data-fit-min="3.6">${when}</span>` : ''}${n.network ? netBug(n.network, 'lf-next-network', 'feat', n.network) : ''}</div></div>`]);
+      <div class="lf-next2-pills">${_day ? `<span class="lf-next-timepill${_dayCls}" data-fit="4.5" data-fit-min="3.6">${_day.toUpperCase()}</span>` : ''}${_time ? `<span class="lf-sport-time">${_time}</span>` : ''}${_net ? netBug(_net, 'lf-next-network', 'feat', _net) : ''}</div></div>`]);
   }
   const tint = SPORT_ANCHOR[abbr].tint || getTeamColor(lg, abbr) || '#0C2340';
   /* r710: the anchor's slide rotation is only ever started inside renderLastFinalSlot (MLB). A page that
@@ -18861,7 +18885,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r713-nhl-stand-cols';
+const BUILD_MARKER = 'r714-nhl-net-nextday';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
