@@ -715,6 +715,13 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .lf-slide.active{opacity:1;pointer-events:auto;}
 .lf-slide[data-slide="series"]{justify-content:center;gap:2.6cqh;}   /* r707: postseason series card */
 .lf-series-logo{width:84%;max-height:44cqh;object-fit:contain;filter:drop-shadow(0 0 2.4cqh rgba(170,195,235,0.28));}   /* r708: bigger */
+.lf-slide[data-slide="slast"],.lf-slide[data-slide="slive"]{justify-content:center;gap:2.4cqh;}   /* r709: same centered stack as MLB 'lf' */
+.lf-score-row.d3 .lf-score-num{font-size:10.5cqh;}   /* r709: NBA triple digits */
+.lf-sport-perfs{display:flex;flex-direction:column;gap:1cqh;align-items:center;width:100%;margin-top:1cqh;}   /* r709 */
+.lf-sport-perf{display:block;width:96%;text-align:center;font-size:4.2cqh;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lf-sport-perf-n{font-weight:800;color:#fff;}
+.lf-sport-perf-s{font-weight:700;color:rgba(255,255,255,0.6);}
+.lf-sport-livehead{color:#4ade80;}
 .lf-series-big{font-size:10cqh;font-weight:900;color:#fff;letter-spacing:0.03em;line-height:1;white-space:nowrap;text-align:center;max-width:96%;margin-top:8cqh;}   /* r708: 'TB LEADS 2-0' is the card */
 .lf-series-word{font-size:11cqh;font-weight:900;letter-spacing:0.04em;text-transform:uppercase;line-height:1;
   background:linear-gradient(180deg,#ffffff 0%,#c9d2dd 55%,#8e99a8 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 2cqh rgba(170,195,235,0.25));}
@@ -11030,7 +11037,7 @@ function recapDirectorTick(slotClass){
     const nyySeenKey = 'nyy-priority:' + (nyyPk != null ? nyyPk : 'unknown');
     if (nyyGame && !_recapSeen.has(nyySeenKey)){
       _recapSeen.add(nyySeenKey);
-      if (window._anchorMerged && window._anchorTeam !== 'NYY' && typeof window._anchorSwap === 'function') window._anchorSwap();
+      if (window._anchorMerged && window._anchorTeam !== 'NYY' && typeof window._anchorSwap === 'function') window._anchorSwap('NYY');   // r709: jump straight to NYY (pool has >2 teams now)
       const lf = document.querySelector('#yank-stage .lf-slide[data-slide="lf"][data-team="NYY"]');
       if (lf && !lf.classList.contains('active')){
         const st = document.getElementById('yank-stage');
@@ -11144,7 +11151,7 @@ function recapDirectorTick(slotClass){
       // R13: a due recap FLIPS the pane / JUMPS the stage instead of waiting for
       // its ~12s-in-72s natural window (post-R12 alternation starved these).
       if (!lf && window._anchorMerged && window._anchorTeam !== wantTeam
-          && typeof window._anchorSwap === 'function' && window._anchorSwap()){
+          && typeof window._anchorSwap === 'function' && window._anchorSwap(wantTeam)){   // r709: targeted
         lf = document.querySelector(`#yank-stage .lf-slide[data-slide="lf"][data-team="${wantTeam}"]`);
       }
       if (!lf){ _dirNote('skip ' + cand + ' — no lf-slide for ' + wantTeam + ' (not post-game)'); continue; }
@@ -18554,6 +18561,144 @@ async function _seasonOverCheck(abbr, teamId){
   } catch(_){}
 }
 window._seasonOverCheck = _seasonOverCheck;
+/* ═══ r709 MULTI-SPORT ANCHOR ═══ When the Yankees (and Mets) are out of season, the anchor pane
+   rotates the in-season favorites NYR (NHL) + NYK (NBA) with the same layout and card rotation:
+   left rail (logo / abbr / record) + slides LIVE · LAST GAME · DIVISION · NEXT GAME. Data is ESPN only:
+   scoreboards via fetchLeagueDay (today 60s, 15s while one of ours is live; past 8 days every 20 min;
+   next 9 days = _footerRangeGames) and division standings (apis/v2 …/standings?level=3, 30 min).
+   Slide names are s-prefixed (slive/slast/sstand/snext) so no MLB-only hook (recap director lf/data-team,
+   POTG, decisions) ever touches them. A team counts as in season with a game within ±10 days. */
+const SPORT_ANCHOR = { NYR: { lg: 'NHL', name: 'RANGERS' }, NYK: { lg: 'NBA', name: 'KNICKS' } };
+const _sportG = { past: { NHL: [], NBA: [] }, today: { NHL: [], NBA: [] } };
+const _sportStand = {};   // lg -> [{ name, abbr, teams:[{abbr, w, l, otl, pts, pct, gb}] }]
+const _sLg = k => LEAGUES.find(l => l.key === k);
+async function pollSportAnchorToday(){
+  await Promise.all(['NHL', 'NBA'].map(async k => { const lg = _sLg(k); if (!lg) return;
+    const g = await fetchLeagueDay(lg, 0); if (g && g.length) { g.forEach(x => x.league = k); _sportG.today[k] = g; } }));
+}
+async function pollSportAnchorPast(){
+  await Promise.all(['NHL', 'NBA'].map(async k => { const lg = _sLg(k); if (!lg) return;
+    const days = await Promise.all([1, 2, 3, 4, 5, 6, 7, 8].map(i => fetchLeagueDay(lg, -i)));
+    const flat = days.flat(); flat.forEach(x => x.league = k); if (flat.length) _sportG.past[k] = flat; }));
+}
+function _sportStat(e, n){ const x = (e.stats || []).find(z => z.name === n); return x ? (x.value != null ? +x.value : parseFloat(x.displayValue)) : null; }
+async function pollSportStandings(){
+  await Promise.all(['NHL', 'NBA'].map(async k => { const lg = _sLg(k); if (!lg) return;
+    try {
+      const j = await proxyFetch(`https://site.api.espn.com/apis/v2/sports/${lg.sport}/${lg.slug}/standings?level=3`);
+      const divs = [];
+      (j.children || []).forEach(conf => (conf.children || [conf]).forEach(dv => {
+        const ents = (dv.standings && dv.standings.entries) || []; if (!ents.length) return;
+        const teams = ents.map(e => ({ abbr: normalizeAbbr(k, (e.team || {}).abbreviation || ''), w: _sportStat(e, 'wins'), l: _sportStat(e, 'losses'),
+          otl: _sportStat(e, 'otLosses'), pts: _sportStat(e, 'points'), pct: _sportStat(e, 'winPercent'), gb: _sportStat(e, 'gamesBehind') }));
+        teams.sort((a, b) => k === 'NHL' ? ((b.pts || 0) - (a.pts || 0)) || ((b.w || 0) - (a.w || 0)) : ((b.pct || 0) - (a.pct || 0)) || ((b.w || 0) - (a.w || 0)));
+        divs.push({ name: String(dv.name || dv.abbreviation || '').replace(/\s*Division\s*$/i, ''), teams });
+      }));
+      if (divs.length) _sportStand[k] = divs;
+    } catch(_){}
+  }));
+}
+function _sportAnchorState(abbr){
+  const cfg = SPORT_ANCHOR[abbr]; if (!cfg) return null; const k = cfg.lg, now = Date.now();
+  const mine = g => g && (g.awayAbbr === abbr || g.homeAbbr === abbr);
+  const seen = new Set(), all = [..._sportG.today[k], ..._sportG.past[k], ...((typeof _footerRangeGames !== 'undefined' && _footerRangeGames[k]) || [])]
+    .filter(g => mine(g) && !seen.has(String(g.id)) && seen.add(String(g.id)));
+  const t = g => new Date(g.gameDate).getTime() || 0;
+  const live = all.find(g => g.gameStatus === 'live') || null;
+  const last = all.filter(g => g.gameStatus === 'final').sort((a, b) => t(b) - t(a))[0] || null;
+  const next = all.filter(g => g.gameStatus === 'upcoming' && t(g) > now - 3 * 3600000).sort((a, b) => t(a) - t(b))[0] || null;
+  const div = (_sportStand[k] || []).find(d => d.teams.some(x => x.abbr === abbr)) || null;
+  const me = div && div.teams.find(x => x.abbr === abbr);
+  const recG = live || last || next, rec = me ? (k === 'NHL' ? `${me.w}-${me.l}-${me.otl || 0}` : `${me.w}-${me.l}`)
+    : recG ? (recG.awayAbbr === abbr ? recG.awayRecord : recG.homeRecord) || '' : '';
+  const D10 = 10 * 86400000, inSeason = !!(live || (last && now - t(last) < D10) || (next && t(next) - now < D10));
+  return { abbr, lg: k, live, last, next, div, rec, inSeason };
+}
+window._sportAnchorState = _sportAnchorState;
+function _sportScoreRow(g, abbr){
+  const away = g.awayAbbr === abbr, opp = away ? g.homeAbbr : g.awayAbbr;
+  const ts = away ? g.awayScore : g.homeScore, os = away ? g.homeScore : g.awayScore, won = ts > os, live = g.gameStatus === 'live';
+  const c = (me) => live ? '' : (me ? (won ? 'w' : 'l') : (won ? 'l' : 'w'));
+  return `<div class="lf-score-row${Math.max(+ts || 0, +os || 0) >= 100 ? ' d3' : ''}">
+    <div class="lf-score-col"><span class="lf-score-abbr ${c(true)}">${abbr}</span><span class="lf-score-num ${c(true)}">${ts ?? ''}</span></div>
+    <span class="lf-dash">–</span>
+    <div class="lf-score-col"><span class="lf-score-abbr ${c(false)}">${opp}</span><span class="lf-score-num ${c(false)}">${os ?? ''}</span></div></div>`;
+}
+function _sportStandHtml(st){
+  const d = st.div; if (!d) return `<div class="lf-slide-head" style="font-size:3cqh;color:rgba(255,255,255,0.25);">Standings unavailable</div>`;
+  const nhl = st.lg === 'NHL', lead = d.teams[0];
+  const rows = d.teams.slice(0, 5).map(x => {
+    const right = nhl ? (x.pts ?? '') : (x.gb == null || x.gb === 0 ? (x === lead ? '—' : (x.gb ?? '')) : x.gb);
+    return `<div class="lf-stand3-row${x.abbr === st.abbr ? ' me' : ''}">
+      <span class="lf-stand3-team"><img class="lf-stand3-logo" src="${logoUrl(st.lg, x.abbr)}" alt="" onerror="this.style.opacity=0">${x.abbr}</span>
+      <span class="lf-stand3-rec">${nhl ? `${x.w}–${x.l}–${x.otl || 0}` : `${x.w}–${x.l}`}</span><span class="lf-stand3-gap"></span>
+      <span class="lf-stand3-gb">${right}</span></div>`; }).join('');
+  return `<div class="lf-stand3-head"><span>Team</span><span>${nhl ? 'W-L-OT' : 'W-L'}</span><span class="lf-stand3-gap"></span><span>${nhl ? 'PTS' : 'GB'}</span></div>` + rows;
+}
+function renderSportAnchorSlot(abbr){
+  const st = _sportAnchorState(abbr); if (!st) return '';
+  const lg = st.lg, slides = [];
+  if (st.live) slides.push(['slive', `<div class="lf-slide-head lf-sport-livehead">Live · ${st.live.timeLabel || ''}</div>${_sportScoreRow(st.live, abbr)}`]);
+  if (st.last){
+    const perf = (st.last.topPerformers || []).filter(p => p && p.name && p.stat && !/\bnull\b|undefined/.test(p.stat)).slice(0, 2)
+      .map(p => `<div class="lf-sport-perf" data-fit="4.2" data-fit-min="2.9" data-fit-pad="4"><span class="lf-sport-perf-n">${p.name}</span> <span class="lf-sport-perf-s">${String(p.stat).split(/,\s*/).slice(0, 2).join(', ')}</span></div>`).join('');   // first two stat items (a full line clipped at the floor)
+    slides.push(['slast', `<div class="lf-slide-head">Last Game</div>${_sportScoreRow(st.last, abbr)}${perf ? `<div class="lf-sport-perfs">${perf}</div>` : ''}`]);
+  }
+  slides.push(['sstand', `<div class="lf-slide-head">${st.div ? st.div.name : 'Standings'}</div><div class="lf-stand3" id="yank-sstand">${_sportStandHtml(st)}</div>`]);
+  if (st.next){
+    const n = st.next, home = n.homeAbbr === abbr, opp = home ? n.awayAbbr : n.homeAbbr;
+    const od = st.div && st.div.teams.find(x => x.abbr === opp);
+    const oRec = od ? (lg === 'NHL' ? `${od.w}-${od.l}-${od.otl || 0}` : `${od.w}-${od.l}`) : ((home ? n.awayRecord : n.homeRecord) || '');
+    const when = String(n.timeLabel || '').replace(/^Tonight · /, 'Tonight · ');
+    slides.push(['snext', `<div class="lf-next2">
+      <div class="lf-next2-opp"><img class="lf-next2-logo" src="${logoUrl(lg, opp)}" alt="" onerror="this.style.opacity=0">
+        <div class="lf-next2-vs"><span class="lf-next2-vslabel">${home ? 'vs' : '@'}</span><span class="lf-next2-team">${opp}</span></div></div>
+      <div class="lf-next2-rec">${oRec}</div>
+      <div class="lf-next2-pills">${when ? `<span class="lf-next-timepill" data-fit="4.5" data-fit-min="3.6">${when}</span>` : ''}${n.network ? netBug(n.network, 'lf-next-network', 'feat', n.network) : ''}</div></div>`]);
+  }
+  const tint = getTeamColor(lg, abbr) || '#0C2340';
+  return `<div class="mlb-feat-slot yank team-tinted sport-anchor" data-anchor="${abbr}" style="--slot-color:${tint}">
+    <div class="lf-wrap">
+      <div class="lf-left">
+        <img class="lf-logo" src="${logoUrl(lg, abbr)}" alt="${abbr}" onerror="this.style.opacity=0">
+        <span class="lf-abbr" data-fit="15" data-fit-min="8">${abbr}</span>
+        <span class="lf-record" data-fit="8.4" data-fit-min="4.5">${st.rec || ''}</span>
+      </div>
+      <div class="lf-stage" id="yank-stage">
+        ${slides.map(([k, h], i) => `<div class="lf-slide${i === 0 ? ' active' : ''}" data-slide="${k}">${h}</div>`).join('')}
+        <div class="lf-dots" id="yank-dots"></div>
+      </div>
+    </div>
+  </div>`;
+}
+window.renderSportAnchorSlot = renderSportAnchorSlot;
+/* Anchor pool: in-season MLB anchors (NYY, NYM) own the pane; once both are out, the in-season NYR/NYK. A live NYR/NYK game
+   pins the pool to the live team(s). Nobody in season → NYY (the pane needs a team). */
+function _anchorPool(){
+  if (new URLSearchParams(location.search).get('sportanchor') === 'off') return ['NYY', 'NYM'].filter(t => _anchorAllowed(t));
+  const sp = Object.keys(SPORT_ANCHOR).map(_sportAnchorState).filter(x => x && x.inSeason);
+  const live = sp.filter(x => x.live).map(x => x.abbr);
+  if (live.length && _seasonOut('NYY')) return live;
+  const mlb = ['NYY', 'NYM'].filter(t => !_seasonOut(t));
+  if (mlb.length) return mlb;                         // baseball season: the anchor stays NYY/NYM (unchanged)
+  const pool = sp.map(x => x.abbr);                   // baseball over: in-season NYR/NYK take the pane
+  return pool.length ? pool : ['NYY'];
+}
+window._anchorPool = _anchorPool;
+function _anchorHtmlFor(t, a){
+  if (SPORT_ANCHOR[t]) return renderSportAnchorSlot(t);
+  if (t === 'NYY') return renderLastFinalSlot('NYY', a.yg, a.yNext, 'yank');
+  return a.mLive ? mlbFeaturedSlotHtml(a.mLive, 'yank', 'METS') : renderLastFinalSlot('NYM', a.mg, a.mNext, 'yank');
+}
+(function(){
+  if (window._sportAnchorTimers) return; window._sportAnchorTimers = true;
+  pollSportAnchorToday(); pollSportAnchorPast(); pollSportStandings();
+  let lastToday = Date.now();
+  setInterval(() => { const anyLive = Object.keys(SPORT_ANCHOR).some(t => { const x = _sportAnchorState(t); return x && x.live; });
+    if (Date.now() - lastToday >= (anyLive ? 15000 : 60000)) { lastToday = Date.now(); pollSportAnchorToday(); } }, 5000);
+  setInterval(pollSportAnchorPast, 20 * 60000);
+  setInterval(pollSportStandings, 30 * 60000);
+})();
 function renderAnchorIdleSlot(yg, mg, yNext, mNext, mLive){   // r270: mLive = live NYM game (one live card, no next/standings filler)
   // R12b (panel feedback): NO combined rail — alternate the FULL single-team
   // pane, NYY then NYM, swapping every 36s (3 slide ticks). Each pane is the
@@ -18563,25 +18708,24 @@ function renderAnchorIdleSlot(yg, mg, yNext, mNext, mLive){   // r270: mLive = l
   // 15-60s data renders; the regular cycle's string-compare handles the rest.
   window._anchorMerged = true;
   window._anchorArgs = { yg, mg, yNext, mNext, mLive };
-  if (!window._anchorTeam) window._anchorTeam = 'NYY';
-  if (!_anchorAllowed(window._anchorTeam)) window._anchorTeam = window._anchorTeam === 'NYY' ? 'NYM' : 'NYY';   // r700
+  const _pool0 = _anchorPool();   // r709: NYY/NYM/NYR/NYK — whoever is in season
+  if (!window._anchorTeam || !_pool0.includes(window._anchorTeam)) window._anchorTeam = _pool0[0];
   // R13: swap is LAP-DRIVEN, not wall-clock — the rotation interval calls
   // _anchorSwap() exactly when the current pane's slide index wraps, so every
   // visit shows each slide exactly once (the 36s timer drifted against the 12s
   // rotation phase and could repeat/starve slides indefinitely).
-  window._anchorSwap = () => {
+  window._anchorSwap = (target) => {   // r709: cycles the in-season pool; target = jump to that team if it's in the pool
     if (!window._anchorMerged) return false;
     const a = window._anchorArgs; if (!a) return false;
     const row = document.getElementById('row-MLB');
     const slot = row && row.querySelector('.mlb-feat-slot.yank');
     if (!slot) return false;
-    const _next = window._anchorTeam === 'NYY' ? 'NYM' : 'NYY';
-    if (!_anchorAllowed(_next)) return false;   // r700: out-of-season team never rotates in
+    const pool = _anchorPool(), cur = window._anchorTeam;
+    let _next;
+    if (target){ if (!pool.includes(target) || target === cur) return false; _next = target; }
+    else { _next = pool[(pool.indexOf(cur) + 1) % pool.length]; if (!_next || _next === cur) return false; }
     window._anchorTeam = _next;
-    const html = window._anchorTeam === 'NYY'
-      ? renderLastFinalSlot('NYY', a.yg, a.yNext, 'yank')
-      : (a.mLive ? mlbFeaturedSlotHtml(a.mLive, 'yank', 'METS')      // r270: NYM live = one live card
-                 : renderLastFinalSlot('NYM', a.mg, a.mNext, 'yank'));
+    const html = _anchorHtmlFor(_next, a);
     window._lastYankHtml = html;
     slot.outerHTML = html;
     const e = row.querySelector('.mlb-feat-slot.yank');
@@ -18590,16 +18734,12 @@ function renderAnchorIdleSlot(yg, mg, yNext, mNext, mLive){   // r270: mLive = l
        'yank'). startLfRotation already ran on first load, so its lfRotationStarted_yank flag
        makes it early-return — the freshly swapped-in POTG slide never gets filled. Re-kick
        ensurePotg here with the NOW-current anchor team's MLB id so the Mets POTG populates too. */
-    try{ const _tid = window._anchorTeam==='NYM' ? 121 : 147;
+    if (!SPORT_ANCHOR[window._anchorTeam]) try{ const _tid = window._anchorTeam==='NYM' ? 121 : 147;
       requestAnimationFrame(()=>requestAnimationFrame(()=>{ try{ ensurePotg('yank', _tid); }catch(_){}}));
     }catch(_){}
     return true;
   };
-  return window._anchorTeam === 'NYY'
-    ? renderLastFinalSlot('NYY', yg, yNext, 'yank')
-    : mLive
-    ? mlbFeaturedSlotHtml(mLive, 'yank', 'METS')                    // r270: NYM live = one live card
-    : renderLastFinalSlot('NYM', mg, mNext, 'yank');
+  return _anchorHtmlFor(window._anchorTeam, window._anchorArgs);   // r709
 }
 
 // ── U.S. Open golf pane (temporary swap-in for the Mets featured slot) ──
@@ -18700,7 +18840,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r708-series-cards';
+const BUILD_MARKER = 'r709-sport-anchor';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
