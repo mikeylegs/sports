@@ -1,7 +1,35 @@
 {
   "v": 1,
-  "updated": "2026-10-28T19:15:02.569Z",
-  "events": [],
+  "updated": "2026-10-28T19:15:47.729Z",
+  "events": [
+    {
+      "league": "baseball/mlb",
+      "label": "MLB",
+      "espnId": "401908046",
+      "title": "Milwaukee Brewers @ Tampa Bay Rays",
+      "showFrom": "20261028",
+      "showUntil": "20261028",
+      "rank": 1
+    },
+    {
+      "league": "basketball/nba",
+      "label": "NBA",
+      "espnId": "401909886",
+      "title": "New York Knicks @ Chicago Bulls",
+      "showFrom": "20261028",
+      "showUntil": "20261028",
+      "rank": 2
+    },
+    {
+      "league": "hockey/nhl",
+      "label": "NHL",
+      "espnId": "401892598",
+      "title": "New Jersey Devils @ Colorado Avalanche",
+      "showFrom": "20261028",
+      "showUntil": "20261028",
+      "rank": 3
+    }
+  ],
   "watch": {
     "teams": [
       {
