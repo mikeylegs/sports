@@ -723,7 +723,7 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .lf-sport-perf{display:block;width:96%;text-align:center;font-size:5.2cqh;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .lf-sport-perf-n{font-weight:800;color:#fff;}
 .lf-sport-perf-s{font-weight:700;color:rgba(255,255,255,0.6);}
-.lf-sport-livehead{color:#4ade80;}
+.lf-slide-head.lf-sport-livehead{color:#4ade80;}   /* r715: specificity — the generic head grey was winning */
 .lf-series-big{font-size:10cqh;font-weight:900;color:#fff;letter-spacing:0.03em;line-height:1;white-space:nowrap;text-align:center;max-width:96%;margin-top:8cqh;}   /* r708: 'TB LEADS 2-0' is the card */
 .lf-series-word{font-size:11cqh;font-weight:900;letter-spacing:0.04em;text-transform:uppercase;line-height:1;
   background:linear-gradient(180deg,#ffffff 0%,#c9d2dd 55%,#8e99a8 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 2cqh rgba(170,195,235,0.25));}
@@ -2812,6 +2812,22 @@ function _nhlPickNet(bc, away, home){
   const nat = bc.find(b => mk(b) === 'national' && ok(b));
   if (nat) return nm(nat);
   const side = away === 'NYR' ? 'away' : home === 'NYR' ? 'home' : null;
+  const pick = (m) => bc.find(b => mk(b) === m && ok(b));
+  const b = (side && pick(side)) || pick('home') || pick('away') || bc.find(ok);
+  return b ? nm(b) : '';
+}
+/* r715: same rule for the NBA. League Pass is a streaming package (never the answer) and NBA TV, like
+   NHL Network, is a non-exclusive national simulcast. National exclusive (ESPN/ABC/TNT/NBC/Prime/Peacock)
+   > NYK's own side's local (MSG) > home > away > nothing. */
+const _NBA_NET_RE = /league\s*pass|^\s*nba\s*tv\s*$/i;
+function _nbaPickNet(bc, away, home){
+  if (!Array.isArray(bc) || !bc.length) return undefined;
+  const mk = b => String(typeof b?.market === 'string' ? b.market : (b?.market?.type || '')).toLowerCase();
+  const nm = b => ((b?.names || [])[0] || '').trim();
+  const ok = b => nm(b) && !_NBA_NET_RE.test(nm(b));
+  const nat = bc.find(b => mk(b) === 'national' && ok(b));
+  if (nat) return nm(nat);
+  const side = away === 'NYK' ? 'away' : home === 'NYK' ? 'home' : null;
   const pick = (m) => bc.find(b => mk(b) === m && ok(b));
   const b = (side && pick(side)) || pick('home') || pick('away') || bc.find(ok);
   return b ? nm(b) : '';
@@ -7211,6 +7227,7 @@ function parseEvent(ev, leagueKey) {
   const _realNational = broadcasts.find(b => b?.market === 'national' && b.names?.[0] && !/^mlb\.?\s*tv$/i.test(b.names[0].trim()));
   let network = _dropSimulcastSibling(_realNational?.names?.[0] || broadcasts?.[0]?.names?.[0] || broadcasts?.[0]?.market?.shortName || null);
   if (leagueKey === 'NHL') { const _nn = _nhlPickNet(broadcasts, awayAbbr, homeAbbr); if (_nn !== undefined) network = _nn; }   // r714: never NHL Network — local first
+  if (leagueKey === 'NBA') { const _nn = _nbaPickNet(broadcasts, awayAbbr, homeAbbr); if (_nn !== undefined) network = _nn; }   // r715: never NBA League Pass / NBA TV — local first
   // ESPN's public scoreboard API doesn't carry Apple TV+ national-exclusive
   // deals at all, and its regional (home/away RSN) entries aren't reliably
   // ordered — YES/SNY are the actual local broadcasters for every
@@ -18651,7 +18668,7 @@ window._sportAnchorState = _sportAnchorState;
 function _sportScoreRow(g, abbr){
   const away = g.awayAbbr === abbr, opp = away ? g.homeAbbr : g.awayAbbr;
   const ts = away ? g.awayScore : g.homeScore, os = away ? g.homeScore : g.awayScore, won = ts > os, live = g.gameStatus === 'live';
-  const c = (me) => live ? '' : (me ? (won ? 'w' : 'l') : (won ? 'l' : 'w'));
+  const c = (me) => live ? 'w' : (me ? (won ? 'w' : 'l') : (won ? 'l' : 'w'));   // r715: live had NO class → inherited near-black text
   return `<div class="lf-score-row${Math.max(+ts || 0, +os || 0) >= 100 ? ' d3' : ''}">
     <div class="lf-score-col"><span class="lf-score-abbr ${c(true)}">${abbr}</span><span class="lf-score-num ${c(true)}">${ts ?? ''}</span></div>
     <span class="lf-dash">–</span>
@@ -18688,7 +18705,7 @@ function renderSportAnchorSlot(abbr){
     const _day = isNaN(_gd) ? '' : _dk(_gd) === _today ? 'Tonight' : _dk(_gd) === _tom ? 'Tomorrow' : _gd.toLocaleDateString('en-US', Object.assign({ weekday: 'long' }, _ET));
     const _dayCls = _day === 'Tonight' ? '' : _day === 'Tomorrow' ? ' tomorrow' : ' future';
     const _time = isNaN(_gd) ? '' : _gd.toLocaleTimeString('en-US', Object.assign({ hour: 'numeric', minute: '2-digit' }, _ET));
-    const _net = lg === 'NHL' && _NHL_NET_RE.test(n.network || '') ? '' : (n.network || '');
+    const _net = (lg === 'NHL' && _NHL_NET_RE.test(n.network || '')) || (lg === 'NBA' && _NBA_NET_RE.test(n.network || '')) ? '' : (n.network || '');
     slides.push(['snext', `<div class="lf-next2">
       <div class="lf-next2-opp"><img class="lf-next2-logo" src="${logoUrl(lg, opp)}" alt="" onerror="this.style.opacity=0">
         <div class="lf-next2-vs"><span class="lf-next2-vslabel">${home ? 'vs' : '@'}</span><span class="lf-next2-team">${opp}</span></div></div>
@@ -18885,7 +18902,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r714-nhl-net-nextday';
+const BUILD_MARKER = 'r715-live-white-nba-net';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
