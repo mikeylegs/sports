@@ -1,26 +1,7 @@
 {
   "v": 1,
-  "updated": "2026-10-27T16:53:12.846Z",
-  "events": [
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401908045",
-      "title": "Milwaukee Brewers @ Tampa Bay Rays",
-      "showFrom": "20261027",
-      "showUntil": "20261027",
-      "rank": 1
-    },
-    {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401908046",
-      "title": "Milwaukee Brewers @ Tampa Bay Rays",
-      "showFrom": "20261028",
-      "showUntil": "20261028",
-      "rank": 2
-    }
-  ],
+  "updated": "2026-10-28T19:15:02.569Z",
+  "events": [],
   "watch": {
     "teams": [
       {
