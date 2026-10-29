@@ -1936,7 +1936,7 @@ html.logoscore-v1 #row-MLB .mlb-feat-slot.has-wp .mlb-feat-status{max-width:min(
   min-width:9.5cqh;flex:1;line-height:1;white-space:nowrap;}
 .mlb-card2-abbr.w{color:#fff;}
 /*R41*/.mlb-card2-score{font-size:6.2cqh;font-weight:900;color:rgba(255,255,255,0.32);
-  font-variant-numeric:tabular-nums;width:8cqh;min-width:8cqh;text-align:right;line-height:1;flex-shrink:0;}
+  font-variant-numeric:tabular-nums;width:auto;min-width:8cqh;text-align:right;line-height:1;flex-shrink:0;}   /* r717: was width:8cqh — NBA '133' overflowed right into FINAL; 1–2 digits still sit in the same 8cqh */
 .mlb-card2-score.w{color:#fff;}
 .mlb-card2-status{font-size:4.4cqh;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;
   color:rgba(255,255,255,0.42);white-space:nowrap;line-height:1;align-self:center;padding-left:1cqh;}
@@ -2811,7 +2811,7 @@ function _nhlPickNet(bc, away, home){
   const ok = b => nm(b) && !_NHL_NET_RE.test(nm(b));
   const nat = bc.find(b => mk(b) === 'national' && ok(b));
   if (nat) return nm(nat);
-  const side = away === 'NYR' ? 'away' : home === 'NYR' ? 'home' : null;
+  const side = (away === 'NYR' || away === 'NYI') ? 'away' : (home === 'NYR' || home === 'NYI') ? 'home' : null;   // r718: Islanders too (MSG Sportsnet)
   const pick = (m) => bc.find(b => mk(b) === m && ok(b));
   const b = (side && pick(side)) || pick('home') || pick('away') || bc.find(ok);
   return b ? nm(b) : '';
@@ -10272,7 +10272,8 @@ const RECAP = {
     // r576: NHL team channels (Mike-supplied, exact IDs). channelIds.NHL (above, r538)
     // already verified live — reused as-is for the nhl-fill league filler.
     'rangersnhl':'UCXlX2t7ziIJpZQWZcrHGnow',
-    'islandersnhl':'UC33CtnOXm7fyNVGmT_3UcMA'
+    'islandersnhl':'UC33CtnOXm7fyNVGmT_3UcMA',
+    'nyknicks':'UC0hb8f0OXHEzDrJDUq-YVVw'   // r719: probe-verified 10/29
   },
   videoCache: {},                  // sourceId+dateKey -> { at, video|null }
   // Source registry. Add/tune here — query + titleHint are the live-tuning knobs.
@@ -10331,11 +10332,29 @@ const RECAP = {
     // "Rookie Camp | Media Availability" has no "highlights"/"goals"/"recap" in it, so it
     // never matches and the source stays empty until real game highlights exist.
     'nhl-rangers':  { handle:'rangersnhl', label:'Rangers Recap', teamName:'Rangers', apiDrought:true, apiDroughtBroadSearch:true,
+                    /* r717 (audit 10/28): the team channel skips games (newest 'GAME HIGHLIGHTS' was 10/19 with a
+                       10/26 game played) → also pull the NHL channel's per-game cut ('Rangers at Kings | NHL
+                       Highlights | October 26, 2026'). And 36h was shorter than the 2–3 day gap between games:
+                       the window now runs from the last game's start (so the previous game can't sneak in), 36–72h. */
+                    altHandle:'NHL', altMatch:/\bRangers\b.*\bNHL Highlights\b|\bNHL Highlights\b.*\bRangers\b/i,
+                    windowH(){ return _teamRecapWindowH('NYR'); }, dateTeam:'NYR',
                     query:'Rangers highlights', titleHint:/rangers/i,
                     require(){ return /(?=.*\brangers\b)(?=.*\b(highlights?|recap|top plays?|best plays?|goals?)\b)/i; },
                     reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|postgame recap|analysis|🔴|(?=(?:.*?#\w+){3,})/i,
                     glow:'rgba(0,56,168,0.95)', slot:'.mlb-feat-slot.yank' },
+    // r719: Knicks. Team channel posts 'New York Knicks Defeat the Chicago Bulls | October 28, 2026' (wins only?);
+    // NBA channel posts 'KNICKS at BULLS | FULL GAME HIGHLIGHTS | October 28, 2026' for every game → alt feed.
+    // Team-channel shorts carry hashtags → any '#' rejects.
+    'nba-knicks':  { handle:'nyknicks', label:'Knicks Recap', teamName:'Knicks', apiDrought:true, apiDroughtBroadSearch:true,
+                    altHandle:'NBA', altMatch:/\bKnicks\b.*\bFull Game Highlights\b/i,
+                    windowH(){ return _teamRecapWindowH('NYK'); }, dateTeam:'NYK',
+                    query:'Knicks highlights', titleHint:/knicks/i,
+                    require(){ return /(?=.*\bknicks\b)(?=.*\b(highlights?|recap|defeats?|top plays?|best plays?)\b)/i; },
+                    reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|postgame|media|analysis|summer league|🔴|#\w/i,
+                    glow:'rgba(245,132,38,0.95)', slot:'.mlb-feat-slot.yank' },
     'nhl-islanders': { handle:'islandersnhl', label:'Islanders Recap', teamName:'Islanders', apiDrought:true, apiDroughtBroadSearch:true,
+                    altHandle:'NHL', altMatch:/\bIslanders\b.*\bNHL Highlights\b|\bNHL Highlights\b.*\bIslanders\b/i,   // r718: same team-channel gap as NYR (r717)
+                    windowH(){ return _teamRecapWindowH('NYI'); }, dateTeam:'NYI',
                     query:'Islanders highlights', titleHint:/islanders/i,
                     require(){ return /(?=.*\bislanders\b)(?=.*\b(highlights?|recap|top plays?|best plays?|goals?)\b)/i; },
                     reject: /press conference|practice|training camp|podcast|mic'?d up|community|charity|interview|sits down with|Q&A|reacts?\b|reaction|speech|(?:broadcast|radio) booth|postgame recap|analysis|🔴|(?=(?:.*?#\w+){3,})|rookie camp|media availability/i,
@@ -10932,6 +10951,28 @@ function soccerBoostActive(){
   return !!(ph && ph.phase === 'LIVE');
 }
 // aliases for quick manual triggers: ?video=nyy|nym|daily
+/* r717/r718: a team recap stays eligible from its last game's START (so the previous game can't sneak in), 36–72h. */
+function _teamRecapWindowH(abbr){
+  try { const st = typeof _sportAnchorState === 'function' && _sportAnchorState(abbr); const t = st && st.last && new Date(st.last.gameDate).getTime();
+    return t ? Math.max(1, Math.min(72, (Date.now() - t) / 3600000 + 1)) : 36; } catch(_){ return 36; }   // r720: no 36h floor when the game is known (back-to-backs let the prior game in); +1h cushion
+}
+/* r720: a dated title ('| October 28, 2026', '(10/20/26)', 'Oct 28, 2026') must name the team's LAST game's ET date.
+   Undated titles and unknown last-game pass (window still applies). */
+const _RT_MON = {jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+function _recapTitleYmd(title){
+  const t = String(title || '');
+  let m = t.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{1,2}),?\s+(20\d\d)\b/i);
+  if (m) return m[3] + '-' + String(_RT_MON[m[1].toLowerCase()]).padStart(2,'0') + '-' + m[2].padStart(2,'0');
+  m = t.match(/\b(\d{1,2})\/(\d{1,2})\/(\d{2}|20\d\d)\b/);
+  if (m) return (m[3].length === 2 ? '20' + m[3] : m[3]) + '-' + m[1].padStart(2,'0') + '-' + m[2].padStart(2,'0');
+  return null;
+}
+function _teamRecapDateOk(abbr, title){
+  try { const ymd = _recapTitleYmd(title); if (!ymd || !abbr) return true;
+    const st = typeof _sportAnchorState === 'function' && _sportAnchorState(abbr); const gd = st && st.last && st.last.gameDate;
+    if (!gd) return true;
+    return ymd === new Date(gd).toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); } catch(_){ return true; }
+}
 const RECAP_ALIAS = { nyy:'hoh-nyy', nym:'hoh-nym', daily:'mlb-daily', mlb:'mlb-daily' };
 
 // ── #15 Recap director ──────────────────────────────────────────────────────
@@ -10964,7 +11005,7 @@ RECAP.director = {
           'hoh-nyy', 'hoh-nym', 'pga-golf', 'golf-fill', 'wc-final',   // r176: randa-open parked; r467: mlb-season removed; r564: mlb-daily 3x→1x/lap
           'hoh-nyy', 'hoh-nym', 'wws-final', 'nhl-fill', 'nba-fill', 'nfl-fill', 'nfl-top100',
           'nfl-bills', 'nfl-jets', 'nfl-giants', 'tennis-fill',
-          'nfl-fill', 'nfl-fill', 'nhl-rangers', 'nhl-islanders'],  // R64/r538/r563/r564/r575/r576: MLB-dominant, league filler sprinkled low-frequency
+          'nfl-fill', 'nfl-fill', 'nhl-rangers', 'nhl-islanders', 'nba-knicks'],  // R64/r538/r563/r564/r575/r576: MLB-dominant, league filler sprinkled low-frequency
           // r564: mlb-daily cut from 3x→1x/lap — its RSS/API query only ever surfaces ONE
           // "Top N Plays" video per day, so the other 2 slots were just replaying the exact
           // same cached pick (Mike: "Top 5 repeating SEVEN times"). hoh-nyy/hoh-nym stay at
@@ -11579,6 +11620,13 @@ async function findRecap(sourceId){
       console.log(`[recap] feed ok: ${feed.items.length} videos from ${handle||channelId} via ${feed.via.split(' ')[0]}`); }
     else { console.log(`[recap] feed empty/blocked for ${handle||channelId}`); }
   }
+  if (src.altHandle && src.altMatch){   // r717: secondary channel, only titles that match (e.g. the NHL channel's Rangers cut)
+    try { const aid = await resolveChannelId(src.altHandle); const af = aid ? await fetchChannelLatest(aid, src.altHandle) : null;
+      const extra = ((af && af.items) || []).filter(x => src.altMatch.test(String(x.title || '')));
+      if (extra.length){ const seen = new Set((items || []).map(x => x.videoId)); items = [...(items || []), ...extra.filter(x => !seen.has(x.videoId))];
+        console.log(`[recap] +${extra.length} from ${src.altHandle} for ${sourceId}`); }
+    } catch(_){}
+  }
   // ── R125 TEAM DROUGHT DETECTOR ────────────────────────────────────────────
   // RSS is ~15 items deep. On a break/off-day the MLB channel posts zero team clips, so
   // the TEAM gate kills 15/15 and the source goes dark — and the 144h widen can't help,
@@ -11839,6 +11887,8 @@ async function findRecap(sourceId){
   const _poolPreWindow = pool;
   { const _preWin = pool; pool = pool.filter(x => x.seed || _ageH(x) <= _windowH);
     _aud('WINDOW ' + _windowH + 'h', _preWin, pool, 'hard staleness gate' + (src.timeless ? ' (timeless source)' : '')); }
+  if (src.dateTeam){ const _preD = pool; pool = pool.filter(x => x.seed || _teamRecapDateOk(src.dateTeam, x.title));   // r720
+    _aud('GAMEDATE ' + src.dateTeam, _preD, pool, 'dated title must match last game (ET)'); }
 
   // ── GATE 2: CONTENT GATES (fresh-but-wrong clips a time window can't catch) ──
   // 2a. TEAM SOURCES MUST SERVE THEIR TEAM. The log showed hoh-nym serving
@@ -11876,7 +11926,7 @@ async function findRecap(sourceId){
     // already exists for exactly this "must stay empty" signal (r151, used by the reject gate below) —
     // it was just never checked here.
     if (!_onTeam.length && !_requireStrictEmpty && Array.isArray(_poolPreWindow)){
-      const _wide = _poolPreWindow.filter(x => (_tn.test(x.title) || _namesFavPlayer(x.title)) && !_isAllGamesCompilation(x.title) && _ageH(x) <= 144);   // r616: was `items` (raw, pre-require/pre-reject) — see the r616 note at the WINDOW gate above. 6 days
+      const _wide = _poolPreWindow.filter(x => (_tn.test(x.title) || _namesFavPlayer(x.title)) && !_isAllGamesCompilation(x.title) && _ageH(x) <= 144 && (!src.dateTeam || _teamRecapDateOk(src.dateTeam, x.title)));   /* r720: widen can't resurrect the prior game */   // r616: was `items` (raw, pre-require/pre-reject) — see the r616 note at the WINDOW gate above. 6 days
       if (_wide.length) _onTeam = _wide;
     }
     if (_onTeam.length) pool = _onTeam;
@@ -12004,6 +12054,7 @@ async function findRecap(sourceId){
         cand = cand.filter(x => _rq2 ? _rq2.test(x.title) : true); }
       if (_rjRe) cand = cand.filter(x => !_rjRe.test(x.title));
       cand = cand.filter(x => _ageH(x) <= _windowH);
+      if (src.dateTeam) cand = cand.filter(x => _teamRecapDateOk(src.dateTeam, x.title));   // r720
       if (src.teamName) cand = cand.filter(x => (_tn.test(x.title) || _namesFavPlayer(x.title)) && !_isAllGamesCompilation(x.title));
       if (_recapDeadIds.size) cand = cand.filter(x => !_recapDeadIds.has(x.videoId));
       if (cand.length){
@@ -18618,7 +18669,7 @@ window._seasonOverCheck = _seasonOverCheck;
    next 9 days = _footerRangeGames) and division standings (apis/v2 …/standings?level=3, 30 min).
    Slide names are s-prefixed (slive/slast/sstand/snext) so no MLB-only hook (recap director lf/data-team,
    POTG, decisions) ever touches them. A team counts as in season with a game within ±10 days. */
-const SPORT_ANCHOR = { NYR: { lg: 'NHL', name: 'RANGERS' }, NYK: { lg: 'NBA', name: 'KNICKS', tint: '#003087' } };   // r713: Knicks orange tinted the pane muddy brown-black → the NYY pane's navy (Mike)
+const SPORT_ANCHOR = { NYR: { lg: 'NHL', name: 'RANGERS' }, NYI: { lg: 'NHL', name: 'ISLANDERS' }, NYK: { lg: 'NBA', name: 'KNICKS', tint: '#003087' } };   // r713: Knicks orange tinted the pane muddy brown-black → the NYY pane's navy (Mike)
 const _sportG = { past: { NHL: [], NBA: [] }, today: { NHL: [], NBA: [] } };
 const _sportStand = {};   // lg -> [{ name, abbr, teams:[{abbr, w, l, otl, pts, pct, gb}] }]
 const _sLg = k => LEAGUES.find(l => l.key === k);
@@ -18902,7 +18953,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r716-fill-require-null';
+const BUILD_MARKER = 'r720-recap-gamedate';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
