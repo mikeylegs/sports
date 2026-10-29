@@ -638,7 +638,8 @@ html,body{width:100%;height:100%;background:#0a0c12;overflow:hidden;cursor:none;
 .wws-nba .wws-tm-name{font-size:9.0cqh;}
 .wws-nba .wws-tm-rec{font-size:7.8cqh;white-space:nowrap;}   /* r440: same latent bug as NFL, fixed proactively — untested live (NBA offseason) */
 .wws-nba .wws-tm-side{gap:0.0cqh;flex:0 0 24.5%;width:24.5%;}   /* r448: same lock as NFL */
-.wws-nba .wws-hero{font-size:9.9cqh;}
+.wws-nba .wws-hero{font-size:9.9cqh;white-space:nowrap;}
+.wws-nba .wws-hero.wws-hero-6{font-size:9cqh;}   /* r720b→r721: 133–127 measured 391px natural vs a 388px mid column at 9.9cqh → wrapped. 6 digits at 9cqh ≈ 355px. 5-digit scores keep 9.9. */
 .wws-nba .lf-wws-status{font-size:8.0cqh;}
 .wws-nba .wws-tm-mid{gap:0.0cqh;flex:0 0 52%;width:52%;}   /* r448: same lock as NFL */
 .wws-nba.wws-full .lf-slide{padding:0.7cqh 1.5cqh;}
@@ -17227,7 +17228,7 @@ function wwsTeamInner(d){
     ${recordOk(x) ? `<span class="wws-tm-rec">${x.record}</span>` : ''}</div>`;   // r273: no data-fit (MLB) — CSS governs; r424: NHL card drops record; r429: NFL/NBA record pregame-only
   const midT = d.pre
     ? `<div class="wws-mlb-kick wws-mlb-kick-stack">${_wwsKickStack(d.kickoff||'', d.date||'', sportClass==='wws-nba'?8.7:9.4)}</div>${d.statusClean ? `<div class="lf-wws-status">${d.statusClean}</div>` : ''}${_wwsSeriesHtml(d)}`
-    : `<span class="wws-hero">${a.score||'0'}<span class="wws-hero-dash">–</span>${h.score||'0'}</span>
+    : `<span class="wws-hero${(String(a.score||'0') + String(h.score||'0')).length >= 6 ? ' wws-hero-6' : ''}">${a.score||'0'}<span class="wws-hero-dash">–</span>${h.score||'0'}</span>
       <div class="lf-wws-status${d.live?' live':''}">${d.status||''}</div>
       ${d.situation ? `<div class="wws-sit">${d.situation}</div>` : ''}${_wwsSeriesHtml(d)}`;
   const _ws = _wwsIsWS(d) ? `<div class="wws-ws-anchor"><img class="wws-ws-logo" src="${WS_LOGO}" alt="World Series"></div>` : '';   // r710; r712: zero-height anchor so nothing in the column moves
@@ -18953,7 +18954,7 @@ fullscreen (F11):    ${fs ? 'YES' : 'no'}`;
 // Bump this string every time we ship a debug-relevant change, so we can
 // confirm at a glance (via the on-screen panel) which build is actually live —
 // avoids debugging a stale cached/un-pushed deploy without realizing it.
-const BUILD_MARKER = 'r720-recap-gamedate';
+const BUILD_MARKER = 'r721-nba-hero-6digit';
 // R127: always-visible build stamp so the wall shows its own deployed build with NO flag
 // (Rule Zero, readable off the panel itself). Dim + tiny: legible on inspection, invisible
 // at TV distance. ?nobuildtag=1 hides it for a clean screenshot.
