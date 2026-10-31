@@ -1,33 +1,69 @@
 {
   "v": 1,
-  "updated": "2026-10-28T19:15:47.729Z",
+  "updated": "2026-10-31T17:59:55.933Z",
   "events": [
     {
-      "league": "baseball/mlb",
-      "label": "MLB",
-      "espnId": "401908046",
-      "title": "Milwaukee Brewers @ Tampa Bay Rays",
-      "showFrom": "20261028",
-      "showUntil": "20261028",
+      "league": "hockey/nhl",
+      "label": "NHL",
+      "espnId": "401892617",
+      "title": "Edmonton Oilers @ New York Islanders",
+      "showFrom": "20261031",
+      "showUntil": "20261031",
       "rank": 1
-    },
-    {
-      "league": "basketball/nba",
-      "label": "NBA",
-      "espnId": "401909886",
-      "title": "New York Knicks @ Chicago Bulls",
-      "showFrom": "20261028",
-      "showUntil": "20261028",
-      "rank": 2
     },
     {
       "league": "hockey/nhl",
       "label": "NHL",
-      "espnId": "401892598",
-      "title": "New Jersey Devils @ Colorado Avalanche",
-      "showFrom": "20261028",
-      "showUntil": "20261028",
+      "espnId": "401892627",
+      "title": "Edmonton Oilers @ New York Rangers",
+      "showFrom": "20261101",
+      "showUntil": "20261101",
+      "rank": 2
+    },
+    {
+      "league": "basketball/nba",
+      "label": "NBA",
+      "espnId": "401909910",
+      "title": "Brooklyn Nets @ New York Knicks",
+      "showFrom": "20261102",
+      "showUntil": "20261102",
       "rank": 3
+    },
+    {
+      "league": "hockey/nhl",
+      "label": "NHL",
+      "espnId": "401892630",
+      "title": "Detroit Red Wings @ Florida Panthers",
+      "showFrom": "20261102",
+      "showUntil": "20261102",
+      "rank": 4
+    },
+    {
+      "league": "hockey/nhl",
+      "label": "NHL",
+      "espnId": "401892615",
+      "title": "St. Louis Blues @ Detroit Red Wings",
+      "showFrom": "20261031",
+      "showUntil": "20261031",
+      "rank": 5
+    },
+    {
+      "league": "hockey/nhl",
+      "label": "NHL",
+      "espnId": "401892614",
+      "title": "Chicago Blackhawks @ Boston Bruins",
+      "showFrom": "20261031",
+      "showUntil": "20261031",
+      "rank": 6
+    },
+    {
+      "league": "hockey/nhl",
+      "label": "NHL",
+      "espnId": "401892616",
+      "title": "Tampa Bay Lightning @ Nashville Predators",
+      "showFrom": "20261031",
+      "showUntil": "20261031",
+      "rank": 7
     }
   ],
   "watch": {
