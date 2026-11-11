@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-31T17:59:55.933Z",
+  "updated": "2026-11-11T03:05:01.063Z",
   "events": [
     {
       "league": "hockey/nhl",
@@ -64,6 +64,69 @@
       "showFrom": "20261031",
       "showUntil": "20261031",
       "rank": 7
+    },
+    {
+      "league": "hockey/nhl",
+      "label": "NHL",
+      "espnId": "401892689",
+      "title": "Nashville Predators @ Los Angeles Kings",
+      "showFrom": "20261110",
+      "showUntil": "20261110",
+      "rank": 8
+    },
+    {
+      "league": "hockey/nhl",
+      "label": "NHL",
+      "espnId": "401892683",
+      "title": "Colorado Avalanche @ Toronto Maple Leafs",
+      "showFrom": "20261110",
+      "showUntil": "20261110",
+      "rank": 9
+    },
+    {
+      "league": "hockey/nhl",
+      "label": "NHL",
+      "espnId": "401892684",
+      "title": "Minnesota Wild @ Montreal Canadiens",
+      "showFrom": "20261110",
+      "showUntil": "20261110",
+      "rank": 10
+    },
+    {
+      "league": "hockey/nhl",
+      "label": "NHL",
+      "espnId": "401892685",
+      "title": "Washington Capitals @ Ottawa Senators",
+      "showFrom": "20261110",
+      "showUntil": "20261110",
+      "rank": 11
+    },
+    {
+      "league": "hockey/nhl",
+      "label": "NHL",
+      "espnId": "401892688",
+      "title": "New Jersey Devils @ Winnipeg Jets",
+      "showFrom": "20261110",
+      "showUntil": "20261110",
+      "rank": 12
+    },
+    {
+      "league": "hockey/nhl",
+      "label": "NHL",
+      "espnId": "401892686",
+      "title": "Florida Panthers @ Columbus Blue Jackets",
+      "showFrom": "20261110",
+      "showUntil": "20261110",
+      "rank": 13
+    },
+    {
+      "league": "hockey/nhl",
+      "label": "NHL",
+      "espnId": "401892687",
+      "title": "Detroit Red Wings @ St. Louis Blues",
+      "showFrom": "20261110",
+      "showUntil": "20261110",
+      "rank": 14
     }
   ],
   "watch": {
