@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-11-11T03:05:01.063Z",
+  "updated": "2026-11-12T22:42:12.176Z",
   "events": [
     {
       "league": "hockey/nhl",
@@ -127,6 +127,105 @@
       "showFrom": "20261110",
       "showUntil": "20261110",
       "rank": 14
+    },
+    {
+      "league": "hockey/nhl",
+      "label": "NHL",
+      "espnId": "401892705",
+      "title": "New York Islanders @ Los Angeles Kings",
+      "showFrom": "20261112",
+      "showUntil": "20261112",
+      "rank": 15
+    },
+    {
+      "league": "hockey/nhl",
+      "label": "NHL",
+      "espnId": "401891808",
+      "title": "Carolina Hurricanes @ Seattle Kraken",
+      "showFrom": "20261112",
+      "showUntil": "20261112",
+      "rank": 16
+    },
+    {
+      "league": "hockey/nhl",
+      "label": "NHL",
+      "espnId": "401892696",
+      "title": "Montreal Canadiens @ Boston Bruins",
+      "showFrom": "20261112",
+      "showUntil": "20261112",
+      "rank": 17
+    },
+    {
+      "league": "hockey/nhl",
+      "label": "NHL",
+      "espnId": "401892697",
+      "title": "Minnesota Wild @ Toronto Maple Leafs",
+      "showFrom": "20261112",
+      "showUntil": "20261112",
+      "rank": 18
+    },
+    {
+      "league": "hockey/nhl",
+      "label": "NHL",
+      "espnId": "401892698",
+      "title": "Colorado Avalanche @ Ottawa Senators",
+      "showFrom": "20261112",
+      "showUntil": "20261112",
+      "rank": 19
+    },
+    {
+      "league": "hockey/nhl",
+      "label": "NHL",
+      "espnId": "401892700",
+      "title": "Washington Capitals @ New Jersey Devils",
+      "showFrom": "20261112",
+      "showUntil": "20261112",
+      "rank": 20
+    },
+    {
+      "league": "hockey/nhl",
+      "label": "NHL",
+      "espnId": "401892701",
+      "title": "Tampa Bay Lightning @ Columbus Blue Jackets",
+      "showFrom": "20261112",
+      "showUntil": "20261112",
+      "rank": 21
+    },
+    {
+      "league": "hockey/nhl",
+      "label": "NHL",
+      "espnId": "401892699",
+      "title": "Detroit Red Wings @ Florida Panthers",
+      "showFrom": "20261112",
+      "showUntil": "20261112",
+      "rank": 22
+    },
+    {
+      "league": "hockey/nhl",
+      "label": "NHL",
+      "espnId": "401892702",
+      "title": "Buffalo Sabres @ Chicago Blackhawks",
+      "showFrom": "20261112",
+      "showUntil": "20261112",
+      "rank": 23
+    },
+    {
+      "league": "hockey/nhl",
+      "label": "NHL",
+      "espnId": "401892703",
+      "title": "Winnipeg Jets @ Dallas Stars",
+      "showFrom": "20261112",
+      "showUntil": "20261112",
+      "rank": 24
+    },
+    {
+      "league": "hockey/nhl",
+      "label": "NHL",
+      "espnId": "401892704",
+      "title": "St. Louis Blues @ Utah Mammoth",
+      "showFrom": "20261112",
+      "showUntil": "20261112",
+      "rank": 25
     }
   ],
   "watch": {
